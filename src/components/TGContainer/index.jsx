@@ -1,133 +1,161 @@
-import './index.scss'
-import { Button } from 'ant-design-vue'
+import './assets/styles/index.scss'
+import TGContainerWithTreeSider from '@/components/TGContainerWithTreeSider'
+import { Space } from 'ant-design-vue'
+import router from '@/router'
+import { onMounted, provide } from 'vue'
+import useStore from '@/composables/tgStore'
 
 export default {
   name: 'TGContainer',
+  inheritAttrs: false,
   props: {
-    /**
-     * 标题文字 或 JSX.Element
-     */
-    modalTitle: {
-      type: [String, Object, Array],
-      default: ''
-    },
-    /**
-     * 组件宽度
-     * 数字的单位为像素，字符串的单位为百分比
-     */
-    width: {
-      type: [Number, String],
-      default: 500
-    },
-    /**
-     * 是否展示“更多”箭头
-     */
-    showMore: {
+    // 是否显示侧边树
+    showTree: {
       type: Boolean,
       default: false
     },
-    /**
-     * 右侧显示更多的图标，依赖 showMore
-     * DOMElement 或 JSX.Element
-     */
-    rightIcon: {
-      type: [String, Object],
-      default: ''
-    },
-    /**
-     * 是否显示标题与内容的分割线
-     */
-    showTitleLine: {
+    // 是否显示页面标题
+    showPageTitle: {
       type: Boolean,
-      default: false
+      default: true
     },
-    /**
-     * 内容区的自定义class
-     */
-    contentClass: {
+    // 自定义容器的额外样式表
+    customContentClassName: {
       type: String,
       default: ''
     },
-    /**
-     * 显示边框阴影
-     */
-    showBoxShadow: {
+    // 获取页面主数据时是否需要分页，主数据是指 moduleName 指向的接口数据
+    isPagination: {
       type: Boolean,
-      default: false
+      default: true
     },
-    /**
-     * 标题区的自定义class
-     */
-    titleClass: {
-      type: String,
-      default: ''
-    },
-    /**
-     * 是否显示标题前的图案
-     */
-    showTitleShape: {
-      type: Boolean,
-      default: false
-    }
+    ...TGContainerWithTreeSider.props
   },
-  computed: {
-    _rightIcon() {
-      return (
-        <div class={'right-icon'}>
-          {this.rightIcon}
-        </div>
-      )
-    },
-    _className() {
-      return `${this.contentClass ? `${this.contentClass} ` : ''}box-content`
-    },
-    _titleClassName() {
-      return `${
-        this.titleClass ? `${this.titleClass} ` : ''
-      }${
-        this.showTitleShape ? 'divider padding-left ' : ''
-      }${
-        this.showTitleLine ? 'line ' : ''
-      }box-title`
-    }
-  },
-  methods: {
-    onMore() {
-      this.$emit('more')
-    }
-  },
-  render() {
-    return (
-      <div
-        class={`${this.showBoxShadow ? 'show-shadow ' : ''}tg-universal-box`}
-        style={{ '--box-width': `${this.width}${isNaN(this.width) ? '' : 'px'}` }}
-      >
-        {
-          this.modalTitle
-            ? (
-              <div class={this._titleClassName}>
-                {this.modalTitle}
-                {
-                  this.showMore
-                    ? (
-                      this._rightIcon || (
-                        <Button
-                          class={'right-icon'}
-                          icon="right"
-                          onclick={this.onMore}
-                        />
-                      )
-                    )
-                    : null
+  setup(props, { slots, attrs }) {
+    const store = useStore()
+    const {
+      showTree,
+      customContentClassName,
+      showPageTitle,
+      isPagination,
+      ...treeProps
+    } = props
+
+    // 提供给所有子级或插槽，以判断本页面是否存在列表组件
+    provide('isTableExist', !!slots.table)
+
+    function filterSlots() {
+      return [
+        slots.inquiry?.() ?? slots.others?.(),
+        slots.chart?.(),
+        // customContent 和 table 结构只能二选一，如果二者都存在，customContent 优先
+        slots.customContent
+          ? (
+            <div class={'tg-container-custom-content-container'}>
+              <div
+                class={
+                  `tg-container-custom-content${customContentClassName
+                    ? ` ${customContentClassName}`
+                    : ''}`
                 }
+              >
+                {slots.customContent()}
               </div>
-            )
-            : null
+              {
+                slots.bottomFunctions && (
+                  <div class={'tg-container-bottom-functions'}>
+                    {slots.bottomFunctions()}
+                  </div>
+                )
+              }
+            </div>
+          )
+          : slots.table && (
+          <div class={'tg-container-table-container'}>
+            {slots.table?.()}
+            {slots.pagination?.()}
+            {slots.default?.()}
+          </div>
+        ),
+        slots.modals && <div class="tg-container-modals">{slots.modals()}</div>
+      ]
+    }
+
+    onMounted(async () => {
+      let payload = {}
+
+      try {
+        if (showTree) {
+          // 初始化侧边树
+          const result = await Promise.all(store.taskQueues.treeNode)
+
+          for (const _payload of result) {
+            payload = { ...payload, ..._payload }
+          }
+        }
+
+        // 执行枚举初始化
+        const listeners = await Promise.all([
+          ...store.taskQueues.dependentTreeNode.map(cb => cb()),
+          ...store.taskQueues.notDependentTreeNodeButRequired.map(cb => cb())
+        ])
+
+        // 注册枚举值监听器
+        for (const listener of listeners) {
+          listener()
+        }
+
+        await store.onSearch({
+          searchParams: payload,
+          isResetSelectedRows: true,
+          isPagination,
+          ...treeProps?.optionsOfGetList ?? {}
+        })
+      } catch (error) {
+        // 树数据加载失败，退出后续所有的数据加载逻辑
+        store.dataSource.loading = false
+        console.error(error)
+      }
+    })
+
+    return () => (
+      <div class={`tg-container${attrs.class ? ` ${attrs.class}` : ''}`}>
+        {
+          (showPageTitle || slots.function) && (
+            <div class={'tg-container-title'}>
+              {
+                showPageTitle && (
+                  <Space class={'tg-container-title-content'}>
+                    {
+                      router.currentRoute.value.meta.icon && (
+                        <IconFont type={router.currentRoute.value.meta.icon} />
+                      )
+                    }
+                    {router.currentRoute.value.meta.title}
+                  </Space>
+                )
+              }
+              {
+                slots.function && (
+                  <div class={'tg-container-function'}>
+                    {slots.function()}
+                  </div>
+                )
+              }
+            </div>
+          )
         }
         {
-          this.$slots.default
-            ? <div class={this._className}>{this.$slots.default}</div>
-            : null
+          showTree
+            ? (
+              <TGContainerWithTreeSider
+                class={'tg-container-content'}
+                {...treeProps}
+              >
+                {filterSlots()}
+              </TGContainerWithTreeSider>
+            )
+            : <div class={'tg-container-content'}>{filterSlots()}</div>
         }
       </div>
     )

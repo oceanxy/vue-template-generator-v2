@@ -1,33 +1,31 @@
 /**
  * 路由。
- * 注意，若需要使 `route.meta.keepAlive = true` 页面缓存生效，请确保要缓存的页面组件注入了 moduleName 属性，
- * 如何注入 moduleName，详见：
- * @see src/mixins/forModuleName
  */
 
-import config from '@/config'
+import configs from '@/configs'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
-
-const appName = getFirstLetterOfEachWordOfAppName()
 
 /**
  * 获取基础路由数据
- * @param [routes] {Array}
- * @returns {Route[]}
+ * @param {import ('vue-router').RouteRecord[]} [routes]
+ * @returns {import ('vue-router').RouteRecord[]}
  */
 export default function getBaseRoutes(routes) {
+  // const _config = configs
+  const appName = getFirstLetterOfEachWordOfAppName()
   let rootRoutes
-  const _config = config
-  const homePermissions = typeof config.homePermissions === 'boolean' ? config.homePermissions : true
+  const homePermissions = typeof configs.homePermissions === 'boolean' ? configs.homePermissions : true
 
   if (Array.isArray(routes) && routes.length) {
     // 查询子项目路由中是否存在静态路由，如果有就把静态路由插入到 rootRoutes 中
-    APP_ROUTES.staticRoutes?.forEach(staticRoute => {
+    __TG_APP_ROUTES__.staticRoutes?.forEach(staticRoute => {
+      // 筛除重复的路由
       if (routes.findIndex(route => route.name === staticRoute.name) === -1) {
         routes.unshift(staticRoute)
       }
     })
 
+    // 查找根路由
     const homeIndex = routes.findIndex(route => route.path === '/')
 
     // 检查路由数据是否包含根路由
@@ -35,11 +33,11 @@ export default function getBaseRoutes(routes) {
       rootRoutes = routes
       rootRoutes[homeIndex] = {
         ...routes[homeIndex],
-        name: 'home',
+        name: 'Home',
         redirect: {
-          name: config.dynamicRouting
-            ? localStorage.getItem(`${appName}-defaultRoute`) || config.defaultRouteName
-            : config.defaultRouteName
+          name: configs.dynamicRouting
+            ? localStorage.getItem(`${appName}-defaultRoute`) || configs.defaultRouteName
+            : configs.defaultRouteName
         },
         meta: {
           ...routes[homeIndex].meta,
@@ -51,16 +49,17 @@ export default function getBaseRoutes(routes) {
       rootRoutes = [
         {
           path: '/',
-          name: 'home',
-          component: resolve => require.ensure(
-            [],
-            () => resolve(require('@/layouts/' + _config.layout)),
-            'chunk-home'
-          ),
+          name: 'Home',
+          component: () => import('@/layouts/TGBackendSystem'),
+          // component: resolve => require.ensure(
+          //   [],
+          //   () => resolve(require('@/layouts/' + _config.layout)),
+          //   'chunk-home'
+          // ),
           redirect: {
-            name: config.dynamicRouting
-              ? localStorage.getItem(`${appName}-defaultRoute`) || config.defaultRouteName
-              : config.defaultRouteName
+            name: configs.dynamicRouting
+              ? localStorage.getItem(`${appName}-defaultRoute`) || configs.defaultRouteName
+              : configs.defaultRouteName
           },
           children: routes,
           meta: {
@@ -74,19 +73,19 @@ export default function getBaseRoutes(routes) {
       ]
     }
   } else {
-    // 当未传递 Routes 数据时的默认值
+    // 当传递的 Vue.Routes 数据时不合法时
     rootRoutes = [
       {
         path: '/',
-        name: 'home',
+        name: 'Home',
         redirect: () => {
           // 登录状态下无可用菜单跳转到无权限页面
-          if (localStorage.getItem(`${appName}-${config.tokenConfig.fieldName}`)) {
-            return {name: 'noAccess', query: {'no-link': 1}}
+          if (localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)) {
+            return { name: 'NoAccess', query: { 'no-link': 1 } }
           }
 
           // 未登录状态下跳转到登录页
-          return {name: 'login'}
+          return { name: 'Login' }
         },
         meta: {
           title: '后台',
@@ -102,23 +101,19 @@ export default function getBaseRoutes(routes) {
   return [
     {
       path: '/login',
-      name: 'login',
-      component: () => Promise.resolve(LOGIN_COMPONENT),
+      name: 'Login',
+      component: () => Promise.resolve(__TG_APP_LOGIN_COMPONENT__),
       meta: {
         title: '登录',
-        keepAlive: false,
+        keep: false,
         requiresAuth: false
       }
     },
     ...rootRoutes,
     {
       path: '/no-access',
-      name: 'noAccess',
-      component: resolve => require.ensure(
-        [],
-        () => resolve(require('@/views/NoAccess')),
-        'chunk-no-access'
-      ),
+      name: 'NoAccess',
+      component: () => import('@/views/NoAccess'),
       meta: {
         title: '无访问权限',
         keep: false,
@@ -127,12 +122,8 @@ export default function getBaseRoutes(routes) {
     },
     {
       path: '/404',
-      name: 'notFound',
-      component: resolve => require.ensure(
-        [],
-        () => resolve(require('@/views/NotFound')),
-        'chunk-not-found'
-      ),
+      name: 'NotFound',
+      component: () => import('@/views/NotFound'),
       meta: {
         title: '404',
         keep: false,
@@ -140,8 +131,8 @@ export default function getBaseRoutes(routes) {
       }
     },
     {
-      path: '*', // 此处需特别注意至于最底部
-      redirect: {name: 'notFound'}
+      path: '/:catchAll(.*)',
+      redirect: { name: 'NotFound' }
     }
   ]
 }

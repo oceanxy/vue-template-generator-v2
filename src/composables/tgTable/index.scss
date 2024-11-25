@@ -1,0 +1,39 @@
+.tg-table.ant-table-wrapper {
+  height: 100%;
+
+  .ant-spin-nested-loading {
+    height: 100%;
+
+    .ant-spin-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .ant-table {
+        height: 0;
+        overflow: hidden;
+        flex: auto;
+
+        .ant-table-container {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+
+          .ant-table-header {
+            flex: none;
+          }
+
+          .ant-table-body {
+            height: 0;
+            flex: auto;
+            overflow: hidden;
+          }
+        }
+      }
+
+      .ant-pagination {
+        flex: none;
+      }
+    }
+  }
+}

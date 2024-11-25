@@ -1,169 +1,41 @@
-@import '~@/assets/styles/themeFromLess.scss';
+.tg-menu-container.ant-menu {
+  // 背景主题
+  &.background {
 
-.t-g-menu-container.ant-menu {
-  overflow-x: hidden;
-  overflow-y: auto;
-  height: 100%;
-  position: relative;
-  z-index: 900;
-  @include box-shadow(rgba(0, 0, 0, 0.03));
-  padding: 4px;
+  }
 
+  // 边框主题
   &.bordered {
-    .ant-menu-item {
-      position: relative;
-      overflow: unset;
 
-      &:not(:last-child):before {
-        position: absolute;
-        display: block;
-        content: '';
-        width: 100%;
-        height: 100%;
-        left: 0;
-        top: 4px;
-        box-sizing: border-box;
-        border-bottom: 1px solid $border-color-base;
-      }
-    }
-
-    .ant-menu-submenu {
-      box-sizing: border-box;
-      border-bottom: 1px solid $border-color-base;
-
-      .ant-menu-sub {
-        box-sizing: border-box;
-        border-top: 1px solid $border-color-base;
-      }
-    }
   }
 
+  // 折叠状态
   &.ant-menu-inline-collapsed {
-    & > .ant-menu-submenu-selected {
-      .ant-menu-item-title,
-      .ant-menu-submenu-title {
-        background: $primary-color-light-hover;
-      }
-    }
-  }
+    $size: calc(var(--tg-theme-font-size-lg) + .4rem);
 
-  &.ant-menu-inline-collapsed {
     & > .ant-menu-item,
-    & > .ant-menu-item-group > .ant-menu-item-group-list > .ant-menu-item,
-    & > .ant-menu-item-group > .ant-menu-item-group-list > .ant-menu-submenu > .ant-menu-submenu-title,
-    & > .ant-menu-submenu > .ant-menu-submenu-title {
-      & > div {
-        justify-content: center;
-        display: flex;
-      }
-
-      padding: 0 16px !important;
-
-      .anticon {
-        line-height: 0;
-
-        svg {
-          width: 1.4em !important;
-          height: 1.4em !important;
-        }
-      }
+    & > .ant-menu-submenu .ant-menu-submenu-title {
+      // 8px 为为了抵消 margin-left 和 margin-right 的值
+      padding-inline: calc((100% - $size - 8px) / 2);
     }
-  }
 
-  .ant-menu-item:hover,
-  .ant-menu-submenu .ant-menu-submenu-title:hover {
-    border-radius: $border-radius-base;
-    background: $primary-color-light-hover;
-  }
-
-  .ant-menu-item,
-  .ant-menu-submenu {
-    .ant-menu-item-title,
-    .ant-menu-submenu-title {
-      div {
+    & > .ant-menu-item,
+    & > .ant-menu-submenu {
+      & > .ant-menu-title-content .ant-menu-item-title,
+      & > .ant-menu-submenu-title {
         display: flex;
         align-items: center;
 
         .anticon {
-          font-size: $font-size-lg;
-          margin-right: 8px;
-
-          svg {
-            width: 1.1em;
-            height: 1.1em;
-          }
-        }
-
-        span {
-          font-size: $font-size-base;
+          min-width: $size;
+          font-size: $size;
         }
       }
-    }
-
-    &.ant-menu-item-selected {
-      .anticon {
-        color: $primary-color-active;
-      }
-
-      // 去除菜单最后方的竖条
-      &::after {
-        opacity: 0;
-      }
-
-      &,
-      & > .ant-menu-submenu-title {
-        // color: $primary-color-active;
-        background: $primary-color-light-hover;
-        border-radius: $border-radius-base;
-        font-weight: bolder;
-      }
-    }
-  }
-
-  &.background {
-    // &:not(.ant-menu-horizontal) .ant-menu-item-selected {
-    //   background: none;
-    // }
-
-    .ant-menu-submenu-selected {
-      .ant-menu-submenu-title {
-        // background: $primary-color-light-hover;
-        border-radius: $border-radius-base;
-      }
-    }
-
-    .ant-menu-sub {
-      background: #f9f9f9;
-      box-shadow: inset -22px 22px 19px -30px rgba(0, 0, 0, 0.1);
     }
   }
 }
 
 // 折叠状态下的子菜单
 .ant-menu-submenu.ant-menu-submenu-popup {
-  & > .ant-menu {
-    max-height: 100vh;
-    overflow-y: auto;
 
-    .ant-menu-item-selected {
-      .ant-menu-item-title {
-        span {
-          font-weight: bold;
-        }
-      }
-    }
-  }
-
-  &.t-g-menu-popup.background {
-    & > .ant-menu {
-      // &:not(.ant-menu-horizontal) .ant-menu-item-selected {
-      //   background: none;
-
-      // }
-
-      //.ant-menu-submenu-title {
-      //  padding-left: 16px;
-      //}
-    }
-  }
 }

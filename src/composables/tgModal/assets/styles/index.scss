@@ -1,0 +1,35 @@
+.ant-modal-wrap {
+  .tg-modal {
+    transform: var(--tg-modal-translate);
+
+    .ant-modal-content {
+      padding: 0;
+
+      .ant-modal-header {
+        margin: 0;
+        background: linear-gradient(to bottom, var(--tg-theme-color-primary-bg), #ffffff);
+
+        .ant-modal-title > div {
+          padding: 20px 24px;
+        }
+      }
+
+      .ant-modal-body {
+        overflow: auto;
+        max-height: calc(90vh - 200px);
+        padding: 24px 40px;
+
+        .ant-table {
+          height: auto;
+        }
+      }
+
+      .ant-modal-footer {
+        background: var(--tg-theme-color-primary-bg);
+        margin: 0;
+        text-align: center;
+        padding: 20px;
+      }
+    }
+  }
+}

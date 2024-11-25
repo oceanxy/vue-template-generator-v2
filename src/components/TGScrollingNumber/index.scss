@@ -1,0 +1,64 @@
+.tg-scrolling-number-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+
+  .tg-scrolling-number-text {
+    flex: none;
+    width: 100%;
+    height: 32px;
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    font-size: 20px;
+    font-weight: 500;
+    color: #ffffff;
+    font-family: Source Han Sans CN-Light, Microsoft YaHei, serif;
+
+    .tg-scrolling-number-unit {
+      font-size: var(tg-theme-font-size-large);
+      padding-left: .4ic;
+    }
+  }
+
+  .tg-scrolling-number-value {
+    flex: none;
+    display: flex;
+    font-size: 40px;
+    font-family: DINPro-Bold, Microsoft YaHei, serif;
+    font-weight: 500;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .tg-scrolling-number-sub-value {
+    flex: none;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.tg-scrolling-number-content {
+  overflow: hidden;
+  height: 100%;
+
+  .tg-scrolling-number-scroll-container {
+    //transition: all var(--duration) cubic-bezier(0.32, 1.05, 0.74, 0.99); // todo
+    transition: all var(--duration) var(--tg-theme-motion-ease-in-out);
+
+    transform: translateY(var(--start));
+    opacity: 0;
+
+    &.animation {
+      transform: translateY(var(--target));
+      opacity: 1;
+    }
+  }
+}

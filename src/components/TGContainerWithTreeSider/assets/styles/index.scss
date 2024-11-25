@@ -1,24 +1,24 @@
-@import '~@/assets/styles/themeFromLess.scss';
-
-.tg-tree-container {
-  @include container-border-radius;
-  gap: 12px;
+.tg-container-with-tree-sider {
+  //@include container-border-radius;
+  //gap: 12px;
   //overflow: unset;
 
-  .tg-container {
+  & > .tg-container {
     // 消除本组件下 TGContainerWithTable 组件的内边距值
     padding: 0;
   }
 
-  & > .tg-container-with-sider--main.tg-tree-content-container {
+  & > .tg-container-with-tree-sider--content {
     box-sizing: border-box;
   }
 
-  & > .tg-container-with-sider--sider.tg-tree-sider-container {
+  & > .tg-container-with-sider--sider.tg-container-with-tree-sider--sider {
+    flex: none;
     width: 220px;
-    background: $white;
+    background: #ffffff;
+    border-radius: var(--tg-theme-border-radius);
 
-    & > .tg-tree-data {
+    & > .tg-search-tree-container {
       height: 100%;
       padding: 10px 18px 10px 10px;
       display: flex;
@@ -26,8 +26,8 @@
       gap: 10px;
 
       .ant-input {
-        // font-size: 14px; // 全局默认字号为14号
-        flex: none;
+        font-size: 14px;
+        flex: auto;
       }
 
       & > .ant-spin-nested-loading {
@@ -35,72 +35,51 @@
         overflow-x: hidden;
         overflow-y: auto;
 
-        .ant-tree-treenode-switcher-open,
-        .ant-tree-treenode-switcher-close {
-          width: 100%;
-          display: grid;
-          grid-template: 24px 1fr / 24px 1fr;
+        .ant-tree .ant-tree-list .ant-tree-treenode {
+          & > .ant-tree-switcher {
+            transition: all 0.2s var(--tg-theme-motion-ease-in-out),
+            border 0s var(--tg-theme-motion-ease-in-out),
+            line-height 0s var(--tg-theme-motion-ease-in-out),
+            box-shadow 0s var(--tg-theme-motion-ease-in-out);
+          }
+
+          & > .ant-tree-node-content-wrapper {
+            &:hover {
+              background: none;
+            }
+          }
+
+          & > .ant-tree-switcher {
+            border-top-left-radius: var(--tg-theme-border-radius);
+            border-bottom-left-radius: var(--tg-theme-border-radius);
+
+            &:not(.ant-tree-switcher-noop) + .ant-tree-node-content-wrapper {
+              border-top-left-radius: 0;
+              border-bottom-left-radius: 0;
+            }
+          }
+
+          &.ant-tree-treenode-selected > .ant-tree-switcher {
+            background: var(--tg-theme-color-primary-bg);
+          }
+
+          &:hover > :is(.ant-tree-switcher, .ant-tree-node-content-wrapper) {
+            background: var(--tg-theme-control-item-bg-hover);
+          }
+
+          .ant-tree-switcher-noop {
+            display: none; // 隐藏叶子节点的文件图标
+          }
 
           .ant-tree-node-content-wrapper {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            // padding: 0;
-            overflow: hidden;
-
-            &:hover,
-            &.ant-tree-node-selected {
-              background: $primary-color-light-hover;
+            .ant-tree-icon__customize {
+              margin-left: -4px; // 隐藏叶子节点图标后，对齐自定义叶子节点icon与父节点switchIcon
+              margin-right: 4px;
+              vertical-align: middle;
             }
-
-            &.ant-tree-node-selected {
-              font-weight: 600;
-            }
-
-            .icon {
-              font-size: 24px;
-            }
-
-            .ant-tree-title {
-              display: inline-block;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-
-              .title {
-                // font-size: 14px; // 全局默认字号为14号
-                color: #344054;
-              }
-            }
-          }
-
-          .ant-tree-child-tree {
-            grid-column: span 2;
-          }
-        }
-
-        .ant-tree > li > .ant-tree-switcher.ant-tree-switcher-noop,
-        .ant-tree > li > .ant-tree-child-tree > li > .ant-tree-switcher.ant-tree-switcher-noop {
-          visibility: hidden;
-        }
-
-        .ant-tree > li > .ant-tree-child-tree > li > .ant-tree-child-tree > li {
-          .ant-tree-switcher.ant-tree-switcher-noop {
-            visibility: hidden;
-          }
-
-          &:before {
-            top: 7px;
-            height: calc(100% - 26px);
           }
         }
       }
-    }
-  }
-
-  @media screen and (max-width: 1366px) {
-    & > .tg-container-with-sider--sider.tg-tree-sider-container {
-      width: 180px;
     }
   }
 }

@@ -1,15 +1,15 @@
 import axios from 'axios'
-import qs from 'qs'
 import { showMessage } from '@/utils/message'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
-import config from '@/config'
+import configs from '@/configs'
 import { getEnvVar } from '@/utils/env'
+import { useLoginStore } from '@/stores/modules/login'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 
-export default function getService(conf, router, store) {
+export default function getService(conf, router) {
   const service = axios.create({
-    baseURL: getEnvVar('VUE_APP_BASE_API'),
+    baseURL: getEnvVar('TG_APP_BASE_API'),
     timeout: conf.timeout
   })
 
@@ -40,13 +40,13 @@ export default function getService(conf, router, store) {
         }
       }
 
-      if (INTERFACE_MAPPINGS) {
-        config.data = INTERFACE_MAPPINGS?.request(config.data, qs)
-      }
+      // if (INTERFACE_MAPPINGS) {
+      //   config.data = INTERFACE_MAPPINGS?.request(config.data, qs)
+      // }
 
       return config
     },
-    error => {
+    async error => {
       showMessage({
         message: error.message,
         type: 'error'
@@ -64,53 +64,67 @@ export default function getService(conf, router, store) {
     async response => {
       let res = response.data
 
-      if (response.config.responseType !== 'blob' && INTERFACE_MAPPINGS) {
-        res = INTERFACE_MAPPINGS.response(response.data)
-      }
+      // if (response.config.responseType !== 'blob' && INTERFACE_MAPPINGS) {
+      //   res = INTERFACE_MAPPINGS.response(response.data)
+      // }
 
       if (res?.status || response.config.responseType === 'blob') {
-        return Promise.resolve(res)
-      }
+        if (res instanceof Blob && res.type === 'application/json') {
+          const fileReader = new FileReader()
 
-      if (!('status' in res)) {
-        if (res.code !== 200) {
-          showMessage({
-            message: '第三方接口调用失败！',
-            type: 'error'
-          })
+          fileReader.onloadend = async () => {
+            return await cb(JSON.parse(fileReader.result))
+          }
+
+          fileReader.readAsText(res)
         } else {
-          return Promise.resolve({
-            code: 10000,
-            status: true,
-            data: res.data
-          })
+          return Promise.resolve(res)
         }
       } else {
-        showMessage({
-          message: res.message,
-          type: 'error'
-        })
+        return await cb(res)
       }
 
-      // 未登录或登录失效，需要重新登录
-      if (+res.code === 30001) {
-        if (localStorage.getItem(`${appName}-${config.tokenConfig.fieldName}`)) {
-          await store.dispatch('login/clear')
+      async function cb(res) {
+        if (!('status' in res)) {
+          if (res.code !== 200) {
+            showMessage({
+              message: '第三方接口调用失败！',
+              type: 'error'
+            })
+          } else {
+            return Promise.resolve({
+              code: 10000,
+              status: true,
+              data: res.data
+            })
+          }
+        } else {
+          showMessage({
+            message: res.message,
+            type: 'error'
+          })
         }
 
-        await router.replace({ name: 'login' })
-      } else if (/*无权限*/+res.code === 40006) {
-        await router.replace({ name: 'noAccess' })
-      }
+        // 未登录或登录失效，需要重新登录
+        if (+res.code === 30001) {
+          if (localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)) {
+            await useLoginStore().clear()
+          }
 
-      return Promise.resolve({
-        code: 0,
-        status: false,
-        data: res.data,
-        message: res.message
-      })
+          await router.replace({ name: 'Login' })
+        } else if (/*无权限*/+res.code === 40006) {
+          await router.replace({ name: 'NoAccess' })
+        }
+
+        return Promise.resolve({
+          code: 0,
+          status: false,
+          data: res.data,
+          message: res.message
+        })
+      }
     },
-    error => {
+    async error => {
       showMessage({
         message: error.message,
         type: 'error'

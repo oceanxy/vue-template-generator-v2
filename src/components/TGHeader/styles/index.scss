@@ -1,0 +1,266 @@
+.tg-layout.tg-layout {
+  .tg-layout-header {
+    display: flex;
+    padding-inline: 0;
+    height: 50px;
+
+    .tg-layout-header-content {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 24px;
+      flex: auto;
+      min-width: 300px;
+
+      & > .ant-space-item {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      & > .ant-space-item:last-child {
+        margin-left: auto;
+      }
+
+      .tg-layout-header-menu-btn {
+        border: none;
+        transition: all 0.2s var(--tg-theme-motion-ease-in-out);
+        opacity: 0.6;
+
+        &:hover {
+          opacity: 1;
+        }
+
+        &.menu-btn-fold {
+          font-size: 1.8em;
+          color: #ffffff;
+
+          &.reverse {
+            transform: rotateY(180deg);
+          }
+        }
+      }
+
+      .tg-layout-header-search {
+        width: 300px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .tg-search-input {
+          .ant-input-group {
+            transition: all .2s var(--tg-theme-motion-ease-in-out);
+
+            &:hover {
+              //border-radius: $border-radius-base;
+              box-shadow: 0 0 0 2px rgb(#ffffff, 20%);
+            }
+
+            .ant-input {
+              //background: $primary-color-hover;
+              height: 29px;
+              line-height: 29px;
+              color: #ffffff;
+              // font-size: 14px; // 全局默认字号为14号
+              border: none;
+
+              &:focus {
+                box-shadow: unset;
+              }
+
+              &::placeholder {
+                //color: $input-placeholder-color-light;
+              }
+            }
+
+            .ant-input-group-addon {
+              border: none;
+              //background: $primary-color-hover;
+
+              .anticon {
+                //color: $white;
+                font-size: 1.2em;
+                opacity: 0.6;
+                transition: opacity .2s var(--tg-theme-motion-ease-in-out);
+                cursor: pointer;
+              }
+
+              &:hover {
+                .anticon {
+                  opacity: 1;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .tg-header-info {
+        margin-left: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .tg-header-params {
+          flex: auto;
+          min-width: 150px;
+
+          .ant-select-selection {
+            //background: $primary-color-hover;
+            transition: all .2s var(--tg-theme-motion-ease-in-out);
+
+            &:hover {
+              //border-radius: $border-radius-base;
+              box-shadow: 0 0 0 2px rgb(#ffffff, 20%);
+            }
+
+            .ant-select-selection__placeholder {
+              //color: $input-placeholder-color-light;
+            }
+
+            .ant-select-selection-selected-value {
+              //color: $white;
+            }
+
+            .ant-select-arrow {
+              //color: $white;
+              opacity: 0.6;
+              font-size: 1.3em;
+              top: 40%;
+
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
+
+          &:focus {
+            box-shadow: unset;
+          }
+        }
+
+        .tg-header-user-content {
+          .tg-header-user-spin-content.blur .ant-spin-container {
+            filter: blur(2px);
+          }
+
+          .ant-spin-container {
+            display: flex;
+            align-items: center;
+            transition: all .2s var(--tg-theme-motion-ease-in-out);
+
+            &.ant-spin-blur::after {
+              opacity: 0;
+              pointer-events: auto;
+            }
+
+            .tg-user-info {
+              padding-left: 12px;
+              padding-right: 16px;
+
+              .tg-header-username {
+                font-weight: 400;
+                line-height: 18px;
+              }
+
+              .tg-header-tel {
+                font-size: 12px;
+                font-weight: 400;
+                line-height: 15px;
+              }
+            }
+          }
+        }
+
+        .tg-header-divider {
+          height: 24px;
+          opacity: 0.5;
+          margin-left: 16px;
+          margin-right: 24px;
+        }
+
+        .tg-header-icon {
+          color: #ffffff;
+          font-size: 1.8em;
+          margin-left: 8px;
+          margin-right: 8px;
+          opacity: 0.6;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          .anticon {
+            vertical-align: unset;
+          }
+
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+
+  .tg-header-user-overlay {
+    padding: 0;
+    top: 52px !important;
+  }
+
+  .tg-header-news-overlay {
+    padding: 0;
+    top: 52px !important;
+
+    .ant-popover-inner-content {
+      padding: 0;
+
+      .tg-header-news {
+        width: 240px;
+        //background: $white;
+        border-right: 0;
+
+        //.ant-tabs-nav-container {
+        //  line-height: 42px;
+        //
+        //  .ant-badge {
+        //    // font-size: 14px; // 全局默认字号为14号
+        //    font-weight: 700;
+        //    color: $primary-color-active;
+        //  }
+        //}
+
+        //.ant-tabs-ink-bar {
+        //  height: 1px;
+        //}
+
+        .ant-menu-item {
+          padding: 12px 16px;
+          margin: 0;
+          height: auto;
+          line-height: initial;
+          overflow: hidden;
+          white-space: break-spaces;
+          transition: background .2s var(--tg-theme-motion-ease-in-out);
+          //border-bottom: 1px solid $box-shadow-base;
+
+          &:hover {
+            color: inherit;
+            //background: $primary-color-light-hover;
+          }
+
+          div:first-child {
+            // font-size: 14px; // 全局默认字号为14号
+            font-weight: 400;
+            //color: $text-color;
+            padding-bottom: 8px;
+          }
+
+          div:last-child {
+            // font-size: 14px; // 全局默认字号为14号
+            font-weight: 400;
+            //color: $text-color-secondary;
+          }
+        }
+      }
+    }
+  }
+}

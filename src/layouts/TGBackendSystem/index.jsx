@@ -1,53 +1,59 @@
 import './assets/styles/index.scss'
-import { Layout } from 'ant-design-vue'
+import { Layout, Spin } from 'ant-design-vue'
 import TGHeader from '@/components/TGHeader'
+import { RouterView } from 'vue-router'
+import { computed, Suspense } from 'vue'
+import { useCommonStore } from '@/stores/modules/common'
 import TGMenu from '@/components/TGMenu'
-import watermark from '@/mixins/watermark'
-import forLayout from '@/mixins/forLayout'
+import configs from '@/configs'
 import TGBreadcrumb from '@/components/TGBreadcrumb'
-import TGPageTabs from '@/components/TGPageTabs'
+import router from '@/router'
 
 export default {
   name: 'TGBackendSystemLayout',
-  mixins: [forLayout, watermark()],
-  computed: {
-    showMenu() {
-      return this.$store.state.common.showMenu
-    }
-  },
   mounted() {
     // 注册全局扩展组件
-    this.$nextTick(async () => {
-      await import('@/extend')
-    })
+    // this.$nextTick(async () => {
+    //   await import('@/extend')
+    // })
   },
-  render() {
-    return (
-      <Layout id="tg-responsive-layout">
+  setup() {
+    const store = useCommonStore()
+    const showMenu = computed(() => store.showMenu)
+    const collapsed = computed(() => store.collapsed)
+
+    return () => (
+      <Layout id="tg-responsive-layout" class={'tg-layout'}>
         <TGHeader />
         <Layout>
           <Layout.Sider
             theme={'light'}
             collapsible
-            width={this.showMenu && !this.collapsed ? 240 : 0}
-            style={!this.showMenu ? { transition: 'unset' } : {}}
-            vModel={this.collapsed}
+            collapsed={collapsed.value}
             trigger={null}
             class={`tg-responsive-layout-sider${
-              !this.showMenu
-                ? ''
-                : this.collapsed ? ' collapsed' : ' normal'
+              showMenu.value
+                ? collapsed.value ? ' collapsed' : ' normal'
+                : ''
             }`}
           >
-            {this.showMenu ? <TGMenu /> : null}
+            {showMenu.value ? <TGMenu /> : null}
           </Layout.Sider>
           <Layout.Content class="tg-responsive-layout-content">
-            {this.$config.hideBreadCrumb || this.$route.meta.hideBreadCrumb || !this.showMenu ? null : <TGBreadcrumb />}
-            {this.$config.enableTabPage && this.showMenu ? <TGPageTabs /> : null}
-            {this.getRouterView}
+            {
+              configs.hideBreadCrumb || router.currentRoute.value.meta.hideBreadCrumb || !showMenu.value
+                ? null
+                : <TGBreadcrumb />
+            }
+            {/*{this.$config.enableTabPage && showMenu ? <TGPageTabs /> : null}*/}
+            <Suspense>
+              {{
+                default: () => <RouterView key={router.currentRoute.value.name} />,
+                fallback: () => <Spin />
+              }}
+            </Suspense>
           </Layout.Content>
         </Layout>
-        <div id="global-modal" />
       </Layout>
     )
   }

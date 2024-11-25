@@ -1,6 +1,5 @@
-@import '~@/assets/styles/themeFromLess.scss';
-
 .tg-container-with-sider {
+  flex: none;
   display: flex;
   gap: 10px;
   height: 100%;
@@ -10,7 +9,7 @@
     gap: 0;
   }
 
-  & > .tg-container-with-sider--main {
+  & > .tg-container-with-sider--content {
     flex: auto;
     width: 0;
     height: 100%;
@@ -21,15 +20,16 @@
   }
 
   & > .tg-container-with-sider--sider {
+    flex: none;
     position: relative;
     width: 320px;
     height: 100%;
     flex: none;
-    border-radius: $border-radius-base;
+    border-radius: var(--tg-theme-border-radius);
     display: flex;
     flex-direction: column;
     gap: 10px;
-    transition: width .2s ease-in-out;
+    transition: width .15s;
 
     & > .tg-container-trigger {
       position: absolute;
@@ -40,13 +40,13 @@
       top: calc(50% - 24px);
       width: 16px;
       height: 48px;
-      border-radius: $border-radius-base 0 0 $border-radius-base;
+      border-radius: var(--tg-theme-border-radius) 0 0 var(--tg-theme-border-radius);
       border: 1px solid #d9d9d9;
       cursor: pointer;
       color: #bfbfbf;
 
       &:hover {
-        color: $primary-color;
+        color: var(--tg-theme-color-primary);
       }
     }
 
@@ -56,9 +56,9 @@
       background: none;
 
       & > .tg-container-trigger {
-        border-radius: 0 var(--border-radius-base) var(--border-radius-base) 0;
+        border-radius: 0 var(--tg-theme-border-radius) var(--tg-theme-border-radius) 0;
         right: -16px;
-        background: var(--white);
+        background: #ffffff;
       }
 
       & > *:not(.tg-container-trigger) {

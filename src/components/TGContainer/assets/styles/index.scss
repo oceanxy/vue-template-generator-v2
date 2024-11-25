@@ -1,0 +1,119 @@
+.tg-container {
+  height: 0;
+  flex: auto;
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+
+  & > .tg-container-title {
+    flex: none;
+    display: flex;
+    height: 56px;
+    line-height: 48px;
+    align-items: center;
+    overflow: hidden;
+
+    & > .tg-container-title-content {
+      flex: none;
+      font-weight: 700;
+      min-width: 260px;
+      font-size: var(--tg-theme-font-size-lg);
+      color: var(--tg-theme-color-text);
+
+      .anticon {
+        font-size: 20px;
+      }
+    }
+
+    & > .tg-container-function {
+      flex: auto;
+      display: flex;
+      overflow-x: auto;
+      justify-content: flex-end;
+    }
+  }
+
+  & > .tg-container-content {
+    height: 0;
+    flex: auto;
+    overflow: hidden;
+    display: flex;
+    gap: 12px;
+    flex-direction: column;
+
+    &:has(
+      .tg-container-chart-container,
+      .tg-container-custom-content-container,
+      .tg-container-table-container
+    ) > * {
+      flex: none;
+
+      &:is(
+        .tg-container-table-container,
+        .tg-container-chart-container,
+        .tg-container-custom-content-container
+      ) {
+        flex: auto;
+        height: 0;
+
+        .tg-container-custom-content {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+      }
+    }
+
+    &:has(.tg-container-with-sider--sider, .tg-container-with-sider--content) {
+      flex-direction: row;
+
+      & > .tg-container-with-sider--content {
+        flex: auto;
+        width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        &:has(
+          .tg-container-chart-container,
+          .tg-container-custom-content-container,
+          .tg-container-table-container
+        ) > * {
+          flex: none;
+
+          &:is(
+            .tg-container-table-container,
+            .tg-container-chart-container,
+            .tg-container-custom-content-container
+          ) {
+            flex: auto;
+          }
+        }
+      }
+    }
+
+    & .tg-container-chart-container {
+      flex: auto;
+      height: 0;
+    }
+
+    & .tg-container-table-container {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      //height: 100%;
+      height: 0;
+      //min-height: 400px;
+      gap: 14px;
+      background: #ffffff;
+      padding: 16px 20px;
+      border-radius: var(--tg-theme-border-radius);
+    }
+
+    & .tg-container-modals {
+      position: absolute; // 使该容器脱离文档，抵消该元素造成的底部 gap 值
+    }
+  }
+}

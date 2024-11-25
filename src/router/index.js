@@ -5,136 +5,59 @@
  * @Date: 2023-02-22 周三 18:21:06
  */
 
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import getBaseRoutes from './routes'
-import config from '@/config'
-import { message } from 'ant-design-vue'
-import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
+import { createRouter as _createRouter, createWebHashHistory, createWebHistory, useRouter } from 'vue-router'
+import configs from '@/configs'
 import { getCookie } from '@/utils/cookie'
-import TGRouterView from '@/components/TGRouterView'
+import { firstLetterToUppercase, getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
+import getBaseRoutes from '@/router/routes'
+import { message } from 'ant-design-vue'
+import { getEnvVar } from '@/utils/env'
+import { app } from '@/main'
+import { moduleName } from '@/composables/moduleName'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 
-const VueRouterPush = VueRouter.prototype.push
-const VueRouterReplace = VueRouter.prototype.replace
-
-VueRouter.prototype.push = function push(to) {
-  return VueRouterPush.call(this, to, null, () => {/**/})
-}
-
-VueRouter.prototype.replace = function replace(to) {
-  return VueRouterReplace.call(this, to, null, () => {/**/})
-}
-
-Vue.use(VueRouter)
-
 /**
  * 根据后台数据生成路由
- * @param {Array} [menus] 用来生成菜单的数据
+ * @param {Object[]} [menus] 用来生成菜单的数据
+ * @param {import ('vue-router').RouteRecord[]} appRoutes - 子项目路由
  * @param {(path:string, target:string) => void} [redirectCallback] - 外部跳转自定义回调，
  * 默认使用以下代码跳转：
- *
- * `window.open(menu.obj.component, '_blank')`
- *
- * @returns {Object[]}
+ * ```
+ *  window.open(menu.obj.component, '_blank')
+ * ```
+ * @returns {import ('vue-router').RouteRecord[]}
  */
-function initializeDynamicRoutes(menus, redirectCallback) {
-  return menus?.map(menu => {
-    const route = {meta: {}, children: []}
-    const {
-      name,
-      icon,
-      children,
-      obj: {
-        name: routeName,
-        menuUrl: url,
-        redirect,
-        redirectRouteName,
-        component,
-        keepAlive,
-        requiresAuth,
-        hideBreadCrumb,
-        hideChildren,
-        hide
-      }
-    } = menu
+function initializeDynamicRoutes(menus, appRoutes, redirectCallback) {
+  if (!Array.isArray(menus)) return []
 
-    route.path = url || ''
-    route.meta.title = name
-    route.meta.keepAlive = !!keepAlive
-    route.meta.requiresAuth = !!requiresAuth
-    route.meta.hideBreadCrumb = !!hideBreadCrumb
-    route.meta.hideChildren = !!hideChildren
-    route.meta.hide = !!hide
+  let routes = []
 
-    if (name) {
-      route.name = routeName
-    }
+  for (const menu of menus) {
+    let route = null
+    const { children, obj: { name } } = menu
 
-    if (!component || component === '@/components/TGRouterView') {
-      // route.component = resolve => require.ensure(
-      //   [],
-      //   () => resolve(require('@/components/TGRouterView')),
-      //   'chunk-router-view'
-      // )
-      route.component = TGRouterView
-    } else {
-      // 项目内部页面组件跳转
-      if (component.includes('@/')) {
-        if (component.includes('layouts')) {
-          route.component = resolve => require.ensure(
-            [],
-            () => resolve(require('@/layouts/' + component.slice(10))),
-            'chunk-layouts'
-          )
-        } else if (component.includes('apps')) {
-          route.component = resolve => require.ensure(
-            [],
-            () => resolve(require('@/apps/' + component.slice(7)))
-          )
-        } else {
-          route.component = resolve => require.ensure(
-            [],
-            () => resolve(require('@/views/' + component.slice(8)))
-          )
-        }
-      }/** 外部链接跳转 */ else {
-        route.component = () => {
-          let target = '_blank'
-          const defaultRoute = localStorage.getItem(`${appName}-defaultRoute`) || config.defaultRouteName
+    const appRoute = appRoutes.find(route => {
+      const url = menu.obj.menuUrl
+      const _url = `${!url.startsWith(`${appName}`) ? `${appName}/` : ''}${url}`
 
-          // 检测系统的默认首页是否是需要通过 window.open 跳转，并且是否是从登录页直接跳转的，
-          // 如果以上条件成立，则采用 “_self” 模式，否则采用 “_blank” 模式
-          if (router.history.current.name === 'login' && defaultRoute === route.name) {
-            target = '_self'
-          }
+      return (!name || route.name === firstLetterToUppercase(name)) && (!url || route.path === _url)
+    })
 
-          if (typeof redirectCallback === 'function') {
-            redirectCallback(component, target)
-          } else {
-            window.open(component, target)
-          }
-        }
+    if (appRoute) {
+      route = { ...appRoute }
+
+      if (route.children) {
+        route.children = initializeDynamicRoutes(children, appRoute.children, redirectCallback)
       }
     }
 
-    if (icon && /\.(svg|png|jpg|jpeg)$/.test(icon)) {
-      route.meta.icon = () => import(`@/assets/images/${icon}`)
-    } else {
-      route.meta.icon = icon
+    if (route) {
+      routes.push(route)
     }
+  }
 
-    if (redirect) {
-      route.redirect = {name: redirectRouteName}
-    }
-
-    if (children?.length) {
-      route.children = initializeDynamicRoutes(children, redirectCallback)
-    }
-
-    return route
-  }) ?? []
+  return routes
 }
 
 /**
@@ -175,51 +98,45 @@ function selectDynamicRoutes(menus, routes) {
 }
 
 /**
- * 立即创建一个路由器
- * @param [rootRoute] {Route} 根路由
- * @returns {VueRouter}
+ * 创建一个路由器
+ * @param {import ('vue-router').RouteRecord[]} [rootRoute] - 跟路由
+ * @returns {import ('vue-router').Router}
  */
 function createRouter(rootRoute) {
-  return new VueRouter({
-    routes: rootRoute || getRoutes(APP_ROUTES.open),
-    base: process.env.VUE_APP_PUBLIC_PATH,
-    mode: config.routeMode === 'history' ? 'history' : 'hash'
+  const base = getEnvVar('TG_APP_PUBLIC_PATH')
+  const routes = rootRoute || getRoutes()
+
+  return _createRouter({
+    routes,
+    history: configs.routeMode === 'history' ? createWebHistory(base) : createWebHashHistory(base)
   })
 }
 
 /**
- * 获取当前项目下所有可用的子项目的路由表
- * @returns {VueRouter.route[]}
- */
-/**
  * 获取路由
- * @param {(path:string, target:string) => void} [redirectCallback] - 外部跳转自定义回调，
- * 默认使用以下代码跳转：
- *
- * `window.open(menu.obj.component, '_blank')`
- * @return {VueRouter.Route[]|*}
+ * @return {import ('vue-router').RouteRecord[]}
  */
-function getRoutes(redirectCallback) {
-  const {NODE_ENV, VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS} = process.env
+function getRoutes() {
+  const { NODE_ENV, TG_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS } = process.env
 
   if (
     // 本地开发环境跳过权限直接获取本地路由
-    (NODE_ENV === 'development' && VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on') ||
+    (NODE_ENV === 'development' && TG_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on') ||
     // 或启用本地路由
-    !config.dynamicRouting
+    !configs.dynamicRouting
   ) {
-    return getBaseRoutes(APP_ROUTES.default || [])
+    return getBaseRoutes(__TG_APP_ROUTES__.default)
   }
 
-  const token = localStorage.getItem(`${appName}-${config.tokenConfig.fieldName}`)
+  const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
   const menu = JSON.parse(localStorage.getItem(`${appName}-menu`))
 
   if (menu && token) {
-    if (USER_INFO_MAPPINGS) {
-      return getBaseRoutes(selectDynamicRoutes(menu, APP_ROUTES?.default || []))
-    }
+    // if (USER_INFO_MAPPINGS) {
+    //   return getBaseRoutes(selectDynamicRoutes(menu, __TG_APP_ROUTES__?.default || []))
+    // }
 
-    return getBaseRoutes(initializeDynamicRoutes(menu, redirectCallback))
+    return getBaseRoutes(initializeDynamicRoutes(menu[0].children, __TG_APP_ROUTES__.default, __TG_APP_ROUTES__.open))
   }
 
   return getBaseRoutes()
@@ -228,37 +145,20 @@ function getRoutes(redirectCallback) {
 /**
  * 重置路由
  */
-function resetRoutes() {
-  const menus = getRoutes(APP_ROUTES.open)
+async function resetRouter() {
+  return new Promise(resolve => {
+    const menus = getRoutes()
 
-  router.matcher = createRouter(menus).matcher
-  router.options.routes = menus
+    router.clearRoutes()
+    menus.forEach(route => router.addRoute(route))
+
+    resolve()
+  })
 }
 
-// 创建路由器
 const router = createRouter()
 
-/**
- * 解决生产环境 chunk 包一定概率会加载失败的问题，
- * 导致该问题的根本原因暂时未知，全网也没有明确的答案，
- * 可能是 webpack 打包的 bug，
- * 也可能是 vue 预加载插件 prefetch 导致的。
- * 如果问题特别严重，可以尝试禁用 vue-cli 内置的插件 prefetch，
- * 也可用结合以下错误监听做一些处理，
- * 总之，目前导致该问题的根本原因未明，
- * 通过监听错误事件基本可以解决该问题。
- */
-router.onError(async error => {
-  const pattern = /Loading chunk (\d)+ failed/g
-  const isChunkLoadFailed = error.message.match(pattern)
-  const targetPath = router.history.pending?.fullPath
-
-  if (isChunkLoadFailed) {
-    await router.replace(targetPath)
-  }
-})
-
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (to.query.title) {
     to.meta.title = decodeURIComponent(to.query.title)
   }
@@ -269,23 +169,25 @@ router.beforeEach((to, from, next) => {
     title += ' | '
   }
 
-  document.title = title + config.systemName
+  document.title = title + configs.systemName
+  app.provide(moduleName, to.name)
 
   // 从search中获取token
-  const searchToken = new URL(window.location.href).searchParams.get(config.tokenConfig.fieldName)
+  const searchToken = new URL(window.location.href).searchParams.get(configs.tokenConfig.fieldName)
   // 通过地址栏传递 token 的情况，优先使用地址栏的 token。因为本地存储的 token 可能已过期（上一次页面关闭时未清空）
-  const token = searchToken || to.query[config.tokenConfig.fieldName]
-  // 获取存储在localStorage内的token，防止刷新页面导致vuex被清空而跳转到登录页
-  const localToken = localStorage.getItem(`${appName}-${config.tokenConfig.fieldName}`)
+  const token = searchToken || to.query[configs.tokenConfig.fieldName]
+  // 获取存储在localStorage内的token，防止刷新页面导致store被清空而跳转到登录页
+  const localToken = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
   // 某些第三方不通过地址栏传递 token，而通过 cookie 的方式传递 token
-  const cookieToken = getCookie(config.tokenConfig.fieldName)
+  const cookieToken = getCookie(configs.tokenConfig.fieldName)
 
+  // 验证页面是否需要权限才能进入
   if (
     to.meta.requiresAuth &&
     // 生产环境开启跳过权限验证
     !(
       process.env.NODE_ENV === 'development' &&
-      process.env.VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on'
+      process.env.TG_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on'
     )
   ) {
     if (
@@ -297,7 +199,7 @@ router.beforeEach((to, from, next) => {
     ) {
       next({
         ...to,
-        name: 'login',
+        name: 'Login',
         query: {
           // 将跳转的路由path作为参数，登录成功后跳转到该路由
           redirect: to.path,
@@ -318,45 +220,41 @@ router.beforeEach((to, from, next) => {
         ...to,
         query: {
           ...to.query,
-          [config.tokenConfig.fieldName]: undefined
+          [configs.tokenConfig.fieldName]: undefined
         }
       })
     }
 
     next()
   } else {
-    if (to.name === 'login' && localToken) {
+    // 验证进入登录页时是否存在token
+    if (to.name === 'Login' && localToken) {
+      if (searchToken) {
+        window.history.replaceState(null, null, window.location.pathname)
+      }
+
+      if (!token && !cookieToken) {
+        next({ name: 'Home' })
+      }
+
       if (
         // 地址栏传递了新 token，以新 token 为准
         (token && token === localToken) ||
         // 处理某些第三方不通过地址栏传递 token，而通过 cookie 的方式传递 token 的情况
         (cookieToken && cookieToken === localToken)
       ) {
-        if (searchToken) {
-          window.history.replaceState(null, null, window.location.pathname)
-        }
+        const toRoute = { ...to }
 
         if (to.query.redirect) {
-          next({
-            ...to,
-            path: to.query.redirect,
-            query: {
-              ...to.query,
-              redirect: undefined,
-              [config.tokenConfig.fieldName]: undefined
-            }
-          })
+          toRoute.path = to.query.redirect
         } else {
-          next({
-            ...to,
-            name: 'home',
-            query: {
-              ...to.query,
-              redirect: undefined,
-              [config.tokenConfig.fieldName]: undefined
-            }
-          })
+          toRoute.name = 'Home'
         }
+
+        toRoute.query.redirect = undefined
+        toRoute.query[configs.tokenConfig.fieldName] = undefined
+
+        next(toRoute)
       }
     }
 
@@ -364,8 +262,8 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-router.resetRoutes = resetRoutes
+router.resetRouter = resetRouter
 
-export { resetRoutes }
+export { useRouter, resetRouter }
 
 export default router

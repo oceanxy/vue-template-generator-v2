@@ -1,0 +1,71 @@
+.tg-form-modal {
+  display: flex;
+  column-gap: 24px;
+  flex-wrap: wrap;
+
+  .ant-form-item {
+    width: 100%;
+    display: flex;
+
+    .ant-form-item-row {
+      width: 100%;
+      flex-wrap: nowrap;
+
+      .ant-form-item-label {
+        width: 80px;
+        flex: none;
+      }
+
+      .ant-form-item-control {
+        flex: auto;
+        overflow: hidden;
+      }
+    }
+
+    &.half {
+      width: calc((100% - 24px) / 2);
+    }
+
+    &.one-third {
+      width: calc((100% - 48px) / 3);
+    }
+
+    &.two-third {
+      width: calc((100% - 48px) / 3 * 2 + 24px);
+    }
+
+    &.combo {
+      margin-bottom: 0;
+    }
+
+    &.custom {
+      display: flex;
+      align-items: center;
+
+      .ant-form-item-children {
+        width: 100%;
+        display: flex;
+        column-gap: 24px;
+
+        .ant-row {
+          flex: auto;
+        }
+
+        .ant-form-item {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .tg-form-checkbox {
+    padding: 9px 0 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    label {
+      margin-left: 0;
+    }
+  }
+}

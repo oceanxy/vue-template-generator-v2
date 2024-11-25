@@ -1,10 +1,10 @@
 /**
- * 连字符转驼峰
+ * 连字符转小驼峰
  * @example `my-profile` => `myProfile` 或者 `my_profile` => `myProfile`
  * @param {string} name - 目标字符
  * @returns {string}
  */
-export function toHump(name) {
+export function toLowerCamelCase(name) {
   return name.replace(/[-_](\w)/g, (all, letter) => letter.toUpperCase())
 }
 
@@ -43,6 +43,15 @@ export function firstLetterToUppercase(str) {
 }
 
 /**
+ * 首字母小写
+ * @param {string} str - 目标单词
+ * @returns {string}
+ */
+export function firstLetterToLowercase(str) {
+  return str.replace(/^\S/, s => s.toLowerCase())
+}
+
+/**
  * 下载文件
  * @param {Blob | string} blobOrUrl - Blob 对象或者 文件路径
  * @param {string} fileName - 文件名称
@@ -73,11 +82,11 @@ export function downloadFile(blobOrUrl, fileName) {
 /**
  * 获取应用名称每个单词的首字母组成的字符串
  * @example 'create-a-new-projects' => 'canp'
- * @param {string} [appName] - 默认当前项目名：PROJ_APP_NAME（src/apps 下的文件夹名），由 webpack 的 DefinePlugin 插件注入
+ * @param {string} [appName=process.env.TG_APP_NAME] - 默认当前项目名：process.env.TG_APP_NAME（src/apps 下的文件夹名）
  * @returns {string}
  */
-export function getFirstLetterOfEachWordOfAppName(appName = PROJ_APP_NAME) {
-  return appName
+export function getFirstLetterOfEachWordOfAppName(appName = process.env.TG_APP_NAME) {
+  return (appName)
     .split('-')
     .map(i => i[0])
     .join('')
@@ -126,7 +135,7 @@ export function uuid(len = 16, radix = 16) {
  * @return {string}
  */
 export function replacePath(path) {
-  return path.replace(/([a-zA-Z0-9\-\/]+)(\/)$/g, '$1')
+  return path.replace(/([a-zA-Z0-9\-/]+)(\/)$/g, '$1')
 }
 
 /**
@@ -164,8 +173,18 @@ export function sleep(time = 200) {
  */
 export function getValueFromStringKey(stringKey, obj) {
   if (stringKey.includes('.')) {
-    return stringKey.split('.').reduce((prev, curr) => prev[curr], obj)
+    return stringKey.split('.').reduce((prev, cur) => prev[cur], obj)
   } else {
     return obj[stringKey]
+  }
+}
+
+export function setValueToStringKey(stringKey, value, obj) {
+  if (stringKey.includes('.')) {
+    const keys = stringKey.split('.')
+    const lastKey = keys.pop()
+    keys.reduce((prev, cur) => prev[cur], obj)[lastKey] = value
+  } else {
+    obj[stringKey] = value
   }
 }

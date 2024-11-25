@@ -1,5 +1,9 @@
 import './assets/styles/index.scss'
 import { Button } from 'ant-design-vue'
+import { computed, watch } from 'vue'
+import { useCommonStore } from '@/stores/modules/common'
+import configs from '@/configs'
+import { LeftOutlined, RightOutlined } from '@ant-design/icons-vue'
 
 export default {
   name: 'TGContainerWithSider',
@@ -33,57 +37,48 @@ export default {
       default: false
     }
   },
-  computed: {
-    treeCollapsed: {
+  setup(props, { slots, emit }) {
+    const commonStore = computed(() => useCommonStore())
+    const siderClassName = computed(() => props.siderClass ? ` ${props.siderClass}` : '')
+    const treeCollapsed = computed({
       get() {
-        return this.$store.state['common'].treeCollapsed
+        return commonStore.value.treeCollapsed
       },
-      async set(value) {
-        this.$store.commit('setState', {
-          value,
-          moduleName: 'common',
-          stateName: 'treeCollapsed'
-        })
+      set(value) {
+        commonStore.value.treeCollapsed = value
       }
-    },
-    siderClassName() {
-      return this.siderClass ? ` ${this.siderClass}` : ''
-    }
-  },
-  watch: {
-    treeCollapsed() {
+    })
+
+    watch(treeCollapsed, () => {
       // 设置 200ms 的延迟是因为 css 动画的持续时间设置为如下：
       // transition: width .2s ease;
       setTimeout(() => {
-        this.$emit('sidebarSwitch')
+        emit('sidebarSwitch')
       }, 200)
+    })
+
+    function onTrigger() {
+      treeCollapsed.value = !treeCollapsed.value
     }
-  },
-  methods: {
-    onTrigger() {
-      this.treeCollapsed = !this.treeCollapsed
-    }
-  },
-  render() {
-    return (
-      <div class={`tg-container-with-sider${this.treeCollapsed ? ' tree-collapsed' : ''}`}>
-        <div class={`tg-container-with-sider--main${this.contentClass ? ` ${this.contentClass}` : ''}`}>
-          {this.$slots.default}
+
+    return () => (
+      <div class={`tg-container-with-sider${treeCollapsed.value ? ' tree-collapsed' : ''}`}>
+        <div class={`tg-container-with-sider--content${props.contentClass ? ` ${props.contentClass}` : ''}`}>
+          {slots.default?.()}
         </div>
         <div
-          ref={'containerSider'}
-          style={{order: this.siderOnLeft ? -1 : 1}}
-          class={`tg-container-with-sider--sider${this.siderClassName}${!this.treeCollapsed ? '' : ' hide'}`}
+          style={{ order: props.siderOnLeft ? -1 : 1 }}
+          class={`tg-container-with-sider--sider${siderClassName.value}${!treeCollapsed.value ? '' : ' hide'}`}
         >
-          {this.$slots.sider}
+          {slots.sider?.()}
           {
-            this.showSiderTrigger && this.$config.siderTree.togglePosition === 'inTree'
+            props.showSiderTrigger && configs.siderTree.togglePosition === 'hasTree'
               ? (
                 <Button
                   class={'tg-container-trigger'}
-                  icon={!this.treeCollapsed ? 'left' : 'right'}
+                  icon={!treeCollapsed.value ? <LeftOutlined /> : <RightOutlined />}
                   type={'link'}
-                  onClick={this.onTrigger}
+                  onClick={onTrigger}
                 />
               )
               : null

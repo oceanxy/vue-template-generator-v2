@@ -1,12 +1,17 @@
 import './assets/styles/index.scss'
-import { Empty, Icon, Input, Spin, Tree } from 'ant-design-vue'
-import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
+import { Empty, Input, Spin, Tree } from 'ant-design-vue'
+import { sleep } from '@/utils/utilityFunction'
 import TGContainerWithSider from '@/components/TGContainerWithSider'
 import { cloneDeep, debounce } from 'lodash'
+import { computed, onBeforeMount, provide, ref, watch } from 'vue'
+import useStore from '@/composables/tgStore'
+import useModuleName from '@/composables/moduleName'
+import router from '@/router'
+import { CaretDownOutlined, SearchOutlined } from '@ant-design/icons-vue'
+import configs from '@/configs'
 
 export default {
   name: 'TGContainerWithTreeSider',
-  inject: ['moduleName'],
   props: {
     /**
      * 获取自定义图标
@@ -26,17 +31,17 @@ export default {
     },
     /**
      * 获取侧边栏树的数据的相关配置
-     *  apiOptions.apiName: API名称
-     *  apiOptions.moduleName: 存放树的数据的模块名，默认树所在页面对应的模块
-     *  apiOptions.stateName: 存放树的数据的字段名
+     *  treeDataOptions.apiName: API名称
+     *  treeDataOptions.storeName: 存放树的数据的 store 名称，默认树所在页面对应的模块
+     *  treeDataOptions.stateName: 存放树的数据的字段名
      */
-    apiOptions: {
+    treeDataOptions: {
       type: Object,
-      required: true
+      default: () => ({})
     },
     /**
      * 获取侧边栏树所在页面的列表数据的相关配置（具体配置见 store.actions.getList）
-     * 非空模式（notNoneMode 为 true）下生效，所以务必配合 notNoneMode 使用。
+     * 非空模式（props.notNoneMode 为 true）下生效，所以务必配合 props.notNoneMode 使用。
      *  optionsOfGetList.apiName: API名称
      *  optionsOfGetList.moduleName: 存放树的数据的模块名
      *  optionsOfGetList.stateName: 存放树的数据的字段名
@@ -62,7 +67,7 @@ export default {
       default: false
     },
     /**
-     * 选中树后用于搜索列表的字段名，默认 'treeId'，后期改为 'parentId'
+     * 选中树后用于搜索列表的字段名，默认 'treeId'，可能改为 'parentId'
      * @param hierarchy {number} 树节点层级
      * @returns {string}
      */
@@ -72,7 +77,7 @@ export default {
     },
     /**
      * 向树所在页面的 Table 组件注入搜索参数。注入到 store.state.search 对象。
-     * 一般的树不需要此操作，仅使用 getFieldNameForTreeId 参数即可，但是在某些特殊场景，
+     * 一般的树不需要此操作，仅使用 props.getFieldNameForTreeId 参数即可，但是在某些特殊场景，
      * 比如在操作树时需要传递多个字段给查询接口时，可以使用该prop来配置其余参数。
      * @param dataSource {Object} 用于渲染树节点的数据对象
      * @returns {Object} 需要合并注入到 search 的对象
@@ -100,458 +105,359 @@ export default {
      * 替换 treeNode 中 title,key,children 字段为 treeData 中对应的字段。
      * 参考 https://1x.antdv.com/components/tree-cn/#API
      */
-    replaceFields: {
+    fieldNames: {
       type: Object,
       default: () => ({
         children: 'children',
         title: 'name',
-        key: 'id',
-        value: 'id'
+        key: 'id'
       })
     }
   },
-  data() {
-    return {
-      tableRef: undefined,
-      status: false,
-      defaultExpandedTreeIds: [],
-      searchValue: '',
-      treeDataSource: [],
-      expandedKeysFormEvent: [],
-      // 上一次设置的用于保存树选中值的字段名
-      // （通常用于 this.treeIdField 会发生变化的时候。如点击树的不同层级，传递的字段名不一样的情况）
-      oldTreeIdField: '',
-      // 是否是手动折叠树默。仅当触发onExpand事件为折叠状态时，给isCollapsedManually赋值为true
-      isCollapsedManually: false
+  setup(props, { slots }) {
+    const moduleName = useModuleName()
+    const store = useStore()
+    let treeStore
+
+    const storeName = props.treeDataOptions?.storeName ?? moduleName
+    const stateName = props.treeDataOptions?.stateName ?? 'dataSource'
+
+    if (storeName.value === moduleName.value) {
+      if (stateName === 'dataSource') {
+        console.warn(`${moduleName} 页面的筛选树数据将覆盖本页面的表格数据（store.state.dataSource），可能发生意料之外的问题！`)
+      }
+
+      treeStore = store
+    } else {
+      treeStore = useStore(storeName)
     }
-  },
-  computed: {
-    moduleNameForTree() {
-      return this.apiOptions?.moduleName?.replace('{appName}', getFirstLetterOfEachWordOfAppName()) ?? this.moduleName
-    },
-    dataSource() {
-      return this.$store.state[this.moduleNameForTree][this.apiOptions.stateName]
-    },
-    primaryColor() {
-      return window.themeVariables?.primaryColor
-    },
-    treeIdField() {
-      return this.$store.state[this.moduleName]['treeIdField']
-    },
-    treeId() {
-      return [this.$store.state[this.moduleName]['search'][this.treeIdField]]
-    },
-    expandedKeys() {
-      if (this.expandedKeysFormEvent.length) {
-        return this.expandedKeysFormEvent
+
+    const dataSource = computed(() => treeStore[stateName])
+
+    const tableRef = ref(null)
+    const status = ref(false)
+    const defaultExpandedTreeIds = ref([])
+    const searchValue = ref('')
+    const expandedKeysFormEvent = ref([])
+    // 上一次设置的用于保存树选中值的字段名，
+    // （通常用于 treeIdField 会发生变化的时候。如点击树的不同层级，传递的字段名不一样的情况）
+    const oldTreeIdField = ref('')
+    // 是否是手动折叠树默。仅当触发onExpand事件为折叠状态时，给isCollapsedManually赋值为true
+    const isCollapsedManually = ref(false)
+    const treeIdField = computed(() => store.treeIdField)
+    const treeId = computed(() => [store.search[treeIdField.value]])
+    const expandedKeys = computed(() => {
+      if (expandedKeysFormEvent.value.length) {
+        return expandedKeysFormEvent.value
       }
 
       // 展开所有搜索结果（一般在搜索树时使用，搜索树时会清空 expandedKeysFormEvent 数组）
-      if (this.searchValue) {
-        return this.getAllParentIds(this.treeDataSource)
+      if (searchValue.value) {
+        return getAllParentIds(dataSource.value.list)
       }
 
-      if (this.isCollapsedManually) {
-        return this.expandedKeysFormEvent
+      if (isCollapsedManually.value) {
+        return expandedKeysFormEvent.value
       }
 
       // 默认展开的树节点，如果 defaultExpandedTreeIds 为空，则默认展开所有层级的第一个子节点
-      return this.defaultExpandedTreeIds?.length
-        ? this.defaultExpandedTreeIds
-        : this.getAllParentIds(this.treeDataSource, true)
-    }
-  },
-  provide() {
-    return {
-      getRefOfChild: ref => {
-        this.tableRef = ref
-      },
-      /**
-       * 通知下层组件在初始化阶段是否自动请求数据。依赖 this.notNoneMode。
-       *  false：本组件不控制下层组件在组件创建阶段（created 生命周期）的数据请求，默认;
-       *  true：下层组件在创建阶段不请求数据
-       */
-      notInitList: this.notNoneMode,
-      /**
-       * 通知下层组件，当前页面是否启用侧边树
-       */
-      inTree: true,
-      /**
-       * 向下层组件提供直接刷新左侧树的API
-       */
-      refreshTree: this.getTree
-    }
-  },
-  watch: {
-    'dataSource.list': {
-      deep: true,
-      handler(value, value2) {
-        if (value === value2) {
-          return
-        }
-
-        this.treeDataSource = value
-      }
-    },
-    searchValue(value) {
-      const newTreeDataSource = cloneDeep(this.dataSource.list)
-
-      this.treeDataSource = this.filter(newTreeDataSource, value)
-    }
-  },
-  created() {
-    this.defaultExpandedTreeIds = [
-      ...this.defaultExpandedKeys,
-      this.$route.query[this.getFieldNameForTreeId()],
-      this.$route.params[this.getFieldNameForTreeId()]
-    ].filter(id => id !== undefined)
-  },
-  async mounted() {
-    this.status = await this.getTree()
-
-    // 订阅指定的 actions。当本页面指定的 action 被触发后，更新树。
-    if (this.actionsForUpdateTree.length) {
-      this.$store.subscribeAction({
-        after: async action => {
-          if (action.payload?.moduleName === this.moduleName && this.actionsForUpdateTree.includes(action.type)) {
-            await this.getTree()
-          }
-        }
-      })
-    }
-
-    if (this.status) {
-      const treeIdField = this.getFieldNameForTreeId(1)
-
-      // 更新 store.state 里面用于树ID的键名（主要适配每一级树所使用的键名不同的情况）
-      this.$store.commit('setState', {
-        value: treeIdField,
-        moduleName: this.moduleName,
-        stateName: 'treeIdField'
-      })
-
-      this.oldTreeIdField = treeIdField
-
-      // 非空模式且至少存在一条可选择的数据下执行
-      if (this.notNoneMode && this.dataSource.list?.length) {
-        // 为了保证其他组件完成对 search 参数的注入（如果有，比如 inquiry 组件需要向 store.state.search 注入必传参数时），
-        // 尽量保证本组件触发页面列表数据查询的时间延后。
-        // （注意 VUE 的生命周期顺序：父级组件的 mounted 在所有子级组件 mounted 后才会执行）
-        this.$nextTick(async () => {
-          await this.$store.dispatch('setSearch', {
-            payload: {
-              ...this.injectSearchParamsOfTable(this.dataSource.list?.[0] ?? {}), // 获取额外请求参数
-              [this.treeIdField]: this.dataSource.list?.[0]?.[this.replaceFields.value], // 获取树ID
-              ...this.$route.query, // 获取地址栏的值
-              /* #1 （一个书签，与本组件 #2 书签配合） */
-              ...this.$route.params // 获取清空 query 后，通过 route.params 传递的参数。
-            },
-            moduleName: this.moduleName,
-            isResetSelectedRows: true,
-            ...this.optionsOfGetList
-          })
-        })
-      }
-    }
-  },
-  async beforeDestroy() {
-    // 退出页面前先清空搜索参数，避免下次进页面时参数错乱
-    await this.$store.dispatch('setSearch', {
-      payload: {
-        ...this.injectSearchParamsOfTable({}),
-        [this.treeIdField]: ''
-      },
-      moduleName: this.moduleName,
-      isFetchList: false
+      return defaultExpandedTreeIds.value?.length
+        ? defaultExpandedTreeIds.value
+        : getAllParentIds(dataSource.value.list, true)
     })
-  },
-  methods: {
+
+    provide('getRefOfChild', ref => tableRef.value = ref)
+    /**
+     * 通知下层组件在初始化阶段是否自动请求数据。依赖 props.notNoneMode。
+     *  false：本组件不控制下层组件在组件创建阶段（created 生命周期）的数据请求，默认;
+     *  true：下层组件在创建阶段不请求数据
+     */
+    // provide('notInitList', props.notNoneMode) // 被废弃
+    /**
+     * 通知下层组件，当前页面是否启用侧边树
+     */
+    provide('hasTree', true)
+    // 向 inquiryForm 注入树的搜索参数字段名
+    provide('searchParamNameRequired', [
+      props.getFieldNameForTreeId(),
+      ...Object.keys(props.injectSearchParamsOfTable({}))
+    ])
+    /**
+     * 向下层组件提供直接刷新左侧树的API
+     */
+    provide('refreshTree', getTree)
+
+    watch(searchValue, value => {
+      const newTreeDataSource = cloneDeep(dataSource.value.list)
+      dataSource.value.list = filter(newTreeDataSource, value)
+    })
+
     /**
      * 获取树的渲染数据
      * @returns {Promise<any>}
      */
-    async getTree() {
-      return await this.$store.dispatch('getListWithLoadingStatus', {
-        moduleName: this.moduleNameForTree,
-        stateName: this.apiOptions.stateName,
-        customApiName: this.apiOptions.apiName
+    async function getTree() {
+      return await treeStore.getList({
+        stateName: props.treeDataOptions?.stateName,
+        apiName: props.treeDataOptions.apiName
       })
-    },
+    }
+
     /**
      * 获取所有父节点的ID
-     * @param treeDataSource {Array}
+     * @param dataSource {Array}
      * @param [onlyFirstParentNode=false] {boolean} 仅获取每个层级的第一个子节点的ID
      * @returns {*[]}
      */
-    getAllParentIds(treeDataSource, onlyFirstParentNode) {
+    function getAllParentIds(dataSource, onlyFirstParentNode) {
       let ids = []
 
-      for (const item of treeDataSource) {
+      for (const item of dataSource) {
         if (
           item.isParent ||
           (
-            Array.isArray(item[this.replaceFields.children]) &&
-            item[this.replaceFields.children]?.length
+            Array.isArray(item[props.fieldNames.children]) &&
+            item[props.fieldNames.children]?.length
           )
         ) {
-          ids.push(item[this.replaceFields.value])
-          ids = ids.concat(this.getAllParentIds(item[this.replaceFields.children], onlyFirstParentNode))
+          ids.push(item[props.fieldNames.key])
+          ids = ids.concat(getAllParentIds(item[props.fieldNames.children], onlyFirstParentNode))
         }
 
         if (onlyFirstParentNode) break
       }
 
       return ids
-    },
+    }
+
     /**
      * 按条件筛选包含关键字的所有项（包含层级关系）
      * @param dataSource {Array} 搜索源
      * @param searchValue {string} 搜索关键字
      * @returns {*[]}
      */
-    filter(dataSource, searchValue) {
+    function filter(dataSource, searchValue) {
       const temp = []
 
       for (const item of dataSource) {
-        if (item[this.replaceFields.title].includes(searchValue)) {
+        if (item[props.fieldNames.title].includes(searchValue)) {
           temp.push(item)
         } else if (
-          Array.isArray(item[this.replaceFields.children]) &&
-          item[this.replaceFields.children].length
+          Array.isArray(item[props.fieldNames.children]) &&
+          item[props.fieldNames.children].length
         ) {
-          item[this.replaceFields.children] = this.filter(item[this.replaceFields.children], searchValue)
+          item[props.fieldNames.children] = filter(item[props.fieldNames.children], searchValue)
 
-          if (item[this.replaceFields.children].length) {
+          if (item[props.fieldNames.children].length) {
             temp.push(item)
           }
         }
       }
 
       return temp
-    },
+    }
+
     /**
      * antd vue Tree 组件的 select 事件回调
      * @param selectedKeys {array} 当前选中的 keys
      * @param e {Object} 当前是否有被选中的结点
      */
-    async onSelect(selectedKeys, e) {
-      if (Object.keys(this.$route.query).length) {
+    async function onSelect(selectedKeys, e) {
+      if (Object.keys(router.currentRoute.value.query).length) {
         /**
          * #2 （一个书签，与本组件的 #1 配合）
          * 手动选择树节点后，清空地址栏的参数,
          * 改用 params 传递参数（params 参数在刷新页面后自动消失）
          */
-        await this.$router.push({
+        await router.push({
           query: {},
           params: {
-            ...this.injectSearchParamsOfTable(e.node.$attrs.dataSource), // 获取额外请求参数
-            [this.treeIdField]: selectedKeys[0] // 获取树ID
+            ...props.injectSearchParamsOfTable(e.node.dataRef), // 获取额外请求参数
+            [treeIdField.value]: selectedKeys[0] // 获取树ID
           }
         })
       } else {
         let payload
-        const treeIdField = this.getFieldNameForTreeId(e.node.pos.split('-').length - 1)
+        const _treeIdField = props.getFieldNameForTreeId(e.node.pos.split('-').length - 1)
 
-        if (this.oldTreeIdField !== treeIdField) {
-          // 清空search内上一次树操作的键与值
-          if (this.oldTreeIdField) {
-            this.$store.commit('setSearch', {
-              payload: {
-                ...this.injectSearchParamsOfTable({}),
-                [this.oldTreeIdField]: undefined
-              },
-              moduleName: this.moduleName,
-              ...this.optionsOfGetList
+        if (oldTreeIdField.value !== _treeIdField) {
+          // 清空 search 内上一次树操作的键与值
+          if (oldTreeIdField.value) {
+            store.setSearchParams({
+              ...props.injectSearchParamsOfTable({}),
+              [oldTreeIdField.value]: undefined
             })
           }
 
           // 更新对应 store 模块内 treeIdField 字段的值
-          this.$store.commit('setState', {
-            value: treeIdField,
-            moduleName: this.moduleName,
-            stateName: 'treeIdField'
-          })
-
-          this.oldTreeIdField = treeIdField
+          store.treeIdField = _treeIdField
+          oldTreeIdField.value = _treeIdField
         }
 
         if (e.selected) {
           payload = {
-            ...this.injectSearchParamsOfTable(e.node.$attrs.dataSource),
-            [this.treeIdField]: selectedKeys[0]
+            ...props.injectSearchParamsOfTable(e.node.dataRef),
+            [treeIdField.value]: selectedKeys[0]
           }
         } else {
-          if (this.treeIdField) {
+          if (treeIdField.value) {
             payload = {
-              ...this.injectSearchParamsOfTable(this.notNoneMode ? this.dataSource.list?.[0] : {}),
-              [this.treeIdField]: this.notNoneMode ? this.dataSource.list?.[0]?.[this.replaceFields.value] : ''
+              ...props.injectSearchParamsOfTable(props.notNoneMode ? dataSource.value.list?.[0] : {}),
+              [treeIdField.value]: props.notNoneMode ? dataSource.value.list?.[0]?.[props.fieldNames.key] : ''
             }
           }
         }
 
-        if (this.treeIdField && payload[this.treeIdField] !== this.treeId[0]) {
-          await this.$store.dispatch('setSearch', {
-            payload,
-            moduleName: this.moduleName,
+        if (treeIdField.value && payload[treeIdField.value] !== treeId.value[0]) {
+          await store.onSearch({
+            searchParams: payload,
             isResetSelectedRows: true,
-            ...this.optionsOfGetList
+            ...props.optionsOfGetList
           })
         }
       }
-    },
-    /**
-     * 高亮树节点名称中的搜索关键字
-     * @param treeNode {TreeNode} ant-design-vue TreeNode
-     * @returns {JSX.Element}
-     */
-    highlight(treeNode) {
-      const node = treeNode?.[this.replaceFields.children]
-      const childrenNumber = Array.isArray(node) && node.length ? `(${node.length})` : ''
+    }
 
-      return this.searchValue
-        ? (
-          <span
-            slot={'title'}
-            title={treeNode[this.replaceFields.title] + childrenNumber}
-            domPropsInnerHTML={
-              treeNode[this.replaceFields.title].replace(
-                this.searchValue,
-                `<span style="color: ${this.primaryColor}">${this.searchValue}</span>`
-              ) + childrenNumber
-            }
-          />
-        )
-        : (
-          <span slot={'title'} title={treeNode[this.replaceFields.title] + childrenNumber}>
-            {treeNode[this.replaceFields.title] + childrenNumber}
-          </span>
-        )
-    },
-    /**
-     * 设置树每一级的图标
-     * @param treeNode
-     * @returns {*|(function(): Promise<*>)|undefined}
-     */
-    getIcon(treeNode) {
-      return Object.prototype.toString.call(this.getCustomIcon) === '[object Function]'
-        ? (
-          <span slot={'icon'}>{this.getCustomIcon(treeNode)}</span>
-        )
-        : treeNode.obj?.menuIcon?.includes?.('.svg')
-          ? (
-            <Icon
-              slot={'slot'}
-              class={'icon'}
-              component={() => import(`@/assets/images/${treeNode.obj.menuIcon}`)}
-            />
-          )
-          // : <Icon slot={'slot'} type="caret-right" />
-          // : <IconFont slot={'slot'} type="caret-right" />
-          : undefined
-    },
-    /**
-     * 获取树节点集合（注意此处有递归）
-     * @param dataSource {Array} 生成树节点的数据源
-     * @returns {*|*[]}
-     */
-    getTreeNode(dataSource) {
-      return (
-        dataSource?.map(item => (
-          <Tree.TreeNode key={item[this.replaceFields.value]} dataSource={item}>
-            {
-              !Array.isArray(item?.[this.replaceFields.children]) || !item[this.replaceFields.children].length
-                ? (
-                  <span slot={'switcherIcon'} class={'ant-tree-switcher'} style={'visibility: visible'}>
-                    <i class={'anticon anticon-file ant-tree-switcher-line-icon'}>
-                      <svg
-                        viewBox="200 200 650 650"
-                        version="1.1"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="1em"
-                        height="1em"
-                        fill="currentColor"
-                      >
-                        <path d="M512 601.6a89.6 89.6 0 1 0-89.6-89.6 89.59 89.59 0 0 0 89.6 89.6z m0 0" />
-                      </svg>
-                    </i>
-                  </span>
-                )
-                : null
-            }
-            {this.getIcon(item)}
-            {this.highlight(item)}
-            {
-              Array.isArray(item?.[this.replaceFields.children])
-                ? this.getTreeNode(item[this.replaceFields.children])
-                : null
-            }
-          </Tree.TreeNode>
-        )) ?? []
-      )
-    },
     /**
      * 收缩/展开树所在侧边栏时的回调函数
      */
-    onSidebarSwitch() {
-      this.tableRef?.$parent?.resize()
-    },
+    function onSidebarSwitch() {
+      // tableRef.value?.$parent?.resize()
+    }
+
     /**
      * 搜索树
      * @param e
      */
-    onTreeSearch(e) {
-      this.expandedKeysFormEvent = []
-      this.searchValue = e.target.value
-    },
+    function onTreeSearch(e) {
+      expandedKeysFormEvent.value = []
+      searchValue.value = e.target.value
+    }
+
     /**
      * 展开树
      * @param expandedKeys
      */
-    onExpand(expandedKeys, {expanded}) {
-      this.isCollapsedManually = !expanded
-      this.expandedKeysFormEvent = expandedKeys
+    function onExpand(expandedKeys, { expanded }) {
+      isCollapsedManually.value = !expanded
+      expandedKeysFormEvent.value = expandedKeys
     }
-  },
-  render() {
-    return (
+
+    async function initSearchParams() {
+      while (!status.value) {
+        await sleep(100)
+      }
+
+      if (dataSource.value.list?.length) {
+        return Promise.resolve({
+          ...props.injectSearchParamsOfTable(dataSource.value.list?.[0] ?? {}), // 获取额外请求参数
+          [treeIdField.value]: dataSource.value.list?.[0]?.[props.fieldNames.key], // 获取树ID
+          ...router.currentRoute.value.query, // 获取地址栏的值
+          /* #1 （一个书签，与本组件 #2 书签配合） */
+          ...router.currentRoute.value.params // 获取清空 query 后，通过 route.params 传递的参数。
+        })
+      } else {
+        return Promise.reject(new Error('未获取到树数据'))
+      }
+    }
+
+    onBeforeMount(async () => {
+      // 请求树的数据
+      status.value = await getTree()
+
+      // 订阅指定的 actions。当本页面指定的 action 被触发后，更新树。
+      // if (props.actionsForUpdateTree.length) {
+      //   this.$store.subscribeAction({
+      //     after: async action => {
+      //       if (action.payload?.moduleName === moduleName && props.actionsForUpdateTree.includes(action.type)) {
+      //         await this.getTree()
+      //       }
+      //     }
+      //   })
+      // }
+
+      defaultExpandedTreeIds.value = [
+        ...props.defaultExpandedKeys,
+        router.currentRoute.value.query[props.getFieldNameForTreeId()],
+        router.currentRoute.value.params[props.getFieldNameForTreeId()]
+      ].filter(id => id !== undefined)
+
+      const treeIdField = props.getFieldNameForTreeId(1)
+
+      // 更新 store.state 里用于树ID的键名（主要适配每一级树所使用的键名不同的情况）
+      store.setState('treeIdField', treeIdField)
+      oldTreeIdField.value = treeIdField
+    })
+
+    // 非空模式下会在获取到树的数据后自动请求列表数据
+    if (props.notNoneMode) {
+      // 将初始化异步参数任务加入任务队列
+      store.taskQueues.treeNode.push(initSearchParams())
+    }
+
+    return () => (
       <TGContainerWithSider
-        class="tg-tree-container"
-        siderClass="tg-tree-sider-container"
-        contentClass={`tg-tree-content-container${this.contentClass ? ` ${this.contentClass}` : ''}`}
+        class="tg-container-with-tree-sider"
+        siderClass="tg-container-with-tree-sider--sider"
+        contentClass={`tg-container-with-tree-sider--content${props.contentClass ? ` ${props.contentClass}` : ''}`}
         siderOnLeft
-        onSidebarSwitch={this.onSidebarSwitch}
-        showSiderTrigger={this.$config.siderTree.showTrigger}
+        onSidebarSwitch={onSidebarSwitch}
+        showSiderTrigger={configs.siderTree.showTrigger}
       >
-        {this.$slots.default}
-        <div slot={'sider'} class="tg-tree-data">
-          <Input
-            prefix={<Icon type={'search'} style={{fontSize: '14px'}} />}
-            allowClear
-            placeholder={this.placeholder}
-            onChange={debounce(this.onTreeSearch, 300)}
-          />
-          <Spin spinning={this.dataSource.loading}>
-            {
-              this.treeDataSource?.length
-                ? (
-                  <Tree
-                    showLine
-                    showIcon
-                    switcherIcon={<Icon type="caret-down" />}
-                    selectedKeys={this.treeId}
-                    onSelect={this.onSelect}
-                    expandedKeys={this.expandedKeys}
-                    onExpand={this.onExpand}
-                  >
-                    {this.getTreeNode(this.treeDataSource)}
-                  </Tree>
-                )
-                : (
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                )
-            }
-          </Spin>
-        </div>
+        {{
+          default: slots.default,
+          sider: () => (
+            <div class="tg-search-tree-container">
+              <Input
+                prefix={<SearchOutlined />}
+                allowClear
+                placeholder={props.placeholder}
+                onChange={debounce(onTreeSearch, 300)}
+              />
+              <Spin spinning={dataSource.value?.loading}>
+                {
+                  dataSource.value.list?.length
+                    ? (
+                      <Tree
+                        showLine
+                        showIcon
+                        blockNode
+                        selectedKeys={treeId.value}
+                        onSelect={onSelect}
+                        expandedKeys={expandedKeys.value}
+                        onExpand={onExpand}
+                        treeData={dataSource.value.list}
+                        fieldNames={props.fieldNames}
+                      >
+                        {{
+                          icon: ({ dataRef }) => {
+                            if (!dataRef.children?.length) {
+                              return (
+                                <svg
+                                  viewBox="200 200 650 650"
+                                  version="1.1"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="1em"
+                                  height="1em"
+                                  fill="currentColor"
+                                >
+                                  <path d="M512 601.6a89.6 89.6 0 1 0-89.6-89.6 89.59 89.59 0 0 0 89.6 89.6z m0 0" />
+                                </svg>
+                              )
+                            }
+
+                            return null
+                          },
+                          switcherIcon: () => <CaretDownOutlined style={{ fontSize: '10px' }} />
+                        }}
+                      </Tree>
+                    )
+                    : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                }
+              </Spin>
+            </div>
+          )
+        }}
       </TGContainerWithSider>
     )
   }

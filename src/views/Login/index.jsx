@@ -3,8 +3,9 @@
  */
 
 import './assets/styles/index.scss'
-import TGLoginForm from '@/components/TGLoginForm'
-import TGContainer from '@/components/TGContainer'
+import TGLoginForm from './components/TGLoginForm'
+import TGCard from '@/components/TGCard'
+import configs from '@/configs'
 
 export default {
   name: 'Login',
@@ -24,7 +25,7 @@ export default {
     return (
       <div class={'tg-login'}>
         <div class={'title'} />
-        <TGContainer
+        <TGCard
           width={400}
           class={'tg-login-box'}
           contentClass={'login-box-content'}
@@ -32,10 +33,10 @@ export default {
         >
           <div class={'login-subtitle'}>
             <p>您好!</p>
-            <p>欢迎登录{this.$config.systemName}</p>
+            <p>欢迎登录{configs.systemName}</p>
           </div>
           <TGLoginForm />
-        </TGContainer>
+        </TGCard>
         {/* <div class={'corporate-services'}>重庆蓝桥科技有限公司技术支持</div> */}
       </div>
     )

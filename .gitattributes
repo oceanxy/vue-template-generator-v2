@@ -1,4 +1,0 @@
-package.json merge=ours
-src/config/config.js merge=ours
-
-# src/config/config.js filter=_gitignore

@@ -1,0 +1,21 @@
+.tg-logo {
+  display: flex;
+  line-height: 1;
+  align-items: center;
+  min-width: 200px;
+  height: 100%;
+  cursor: pointer;
+  transition: all .2s var(--tg-theme-motion-ease-in-out);
+  font-family: Source Han Sans SC, Source Han Sans SC-Medium, Microsoft YaHei UI, serif;
+  font-weight: bolder;
+  overflow: hidden;
+
+  .anticon {
+    font-size: 1.8em;
+    padding: 0 0.4ic;
+  }
+
+  &:hover {
+    transform: rotate3d(-4, 5, -1, -10deg) scale(1.04);
+  }
+}

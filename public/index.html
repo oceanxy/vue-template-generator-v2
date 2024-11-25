@@ -1,20 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link data-n-head="ssr" rel="icon" type="image/x-icon" href="/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>加载中...</title>
-  <% if (process.env.NODE_ENV === 'production') { %>
-  <script type="text/json" src="./manifest.json"></script>
-  <% for(var css of htmlWebpackPlugin.options.cdn.css) { %>
-  <link rel="stylesheet" href="<%=css%>" as="style">
-  <% } %>
-  <% for(var js of htmlWebpackPlugin.options.cdn.js) { %>
-  <script src="<%=js%>"></script>
-  <% } %>
-  <% } %>
 </head>
 <body>
 <noscript>
@@ -23,7 +14,6 @@
     enable it to continue.
   </strong>
 </noscript>
-<div id="app"></div>
-<!-- built files will be auto injected -->
+<div id="root"></div>
 </body>
 </html>

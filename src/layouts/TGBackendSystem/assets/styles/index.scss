@@ -1,35 +1,15 @@
-@import '~@/assets/styles/themeFromLess';
-
-#tg-responsive-layout {
+.tg-layout {
   position: relative;
   overflow: hidden;
   height: 100%;
   z-index: 2;
   display: flex;
 
-  .logo {
-    height: 32px;
-    margin: 16px;
-  }
-
-  .trigger {
-    font-size: 18px;
-    line-height: 64px;
-    padding: 0 24px;
-    cursor: pointer;
-    transition: color .2s;
-  }
-
-  .trigger:hover {
-    color: #1890ff;
-  }
-
   .tg-responsive-layout-content {
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    background: $background-color-base;
   }
 
   .tg-responsive-layout-sider {
@@ -41,81 +21,6 @@
     &.collapsed {
       .anticon {
         margin: 0;
-      }
-    }
-  }
-
-  @media screen and (max-width: 1366px) {
-    .tg-layout-header {
-      //height: 50px;
-      //line-height: 50px;
-
-      // .tg-logo {
-      //   width: 205px;
-      //   height: 32px;
-      // }
-    }
-
-    .tg-responsive-layout-content {
-      .tg-breadcrumb {
-        padding: 10px 20px;
-        // font-size: 14px; // 全局默认字号为14号
-      }
-
-      .fe-tree-content-container {
-        padding: 10px;
-      }
-    }
-
-    .tg-responsive-layout-sider {
-      &.normal {
-        // 因为 antdv Layout.Sider 组件采用内联写法，所以这里需要处理优先级
-        width: 180px !important;
-        flex: 0 0 180px !important;
-        max-width: 180px !important;
-        min-width: 180px !important;
-      }
-
-      &.collapsed {
-        // 因为 antdv Layout.Sider 组件采用内联写法，所以这里需要处理优先级
-        width: 68px !important;
-        flex: 0 0 68px !important;
-        max-width: 68px !important;
-        min-width: 68px !important;
-      }
-
-      &.ant-layout-sider-has-trigger {
-        padding-bottom: 32px;
-      }
-
-      .ant-menu-inline-collapsed {
-        width: 68px;
-      }
-
-      .ant-menu-item,
-      .ant-menu-submenu-title {
-        // font-size: 14px; // 全局默认字号为14号
-        height: 32px;
-        line-height: 32px;
-
-        .anticon {
-          font-size: $font-size-lg; // 全局默认字号+2px
-        }
-      }
-    }
-
-    .fe-tree-sider-container {
-      width: 190px;
-
-      .ant-tree {
-        // font-size: 14px; // 全局默认字号为14号
-      }
-
-      .tg-container-trigger {
-        width: 14px;
-        height: 36px;
-        right: -12px;
-        // font-size: 14px; // 全局默认字号为14号
       }
     }
   }

@@ -6,7 +6,9 @@
  */
 import { Button } from 'ant-design-vue'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
-import config from '@/config'
+import configs from '@/configs'
+import { computed, inject } from 'vue'
+import { moduleName } from '@/composables/moduleName'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 let buttonPermissions
@@ -35,11 +37,10 @@ export const disabledType = {
  * @returns {boolean}
  */
 export function getButtonPermission(moduleName, identification) {
-  return !config.buttonPermissions || !!buttonPermissions?.[moduleName]?.includes(identification)
+  return !configs.buttonPermissions || !!buttonPermissions?.[moduleName]?.includes(identification)
 }
 
 export default {
-  inject: { moduleName: { default: '' } },
   props: {
     // 解构 ant-design-vue Button props
     ...Button.props,
@@ -54,20 +55,21 @@ export default {
       default: disabledType.HIDE
     }
   },
-  computed: {
-    innerDisabled() {
-      if (!this.$config.buttonPermissions) return false
+  setup(props, { slots, events }) {
+    const _moduleName = inject(moduleName)
 
-      const { identification } = this._props
+    const innerDisabled = computed(() => {
+      if (!configs.buttonPermissions) return false
 
-      return !buttonPermissions?.[this.moduleName]?.includes(identification)
-    },
-    innerProps() {
+      return !buttonPermissions?.[_moduleName]?.includes(props.identification)
+    })
+
+    const innerProps = computed(() => {
       const {
         identification,
         disabledType,
         ...buttonProps
-      } = this._props
+      } = props
 
       return {
         identification,
@@ -76,22 +78,20 @@ export default {
           ...buttonProps,
           // 按钮的 disabled 属性被本组件掌控，
           // 优先取用后台返回的按钮权限，当优先值为 false 时，再取用组件传递的 disabled 值
-          disabled: this.innerDisabled || buttonProps.disabled
+          disabled: innerDisabled.value || buttonProps.disabled
         }
       }
-    }
-  },
-  render() {
-    return this.innerProps.disabledType === disabledType.HIDE && this.innerDisabled
+    })
+
+    return () => innerProps.value.disabledType === disabledType.HIDE && innerDisabled.value
       ? null
       : (
         <Button
-          {...{
-            props: this.innerProps.buttonProps,
-            on: this._events
-          }}
+          {...innerProps.value.buttonProps}
+          {...events}
         >
-          {this.$slots.default}
+          {slots.icon?.()}
+          {slots.default?.()}
         </Button>
       )
   }
