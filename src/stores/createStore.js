@@ -513,7 +513,7 @@ export function createStore({
       /**
        * 设置模态框的显示状态
        * @param [visibilityFieldName='visibilityOfEdit'] {string} - 模态框的显示状态字段名，默认为 visibilityOfEdit。
-       * @param [value] {boolean} - 显示状态，默认当前值取反，初始值false。
+       * @param [value] {boolean} - 显示状态，默认当前值取反，初始值 false。
        * @param [currentItem] {Object} - 当前行数据。
        * @param [merge] {boolean} - 是否合并，默认 false。
        */
@@ -657,19 +657,35 @@ export function createStore({
        * @param {string} [fileName] - 不包含后缀名
        * @param {string} [apiName] - 导出接口的名字
        * @param {string} [visibilityFieldName] - 成功导出后要关闭的弹窗的控制字段（定义在对应模块的 store.state 内）
+       * @param {string} [location]
        * @returns {Promise<*>}
        */
       async exportData({
         params,
         fileName,
         apiName,
-        visibilityFieldName
+        visibilityFieldName,
+        location
       }) {
         const api = apiName ? apiName : `export${MODULE_NAME}`
+        let search
         let buffer
 
         if (apis[api]) {
-          buffer = await apis[api]?.({ ...this.search, ...params })
+          if (!location) {
+            search = { ...this.search, ...params }
+          } else {
+            search = { ...this.$state[location].search }
+          }
+
+          if ('dateRange' in search) {
+            search.startTime = search.dateRange[0]
+            search.endTime = search.dateRange[1]
+
+            delete search.dateRange
+          }
+
+          buffer = await apis[api]?.(search)
         } else {
           console.error(`接口未定义：${moduleName} 页面的 ${api} 接口未定义！`)
         }
