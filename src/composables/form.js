@@ -18,7 +18,7 @@ import { Form } from 'ant-design-vue'
  * 注意：
  * - 搜索接口的默认参数为 store.state.search 对象内所有字段，本字段配置的参数会在调用接口前合并到接口参数中，但不会改变 store.state.search 的值。
  * - 如果与 store.state.search 有同名字段，本配置返回的字段的优先级更高。
- * @returns {Promise<{onFinish: onFinish}>}
+ * @returns {Object}
  */
 export default function useTGForm({
   location,
@@ -43,15 +43,26 @@ export default function useTGForm({
     watch(formModel, () => buttonDisabled.value = buttonDisabledFn())
   }
 
-  const { resetFields, validate, validateInfos } = Form.useForm(formModel, formRules)
+  const {
+    resetFields,
+    clearValidate,
+    validate,
+    validateInfos
+  } = Form.useForm(formModel, formRules)
 
   async function onClear() {
     resetFields()
     onFinish()
   }
 
-  function onFinish() {
-    validate().then(async () => await store.onSearch())
+  function onFinish(callback) {
+    validate()
+      .then(async () => {
+        store[location].confirmLoading = true
+        await callback?.()
+        store[location].confirmLoading = false
+      })
+      .catch(e => {/***/})
   }
 
   /**
@@ -100,6 +111,7 @@ export default function useTGForm({
   return {
     validateInfos,
     resetFields,
+    clearValidate,
     onFinish,
     formModel,
     store,
