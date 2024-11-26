@@ -516,12 +516,16 @@ export function createStore({
        * @param [value] {boolean} - 显示状态，默认当前值取反，初始值 false。
        * @param [currentItem] {Object} - 当前行数据。
        * @param [merge] {boolean} - 是否合并，默认 false。
+       * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].search`的参数名。
+       * @param [location] {string} - 依赖`injectSearchParams`。
        */
       setVisibilityOfModal({
         visibilityFieldName = 'visibilityOfEdit',
         value,
         currentItem = {},
-        merge = false
+        merge = false,
+        injectSearchParams,
+        location
       } = {}) {
         this.setState('currentItem', currentItem, merge)
 
@@ -533,6 +537,23 @@ export function createStore({
           }
         } else {
           this.$state[visibilityFieldName] = !this.$state[visibilityFieldName]
+        }
+
+        if (
+          this.$state[visibilityFieldName] &&
+          Array.isArray(injectSearchParams) &&
+          injectSearchParams.length &&
+          location
+        ) {
+          this.$patch({
+            [location]: {
+              search: injectSearchParams.reduce((acc, cur) => {
+                acc[cur] = this.search[cur]
+
+                return acc
+              }, {})
+            }
+          })
         }
       },
       /**
