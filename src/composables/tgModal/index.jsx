@@ -1,44 +1,51 @@
 import './assets/styles/index.scss'
-import { computed, provide, reactive, ref } from 'vue'
+import { computed, provide, reactive, ref, watch } from 'vue'
 import useStore from '@/composables/tgStore'
 import useModuleName from '@/composables/moduleName'
-import { Modal, Spin } from 'ant-design-vue'
+import { Button, Modal, Spin } from 'ant-design-vue'
 import useThemeVars from '@/composables/themeVars'
 
 export default function useTGModal({
-  modalProps,
   location,
-  visibilityFieldName = 'visibilityOfEdit'
+  visibilityFieldName = 'visibilityOfEdit',
+  form
 }) {
   const { cssVars } = useThemeVars()
+  const moduleName = useModuleName()
+  const store = useStore()
+
   const tgModal = ref(null)
   const style = ref('')
   const initialPosition = ref({ x: 0, y: 0 })
   const isDragging = ref(false)
   const currentOffset = ref({ x: 0, y: 0 })
-  const moduleName = useModuleName()
-  const store = useStore()
 
-  const open = computed(() => store[visibilityFieldName])
-  const currentItem = computed(() => store.currentItem)
-  const confirmLoading = ref(false)
-  const modalContentLoading = computed(() => store?.[location]?.loading ?? false)
   const okButtonProps = reactive({
     props: {
       disabled: false
     }
   })
 
+  const open = computed(() => store[visibilityFieldName])
+  const currentItem = computed(() => store.currentItem)
+  const modalContentLoading = computed(() => store?.[location]?.loading ?? false)
+  const confirmLoading = computed(() => store?.[location]?.confirmLoading ?? false)
+
   provide('inModal', true)
+
+  watch(open, val => {
+    if (!val) {
+      form.resetFields()
+      form.clearValidate()
+    }
+  })
 
   /**
    * 关闭弹窗
    * @param callback
    * @returns {Promise<void>}
    */
-  async function onCancel({
-    callback
-  }) {
+  async function onCancel({ callback }) {
     if ('disabled' in (okButtonProps?.props || {})) {
       okButtonProps.props.disabled = true
     }
@@ -48,19 +55,6 @@ export default function useTGModal({
     }
 
     store.setVisibilityOfModal({ visibilityFieldName })
-  }
-
-  /**
-   * 为弹窗的按钮增加loading状态
-   * @param callback {() => Promise<any>} - 点击弹窗要执行的逻辑
-   * @returns {Promise<void>}
-   */
-  async function onConfirmLoading(callback) {
-    confirmLoading.value = true
-
-    await callback?.()
-
-    confirmLoading.value = false
   }
 
   function handleMouseDown(event) {
@@ -84,11 +78,23 @@ export default function useTGModal({
     isDragging.value = false
   }
 
+  /**
+   * modal 组件
+   * @param props
+   * @config modalPorps {import('ant-design-vue').ModalProps}
+   * @config [readonly] {boolean} - 只显示取消按钮。
+   * 若要更改按钮的文本请参照 ant-design-vue modal 组件的 API。
+   * @param slots
+   * @returns {JSX.Element}
+   * @constructor
+   */
   function TGModal(props, { slots }) {
     return (
       <Modal
         ref={tgModal}
-        {...modalProps?.value}
+        confirmLoading={confirmLoading.value}
+        {...(props.readonly ? { footer: <Button onClick={onCancel}>关闭</Button> } : {})}
+        {...props.modalProps}
         class={'tg-modal'}
         title={
           <div
@@ -97,7 +103,7 @@ export default function useTGModal({
             onMousemove={handleMouseMove}
             onMouseup={handleMouseUp}
           >
-            {modalProps.value.title}
+            {props.modalProps.title}
           </div>
         }
         style={{
@@ -123,8 +129,6 @@ export default function useTGModal({
     store,
     open,
     currentItem,
-    onCancel,
-    confirmLoading,
-    onConfirmLoading
+    onCancel
   }
 }
