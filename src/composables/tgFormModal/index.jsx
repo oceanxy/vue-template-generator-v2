@@ -4,16 +4,24 @@ import useTGForm from '@/composables/form'
 
 export default function useTGFormModal({
   visibilityFieldName = 'visibilityOfEdit',
-  rules,
   location,
+  rules,
   modalProps
 }) {
-  const form = useTGForm({ rules, location })
-  const tgModal = useTGModal({
-    visibilityFieldName,
-    modalProps,
-    location
+  const tgForm = useTGForm({
+    location,
+    rules
   })
 
-  return { ...tgModal, ...form }
+  const tgModal = useTGModal({
+    location,
+    visibilityFieldName,
+    modalProps,
+    form: {
+      clearValidate: tgForm.clearValidate,
+      resetFields: tgForm.resetFields
+    }
+  })
+
+  return { ...tgModal, ...tgForm }
 }
