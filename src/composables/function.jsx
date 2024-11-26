@@ -44,15 +44,6 @@ export default function useFunction({
   controlButtonPermissions,
   baseOperationButtons = [controlBarBaseButtons.ADD, controlBarBaseButtons.EDIT, controlBarBaseButtons.DELETE]
 } = {}) {
-  const store = useStore()
-
-  const editButtonDisabled = ref(true)
-  const deleteButtonDisabled = ref(true)
-  const auditButtonDisabled = ref(true)
-  const exportButtonDisabled = ref(false)
-  const editedRow = ref({})
-  const ids = ref('')
-
   /**
    * 判断本页面是否存在侧边树组件
    * 来自于 @/src/components/TGContainerWithTreeSider 组件
@@ -64,8 +55,18 @@ export default function useFunction({
    */
   const refreshTree = inject('refreshTree', undefined)
 
+  const store = useStore()
+
+  const editButtonDisabled = ref(true)
+  const deleteButtonDisabled = ref(true)
+  const auditButtonDisabled = ref(true)
+  const exportButtonDisabled = ref(false)
+  const editedRow = ref({})
+  const ids = ref('')
+
   const selectedRowKeys = computed(() => store.selectedRowKeys)
   const selectedRows = computed(() => store.selectedRows)
+  const buttonDisabled = computed(() => store.dataSource?.loading)
 
   watch(selectedRows, value => {
     editButtonDisabled.value = value.length !== 1
@@ -255,10 +256,10 @@ export default function useFunction({
   return {
     baseOperationButtons,
     controlBarBaseButtons,
-    editButtonDisabled,
-    deleteButtonDisabled,
-    auditButtonDisabled,
-    exportButtonDisabled,
+    editButtonDisabled: buttonDisabled.value ? buttonDisabled : editButtonDisabled,
+    deleteButtonDisabled: buttonDisabled.value ? buttonDisabled : deleteButtonDisabled,
+    auditButtonDisabled: buttonDisabled.value ? buttonDisabled : auditButtonDisabled,
+    exportButtonDisabled: buttonDisabled.value ? buttonDisabled : exportButtonDisabled,
     editedRow,
     ids,
     store,
