@@ -50,12 +50,12 @@ export default function useTGForm({
     validateInfos
   } = Form.useForm(formModel, formRules)
 
-  async function onClear() {
+  async function handleClear() {
     resetFields()
-    onFinish()
+    handleFinish()
   }
 
-  function onFinish(callback) {
+  function handleFinish(callback) {
     validate()
       .then(async () => {
         store[location].confirmLoading = true
@@ -108,16 +108,26 @@ export default function useTGForm({
     store.$reset()
   })
 
+  function TGForm(props, { slots }) {
+    return (
+      <Form class={'tg-form-modal'} colon={false}>
+        {slots.default?.()}
+      </Form>
+    )
+  }
+
   return {
+    search,
     validateInfos,
     resetFields,
     clearValidate,
-    onFinish,
+    handleFinish,
     formModel,
     store,
     commonStore,
     buttonDisabled,
     loading,
-    onClear
+    handleClear,
+    TGForm
   }
 }

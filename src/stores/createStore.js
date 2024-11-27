@@ -117,9 +117,7 @@ export function createStore({
          */
         currentItem: {},
         sortFieldList: [],
-        details: {},
-        loadingDetails: false,
-        visibilityOfEdit: false,
+        showModalForEditing: false,
         /**
          * 当前选中行数据
          */
@@ -410,6 +408,48 @@ export function createStore({
         return response
       },
       /**
+       * 获取详情数据
+       * @param {string} location
+       * @param {Object} [params] - 查询参数，默认`store.currentItem.id`。
+       * @param {string} [apiName] - 接口名称，默认`getDetailsOf${moduleName}`。
+       * @param {(data: Object, store:import('pinia').StoreDefinition) => void} [setValue] - 处理接口返回值的函数，
+       * 该值不为函数时，接口返回值默认与`store.currentItem`合并。
+       * @returns {Promise<{}>}
+       */
+      async getDetails({
+        location,
+        params,
+        apiName,
+        setValue
+      }) {
+        this.setLoading({ value: true, stateName: location })
+
+        let api
+        let res = {}
+
+        api = apiName || `getDetailsOf${firstLetterToUppercase(moduleName)}`
+
+        if (apis[api]) {
+          res = await apis[api](params || { id: this.currentItem.id })
+        } else {
+          console.error(`接口未定义：${moduleName} 页面的 ${api} 接口未定义！`)
+        }
+
+        if (res.status) {
+          if (typeof setValue === 'function') {
+            setValue(res.data, this)
+          } else {
+            this.$patch({
+              currentItem: res.data
+            })
+          }
+        }
+
+        this.setLoading({ value: false, stateName: location })
+
+        return res
+      },
+      /**
        * 设置接口返回的列表/枚举等数据
        * @param stateName {string} - store.state 中的字段名
        * @param value {any} - 值
@@ -512,35 +552,35 @@ export function createStore({
       },
       /**
        * 设置模态框的显示状态
-       * @param [visibilityFieldName='visibilityOfEdit'] {string} - 模态框的显示状态字段名，默认为 visibilityOfEdit。
+       * @param [modalStatusFieldName='showModalForEditing'] {string} - 模态框的显示状态字段名，默认为 showModalForEditing。
        * @param [value] {boolean} - 显示状态，默认当前值取反，初始值 false。
        * @param [currentItem] {Object} - 当前行数据。
        * @param [merge] {boolean} - 是否合并，默认 false。
-       * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].search`的参数名。
        * @param [location] {string} - 依赖`injectSearchParams`。
+       * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].search`的参数名。
        */
       setVisibilityOfModal({
-        visibilityFieldName = 'visibilityOfEdit',
+        modalStatusFieldName = 'showModalForEditing',
         value,
         currentItem = {},
         merge = false,
-        injectSearchParams,
-        location
+        location,
+        injectSearchParams
       } = {}) {
         this.setState('currentItem', currentItem, merge)
 
         if (typeof value === 'boolean') {
-          this.$state[visibilityFieldName] = value
+          this.$state[modalStatusFieldName] = value
 
           if (!value) {
             this.$state.currentItem = {}
           }
         } else {
-          this.$state[visibilityFieldName] = !this.$state[visibilityFieldName]
+          this.$state[modalStatusFieldName] = !this.$state[modalStatusFieldName]
         }
 
         if (
-          this.$state[visibilityFieldName] &&
+          this.$state[modalStatusFieldName] &&
           Array.isArray(injectSearchParams) &&
           injectSearchParams.length &&
           location
@@ -677,7 +717,7 @@ export function createStore({
        * @param {Object} [params] - 参数，默认为 store.state.search 的值。
        * @param {string} [fileName] - 不包含后缀名
        * @param {string} [apiName] - 导出接口的名字
-       * @param {string} [visibilityFieldName] - 成功导出后要关闭的弹窗的控制字段（定义在对应模块的 store.state 内）
+       * @param {string} [modalStatusFieldName] - 成功导出后要关闭的弹窗的控制字段（定义在对应模块的 store.state 内）
        * @param {string} [location]
        * @returns {Promise<*>}
        */
@@ -685,7 +725,7 @@ export function createStore({
         params,
         fileName,
         apiName,
-        visibilityFieldName,
+        modalStatusFieldName,
         location
       }) {
         const api = apiName ? apiName : `export${MODULE_NAME}`
@@ -716,8 +756,8 @@ export function createStore({
 
           downloadFile(blob, `${fileName}.xlsx`)
 
-          if (visibilityFieldName) {
-            this.setState(visibilityFieldName, false)
+          if (modalStatusFieldName) {
+            this.setState(modalStatusFieldName, false)
           }
         }
 

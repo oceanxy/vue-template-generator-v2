@@ -27,23 +27,14 @@ export const controlBarBaseButtons = {
 }
 
 /**
- * @param [align] {'left'|'center'|'right'} - 按钮对齐方式，默认为 'right'。支持 'left','center','right'。
- * @param [isOverrideDefaultButtons] {boolean} - 是否覆盖默认按钮，默认为 false。
  * @param {(selectedRows:Object[]) => ({[fieldName]: boolean})} [controlButtonPermissions] - 用于控制按钮禁用权限的回调函数，
  *  仅当selectedRows发生改变时调用。
  *  接收一个参数 selectedRows。当前选中行数组。
  *  返回一个对象，对象的键（fieldName）为控制禁用权限的字段名（如： 'editButtonDisabled'），对象的值为布尔值。
  *  默认不传，相当于至少勾选了一行列表即解除禁用。
- * @param {controlBarBaseButtons[]} [baseOperationButtons] - 默认按钮，
- * 默认为 ['ADD', 'DELETE', 'EDIT']，即默认显示新增、删除、修改按钮。
  * @returns {{store: *}}
  */
-export default function useFunction({
-  align,
-  isOverrideDefaultButtons,
-  controlButtonPermissions,
-  baseOperationButtons = [controlBarBaseButtons.ADD, controlBarBaseButtons.EDIT, controlBarBaseButtons.DELETE]
-} = {}) {
+export default function useFunction({ controlButtonPermissions } = {}) {
   /**
    * 判断本页面是否存在侧边树组件
    * 来自于 @/src/components/TGContainerWithTreeSider 组件
@@ -93,7 +84,7 @@ export default function useFunction({
    * @param [initialValue] {Object} 初始化默认值
    * @returns {Promise<void>}
    */
-  async function onAdd(initialValue = {}) {
+  async function handleAdd(initialValue = {}) {
     await store.setVisibilityOfModal({ ...initialValue })
   }
 
@@ -101,7 +92,7 @@ export default function useFunction({
    * 编辑
    * @returns {Promise<void>}
    */
-  async function onEdit() {
+  async function handleEdit() {
     await store.setVisibilityOfModal({ ...this.editedRow, _isBulkOperations: true })
   }
 
@@ -110,7 +101,7 @@ export default function useFunction({
    * @param [done] {() => void} 成功执行删除的回调
    * @returns {Promise<void>}
    */
-  async function onDelete(done) {
+  async function handleDelete(done) {
     await verificationDialog(
       async () => {
         const status = await store.delete()
@@ -150,7 +141,7 @@ export default function useFunction({
    * @param [isTimeName] {boolean} 默认false，开启之后filename后添加时间格式命名。
    * @returns {Promise<void>}
    */
-  async function onExport(fileName, payload, apiName, isTimeName = false) {
+  async function handleExport(fileName, payload, apiName, isTimeName = false) {
     message.loading({
       content: '正在导出，请稍候...',
       duration: 0
@@ -173,72 +164,83 @@ export default function useFunction({
 
   /**
    * 批量操作之前的询问，并验证是否勾选了表格数据
-   * @param visibilityFieldName {string}
+   * @param modalStatusFieldName {string}
    * @param [params] {Object}
    */
-  async function onBulkOperation(visibilityFieldName, params) {
+  async function handleBulkOperation(modalStatusFieldName, params) {
     await verifySelected(this.selectedRowKeys, () => {
       store.setVisibilityOfModal(
         {
           ids: this.selectedRowKeys,
           ...params
         },
-        visibilityFieldName
+        modalStatusFieldName
       )
     })
   }
 
   /**
    * 审核或相关意见填写的批量操作
-   * @param [visibilityFieldName] {string} 弹窗控制字段 默认 visibilityOfEdit
+   * @param [modalStatusFieldName] {string} 弹窗控制字段 默认 showModalForEditing
    * @returns {Promise<void>}
    */
-  async function onAudit(visibilityFieldName) {
-    await store.setVisibilityOfModal({ ids: this.ids }, visibilityFieldName)
+  async function handleAudit(modalStatusFieldName) {
+    await store.setVisibilityOfModal({ ids: this.ids }, modalStatusFieldName)
   }
 
   /**
-   *
-   * @param functionContent {JSX.Element}
+   * @param props
+   * @config [align] {'left'|'center'|'right'} - 按钮对齐方式，默认为 'right'。支持 'left','center','right'。
+   * @config [isOverrideDefaultButtons] {boolean} - 是否覆盖默认按钮，默认为 false。
+   * @config {controlBarBaseButtons[]} [baseOperationButtons] - 默认按钮，
+   * 默认为 ['ADD', 'DELETE', 'EDIT']，即默认显示新增、删除、修改按钮。
+   * @param slots
    * @returns {JSX.Element}
+   * @constructor
    */
-  function render(functionContent) {
+  function TGFunction(props, { slots }) {
+    const {
+      align = 'right',
+      isOverrideDefaultButtons,
+      baseOperationButtons = [controlBarBaseButtons.ADD, controlBarBaseButtons.EDIT, controlBarBaseButtons.DELETE]
+    } = props
+
     return (
       <Space class={`tg-function${align ? ` ${align}` : ''}`}>
         {
           !isOverrideDefaultButtons
             ? [
-              baseOperationButtons.includes(controlBarBaseButtons.ADD)
+              baseOperationButtons?.includes(controlBarBaseButtons.ADD)
                 ? (
                   <TGPermissionsButton
                     type="primary"
                     identification={'ADD'}
-                    onClick={() => onAdd()}
+                    onClick={() => handleAdd()}
                     icon={<PlusOutlined />}
                   >
                     新增
                   </TGPermissionsButton>
                 )
                 : null,
-              baseOperationButtons.includes(controlBarBaseButtons.DELETE)
+              baseOperationButtons?.includes(controlBarBaseButtons.DELETE)
                 ? (
                   <TGPermissionsButton
                     danger
                     identification={'DELETE'}
                     disabled={deleteButtonDisabled.value}
-                    onClick={() => onDelete()}
+                    onClick={() => handleDelete()}
                     icon={<DeleteOutlined />}
                   >
                     删除
                   </TGPermissionsButton>
                 )
                 : null,
-              baseOperationButtons.includes(controlBarBaseButtons.EDIT)
+              baseOperationButtons?.includes(controlBarBaseButtons.EDIT)
                 ? (
                   <TGPermissionsButton
                     identification={'UPDATE'}
                     disabled={editButtonDisabled.value}
-                    onClick={() => onEdit()}
+                    onClick={() => handleEdit()}
                     icon={<EditOutlined />}
                   >
                     修改
@@ -248,13 +250,12 @@ export default function useFunction({
             ]
             : null
         }
-        {functionContent}
+        {slots.default?.()}
       </Space>
     )
   }
 
   return {
-    baseOperationButtons,
     controlBarBaseButtons,
     editButtonDisabled: buttonDisabled.value ? buttonDisabled : editButtonDisabled,
     deleteButtonDisabled: buttonDisabled.value ? buttonDisabled : deleteButtonDisabled,
@@ -263,6 +264,7 @@ export default function useFunction({
     editedRow,
     ids,
     store,
-    render
+    TGFunction,
+    handleAdd
   }
 }

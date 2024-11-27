@@ -1,18 +1,17 @@
 import './assets/styles/index.scss'
 import { computed, provide, reactive, ref, watch } from 'vue'
-import useStore from '@/composables/tgStore'
 import useModuleName from '@/composables/moduleName'
 import { Button, Modal, Spin } from 'ant-design-vue'
 import useThemeVars from '@/composables/themeVars'
 
 export default function useTGModal({
   location,
-  visibilityFieldName = 'visibilityOfEdit',
-  form
+  modalStatusFieldName = 'showModalForEditing',
+  form,
+  store
 }) {
   const { cssVars } = useThemeVars()
   const moduleName = useModuleName()
-  const store = useStore()
 
   const tgModal = ref(null)
   const style = ref('')
@@ -26,7 +25,7 @@ export default function useTGModal({
     }
   })
 
-  const open = computed(() => store[visibilityFieldName])
+  const open = computed(() => store[modalStatusFieldName])
   const currentItem = computed(() => store.currentItem)
   const modalContentLoading = computed(() => store?.[location]?.loading ?? false)
   const confirmLoading = computed(() => store?.[location]?.confirmLoading ?? false)
@@ -37,15 +36,18 @@ export default function useTGModal({
     if (!val) {
       form.resetFields()
       form.clearValidate()
+      initialPosition.value = { x: 0, y: 0 }
+      currentOffset.value = { x: 0, y: 0 }
+      style.value = `translate(${currentOffset.value.x}px, ${currentOffset.value.y}px)`
     }
   })
 
   /**
    * 关闭弹窗
-   * @param callback
+   * @param [callback] {()=>void} - 关闭弹窗后的回调。
    * @returns {Promise<void>}
    */
-  async function onCancel({ callback }) {
+  async function handleCancel({ callback } = {}) {
     if ('disabled' in (okButtonProps?.props || {})) {
       okButtonProps.props.disabled = true
     }
@@ -54,7 +56,7 @@ export default function useTGModal({
       callback()
     }
 
-    store.setVisibilityOfModal({ visibilityFieldName })
+    store.setVisibilityOfModal({ modalStatusFieldName })
   }
 
   function handleMouseDown(event) {
@@ -92,20 +94,11 @@ export default function useTGModal({
     return (
       <Modal
         ref={tgModal}
-        confirmLoading={confirmLoading.value}
-        {...(props.readonly ? { footer: <Button onClick={onCancel}>关闭</Button> } : {})}
-        {...props.modalProps}
         class={'tg-modal'}
-        title={
-          <div
-            style={{ cursor: 'move', userSelect: 'none' }}
-            onMousedown={handleMouseDown}
-            onMousemove={handleMouseMove}
-            onMouseup={handleMouseUp}
-          >
-            {props.modalProps.title}
-          </div>
-        }
+        confirmLoading={confirmLoading.value}
+        onCancel={handleCancel}
+        open={open.value}
+        maskClosable={false}
         style={{
           '--tg-theme-color-primary-bg': cssVars.value['--tg-theme-color-primary-bg'],
           '--tg-theme-font-size-lg': cssVars.value['--tg-theme-font-size-lg'],
@@ -113,8 +106,18 @@ export default function useTGModal({
           '--tg-theme-color-text-tertiary': cssVars.value['--tg-theme-color-text-tertiary'],
           transform: style.value
         }}
-        open={open.value}
-        onCancel={onCancel}
+        {...(props.readonly ? { footer: <Button onClick={handleCancel}>关闭</Button> } : {})}
+        {...props.modalProps}
+        title={
+          <div
+            style={{ cursor: 'move', userSelect: 'none' }}
+            onMousedown={handleMouseDown}
+            onMousemove={handleMouseMove}
+            onMouseup={handleMouseUp}
+          >
+            {props.modalProps?.title.replace('｛ACTION｝', currentItem.value.id ? '编辑' : '新增')}
+          </div>
+        }
       >
         <Spin spinning={modalContentLoading.value}>
           {slots.default?.()}
@@ -129,6 +132,6 @@ export default function useTGModal({
     store,
     open,
     currentItem,
-    onCancel
+    handleCancel
   }
 }

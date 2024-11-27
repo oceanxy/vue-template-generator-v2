@@ -1,11 +1,11 @@
 import useTGModal from '@/composables/tgModal'
 
 export default function useTGTableModal({
-  visibilityFieldName = 'visibilityOfEdit',
+  modalStatusFieldName = 'showModalForEditing',
   modalProps
 }) {
   return useTGModal({
-    visibilityFieldName,
+    modalStatusFieldName,
     modalProps
   })
 }

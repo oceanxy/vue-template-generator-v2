@@ -138,7 +138,7 @@ export default function useTGTable({
     rowClassName(record, index) {
       return index % 2 === 1 ? 'table-row-background' : ''
     },
-    onChange
+    handleChange
   })
 
   watch(selectedRowKeys, value => {
@@ -336,7 +336,7 @@ export default function useTGTable({
    * @param parentId {string} 父级ID
    * @returns {Promise<void>}
    */
-  function onAddClick(initialValue, parentId) {
+  function handleAdd(initialValue, parentId) {
     store.setVisibilityOfModal({
       currentItem: {
         _parentId: parentId,
@@ -350,7 +350,7 @@ export default function useTGTable({
    * @param record {Object} 列表数据对象
    * @returns {Promise<void>}
    */
-  function onEditClick(record) {
+  function handleEdit(record) {
     store.setVisibilityOfModal({
       currentItem: record
     })
@@ -359,13 +359,13 @@ export default function useTGTable({
   /**
    * 审核或相关意见填写
    * @param record {Object}
-   * @param visibilityFieldName {string}
+   * @param modalStatusFieldName {string}
    * @returns {Promise<void>}
    */
-  function onAuditClick(record, visibilityFieldName) {
+  function handleAudit(record, modalStatusFieldName) {
     store.setVisibilityOfModal({
       currentItem: record,
-      visibilityFieldName
+      modalStatusFieldName
     })
   }
 
@@ -374,7 +374,7 @@ export default function useTGTable({
    * @param record {Object}
    * @returns {Promise<void>}
    */
-  function onDetailsClick(record) {
+  function handleDetails(record) {
     store.setVisibilityOfModal({
       currentItem: {
         ...record,
@@ -404,7 +404,7 @@ export default function useTGTable({
    * @config [nameKey='fullName'] {string} - 在删除提示中显示当条数据中的某个字段信息
    * @config [message] {string} - 自定义提示文案。
    */
-  async function onDeleteClick(record, options = {}) {
+  async function handleDelete(record, options = {}) {
     // 处理 options 的默认值
     options = {
       isBulkOperation: true,
@@ -469,13 +469,13 @@ export default function useTGTable({
    * 导出数据
    * @param payload {Object} 参数
    * @param [fileName] {string} 文件名称，默认路由名称（route.meta.title）
-   * @param [visibilityFieldName] 成功导出后需要关闭的弹窗控制字段，一般在弹出
+   * @param [modalStatusFieldName] 成功导出后需要关闭的弹窗控制字段，一般在弹出
    * @returns {Promise<void>}
    */
-  async function onExport({
+  async function handleExport({
     params,
     fileName,
-    visibilityFieldName
+    modalStatusFieldName
   }) {
     message.loading({ content: '正在导出，请稍候...', duration: 0 })
 
@@ -484,7 +484,7 @@ export default function useTGTable({
     await store.exportData({
       params,
       fileName: fileName || router.currentRoute.value.meta.title,
-      visibilityFieldName
+      modalStatusFieldName
     })
 
     exportButtonDisabled.value = false
@@ -499,7 +499,7 @@ export default function useTGTable({
    * @param sorter
    * @returns {Promise<void>}
    */
-  async function onChange(pagination, filters, sorter) {
+  async function handleChange(pagination, filters, sorter) {
     store.$patch({
       pagination: {
         pageIndex: pagination.current - 1,
@@ -635,7 +635,12 @@ export default function useTGTable({
   return {
     currentItem,
     dataSource,
-    onChange,
+    handleChange,
+    handleAdd,
+    handleEdit,
+    handleDelete,
+    handleAudit,
+    handleExport,
     TGTable,
     onStatusChange
   }

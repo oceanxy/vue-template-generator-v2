@@ -46,7 +46,7 @@ export default {
      *
      * @param activeKey
      */
-    function onChange(activeKey) {
+    function handleChange(activeKey) {
       this.activeKey = activeKey
     }
 
