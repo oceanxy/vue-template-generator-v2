@@ -175,7 +175,7 @@ export default function useTGTable({
     await resize()
   })
 
-  if (props.pagination) {
+  if (props.pagination !== false) {
     watch(pagination, value => {
       defaultTableProps.pagination.total = value.total
       defaultTableProps.pagination.pageSize = value.pageSize
