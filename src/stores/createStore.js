@@ -262,7 +262,7 @@ export function createStore({
           _paramsForGetList = paramsForGetList
         }
 
-        const search = (location ? store[location].search : store.search) || {}
+        const search = (location ? store[location].form : store.search) || {}
 
         if (
           Object.prototype.toString.call(_paramsForGetList) !== '[object Object]' ||
@@ -370,14 +370,14 @@ export function createStore({
             if (paramNameInSearchRO) {
               if (typeof getValueFormResponse === 'function') {
                 if (location) {
-                  this.$state[location].search[paramNameInSearchRO] = getValueFormResponse?.(store[stateName])
+                  this.$state[location].form[paramNameInSearchRO] = getValueFormResponse?.(store[stateName])
                 } else {
                   this.search[paramNameInSearchRO] = getValueFormResponse?.(store[stateName])
                 }
               } else {
                 if (typeof getValueFormResponse === 'boolean' && getValueFormResponse) {
                   if (location) {
-                    this.$state[location].search[paramNameInSearchRO] = store[stateName]?.list?.[0]?.id
+                    this.$state[location].form[paramNameInSearchRO] = store[stateName]?.list?.[0]?.id
                   } else {
                     this.search[paramNameInSearchRO] = store[stateName]?.list?.[0]?.id
                   }
@@ -387,7 +387,7 @@ export function createStore({
               if (
                 // getValueFormResponse 值为 true 或为函数的情况，检查是否已成功在 store.state.search 中设置值，否则抛出警告。
                 (getValueFormResponse === true || typeof getValueFormResponse === 'function') &&
-                !(location ? this.$state[location].search[paramNameInSearchRO] : this.search[paramNameInSearchRO])
+                !(location ? this.$state[location].form[paramNameInSearchRO] : this.search[paramNameInSearchRO])
               ) {
                 const text = `[useInquiryForm] ${moduleName}.state.search.${paramNameInSearchRO} 未成功初始化，可能会出现预期之外的问题！` +
                   `在未传递“getValueFormResponse”的情况下，将默认取值 ${moduleName}.state.${stateName}.list[0].id ，请确认取值方式。`
@@ -519,7 +519,11 @@ export function createStore({
        * 默认名为'dataSource'的对象。
        * @param {string} [location] - 次级表格的 state。
        */
-      setLoading({ value, stateName = 'dataSource', location } = {}) {
+      setLoading({
+        value,
+        stateName = 'dataSource',
+        location
+      } = {}) {
         const setValue = (obj, key, val) => {
           if (Object.prototype.toString.call(obj[key]) === '[object Object]') {
             obj[key].loading = typeof val === 'boolean' ? val : !obj[key].loading
@@ -557,15 +561,15 @@ export function createStore({
        * @param [currentItem] {Object} - 当前行数据。
        * @param [merge] {boolean} - 是否合并，默认 false。
        * @param [location] {string} - 依赖`injectSearchParams`。
-       * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].search`的参数名。
+       * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].form`的参数名。
        */
       setVisibilityOfModal({
         modalStatusFieldName = 'showModalForEditing',
         value,
         currentItem = {},
         merge = false,
-        location,
-        injectSearchParams
+        injectSearchParams,
+        location
       } = {}) {
         this.setState('currentItem', currentItem, merge)
 
@@ -631,88 +635,6 @@ export function createStore({
         return res.status
       },
       /**
-       * 删除站点应用
-       * @param {Object} payload - 调用删除接口的参数
-       * @param {string} [idFieldName='ids'] - 删除接口用于接收删除ID的字段名，默认 'ids'
-       * @param {boolean} [isBulkOperation=true] - 是否批量操作，默认 true。
-       * @param {string} [stateName='dataSource'] - store中用于存放列表数据的字段名，默认 'dataSource'
-       * @param {Object} [paramsForGetList={}] - 删除成功后刷新列表的参数（注意此参数非调用删除接口的参数）
-       * @returns {Promise<*>}
-       */
-      async deleteRow({
-        payload = {},
-        idFieldName = 'ids',
-        isBulkOperation = true,
-        stateName = 'dataSource',
-        paramsForGetList = {}
-      }) {
-        this.setLoading()
-
-        const apiName = `delete${MODULE_NAME}`
-
-        if (!apis[apiName]) {
-          throw new Error(`接口未定义：${moduleName} 页面的 ${apiName} 接口未定义！`)
-        }
-
-        const params = { ...payload }
-
-        // 批量操作时，需要更新对应 store 模块内的 selectedRows。
-        // 如果 payload 内传递了 id 值，则不再取 selectedRows 的值。
-        if (isBulkOperation && !payload[idFieldName]?.length) {
-          params[idFieldName] = this.selectedRowKeys
-        }
-
-        const response = await apis[apiName](params)
-
-        if (response.status) {
-          // 通过列表内的删除按钮删除数据时，只从 store 内的选中行数组中移除被删除的行数据。
-          if (this.selectedRows?.length) {
-            const index = this.selectedRows.findIndex(item => {
-              if (Array.isArray(payload[idFieldName])) {
-                return item[this.rowKey || 'id'] === payload[idFieldName][0]
-              }
-
-              return item[this.rowKey || 'id'] === payload[idFieldName]
-            })
-
-            if (index >= 0) {
-              this.selectedRows.splice(index, 1)
-            }
-          }
-
-          // // 通过列表外的删除按钮删除数据时，直接清空 store 内的选中行数组
-          if (isBulkOperation && !payload[idFieldName]?.length) {
-            this.selectedRows = []
-          }
-
-          const length = Array.isArray(payload[idFieldName]) ? payload[idFieldName].length : 1
-
-          // 删除数据后，刷新分页数据，避免请求不存在的页码
-          if (module[stateName].length <= length && module.pagination?.pageIndex) {
-            const { pageIndex, pageSize } = module.pagination
-
-            this.setState('pagination', {
-              pageIndex: pageIndex - (
-                length % pageSize > module[stateName].length
-                  ? Math.ceil(payload[idFieldName].length / pageSize)
-                  : Math.floor(payload[idFieldName].length / pageSize)
-              )
-            })
-          }
-
-          // 重新请求数据
-          await this.getList({
-            stateName,
-            paramsForGetList,
-            isMergeParam: true
-          })
-        } else {
-          this.setLoading()
-        }
-
-        return response.status
-      },
-      /**
        * 导出表格数据
        * @param {Object} [params] - 参数，默认为 store.state.search 的值。
        * @param {string} [fileName] - 不包含后缀名
@@ -736,7 +658,7 @@ export function createStore({
           if (!location) {
             search = { ...this.search, ...params }
           } else {
-            search = { ...this.$state[location].search }
+            search = { ...this.$state[location].form }
           }
 
           if ('dateRange' in search) {
@@ -762,6 +684,73 @@ export function createStore({
         }
 
         return buffer
+      },
+      /**
+       *
+       * @param [location]
+       * @param [action]
+       * @param [apiName] {string} - 接口名称，默认值为 `${ACTION}${MODULE_NAME}`。
+       * @param [params] {Object} - 自定义参数，默认值为 store.state.search 的值。
+       * 当 location 为有效值时，默认值为 store.state[location].form 的值。
+       * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值合并，默认为 false。
+       * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用。
+       * @param [refreshTable] {boolean} - 是否刷新表格数据，默认 false。
+       * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作完成后关闭指定弹窗。
+       * @returns {Promise<Object>}
+       */
+      async fetch({
+        location,
+        action,
+        apiName,
+        params,
+        isMergeParam,
+        refreshTable,
+        modalStatusFieldName
+      }) {
+        let res = { status: false }
+
+        this.setLoading(location ? { stateName: location } : {})
+
+        if (!action) {
+          action = this.currentItem.id ? 'update' : 'add'
+        }
+
+        if (!apiName) {
+          apiName = `${action}${MODULE_NAME}`
+        }
+
+        const search = location ? this.$state[location].form : this.search
+
+        if (params) {
+          if (isMergeParam) {
+            params = { ...search, ...params }
+          }
+        } else {
+          params = search
+        }
+
+        if (apis[apiName]) {
+          res = await apis[apiName]?.(params)
+        } else {
+          throw new Error(`接口未定义：${moduleName} 页面的 ${apiName} 接口未定义！`)
+        }
+
+        this.setLoading(location ? { stateName: location } : {})
+
+        if (res.status) {
+          // 关闭编辑弹窗
+          if (modalStatusFieldName && this.$state[modalStatusFieldName]) {
+            this.setVisibilityOfModal()
+          }
+
+          if (refreshTable) {
+            await this.getList({
+              isPagination: true
+            })
+          }
+        }
+
+        return res
       },
       ...module.actions
     }

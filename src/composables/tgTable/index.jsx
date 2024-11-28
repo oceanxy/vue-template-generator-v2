@@ -63,9 +63,11 @@ export default function useTGTable({
   let selectedRowKeys
   let selectedRows
   let sortFieldList
+  let rowKey
 
   if (!location) {
     /** 主表格逻辑 **/
+    rowKey = computed(() => store.rowKey || 'id')
     pagination = computed(() => store.pagination)
     currentPageStartNumber = computed(() => {
       return (pagination.value?.pageIndex ?? 0) * (pagination.value?.pageSize ?? 10)
@@ -76,6 +78,7 @@ export default function useTGTable({
     sortFieldList = computed(() => store.sortFieldList)
   } else {
     /** 弹窗内表格等附表格逻辑 **/
+    rowKey = computed(() => store[location].rowKey)
     pagination = computed(() => store[location].pagination)
     currentPageStartNumber = computed(() => {
       return (pagination.value?.pageIndex ?? 0) * (pagination.value?.pageSize ?? 10)
@@ -101,7 +104,7 @@ export default function useTGTable({
   ]
 
   const defaultTableProps = reactive({
-    rowKey: store.rowKey || 'id',
+    rowKey: rowKey.value,
     dataSource: [],
     columns: showSerialNumberColumn
       ? [
@@ -136,9 +139,9 @@ export default function useTGTable({
     size: 'middle',
     bordered: true,
     rowClassName(record, index) {
-      return index % 2 === 1 ? 'table-row-background' : ''
+      return index % 2 === 1 ? 'tg-table-striped' : ''
     },
-    handleChange
+    onChange: handleChange
   })
 
   watch(selectedRowKeys, value => {
@@ -385,68 +388,57 @@ export default function useTGTable({
 
   /**
    * 删除
-   * @param record {{_isFreshTree: boolean, [key: string]: any }} - 列表数据对象
-   * ```json
-   *  {
-   *    ...record,
-   *    // 是否刷新侧边树，默认false; 当在本表格组件处于侧边树的下级时默认true，所以此时需要显示定义该字段为 false
-   *    _isFreshTree: boolean
-   *  }
-   *  ```
+   * @param record {{[key: string]: any }} - 列表数据对象
    * @param [options={}] 其他配置
-   * @config [isBulkOperation=true] {boolean} 是否批量操作，默认 true。该参数会改变 idFieldName 的默认行为。
-   *  在没有显示的设置 idFieldName 的情况下：
-   *  - 该值为 false 时，idFieldName 默认值为 'id'
-   *  - 该值为 true 时，idFieldName 默认值为 'ids'
-   * @config [idFieldName='id'|'ids'] {string} 删除接口用于接收删除ID的字段名，默认值受 isBulkOperation 影响。
-   * @config [params] {Object} - 其他删除参数。
-   * @config [done] {() => void} - 成功执行删除的回调
-   * @config [nameKey='fullName'] {string} - 在删除提示中显示当条数据中的某个字段信息
+   * @config [idFieldName='ids'] {string} 删除接口用于接收删除ID的字段名，默认'ids'。
+   * @config [params] {Object} - 调用删除需要的其他参数。
+   * @config [done] {() => void} - 成功执行删除的回调。
+   * @config [nameKey='fullName'] {string} - 在删除提示中显示当条数据中的某个字段信息。
    * @config [message] {string} - 自定义提示文案。
+   * @config [isFreshTree] {boolean} - 是否刷新侧边树。默认false。依赖于`inject(hasTree)`。
    */
   async function handleDelete(record, options = {}) {
     // 处理 options 的默认值
     options = {
-      isBulkOperation: true,
+      idFieldName: 'ids',
       nameKey: 'fullName',
       ...options
     }
 
     await verificationDialog(
       async () => {
-        if (!('idFieldName' in options)) {
-          if (options.isBulkOperation) {
-            options.idFieldName = 'ids'
-          } else {
-            options.idFieldName = 'id'
-          }
-        }
-
-        const status = await store.deleteRow({
-          payload: {
+        const res = await store.fetch({
+          action: 'delete',
+          params: {
             ...options.params,
-            [options.idFieldName]: options.isBulkOperation ? [record.id] : record.id
+            [options.idFieldName]: record.id
           },
-          isBulkOperation: options.isBulkOperation,
-          idFieldName: options.idFieldName,
-          stateName,
-          paramsForGetList: isInjectRouterQuery ? router.currentRoute.value.query : {}
+          refreshTable: true
         })
 
-        if (status) {
+        if (res.status) {
           // 执行侧边树数据更新
-          if (hasTree && (record._isFreshTree !== false)) {
+          if (hasTree && options.isFreshTree) {
             await refreshTree?.()
           }
 
           if (typeof options.done === 'function') {
             options.done()
           }
+
+          // 通过列表内的删除按钮删除数据时，只从 store 内的选中行数组中移除被删除的行数据。
+          if (selectedRows.value?.length) {
+            const index = selectedRows.value.findIndex(item => item[rowKey.value] === record[rowKey.value])
+
+            if (index >= 0) {
+              selectedRows.value.splice(index, 1)
+            }
+          }
         }
 
-        return status
+        return res.status
       },
-      options.message ? options.message : ' 确定要删除吗？',
+      options.message ? options.message : '确定要删除吗？',
       record[options.nameKey]
         ? [
           <span style={{ color: token.value.colorPrimary }}>{record[options.nameKey]}</span>,

@@ -115,7 +115,7 @@ export default function useTGModal({
             onMousemove={handleMouseMove}
             onMouseup={handleMouseUp}
           >
-            {props.modalProps?.title.replace('｛ACTION｝', currentItem.value.id ? '编辑' : '新增')}
+            {props.modalProps?.title.replace('{ACTION}', currentItem.value.id ? '编辑' : '新增')}
           </div>
         }
       >

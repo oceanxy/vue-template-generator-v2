@@ -31,9 +31,10 @@ export default function useTGForm({
   const commonStore = useStore('./common')
 
   const loading = computed(() => store[location].loading)
-  const search = computed(() => store[location].search)
+  const search = computed(() => store.search)
+  const form = computed(() => store[location]?.form)
 
-  const formModel = reactive(search.value)
+  const formModel = reactive(form.value)
   const formRules = reactive(rules)
 
   // 按钮禁用状态
@@ -55,13 +56,38 @@ export default function useTGForm({
     handleFinish()
   }
 
-  function handleFinish(callback) {
+  /**
+   * 提交表单
+   * @param [callback] {()=>void} - 自定义验证成功后执行的回调函数，该参数优先于 action 参数。
+   * @param [action] {string} - 提交表单的类型，可选值：'add'、'update' 或 'export'，
+   * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
+   * @param [paramFormater] {()=>Object} - 自定义接口参数格式化函数。
+   * @param [refreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
+   * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
+   * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
+   */
+  function handleFinish({
+    action,
+    paramFormater,
+    callback,
+    refreshTable = true,
+    modalStatusFieldName = 'showModalForEditing'
+  } = {}) {
     validate()
       .then(async () => {
-        store[location].confirmLoading = true
-        await callback?.()
-        store[location].confirmLoading = false
-      })
+          if (typeof callback === 'function') {
+            await callback?.()
+          } else {
+            await store.fetch({
+              action,
+              location,
+              params: paramFormater?.(),
+              refreshTable,
+              modalStatusFieldName
+            })
+          }
+        }
+      )
       .catch(e => {/***/})
   }
 
@@ -80,7 +106,7 @@ export default function useTGForm({
         // 返回函数：监听 store.state.search[paramNameInSearchRO]，以更新 store.state.dataSource
         return () => {
           watch(
-            () => search.value[enumOptions.paramNameInSearchRO],
+            () => form.value[enumOptions.paramNameInSearchRO],
             (newVal, oldValue) => {
               if (
                 // 必填时值变化，或者非必填时值有变化

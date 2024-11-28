@@ -32,10 +32,10 @@ export default function useTGFormModal({
     }
   })
 
-  // 将`store.currentItem`和`store[location].search`中的同名字段保持同步
+  // 将`store.currentItem`和`store[location].form`中的同名字段保持同步
   watch(tgModal.currentItem, async val => {
     if (location && Object.keys(val).length) {
-      for (const key in tgForm.search.value) {
+      for (const key in tgForm.formModel) {
         tgForm.formModel[key] = val[key]
       }
 

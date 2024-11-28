@@ -81,11 +81,10 @@ export default function useFunction({ controlButtonPermissions } = {}) {
 
   /**
    * 新增
-   * @param [initialValue] {Object} 初始化默认值
    * @returns {Promise<void>}
    */
-  async function handleAdd(initialValue = {}) {
-    await store.setVisibilityOfModal({ ...initialValue })
+  async function handleAdd() {
+    await store.setVisibilityOfModal()
   }
 
   /**
