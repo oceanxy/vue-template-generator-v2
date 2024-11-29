@@ -17,9 +17,11 @@ import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
  * 必需入参的配置
  * @global
  * @typedef SearchParamOption
+ * @property {string} [location] - 在 store.state 中次级模块的字段名称。
  * @property {string} stateName - 在 store.state 中字段的名称。
  * @property {string} [storeName] - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
  * @property {string} apiName - 接口名称。
+ * @property {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象。
  * @property {boolean} [isRequired] - 是否是必传参数。
  * @property {string} [paramNameInSearchRO] - store.state.search 内对应的字段名。
  * @property {boolean} [listener] - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。

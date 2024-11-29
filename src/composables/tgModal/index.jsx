@@ -1,5 +1,5 @@
 import './assets/styles/index.scss'
-import { computed, provide, reactive, ref, watch } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import useModuleName from '@/composables/moduleName'
 import { Button, Modal, Spin } from 'ant-design-vue'
 import useThemeVars from '@/composables/themeVars'
@@ -18,12 +18,6 @@ export default function useTGModal({
   const initialPosition = ref({ x: 0, y: 0 })
   const isDragging = ref(false)
   const currentOffset = ref({ x: 0, y: 0 })
-
-  const okButtonProps = reactive({
-    props: {
-      disabled: false
-    }
-  })
 
   const open = computed(() => store[modalStatusFieldName])
   const currentItem = computed(() => store.currentItem)
@@ -48,10 +42,6 @@ export default function useTGModal({
    * @returns {Promise<void>}
    */
   async function handleCancel({ callback } = {}) {
-    if ('disabled' in (okButtonProps?.props || {})) {
-      okButtonProps.props.disabled = true
-    }
-
     if (typeof callback === 'function') {
       callback()
     }
@@ -115,7 +105,7 @@ export default function useTGModal({
             onMousemove={handleMouseMove}
             onMouseup={handleMouseUp}
           >
-            {props.modalProps?.title.replace('{ACTION}', currentItem.value.id ? '编辑' : '新增')}
+            {props.modalProps?.title?.replace('{ACTION}', currentItem.value.id ? '编辑' : '新增')}
           </div>
         }
       >

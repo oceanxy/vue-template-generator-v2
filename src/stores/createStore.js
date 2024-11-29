@@ -210,9 +210,9 @@ export function createStore({
        * 注意不会改变 store.state.search 的值，仅仅是在调用接口处传递给接口。如果有同名参数，paramsForGetList 的优先级更高。
        * @param {string} [paramNameInSearchRO] - store.state.search 内对应选中枚举的参数名。
        * @param {boolean | ((data: Object[]|Object) => any)} [getValueFormResponse] - 接口加载成功后，
-       * paramNameInSearchRO 字段的取值逻辑。默认 false 不取值，为 true 时取数据数组第一项的 ID 值。
-       * @param {(data: any, store:import('pinia').StoreDefinition) => void} [setValueToStateName] - 把 response.data 设置
-       * 到 stateName 对应对象的自定义实现。
+       * paramNameInSearchRO 参数所指向字段的默认值取值逻辑。默认 false 不取值，为 true 时取数据数组第一项的 ID 值。
+       * @param {(data: any, store:import('pinia').StoreDefinition) => void} [setValueToStateName] - 把接口返回的数据
+       * （response.data）设置到 stateName 对应字段的自定义实现。
        * 注意：当 raw 为 true 时，该字段不生效。
        * @param {boolean} [isRequired] - 是否是必传参数。
        * @param {boolean} [raw] - 原样输出接口返回的数据结构到页面对应的 store.state.[stateName] 中。
@@ -369,15 +369,19 @@ export function createStore({
 
             if (paramNameInSearchRO) {
               if (typeof getValueFormResponse === 'function') {
+                if (!paramNameInSearchRO) {
+                  throw new Error(`在请求自定义接口getPermissionMenus时，getValueFormResponse 所依赖的 paramNameInSearchRO 参数未设置！`)
+                }
+
                 if (location) {
-                  this.$state[location].form[paramNameInSearchRO] = getValueFormResponse?.(store[stateName])
+                  this.$state[location].form[paramNameInSearchRO] = getValueFormResponse?.(store[location][stateName])
                 } else {
                   this.search[paramNameInSearchRO] = getValueFormResponse?.(store[stateName])
                 }
               } else {
                 if (typeof getValueFormResponse === 'boolean' && getValueFormResponse) {
                   if (location) {
-                    this.$state[location].form[paramNameInSearchRO] = store[stateName]?.list?.[0]?.id
+                    this.$state[location].form[paramNameInSearchRO] = store[location][stateName]?.list?.[0]?.id
                   } else {
                     this.search[paramNameInSearchRO] = store[stateName]?.list?.[0]?.id
                   }
@@ -688,20 +692,20 @@ export function createStore({
       /**
        *
        * @param [location]
-       * @param [action]
        * @param [apiName] {string} - 接口名称，默认值为 `${ACTION}${MODULE_NAME}`。
+       * @param [action] {'update','add','delete'} - 操作类型，未定义 apiName 时生效。
        * @param [params] {Object} - 自定义参数，默认值为 store.state.search 的值。
        * 当 location 为有效值时，默认值为 store.state[location].form 的值。
        * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值合并，默认为 false。
-       * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用。
+       * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
        * @param [refreshTable] {boolean} - 是否刷新表格数据，默认 false。
        * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作完成后关闭指定弹窗。
        * @returns {Promise<Object>}
        */
       async fetch({
         location,
-        action,
         apiName,
+        action,
         params,
         isMergeParam,
         refreshTable,
@@ -711,11 +715,11 @@ export function createStore({
 
         this.setLoading(location ? { stateName: location } : {})
 
-        if (!action) {
-          action = this.currentItem.id ? 'update' : 'add'
-        }
-
         if (!apiName) {
+          if (!action) {
+            action = this.currentItem.id ? 'update' : 'add'
+          }
+
           apiName = `${action}${MODULE_NAME}`
         }
 
