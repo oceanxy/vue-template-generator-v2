@@ -171,7 +171,7 @@ export default function useTGForm({
       if (inModal) {
         watch(open, async val => {
           if (val) {
-            if (searchParamOptions.length) {
+            if (searchParamOptions?.length) {
               await Promise.all([
                 getDetails(),
                 ...searchParamOptions.map(enumOptions => execEnum(enumOptions))

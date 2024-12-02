@@ -75,10 +75,29 @@ export default function useTGFormModal({
 
   /**
    * 为`TGFormModal`组件自动注入唯一标识符（id）参数
-   * @param _params
+   * @param [callback] {()=>void} - 自定义验证成功后执行的回调函数，该参数与本函数的其他所有参数互斥。
+   * @param [action] {string} - 提交表单的类型，可选值：'add'、'update' 或 'export'，
+   * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
+   * @param [params] {(() => Object) | Object} - 接口参数，受`isMergeParam`影响。
+   * @param [isMergeParam=true] {boolean} - 是否将 params 参数与默认值合并，默认为 true。
+   * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
+   * @param [refreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
+   * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
+   * 依赖`inject(hasTree)`和`inject(refreshTree)`。
+   * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
+   * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
+   * @param [success] {()=>void} - 操作执行成功后的回调函数。
    */
-  function handleFinish(_params) {
-    const { params, ...rest } = _params
+  function handleFinish({
+    callback,
+    action,
+    params,
+    isMergeParam = true,
+    refreshTable = true,
+    isRefreshTree,
+    modalStatusFieldName = 'showModalForEditing',
+    success
+  }) {
     let paramsInjectId
 
     if (typeof params === 'function') {
@@ -93,8 +112,13 @@ export default function useTGFormModal({
 
     tgForm.handleFinish({
       params: paramsInjectId,
-      ...rest,
-      isMergeParam: true
+      callback,
+      action,
+      isMergeParam,
+      refreshTable,
+      isRefreshTree,
+      modalStatusFieldName,
+      success
     })
   }
 

@@ -242,7 +242,7 @@ export default function useTGTable({
    * @param [customStatusValue=｛OPENED:1, CLOSED:2｝] {object} - 自定义状态值与参数值的映射关系，默认`{OPENED：1，CLOSED：2}`。
    * @returns {Promise<void>}
    */
-  async function onStatusChange({
+  async function handleStatusChange({
     checked,
     record,
     fieldName = 'status',
@@ -634,6 +634,6 @@ export default function useTGTable({
     handleAudit,
     handleExport,
     TGTable,
-    onStatusChange
+    handleStatusChange
   }
 }

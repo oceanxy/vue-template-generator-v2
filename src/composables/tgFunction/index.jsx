@@ -81,10 +81,11 @@ export default function useFunction({ controlButtonPermissions } = {}) {
 
   /**
    * 新增
+   * @param [currentItem={}] {Object} - 当前数据
    * @returns {Promise<void>}
    */
-  async function handleAdd() {
-    await store.setVisibilityOfModal()
+  async function handleAdd(currentItem = {}) {
+    await store.setVisibilityOfModal({ currentItem })
   }
 
   /**
