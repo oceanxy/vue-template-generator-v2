@@ -4,11 +4,23 @@ import useModuleName from '@/composables/moduleName'
 import { Button, Modal, Spin } from 'ant-design-vue'
 import useThemeVars from '@/composables/themeVars'
 
+/**
+ *
+ * @param location
+ * @param modalStatusFieldName
+ * @param form
+ * @param store
+ * @param confirmLoading {Ref<UnwrapRef<boolean>, UnwrapRef<boolean> | boolean>} - `okButton`的`loading`值。
+ * @param unWatch
+ * @returns {Object}
+ */
 export default function useTGModal({
   location,
   modalStatusFieldName = 'showModalForEditing',
   form,
-  store
+  store,
+  confirmLoading,
+  unWatch
 }) {
   const { cssVars } = useThemeVars()
   const moduleName = useModuleName()
@@ -22,12 +34,15 @@ export default function useTGModal({
   const open = computed(() => store[modalStatusFieldName])
   const currentItem = computed(() => store.currentItem)
   const modalContentLoading = computed(() => store?.[location]?.loading ?? false)
-  const confirmLoading = computed(() => store?.[location]?.confirmLoading ?? false)
 
   provide('inModal', true)
 
   watch(open, val => {
     if (!val) {
+      if (typeof unWatch?.value === 'function') {
+        unWatch.value()
+      }
+
       form.resetFields()
       form.clearValidate()
       initialPosition.value = { x: 0, y: 0 }

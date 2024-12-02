@@ -595,7 +595,7 @@ export function createStore({
         ) {
           this.$patch({
             [location]: {
-              search: injectSearchParams.reduce((acc, cur) => {
+              ['form' in this.$state[location] ? 'form' : 'search']: injectSearchParams.reduce((acc, cur) => {
                 acc[cur] = this.search[cur]
 
                 return acc

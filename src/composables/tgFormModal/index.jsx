@@ -1,11 +1,12 @@
 import './assets/styles/index.scss'
 import useTGModal from '@/composables/tgModal'
 import useTGForm from '@/composables/tgForm'
-import { nextTick, provide, reactive, watch } from 'vue'
+import { nextTick, provide, reactive, ref, watch } from 'vue'
 import { set } from 'lodash/object'
 
 /**
  *
+ * @param modalProps
  * @param [modalStatusFieldName] {string}
  * @param [location] {string}
  * @param [rules] {Object} - 表单验证规则
@@ -14,19 +15,22 @@ import { set } from 'lodash/object'
  * @returns {Object}
  */
 export default function useTGFormModal({
+  modalProps,
   modalStatusFieldName = 'showModalForEditing',
   location,
   rules,
   isGetDetails,
-  searchParamOptions,
-  modalProps
+  searchParamOptions
 }) {
   provide('inModal', true)
+
+  let unWatch = ref(undefined)
 
   const { TGForm, ...tgForm } = useTGForm({
     location,
     rules,
     searchParamOptions,
+    isGetDetails,
     modalStatusFieldName,
     loaded
   })
@@ -35,6 +39,8 @@ export default function useTGFormModal({
     location,
     modalStatusFieldName,
     store: tgForm.store,
+    confirmLoading: tgForm.confirmLoading,
+    unWatch,
     form: {
       clearValidate: tgForm.clearValidate,
       resetFields: tgForm.resetFields
@@ -56,28 +62,48 @@ export default function useTGFormModal({
     }
   }, { deep: true })
 
-  watch(tgModal.open, async val => {
-    if (val && isGetDetails && 'id' in tgModal.currentItem.value) {
-      await tgForm.store.getDetails({
-        location,
-        setValue(data, store) {
-          store.currentItem.functionInfoList = data
-        }
-      })
-    }
-  })
-
   const _modalProps = reactive(modalProps)
 
   // 设置 okButtonProps 的默认禁用状态为true
   set(_modalProps, 'okButtonProps.disabled', true)
+
+  watch(tgModal.open, async val => {
+    if (!val) {
+      set(_modalProps, 'okButtonProps.disabled', true)
+    }
+  })
+
+  /**
+   * 为`TGFormModal`组件自动注入唯一标识符（id）参数
+   * @param _params
+   */
+  function handleFinish(_params) {
+    const { params, ...rest } = _params
+    let paramsInjectId
+
+    if (typeof params === 'function') {
+      paramsInjectId = params() || {}
+    } else {
+      paramsInjectId = params || {}
+    }
+
+    if ('id' in tgModal.currentItem.value && !paramsInjectId.id) {
+      paramsInjectId.id = tgModal.currentItem.value.id
+    }
+
+    tgForm.handleFinish({
+      params: paramsInjectId,
+      ...rest,
+      isMergeParam: true
+    })
+  }
 
   /**
    * 当所有弹窗内的数据加载完成后，解除 Modal 组件提交按钮的禁用状态
    * @param formModel {Object} - Form组件内字段的值
    */
   function loaded(formModel) {
-    watch(formModel, () => {
+    unWatch.value = watch(formModel, () => {
       set(_modalProps, 'okButtonProps.disabled', false)
     }, { deep: true })
   }
@@ -92,5 +118,10 @@ export default function useTGFormModal({
     )
   }
 
-  return { TGFormModal, ...tgModal, ...tgForm }
+  return {
+    TGFormModal,
+    ...tgModal,
+    ...tgForm,
+    handleFinish
+  }
 }

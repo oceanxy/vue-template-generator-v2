@@ -7,12 +7,13 @@
 
 import './assets/styles/index.scss'
 import useStore from '@/composables/tgStore'
-import { computed, inject, onUnmounted, reactive, ref, watch, watchEffect } from 'vue'
+import { computed, inject, onUnmounted, reactive, ref, watch } from 'vue'
 import { Form } from 'ant-design-vue'
 
 /**
  * @param {string} location
  * @param {SearchParamOption[]} [searchParamOptions] - 搜索参数配置。
+ * @param isGetDetails
  * @param {()=>boolean} [buttonDisabledFn] - 禁用查询和重置按钮的方法。
  * @param {Object} [rules={}] - 验证规则，参考 ant-design-vue 的 Form.Item。
  * @param [modalStatusFieldName] {string} - 弹窗状态字段名。
@@ -26,6 +27,7 @@ import { Form } from 'ant-design-vue'
 export default function useTGForm({
   location,
   searchParamOptions,
+  isGetDetails,
   buttonDisabledFn,
   rules = {},
   modalStatusFieldName,
@@ -41,12 +43,14 @@ export default function useTGForm({
   const loading = computed(() => store[location].loading)
   const search = computed(() => store.search)
   const form = computed(() => store[location]?.form)
+  const currentItem = computed(() => store.currentItem)
 
   const formModel = reactive(form.value)
   const formRules = reactive(rules)
 
   // 按钮禁用状态
   const buttonDisabled = ref(false)
+  const confirmLoading = ref(false)
 
   if (typeof buttonDisabledFn === 'function') {
     watch(formModel, () => buttonDisabled.value = buttonDisabledFn())
@@ -66,7 +70,7 @@ export default function useTGForm({
 
   /**
    * 提交表单
-   * @param [callback] {()=>void} - 自定义验证成功后执行的回调函数，该参数优先于 action 参数。
+   * @param [callback] {()=>void} - 自定义验证成功后执行的回调函数，该参数与本函数的其他所有参数互斥。
    * @param [action] {string} - 提交表单的类型，可选值：'add'、'update' 或 'export'，
    * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
    * @param [params] {(() => Object) | Object} - 接口参数，受`isMergeParam`影响。
@@ -80,10 +84,10 @@ export default function useTGForm({
    * @param [success] {()=>void} - 操作执行成功后的回调函数。
    */
   function handleFinish({
+    callback,
     action,
     params,
     isMergeParam,
-    callback,
     refreshTable = true,
     isRefreshTree,
     modalStatusFieldName = 'showModalForEditing',
@@ -91,10 +95,13 @@ export default function useTGForm({
   } = {}) {
     validate()
       .then(async () => {
+          confirmLoading.value = true
+
           if (typeof callback === 'function') {
             await callback?.()
           } else {
             params = typeof params === 'function' ? params() : params
+
             const res = await store.fetch({
               action,
               location,
@@ -113,6 +120,8 @@ export default function useTGForm({
               success?.()
             }
           }
+
+          confirmLoading.value = false
         }
       )
       .catch(e => {/***/})
@@ -160,14 +169,34 @@ export default function useTGForm({
       const open = computed(() => store[modalStatusFieldName])
 
       if (inModal) {
-        watchEffect(async () => {
-          if (open.value && searchParamOptions?.length) {
-            await Promise.all(searchParamOptions.map(enumOptions => execEnum(enumOptions)))
+        watch(open, async val => {
+          if (val) {
+            if (searchParamOptions.length) {
+              await Promise.all([
+                getDetails(),
+                ...searchParamOptions.map(enumOptions => execEnum(enumOptions))
+              ])
+            } else {
+              await getDetails()
+            }
 
-            // 接口加载完毕
+            // 接口加载完毕后对表单的处理逻辑
             loaded(form)
           }
-        })
+        }, { immediate: true })
+      }
+
+      async function getDetails() {
+        if (isGetDetails && 'id' in currentItem.value) {
+          return await store.getDetails({
+            location,
+            setValue(data, store) {
+              store.currentItem.value.functionInfoList = data
+            }
+          })
+        }
+
+        return Promise.resolve()
       }
 
       return () => (
@@ -189,6 +218,7 @@ export default function useTGForm({
     commonStore,
     buttonDisabled,
     loading,
+    confirmLoading,
     handleClear,
     TGForm
   }
