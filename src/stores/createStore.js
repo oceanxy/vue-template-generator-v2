@@ -13,10 +13,10 @@ import useStore from '@/composables/tgStore'
 
 /**
  * 创建 store
- * @param {string} moduleName - store名称
- * @param {Object} [module={}] - 需要合并到 store 的 state
- * @param {string[] | boolean} [excludeFromState=[]] - 需要从 store 中排除的 state 集合
- * @param {boolean} [isRoot] - 是否是框架级的 store，默认 false
+ * @param {string} moduleName - store名称。
+ * @param {Object} [module={}] - 需要合并到 store 的 state。
+ * @param {string[] | boolean} [excludeFromState=[]] - 需要从 store 中排除的 state 集合，为 true 时将排除所有内置状态。
+ * @param {boolean} [isRoot] - 是否是框架级的 store，默认 false。为 true 时将从框架的stores目录中引入模块。
  * @returns {Object}
  */
 export function createStore({
@@ -564,7 +564,7 @@ export function createStore({
        * @param [value] {boolean} - 显示状态，默认当前值取反，初始值 false。
        * @param [currentItem] {Object} - 当前行数据。
        * @param [merge] {boolean} - 是否合并，默认 false。
-       * @param [location] {string} - 依赖`injectSearchParams`。
+       * @param [location='modalForEditing'] {string} - 默认为`modalForEditing`。
        * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].form`的参数名。
        */
       setVisibilityOfModal({
@@ -573,7 +573,7 @@ export function createStore({
         currentItem = {},
         merge = false,
         injectSearchParams,
-        location
+        location = 'modalForEditing'
       } = {}) {
         this.setState('currentItem', currentItem, merge)
 

@@ -13,7 +13,7 @@ import { Form } from 'ant-design-vue'
 /**
  * @param {string} location
  * @param {SearchParamOption[]} [searchParamOptions] - 搜索参数配置。
- * @param isGetDetails
+ * @param [isGetDetails] {boolean} - 是否请求该弹窗的详情数据。
  * @param {()=>boolean} [buttonDisabledFn] - 禁用查询和重置按钮的方法。
  * @param {Object} [rules={}] - 验证规则，参考 ant-design-vue 的 Form.Item。
  * @param [modalStatusFieldName] {string} - 弹窗状态字段名。
@@ -133,7 +133,14 @@ export default function useTGForm({
    * @returns {(function(): Promise<(function(): void)|(function(): *)>)|*}
    */
   async function execEnum(enumOptions) {
-    const { listener, ...options } = enumOptions
+    const { listener, condition, ...options } = enumOptions
+    const isContinue = typeof condition === 'function'
+      ? condition()
+      : condition
+
+    if (typeof isContinue === 'boolean' && !isContinue) {
+      return Promise.resolve()
+    }
 
     if (listener) {
       await store.getList(options)
@@ -187,7 +194,7 @@ export default function useTGForm({
       }
 
       async function getDetails() {
-        if (isGetDetails && 'id' in currentItem.value) {
+        if (isGetDetails && currentItem.value.id) {
           return await store.getDetails({
             location,
             setValue(data, store) {

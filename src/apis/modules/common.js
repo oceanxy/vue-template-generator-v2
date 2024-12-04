@@ -4,12 +4,12 @@ export default {
    * @param request
    * @returns {*}
    */
-  getAdministrativeDivision(request) {
-    return request({
-      url: '/system/district/getDistrictListThree',
-      method: 'post'
-    })
-  },
+  // getAdministrativeDivision(request) {
+  //   return request({
+  //     url: '/system/district/getDistrictListThree',
+  //     method: 'post'
+  //   })
+  // },
   /**
    * 获取民族数据
    * @param request

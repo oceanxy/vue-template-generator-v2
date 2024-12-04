@@ -19,7 +19,6 @@ import { verificationDialog } from '@/utils/message'
  * 默认为`store => location ? store[location].dataSource.list : store.dataSource.list`
  * @param [showSerialNumberColumn=true] {boolean} - 是否显示序号列，默认 true。
  * @param [optionForGetList] {Object} - getList 函数参数。
- * @param [tableName] {string} - 表格名称，用于在子组件中获取表格 ref。
  * @returns {{}|string}
  */
 export default function useTGTable({
@@ -29,8 +28,7 @@ export default function useTGTable({
   getDataSource,
   props = {},
   showSerialNumberColumn = true,
-  optionForGetList,
-  tableName
+  optionForGetList
 } = {}) {
   let observer = null
   let timer = null
@@ -360,12 +358,12 @@ export default function useTGTable({
   }
 
   /**
-   * 审核或相关意见填写
+   * 处理打开弹窗的前置点击事件
    * @param record {Object}
    * @param modalStatusFieldName {string}
    * @returns {Promise<void>}
    */
-  function handleAudit(record, modalStatusFieldName) {
+  function handleClick(record, modalStatusFieldName) {
     store.setVisibilityOfModal({
       currentItem: record,
       modalStatusFieldName
@@ -395,7 +393,7 @@ export default function useTGTable({
    * @config [done] {() => void} - 成功执行删除的回调。
    * @config [nameKey='fullName'] {string} - 在删除提示中显示当条数据中的某个字段信息。
    * @config [message] {string} - 自定义提示文案。
-   * @config [isFreshTree] {boolean} - 是否刷新侧边树。默认false。依赖于`inject(hasTree)`。
+   * @config [isRefreshTree] {boolean} - 是否刷新侧边树。默认false。依赖于`inject(hasTree)`。
    */
   async function handleDelete(record, options = {}) {
     // 处理 options 的默认值
@@ -418,7 +416,7 @@ export default function useTGTable({
 
         if (res.status) {
           // 执行侧边树数据更新
-          if (hasTree && options.isFreshTree) {
+          if (hasTree && options.isRefreshTree) {
             await refreshTree?.()
           }
 
@@ -625,13 +623,14 @@ export default function useTGTable({
   }
 
   return {
+    store,
     currentItem,
     dataSource,
     handleChange,
     handleAdd,
     handleEdit,
     handleDelete,
-    handleAudit,
+    handleClick,
     handleExport,
     TGTable,
     handleStatusChange

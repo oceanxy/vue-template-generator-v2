@@ -2,21 +2,20 @@ import './styles/index.scss'
 import { computed, inject, ref } from 'vue'
 import { Avatar, Divider, Dropdown, Layout, Menu, Space, Spin, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
-import { useCommonStore } from '@/stores/modules/common'
-import { useLoginStore } from '@/stores/modules/login'
 import { useRouter } from '@/router'
+import useStore from '@/composables/tgStore'
 
 export default {
   name: 'TGLayoutHeader',
   setup(props) {
     const activeKey = ref(1)
     const { push, replace } = useRouter()
-    const commonStore = computed(() => useCommonStore())
-    const loginStore = computed(() => useLoginStore())
-    const collapsed = computed(() => commonStore.value.collapsed)
-    const showMenu = computed(() => commonStore.value.showMenu)
-    const loading = computed(() => commonStore.value.loading)
-    const userInfo = computed(() => commonStore.value.userInfo)
+    const commonStore = useStore('/common')
+    const loginStore = useStore('/login')
+    const collapsed = computed(() => commonStore.collapsed)
+    const showMenu = computed(() => commonStore.showMenu)
+    const loading = computed(() => commonStore.loading)
+    const userInfo = computed(() => commonStore.userInfo)
     const avatarForLetter = computed(() => {
       const name = userInfo.value.nickName || userInfo.value.fullName
 
@@ -31,7 +30,7 @@ export default {
      * @returns {Promise<void>}
      */
     async function onLogOutClick() {
-      const response = await loginStore.value.logout()
+      const response = await loginStore.logout()
 
       if (response.status) {
         await replace({
@@ -106,7 +105,7 @@ export default {
               <IconFont
                 type={'icon-global-sq'}
                 class={`tg-layout-header-menu-btn menu-btn-fold${collapsed.value ? ' reverse' : ''}`}
-                onClick={commonStore.value.setCollapsed}
+                onClick={commonStore.setCollapsed}
                 title={!collapsed.value ? '折叠菜单' : '展开菜单'}
               />
             )

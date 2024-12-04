@@ -27,7 +27,7 @@ export const controlBarBaseButtons = {
 }
 
 /**
- * @param {(selectedRows:Object[]) => ({[fieldName]: boolean})} [controlButtonPermissions] - 用于控制按钮禁用权限的回调函数，
+ * @param [controlButtonPermissions] {(selectedRows:Object[]) => ({[fieldName]: boolean})} - 用于控制按钮禁用权限的回调函数，
  *  仅当selectedRows发生改变时调用。
  *  接收一个参数 selectedRows。当前选中行数组。
  *  返回一个对象，对象的键（fieldName）为控制禁用权限的字段名（如： 'editButtonDisabled'），对象的值为布尔值。
@@ -79,13 +79,17 @@ export default function useFunction({ controlButtonPermissions } = {}) {
     ids.value = value.map(item => item.id).join()
   })
 
-  /**
+  /**['parentId']
    * 新增
    * @param [currentItem={}] {Object} - 当前数据
+   * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].form`的参数名。
    * @returns {Promise<void>}
    */
-  async function handleAdd(currentItem = {}) {
-    await store.setVisibilityOfModal({ currentItem })
+  async function handleAdd({ currentItem = {}, injectSearchParams } = {}) {
+    await store.setVisibilityOfModal({
+      currentItem,
+      injectSearchParams
+    })
   }
 
   /**
@@ -184,7 +188,7 @@ export default function useFunction({ controlButtonPermissions } = {}) {
    * @param [modalStatusFieldName] {string} 弹窗控制字段 默认 showModalForEditing
    * @returns {Promise<void>}
    */
-  async function handleAudit(modalStatusFieldName) {
+  async function handleClick(modalStatusFieldName) {
     await store.setVisibilityOfModal({ ids: this.ids }, modalStatusFieldName)
   }
 
@@ -215,6 +219,7 @@ export default function useFunction({ controlButtonPermissions } = {}) {
                   <TGPermissionsButton
                     type="primary"
                     identification={'ADD'}
+                    disabled={buttonDisabled.value}
                     onClick={() => handleAdd()}
                     icon={<PlusOutlined />}
                   >
@@ -257,6 +262,7 @@ export default function useFunction({ controlButtonPermissions } = {}) {
 
   return {
     controlBarBaseButtons,
+    buttonDisabled,
     editButtonDisabled: buttonDisabled.value ? buttonDisabled : editButtonDisabled,
     deleteButtonDisabled: buttonDisabled.value ? buttonDisabled : deleteButtonDisabled,
     auditButtonDisabled: buttonDisabled.value ? buttonDisabled : auditButtonDisabled,

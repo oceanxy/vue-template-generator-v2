@@ -3,7 +3,7 @@ import { showMessage } from '@/utils/message'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
 import { getEnvVar } from '@/utils/env'
-import { useLoginStore } from '@/stores/modules/login'
+import useStore from '@/composables/tgStore'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 
@@ -108,7 +108,7 @@ export default function getService(conf, router) {
         // 未登录或登录失效，需要重新登录
         if (+res.code === 30001) {
           if (localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)) {
-            await useLoginStore().clear()
+            await useStore('/login').clear()
           }
 
           await router.replace({ name: 'Login' })

@@ -1,12 +1,13 @@
 import './styles/index.scss'
 import config from '@/configs'
 import { computed } from 'vue'
-import { useCommonStore } from '@/stores/modules/common'
 import { useRouter } from '@/router'
+import useStore from '@/composables/tgStore'
 
 const TGLogo = () => {
+  const commonStore = useStore('/common')
   const { push } = useRouter()
-  const showMenu = computed(() => useCommonStore().showMenu)
+  const showMenu = computed(() => commonStore.showMenu)
 
   /**
    * 返回首页

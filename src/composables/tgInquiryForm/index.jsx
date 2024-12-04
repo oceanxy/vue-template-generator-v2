@@ -24,6 +24,7 @@ import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
  * @property {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象。
  * @property {boolean} [isRequired] - 是否是必传参数。
  * @property {string} [paramNameInSearchRO] - store.state.search 内对应的字段名。
+ * @property {(()=>boolean) | boolean} [condition] - 执行条件。
  * @property {boolean} [listener] - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。
  * @property {(data: Object[]|Object) => any} [getValueFormResponse] - 接口数据加载成功后，paramNameInSearchRO字段的取值逻辑。
  * - 参数 data 为接口请求的数据对象或数据数组；

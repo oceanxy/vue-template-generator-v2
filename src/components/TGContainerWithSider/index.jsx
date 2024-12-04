@@ -1,9 +1,9 @@
 import './assets/styles/index.scss'
 import { Button } from 'ant-design-vue'
 import { computed, watch } from 'vue'
-import { useCommonStore } from '@/stores/modules/common'
 import configs from '@/configs'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons-vue'
+import useStore from '@/composables/tgStore'
 
 export default {
   name: 'TGContainerWithSider',
@@ -38,14 +38,14 @@ export default {
     }
   },
   setup(props, { slots, emit }) {
-    const commonStore = computed(() => useCommonStore())
+    const commonStore = useStore('/common')
     const siderClassName = computed(() => props.siderClass ? ` ${props.siderClass}` : '')
     const treeCollapsed = computed({
       get() {
-        return commonStore.value.treeCollapsed
+        return commonStore.treeCollapsed
       },
       set(value) {
-        commonStore.value.treeCollapsed = value
+        commonStore.treeCollapsed = value
       }
     })
 

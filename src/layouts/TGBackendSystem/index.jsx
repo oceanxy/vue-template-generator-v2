@@ -3,11 +3,11 @@ import { Layout, Spin } from 'ant-design-vue'
 import TGHeader from '@/components/TGHeader'
 import { RouterView } from 'vue-router'
 import { computed, Suspense } from 'vue'
-import { useCommonStore } from '@/stores/modules/common'
 import TGMenu from '@/components/TGMenu'
 import configs from '@/configs'
 import TGBreadcrumb from '@/components/TGBreadcrumb'
 import router from '@/router'
+import useStore from '@/composables/tgStore'
 
 export default {
   name: 'TGBackendSystemLayout',
@@ -18,7 +18,7 @@ export default {
     // })
   },
   setup() {
-    const store = useCommonStore()
+    const store = useStore('/common')
     const showMenu = computed(() => store.showMenu)
     const collapsed = computed(() => store.collapsed)
 

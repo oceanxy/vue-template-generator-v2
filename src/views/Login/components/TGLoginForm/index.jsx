@@ -1,9 +1,9 @@
 import './index.scss'
 import { computed, onMounted, reactive, ref } from 'vue'
 import configs from '@/configs'
-import { useLoginStore } from '@/stores/modules/login'
 import { getEnvVar } from '@/utils/env'
 import { Button, Form, Input } from 'ant-design-vue'
+import useStore from '@/composables/tgStore'
 
 export default {
   name: 'TGLoginForm',
@@ -18,9 +18,9 @@ export default {
       picCode: isDev && configs.enableLoginVerification ? 'LANJOR' : ''
     })
 
-    const loginStore = computed(() => useLoginStore())
-    const codeKey = computed(() => loginStore.value.codeKey)
-    const loading = computed(() => loginStore.value.loading)
+    const loginStore = useStore('/login')
+    const codeKey = computed(() => loginStore.codeKey)
+    const loading = computed(() => loginStore.loading)
     const disabled = computed(() => !loginFormState.username || !loginFormState.password)
 
     /**
@@ -28,12 +28,12 @@ export default {
      * @returns {Promise<void>}
      */
     async function onCodeKeyClick() {
-      await loginStore.value.getCodeKey()
+      await loginStore.getCodeKey()
       picCodePath.value = `${getEnvVar('TG_APP_BASE_API')}/auth/verifyCode/loginImg?verifyCodeKey=${codeKey.value}`
     }
 
     async function onFinish(values) {
-      const { status } = await loginStore.value.login({ payload: values })
+      const { status } = await loginStore.login({ payload: values })
 
       if (!status) {
         if (configs.enableLoginVerification) {
@@ -41,13 +41,13 @@ export default {
         }
       } else {
         hint.value = true
-        await loginStore.value.jumpAfterLogin()
+        await loginStore.jumpAfterLogin()
         hint.value = false
       }
     }
 
     onMounted(async () => {
-      loginStore.value.loading = false
+      loginStore.loading = false
 
       if (configs.enableLoginVerification) {
         await onCodeKeyClick()

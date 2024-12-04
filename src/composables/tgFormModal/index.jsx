@@ -12,15 +12,19 @@ import { set } from 'lodash/object'
  * @param [rules] {Object} - 表单验证规则
  * @param [isGetDetails] {boolean} - 是否在打开编辑弹窗时获取详情数据。
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
+ * @param [formModelFormatter] {(currentItem: Object) => Object} - 初始化表单数据函数，
+ * 返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
+ * 一个数组，以供 Cascader 组件绑定使用。
  * @returns {Object}
  */
 export default function useTGFormModal({
   modalProps,
   modalStatusFieldName = 'showModalForEditing',
-  location,
+  location = 'modalForEditing',
   rules,
   isGetDetails,
-  searchParamOptions
+  searchParamOptions,
+  formModelFormatter
 }) {
   provide('inModal', true)
 
@@ -48,13 +52,24 @@ export default function useTGFormModal({
   })
 
   // 将`store.currentItem`和`store[location].form`中的同名字段保持同步
-  watch(tgModal.currentItem, async val => {
-    if (location && Object.keys(val).length) {
+  watch(tgModal.currentItem, async currentItem => {
+    if (location && Object.keys(currentItem).length) {
+      const formModel = {}
+
       for (const key in tgForm.formModel) {
-        if (key in val) {
-          tgForm.formModel[key] = val[key]
+        if (key in currentItem) {
+          formModel[key] = currentItem[key]
         }
       }
+
+      tgForm.store.$patch({
+        [location]: {
+          form: {
+            ...formModel,
+            ...formModelFormatter(currentItem)
+          }
+        }
+      })
 
       await nextTick()
 
@@ -78,9 +93,10 @@ export default function useTGFormModal({
    * @param [callback] {()=>void} - 自定义验证成功后执行的回调函数，该参数与本函数的其他所有参数互斥。
    * @param [action] {string} - 提交表单的类型，可选值：'add'、'update' 或 'export'，
    * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
-   * @param [params] {(() => Object) | Object} - 接口参数，受`isMergeParam`影响。
-   * @param [isMergeParam=true] {boolean} - 是否将 params 参数与默认值合并，默认为 true。
-   * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
+   * @param [params] {(() => Object) | Object} - 传递给接口的表单值，受`isMergeParam`参数影响。
+   * @param [isMergeParam=true] {boolean} - 是否将 params 参数与`store.state[location].form`合并，默认为 true。
+   * 合并操作不会改变`store.state[location].form`的值，合并后的值仅传递给接口使用，合并时此参数的优先级更高。
+   * 不合并时仅将 params 传递给接口。
    * @param [refreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
    * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。

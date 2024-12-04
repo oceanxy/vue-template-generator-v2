@@ -1,16 +1,15 @@
-import { useCommonStore } from '@/stores/modules/common'
 import { storeToRefs } from 'pinia'
 import customThemes from '@/assets/styles/themes'
 import { provide } from 'vue'
+import useStore from '@/composables/tgStore'
 
 /**
  * 共 App 组件使用的主题配置
  * @returns {{customTheme: *, theme: Omit<*, "customTheme">}}
  */
 export default function useAppTheme() {
-  const commonStore = useCommonStore()
-  const { themeName } = storeToRefs(commonStore)
-  const { customTheme, ...theme } = customThemes[themeName.value]
+  const commonStore = useStore('/common')
+  const { customTheme, ...theme } = customThemes[commonStore.themeName]
 
   provide('customTheme', customTheme)
 
