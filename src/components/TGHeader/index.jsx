@@ -1,21 +1,27 @@
 import './styles/index.scss'
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { Avatar, Divider, Dropdown, Layout, Menu, Space, Spin, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
+import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
+import configs from '@/configs'
+import dayjs from 'dayjs'
 
 export default {
   name: 'TGLayoutHeader',
   setup(props) {
+    const appName = getFirstLetterOfEachWordOfAppName()
     const activeKey = ref(1)
     const { push, replace } = useRouter()
     const commonStore = useStore('/common')
     const loginStore = useStore('/login')
     const collapsed = computed(() => commonStore.collapsed)
+    const lastLoginTime = computed(() => loginStore.lastLoginTime)
+    const lastLoginToken = computed(() => loginStore.lastLoginToken)
     const showMenu = computed(() => commonStore.showMenu)
-    const loading = computed(() => commonStore.loading)
-    const userInfo = computed(() => commonStore.userInfo)
+    const loading = computed(() => loginStore.loading)
+    const userInfo = computed(() => loginStore.userInfo)
     const avatarForLetter = computed(() => {
       const name = userInfo.value.nickName || userInfo.value.fullName
 
@@ -24,6 +30,33 @@ export default {
     const { useToken } = theme
     const { token } = useToken()
     const { header } = inject('customTheme')
+
+    watch(userInfo, async val => {
+      if (!loading.value) {
+        const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
+        const loginTimeDiff = dayjs().diff(dayjs(lastLoginTime.value), 'seconds')
+        const {
+          NODE_ENV,
+          VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS
+        } = process.env.NODE_ENV !== 'production'
+
+        if (
+          (
+            // 验证token是否存在
+            token ||
+            // 验证开发环境是否开启跳过权限
+            (NODE_ENV === 'development' && VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on')
+          ) &&
+          (
+            token !== lastLoginToken.value || // 兼容第三方携带token登录的方式
+            loginTimeDiff >= 3600 || // 与上一次登录时间间隔大于1小时之后刷新一下用户信息
+            !Object.keys(val).length
+          )
+        ) {
+          await loginStore.getUserInfo({ token })
+        }
+      }
+    }, { immediate: true })
 
     /**
      * 注销

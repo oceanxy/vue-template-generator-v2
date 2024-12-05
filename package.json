@@ -63,6 +63,7 @@
     "element-resize-detector": "^1.2.4",
     "jsencrypt": "^3.3.2",
     "lodash": "^4.17.21",
+    "p-debounce": "^4.0.0",
     "pinia": "^2.2.0",
     "qs": "^6.13.0",
     "vue": "^3.5.13",

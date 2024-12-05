@@ -11,14 +11,16 @@ import { computed, inject, onUnmounted, reactive, ref, watch } from 'vue'
 import { Form } from 'ant-design-vue'
 
 /**
- * @param {string} location
- * @param {SearchParamOption[]} [searchParamOptions] - 搜索参数配置。
+ * @param location {string}
+ * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
  * @param [isGetDetails] {boolean} - 是否请求该弹窗的详情数据。
- * @param {()=>boolean} [buttonDisabledFn] - 禁用查询和重置按钮的方法。
- * @param {Object} [rules={}] - 验证规则，参考 ant-design-vue 的 Form.Item。
+ * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
+ * 数据后的自定义数据处理逻辑，不为函数时默认与`store.state.currentItem`合并。
+ * @param [buttonDisabledFn] {()=>boolean} - 禁用查询和重置按钮的方法。
+ * @param [rules={}] {Object} - 验证规则，参考 ant-design-vue 的 Form.Item。
  * @param [modalStatusFieldName] {string} - 弹窗状态字段名。
  * @param [loaded] {(Object)=>void} - 所有 searchParamOptions 指定的接口全部加载完成时的回调。
- * @param {((state: Object) => Object) | Object} [paramsForGetList={}] - 搜索接口的额外参数，默认为空对象。
+ * @param [paramsForGetList={}] {((state: Object) => Object) | Object} - 搜索接口的额外参数，默认为空对象。
  * 注意：
  * - 搜索接口的默认参数为 store.state.search 对象内所有字段，本字段配置的参数会在调用接口前合并到接口参数中，但不会改变 store.state.search 的值。
  * - 如果与 store.state.search 有同名字段，本配置返回的字段的优先级更高。
@@ -28,6 +30,7 @@ export default function useTGForm({
   location,
   searchParamOptions,
   isGetDetails,
+  setDetails,
   buttonDisabledFn,
   rules = {},
   modalStatusFieldName,
@@ -71,26 +74,26 @@ export default function useTGForm({
   /**
    * 提交表单
    * @param [callback] {()=>void} - 自定义验证成功后执行的回调函数，该参数与本函数的其他所有参数互斥。
-   * @param [action] {string} - 提交表单的类型，可选值：'add'、'update' 或 'export'，
+   * @param [apiName] {string} - 自定义接口名称，传递此值时，action将失效。
+   * @param [action] {'update','add',string} - 操作类型，未定义 apiName 时生效。
    * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
+   * 主要用于生成接口地址，生成规则`{ACTION}{ModuleName}`。
    * @param [params] {(() => Object) | Object} - 接口参数，受`isMergeParam`影响。
    * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值合并，默认为 false。
    * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
-   * @param [refreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
+   * @param [isRefreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
    * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
-   * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
-   * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
    * @param [success] {()=>void} - 操作执行成功后的回调函数。
    */
   function handleFinish({
     callback,
+    apiName,
     action,
     params,
     isMergeParam,
-    refreshTable = true,
+    isRefreshTable = true,
     isRefreshTree,
-    modalStatusFieldName = 'showModalForEditing',
     success
   } = {}) {
     validate()
@@ -104,10 +107,11 @@ export default function useTGForm({
 
             const res = await store.fetch({
               action,
+              apiName,
               location,
               params,
               isMergeParam,
-              refreshTable,
+              isRefreshTable,
               modalStatusFieldName
             })
 
@@ -197,9 +201,7 @@ export default function useTGForm({
         if (isGetDetails && currentItem.value.id) {
           return await store.getDetails({
             location,
-            setValue(data, store) {
-              store.currentItem.value.functionInfoList = data
-            }
+            setValue: setDetails
           })
         }
 

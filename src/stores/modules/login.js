@@ -22,7 +22,7 @@ export default createStore({
       // 用户信息
       userInfo: {},
       // 全局修改密码弹窗的显示状态
-      showModalForEditingPassword: null,
+      showModalForEditingPassword: false,
       // 验证码
       codeKey: '',
       // 用于保存当前页面内弹窗可能用到的临时数据

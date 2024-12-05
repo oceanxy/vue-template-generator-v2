@@ -411,7 +411,7 @@ export default function useTGTable({
             ...options.params,
             [options.idFieldName]: record.id
           },
-          refreshTable: true
+          isRefreshTable: true
         })
 
         if (res.status) {

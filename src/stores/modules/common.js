@@ -10,15 +10,8 @@ export default createStore({
       showMenu: true,
       // 页面中的侧边树折叠与展开状态切换（如果有）
       treeCollapsed: false,
-      // 登录用户信息
-      userInfo: {
-        nickName: 'adminOne',
-        fullName: 'admin',
-        loginName: 'adminOne'
-      },
       // 主题配置
-      themeName: 'default',
-      loading: false
+      themeName: 'default'
     },
     actions: {
       setCollapsed() {

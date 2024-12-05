@@ -1,16 +1,19 @@
 import './assets/styles/index.scss'
 import useTGModal from '@/composables/tgModal'
 import useTGForm from '@/composables/tgForm'
-import { nextTick, provide, reactive, ref, watch } from 'vue'
+import { nextTick, provide, reactive, ref, toRaw, watch } from 'vue'
 import { set } from 'lodash/object'
 
 /**
  *
  * @param modalProps
- * @param [modalStatusFieldName] {string}
+ * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
+ * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
  * @param [location] {string}
  * @param [rules] {Object} - 表单验证规则
  * @param [isGetDetails] {boolean} - 是否在打开编辑弹窗时获取详情数据。
+ * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
+ * 数据后的自定义数据处理逻辑，不为函数时默认与`store.state.currentItem`合并。
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
  * @param [formModelFormatter] {(currentItem: Object) => Object} - 初始化表单数据函数，
  * 返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
@@ -23,6 +26,7 @@ export default function useTGFormModal({
   location = 'modalForEditing',
   rules,
   isGetDetails,
+  setDetails,
   searchParamOptions,
   formModelFormatter
 }) {
@@ -35,6 +39,7 @@ export default function useTGFormModal({
     rules,
     searchParamOptions,
     isGetDetails,
+    setDetails,
     modalStatusFieldName,
     loaded
   })
@@ -58,6 +63,14 @@ export default function useTGFormModal({
 
       for (const key in tgForm.formModel) {
         if (key in currentItem) {
+          const formModelKey = tgForm.formModel[key]
+          const currentItemKey = toRaw(currentItem[key])
+
+          // 引用类型为假值时跳过
+          if (!currentItemKey && typeof formModelKey === 'object') {
+            continue
+          }
+
           formModel[key] = currentItem[key]
         }
       }
@@ -66,7 +79,7 @@ export default function useTGFormModal({
         [location]: {
           form: {
             ...formModel,
-            ...formModelFormatter(currentItem)
+            ...formModelFormatter?.(currentItem)
           }
         }
       })
@@ -91,27 +104,27 @@ export default function useTGFormModal({
   /**
    * 为`TGFormModal`组件自动注入唯一标识符（id）参数
    * @param [callback] {()=>void} - 自定义验证成功后执行的回调函数，该参数与本函数的其他所有参数互斥。
-   * @param [action] {string} - 提交表单的类型，可选值：'add'、'update' 或 'export'，
+   * @param [apiName] {string} - 自定义接口名称，传递此值时，action将失效。
+   * @param [action] {'update','add',string} - 操作类型，未定义 apiName 时生效。
    * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
+   * 主要用于生成接口地址，生成规则`{ACTION}{ModuleName}`。
    * @param [params] {(() => Object) | Object} - 传递给接口的表单值，受`isMergeParam`参数影响。
    * @param [isMergeParam=true] {boolean} - 是否将 params 参数与`store.state[location].form`合并，默认为 true。
    * 合并操作不会改变`store.state[location].form`的值，合并后的值仅传递给接口使用，合并时此参数的优先级更高。
    * 不合并时仅将 params 传递给接口。
-   * @param [refreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
+   * @param [isRefreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
    * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
-   * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
-   * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
    * @param [success] {()=>void} - 操作执行成功后的回调函数。
    */
   function handleFinish({
     callback,
+    apiName,
     action,
     params,
     isMergeParam = true,
-    refreshTable = true,
+    isRefreshTable = true,
     isRefreshTree,
-    modalStatusFieldName = 'showModalForEditing',
     success
   }) {
     let paramsInjectId
@@ -122,16 +135,17 @@ export default function useTGFormModal({
       paramsInjectId = params || {}
     }
 
-    if ('id' in tgModal.currentItem.value && !paramsInjectId.id) {
+    if (!apiName && ('id' in tgModal.currentItem.value) && !paramsInjectId.id) {
       paramsInjectId.id = tgModal.currentItem.value.id
     }
 
     tgForm.handleFinish({
       params: paramsInjectId,
       callback,
+      apiName,
       action,
       isMergeParam,
-      refreshTable,
+      isRefreshTable,
       isRefreshTree,
       modalStatusFieldName,
       success

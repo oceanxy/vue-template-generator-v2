@@ -416,7 +416,7 @@ export function createStore({
        * @param {string} location
        * @param {Object} [params] - 查询参数，默认`store.currentItem.id`。
        * @param {string} [apiName] - 接口名称，默认`getDetailsOf${moduleName}`。
-       * @param {(data: Object, store:import('pinia').StoreDefinition) => void} [setValue] - 处理接口返回值的函数，
+       * @param {(data: Object, store: import('pinia').StoreDefinition) => void} [setValue] - 处理接口返回值的函数，
        * 该值不为函数时，接口返回值默认与`store.currentItem`合并。
        * @returns {Promise<{}>}
        */
@@ -569,11 +569,11 @@ export function createStore({
        */
       setVisibilityOfModal({
         modalStatusFieldName = 'showModalForEditing',
+        location = 'modalForEditing',
         value,
         currentItem = {},
         merge = false,
-        injectSearchParams,
-        location = 'modalForEditing'
+        injectSearchParams
       } = {}) {
         this.setState('currentItem', currentItem, merge)
 
@@ -693,12 +693,14 @@ export function createStore({
        *
        * @param [location]
        * @param [apiName] {string} - 接口名称，默认值为 `${ACTION}${MODULE_NAME}`。
-       * @param [action] {'update','add','delete'} - 操作类型，未定义 apiName 时生效。
+       * @param [action] {'update','add',string} - 操作类型，未定义 apiName 时生效。
+       * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
+       * 主要用于生成接口地址，生成规则`{ACTION}{ModuleName}`。
        * @param [params] {Object} - 自定义参数，默认值为 store.state.search 的值。
        * 当 location 为有效值时，默认值为 store.state[location].form 的值。
        * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值合并，默认为 false。
        * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
-       * @param [refreshTable] {boolean} - 是否刷新表格数据，默认 false。
+       * @param [isRefreshTable] {boolean} - 是否刷新表格数据，默认 false。
        * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作完成后关闭指定弹窗。
        * @returns {Promise<Object>}
        */
@@ -708,7 +710,7 @@ export function createStore({
         action,
         params,
         isMergeParam,
-        refreshTable,
+        isRefreshTable,
         modalStatusFieldName
       }) {
         let res = { status: false }
@@ -744,10 +746,13 @@ export function createStore({
         if (res.status) {
           // 关闭编辑弹窗
           if (modalStatusFieldName && this.$state[modalStatusFieldName]) {
-            this.setVisibilityOfModal()
+            this.setVisibilityOfModal({
+              modalStatusFieldName,
+              location
+            })
           }
 
-          if (refreshTable) {
+          if (isRefreshTable) {
             await this.getList({
               isPagination: true
             })
