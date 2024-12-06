@@ -184,12 +184,16 @@ export default function useFunction({ controlButtonPermissions } = {}) {
   }
 
   /**
-   * 审核或相关意见填写的批量操作
-   * @param [modalStatusFieldName] {string} 弹窗控制字段 默认 showModalForEditing
+   * 处理打开弹窗的前置点击事件
+   * @param record {Object}
+   * @param modalStatusFieldName {string}
    * @returns {Promise<void>}
    */
-  async function handleClick(modalStatusFieldName) {
-    await store.setVisibilityOfModal({ ids: this.ids }, modalStatusFieldName)
+  function handleClick(record, modalStatusFieldName) {
+    store.setVisibilityOfModal({
+      currentItem: record,
+      modalStatusFieldName
+    })
   }
 
   /**
@@ -271,6 +275,7 @@ export default function useFunction({ controlButtonPermissions } = {}) {
     ids,
     store,
     TGFunction,
-    handleAdd
+    handleAdd,
+    handleClick
   }
 }

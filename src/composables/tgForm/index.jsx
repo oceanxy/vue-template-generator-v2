@@ -38,7 +38,7 @@ export default function useTGForm({
   paramsForGetList = {}
 } = {}) {
   const hasTree = inject('hasTree', false)
-  const refreshTree = inject('refreshTree')
+  const refreshTree = inject('refreshTree', undefined)
 
   const store = useStore()
   const commonStore = useStore('./common')
@@ -137,36 +137,43 @@ export default function useTGForm({
    * @returns {(function(): Promise<(function(): void)|(function(): *)>)|*}
    */
   async function execEnum(enumOptions) {
-    const { listener, condition, ...options } = enumOptions
+    const { listener, condition, dependentField, ...options } = enumOptions
     const isContinue = typeof condition === 'function'
       ? condition()
       : condition
 
-    if (typeof isContinue === 'boolean' && !isContinue) {
-      return Promise.resolve()
-    }
-
-    if (listener) {
-      await store.getList(options)
-
-      // 返回函数：监听 store.state.search[paramNameInSearchRO]，以更新 store.state.dataSource
-      return () => {
-        watch(
-          () => form.value[enumOptions.paramNameInSearchRO],
-          (newVal, oldValue) => {
-            if (
-              // 必填时值变化，或者非必填时值有变化
-              (enumOptions.isRequired && newVal && newVal !== oldValue) ||
-              (!enumOptions.isRequired && newVal !== oldValue)
-            ) {
-              store.onSearch()
+    if (typeof isContinue !== 'boolean' || isContinue) {
+      // 处理依赖参数的初始化
+      if (dependentField) {
+        await new Promise(resolve => {
+          watch(() => search.value[dependentField], async (newVal, oldValue) => {
+            if (newVal !== oldValue) {
+              resolve(await store.getList(options))
             }
-          }
-        )
+          })
+        })
+      } else {
+        await store.getList(options)
+      }
+
+      if (listener) {
+        // 返回函数：监听 store.state.search[paramNameInSearchRO]，以更新 store.state.dataSource
+        return () => {
+          watch(
+            () => form.value[enumOptions.paramNameInSearchRO],
+            (newVal, oldValue) => {
+              if (
+                // 必填时值变化，或者非必填时值有变化
+                (enumOptions.isRequired && newVal && newVal !== oldValue) ||
+                (!enumOptions.isRequired && newVal !== oldValue)
+              ) {
+                store.onSearch()
+              }
+            }
+          )
+        }
       }
     }
-
-    return store.getList(options)
   }
 
   onUnmounted(() => {

@@ -10,7 +10,7 @@ import useThemeVars from '@/composables/themeVars'
  * @param modalStatusFieldName
  * @param form
  * @param store
- * @param confirmLoading {Ref<UnwrapRef<boolean>, UnwrapRef<boolean> | boolean>} - `okButton`的`loading`值。
+ * @param [confirmLoading] {Ref<UnwrapRef<boolean>, UnwrapRef<boolean> | boolean>} - `okButton`的`loading`值。
  * @param unWatch
  * @returns {Object}
  */
@@ -43,8 +43,8 @@ export default function useTGModal({
         unWatch.value()
       }
 
-      form.resetFields()
-      form.clearValidate()
+      form?.resetFields()
+      form?.clearValidate()
       initialPosition.value = { x: 0, y: 0 }
       currentOffset.value = { x: 0, y: 0 }
       style.value = `translate(${currentOffset.value.x}px, ${currentOffset.value.y}px)`
@@ -100,7 +100,7 @@ export default function useTGModal({
       <Modal
         ref={tgModal}
         class={'tg-modal'}
-        confirmLoading={confirmLoading.value}
+        {...confirmLoading ? { confirmLoading: confirmLoading.value } : {}}
         onCancel={handleCancel}
         open={open.value}
         maskClosable={false}
@@ -134,7 +134,6 @@ export default function useTGModal({
   return {
     TGModal,
     moduleName,
-    store,
     open,
     currentItem,
     handleCancel

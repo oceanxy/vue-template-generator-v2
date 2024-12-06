@@ -738,7 +738,7 @@ export function createStore({
         if (apis[apiName]) {
           res = await apis[apiName]?.(params)
         } else {
-          throw new Error(`接口未定义：${moduleName} 页面的 ${apiName} 接口未定义！`)
+          console.error(`接口未定义：${moduleName} 页面的 ${apiName} 接口未定义！`)
         }
 
         this.setLoading(location ? { stateName: location } : {})

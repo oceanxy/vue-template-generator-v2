@@ -17,23 +17,24 @@ import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
  * 必需入参的配置
  * @global
  * @typedef SearchParamOption
- * @property {string} [location] - 在 store.state 中次级模块的字段名称。
- * @property {string} stateName - 在 store.state 中字段的名称。
- * @property {string} [storeName] - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
- * @property {string} apiName - 接口名称。
- * @property {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象。
- * @property {boolean} [isRequired] - 是否是必传参数。
- * @property {string} [paramNameInSearchRO] - store.state.search 内对应的字段名。
- * @property {(()=>boolean) | boolean} [condition] - 执行条件。
- * @property {boolean} [listener] - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。
- * @property {(data: Object[]|Object) => any} [getValueFormResponse] - 接口数据加载成功后，paramNameInSearchRO字段的取值逻辑。
+ * @property [location] {string} - 在 store.state 中次级模块的字段名称。
+ * @property stateName {string} - 在 store.state 中字段的名称。
+ * @property [storeName] {string} - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
+ * @property apiName {string} - 接口名称。
+ * @property [paramsForGetList={}] {((state: Object) => Object) | Object} - 接口请求时的参数，默认为空对象。
+ * @property [isRequired] {boolean} - 是否是必传参数。
+ * @property [paramNameInSearchRO] {string} - store.state.search 内对应的字段名。
+ * @property [condition] {(() => boolean) | boolean}  - 执行条件。
+ * @property [listener] {boolean} - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。
+ * @property [getValueFormResponse] {(data: Object[]|Object) => any} - 接口数据加载成功后，paramNameInSearchRO字段的取值逻辑。
  * - 参数 data 为接口请求的数据对象或数据数组；
  * - 返回值将赋值给 store.state.search 对象内 paramNameInSearchRO 指定的字段。
- * @property {boolean} [raw] - 原样输出接口返回的数据结构到 stateName 指定的字段中。
- * @property {(data: Object) => Array<any>} [done] - 当前枚举调用接口后的回调，参数为 response.data。
- * @property {boolean} [isDependentTreeNode] - 是否依赖本页面左侧的树的选中项。[TODO]
- * @property {Function} [onTreeNodeChange] - 树节点变更回调，依赖 isDependentTreeNode。[TODO]
- * @property {SearchParamOption[]} [cascadingEnums] - 级联配置。[TODO]
+ * @property [raw] {boolean} - 原样输出接口返回的数据结构到 stateName 指定的字段中。
+ * @property [done] {(data: Object) => Array<any>} - 当前枚举调用接口后的回调，参数为 response.data。
+ * @property [dependentField] {string} - 请求接口所依赖`store.state.search`中的参数名。
+ * @property [isDependentTreeNode] {boolean} - 是否依赖本页面左侧的树的选中项。[TODO]
+ * @property [onTreeNodeChange] {Function} - 树节点变更回调，依赖 isDependentTreeNode。[TODO]
+ * @property [cascadingEnums] {SearchParamOption[]} - 级联配置。[TODO]
  */
 
 /**
@@ -88,33 +89,47 @@ export default function useInquiryForm({
   /**
    * 枚举执行函数
    * @param enumOptions
-   * @returns {(function(): Promise<(function(): void)|(function(): *)>)|*}
+   * @returns {(function(): Promise<(function(): void)|undefined>)|*}
    */
   function execEnum(enumOptions) {
     return async () => {
-      const { listener, ...options } = enumOptions
+      const { listener, condition, dependentField, ...options } = enumOptions
+      const isContinue = typeof condition === 'function'
+        ? condition()
+        : condition
 
-      if (listener) {
-        await store.getList(options)
-
-        // 返回函数：监听 store.state.search[paramNameInSearchRO]，以更新 store.state.dataSource
-        return () => {
-          watch(
-            () => search.value[enumOptions.paramNameInSearchRO],
-            (newVal, oldValue) => {
-              if (
-                // 必填时值变化，或者非必填时值有变化
-                (enumOptions.isRequired && newVal && newVal !== oldValue) ||
-                (!enumOptions.isRequired && newVal !== oldValue)
-              ) {
-                store.onSearch()
+      if (typeof isContinue !== 'boolean' || isContinue) {
+        // 处理依赖参数的初始化
+        if (dependentField) {
+          await new Promise(resolve => {
+            watch(() => search.value[dependentField], async (newVal, oldValue) => {
+              if (newVal !== oldValue) {
+                resolve(await store.getList(options))
               }
-            }
-          )
+            })
+          })
+        } else {
+          await store.getList(options)
+        }
+
+        if (listener) {
+          // 返回函数：监听 store.state.search[paramNameInSearchRO]，以更新 store.state.dataSource
+          return () => {
+            watch(
+              () => search.value[enumOptions.paramNameInSearchRO],
+              (newVal, oldValue) => {
+                if (
+                  // 必填时值变化，或者非必填时值有变化
+                  (enumOptions.isRequired && newVal && newVal !== oldValue) ||
+                  (!enumOptions.isRequired && newVal !== oldValue)
+                ) {
+                  store.onSearch()
+                }
+              }
+            )
+          }
         }
       }
-
-      return store.getList(options)
     }
   }
 

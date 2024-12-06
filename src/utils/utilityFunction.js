@@ -67,6 +67,7 @@ export function downloadFile(blobOrUrl, fileName) {
     tmp.style.display = 'none'
     tmp.download = fileName
     tmp.href = urlObj
+    tmp.target = '_blank'
     body.appendChild(tmp)
 
     tmp.click() // 模拟点击实现下载

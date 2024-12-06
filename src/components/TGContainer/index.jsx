@@ -73,7 +73,6 @@ export default {
           : slots.table && (
           <div class={'tg-container-table-container'}>
             {slots.table?.()}
-            {slots.pagination?.()}
             {slots.default?.()}
           </div>
         ),
