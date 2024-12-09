@@ -38,6 +38,8 @@ export default {
       customContentClassName,
       showPageTitle,
       isPagination,
+      optionsOfGetList,
+      injectSearchParamsOfTable,
       ...treeProps
     } = props
 
@@ -104,11 +106,15 @@ export default {
           listener()
         }
 
+        if (typeof injectSearchParamsOfTable === 'function') {
+          payload = { ...payload, ...injectSearchParamsOfTable({}) }
+        }
+
         await store.onSearch({
           searchParams: payload,
           isResetSelectedRows: true,
           isPagination,
-          ...treeProps?.optionsOfGetList ?? {}
+          ...(optionsOfGetList ?? {})
         })
       } catch (error) {
         // 树数据加载失败，退出后续所有的数据加载逻辑
@@ -149,6 +155,8 @@ export default {
             ? (
               <TGContainerWithTreeSider
                 class={'tg-container-content'}
+                optionsOfGetList={optionsOfGetList}
+                injectSearchParamsOfTable={injectSearchParamsOfTable}
                 {...treeProps}
               >
                 {filterSlots()}

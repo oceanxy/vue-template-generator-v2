@@ -76,8 +76,8 @@ export default {
       default: hierarchy => 'treeId'
     },
     /**
-     * 向树所在页面的 Table 组件注入搜索参数。注入到 store.state.search 对象。
-     * 一般的树不需要此操作，仅使用 props.getFieldNameForTreeId 参数即可，但是在某些特殊场景，
+     * 向 store.state.search 对象注入其他参数。
+     * 注意一般不需要此操作，仅使用 props.getFieldNameForTreeId 参数即可，但是在某些特殊场景，
      * 比如在操作树时需要传递多个字段给查询接口时，可以使用该prop来配置其余参数。
      * @param dataSource {Object} 用于渲染树节点的数据对象
      * @returns {Object} 需要合并注入到 search 的对象

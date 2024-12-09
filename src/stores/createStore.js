@@ -146,8 +146,8 @@ export function createStore({
        * @param isFetchList {boolean=true} - 是否执行列表查询，默认 true。
        * @param isPagination {boolean=true} - 是否分页，默认 true。
        * @param isResetSelectedRows {boolean=true} - 是否重置 store.state.selectedRows，默认 true。
-       * @param [location]
-       * @param fetchListParams {Object}
+       * @param [location] {string} - 搜索参数所在的 store 的次级模块名称。
+       * @param [...optionsOfGetList] {Object}
        * @returns {Promise<void>}
        */
       async onSearch({
@@ -156,7 +156,7 @@ export function createStore({
         isResetSelectedRows = true,
         isPagination = true,
         location,
-        ...argsOfGetList
+        ...optionsOfGetList
       } = {}) {
         this.setSearchParams(searchParams, isPagination, location)
 
@@ -172,7 +172,7 @@ export function createStore({
           }
 
           await this.getList({
-            ...argsOfGetList,
+            ...optionsOfGetList,
             location,
             isPagination
           })
@@ -206,8 +206,9 @@ export function createStore({
        * @param {string} [stateName='dataSource'] - 用以保存请求数据的字段名（store.state 中的字段名），默认为 dataSource。
        * @param {string} [storeName] - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
        * @param {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象。
-       * @param {boolean} [isMergeParam] - 请求接口时，是否将 paramsForGetList 参数与 store.state.search 合并，默认 false。
-       * 注意不会改变 store.state.search 的值，仅仅是在调用接口处传递给接口。如果有同名参数，paramsForGetList 的优先级更高。
+       * @param {boolean} [isMergeParam] - 请求接口时，是否将 paramsForGetList 参数与 store.state.search 合并，
+       * 默认 false，不合并，但是如果 paramsForGetList 参数的值不是对象或是一个空对象，则强制使用`store.state.search`的值作为参数。
+       * 注意，当值为true时，不会改变`store.state.search`的值，仅仅是在调用接口处传递给接口。如果有同名参数，paramsForGetList 的优先级更高。
        * @param {string} [paramNameInSearchRO] - store.state.search 内对应选中枚举的参数名。
        * @param {boolean | ((data: Object[]|Object) => any)} [getValueFormResponse] - 接口加载成功后，
        * paramNameInSearchRO 参数所指向字段的默认值取值逻辑。默认 false 不取值，为 true 时取数据数组第一项的 ID 值。
@@ -680,7 +681,7 @@ export function createStore({
         if (buffer) {
           const blob = new Blob([buffer])
 
-          downloadFile(blob, `${fileName}.xlsx`)
+          downloadFile(blob, fileName ? `${fileName}` : undefined)
 
           if (modalStatusFieldName) {
             this.setState(modalStatusFieldName, false)

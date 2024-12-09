@@ -53,8 +53,8 @@ export function firstLetterToLowercase(str) {
 
 /**
  * 下载文件
- * @param {Blob | string} blobOrUrl - Blob 对象或者 文件路径
- * @param {string} fileName - 文件名称
+ * @param blobOrUrl {Blob | string} - Blob 对象或者 文件路径
+ * @param [fileName] {string} - 文件名称
  */
 export function downloadFile(blobOrUrl, fileName) {
   if (blobOrUrl instanceof Blob && window.navigator.msSaveBlob) {
@@ -78,6 +78,59 @@ export function downloadFile(blobOrUrl, fileName) {
       URL.revokeObjectURL(urlObj)
     }, 1000)
   }
+}
+
+export async function batchDownloadFile(files) {
+  const batchSize = 10
+  const delay = 1000
+  const result = []
+
+  const downloadBatch = async (batch) => {
+    const promiseList = batch.map(file => {
+      return new Promise((resolve, reject) => {
+        try {
+          if (typeof file === 'object') {
+            downloadFile(file.url, file.name)
+          } else {
+            downloadFile(file)
+          }
+          resolve(null)
+        } catch {
+          reject('下载错误')
+        }
+      })
+    })
+
+    const batchResult = await Promise.allSettled(promiseList)
+
+    batchResult.forEach((item, index) => {
+      result.push({
+        isSuccess: item.status === 'fulfilled',
+        name: batch[index].name,
+        url: batch[index].url
+      })
+    })
+  }
+
+  const delayPromise = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })
+
+  // 这里使用递归去执行分批下载
+  const processBatches = async (remainingFiles) => {
+    if (remainingFiles.length === 0) {
+      return
+    }
+
+    const batch = remainingFiles.slice(0, batchSize)
+    const remaining = remainingFiles.slice(batchSize)
+
+    await downloadBatch(batch)
+    await delayPromise(delay)
+    await processBatches(remaining)
+  }
+
+  await processBatches(files)
+
+  return result
 }
 
 /**

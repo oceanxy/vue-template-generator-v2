@@ -159,7 +159,7 @@ export default function useFunction({ controlButtonPermissions } = {}) {
     await store.exportData({
       params: { ...router.currentRoute.value.query, ...payload },
       apiName,
-      fileName: `${fileName || this.$route.meta.title}${isTimeName ? date : ''}`
+      fileName: `${fileName && isTimeName ? `[${date}]` : ''}${fileName}`
     })
 
     exportButtonDisabled.value = false
@@ -276,6 +276,7 @@ export default function useFunction({ controlButtonPermissions } = {}) {
     store,
     TGFunction,
     handleAdd,
-    handleClick
+    handleClick,
+    handleExport
   }
 }
