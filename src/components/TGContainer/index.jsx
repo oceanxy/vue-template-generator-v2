@@ -106,7 +106,8 @@ export default {
           listener()
         }
 
-        if (typeof injectSearchParamsOfTable === 'function') {
+        // 侧边树的搜索参数注入不在此组件内执行
+        if (!showTree && typeof injectSearchParamsOfTable === 'function') {
           payload = { ...payload, ...injectSearchParamsOfTable({}) }
         }
 
