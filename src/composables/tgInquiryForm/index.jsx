@@ -11,7 +11,7 @@ import { computed, inject, onMounted, onUnmounted, reactive, ref, watch } from '
 import { Button, Form, Space } from 'ant-design-vue'
 import configs from '@/configs'
 import TGPermissionsButton, { disabledType } from '@/components/TGPermissionsButton'
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
+import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons-vue'
 
 /**
  * 必需入参的配置
@@ -34,31 +34,26 @@ import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
  * @property [dependentField] {string} - 请求接口所依赖`store.state.search`中的参数名。
  * @property [isDependentTreeNode] {boolean} - 是否依赖本页面左侧的树的选中项。[TODO]
  * @property [onTreeNodeChange] {Function} - 树节点变更回调，依赖 isDependentTreeNode。[TODO]
- * @property [cascadingEnums] {SearchParamOption[]} - 级联配置。[TODO]
  */
 
 /**
  * @param {SearchParamOption[]} [searchParamOptions] - 搜索参数配置。
  * @param {()=>boolean} [buttonDisabledFn] - 禁用查询和重置按钮的方法。
  * @param {Object} [rules={}] - 验证规则，参考 ant-design-vue 的 Form.Item。
- * @param {((state: Object) => Object) | Object} [paramsForGetList={}] - 搜索接口的额外参数，默认为空对象。
- * 注意：
- * - 搜索接口的默认参数为 store.state.search 对象内所有字段，本字段配置的参数会在调用接口前合并到接口参数中，但不会改变 store.state.search 的值。
- * - 如果与 store.state.search 有同名字段，本配置返回的字段的优先级更高。
  * @returns {Promise<{onFinish: onFinish}>}
  */
 export default function useInquiryForm({
   searchParamOptions,
   buttonDisabledFn,
-  rules = {},
-  paramsForGetList = {}
+  rules = {}
 } = {}) {
   const store = useStore()
-  const commonStore = useStore('./common')
+  const commonStore = useStore('/common')
   const hasTree = inject('hasTree', false)
   const searchParamNameRequired = inject('searchParamNameRequired', [])
 
   const treeCollapsed = computed(() => commonStore.treeCollapsed)
+  const inquiryFormCollapsed = computed(() => commonStore.inquiryFormCollapsed)
   const loading = computed(() => store.dataSource.loading)
   const search = computed(() => store.search)
 
@@ -188,73 +183,130 @@ export default function useInquiryForm({
   /**
    * 渲染
    * @param props
+   * @config fixedColumns {boolean} - 是否固定每行显示FormItem的个数。默认 false。
    * @config buttonPermissionIdentification {string} - 自定义按钮的权限标识，默认 'QUERY'。
    * @config disabledButtonPermission {boolean} - 在启用按钮级权限的情况下，是否关闭该模块的按钮权限验证。默认 false。
    * @param slots
    * @returns {JSX.Element}
    */
-  function TGInquiryForm(props, { slots }) {
-    return (
-      <Form
-        class={`tg-inquiry-form${treeCollapsed.value ? ' tg-inquiry-side-toggle-reverse' : ''}`}
-        layout={'inline'}
-        colon={false}
-      >
-        {slots.others?.(formModel)}
-        <div class={'tg-inquiry-row-for-fields'}>
-          {slots.default?.(formModel)}
+  const TGInquiryForm = {
+    name: 'TGInquiryForm',
+    props: {
+      fixedColumns: {
+        type: Boolean,
+        default: false
+      },
+      buttonPermissionIdentification: {
+        type: String,
+        default: 'QUERY'
+      },
+      disabledButtonPermission: {
+        type: Boolean,
+        default: false
+      }
+    },
+    setup(props, { slots }) {
+      const fieldDom = ref()
+      const formItemLength = computed(() => {
+        return fieldDom.value?.querySelectorAll('.ant-form-item')?.length ?? 0
+      })
+
+      async function handleInquiryFormCollapsedChange() {
+        const heightDifference = fieldDom.value.parentNode.clientHeight - fieldDom.value.clientHeight
+
+        // 为父容器赋值初始值，不然第一次折叠没有动画
+        fieldDom.value.parentNode.style.height = fieldDom.value.parentNode.clientHeight + 'px'
+        // 折叠/展开
+        fieldDom.value.classList.toggle('collapsed')
+        // 变更全局状态
+        commonStore.inquiryFormCollapsed = !inquiryFormCollapsed.value
+        // 为父容器从新计算高度
+        fieldDom.value.parentNode.style.height = (fieldDom.value.clientHeight + heightDifference) + 'px'
+      }
+
+      return () => (
+        <Form
+          class={
+            `tg-inquiry-form${
+              props.fixedColumns ? ' fixed' : ''
+            }${
+              treeCollapsed.value ? ' tg-inquiry-side-toggle-reverse' : ''
+            }`
+          }
+          layout={'inline'}
+          colon={false}
+        >
+          <div class={'tg-inquiry-form-content'}>
+            {slots.others?.(formModel)}
+            <div
+              ref={fieldDom}
+              class={'tg-inquiry-row-for-fields collapsed'}
+            >
+              {slots.default?.(formModel)}
+              {
+                slots.default && (
+                  <Space class={'tg-inquiry-row-for-buttons'}>
+                    {
+                      configs.buttonPermissions && !props.disabledButtonPermission
+                        ? [
+                          <TGPermissionsButton
+                            type="primary"
+                            icon={<SearchOutlined />}
+                            loading={loading.value}
+                            disabledType={disabledType.DISABLE}
+                            disabled={loading.value || buttonDisabled.value}
+                            identification={props.buttonPermissionIdentification}
+                            onClick={onFinish}
+                          >
+                            查询
+                          </TGPermissionsButton>,
+                          <TGPermissionsButton
+                            icon={<ReloadOutlined />}
+                            disabledType={disabledType.DISABLE}
+                            disabled={loading.value || buttonDisabled.value}
+                            identification={props.buttonPermissionIdentification}
+                            onClick={onClear}
+                          >
+                            重置
+                          </TGPermissionsButton>
+                        ]
+                        : [
+                          <Button
+                            icon={<SearchOutlined />}
+                            disabled={loading.value || buttonDisabled.value}
+                            loading={loading.value}
+                            type="primary"
+                            onClick={onFinish}
+                          >
+                            查询
+                          </Button>,
+                          <Button
+                            disabled={loading.value || buttonDisabled.value}
+                            onClick={onClear}
+                            icon={<ReloadOutlined />}
+                          >
+                            重置
+                          </Button>
+                        ]
+                    }
+                  </Space>
+                )
+              }
+            </div>
+          </div>
           {
-            slots.default && (
-              <Space class={'tg-inquiry-row-for-buttons'}>
-                {
-                  configs.buttonPermissions && !props.disabledButtonPermission
-                    ? [
-                      <TGPermissionsButton
-                        type="primary"
-                        icon={<SearchOutlined />}
-                        loading={loading.value}
-                        disabledType={disabledType.DISABLE}
-                        disabled={loading.value || buttonDisabled.value}
-                        identification={props.buttonPermissionIdentification}
-                        onClick={onFinish}
-                      >
-                        查询
-                      </TGPermissionsButton>,
-                      <TGPermissionsButton
-                        icon={<ReloadOutlined />}
-                        disabledType={disabledType.DISABLE}
-                        disabled={loading.value || buttonDisabled.value}
-                        identification={props.buttonPermissionIdentification}
-                        onClick={onClear}
-                      >
-                        重置
-                      </TGPermissionsButton>
-                    ]
-                    : [
-                      <Button
-                        icon={<SearchOutlined />}
-                        disabled={loading.value || buttonDisabled.value}
-                        loading={loading.value}
-                        type="primary"
-                        onClick={onFinish}
-                      >
-                        查询
-                      </Button>,
-                      <Button
-                        disabled={loading.value || buttonDisabled.value}
-                        onClick={onClear}
-                        icon={<ReloadOutlined />}
-                      >
-                        重置
-                      </Button>
-                    ]
-                }
-              </Space>
+            props.fixedColumns && formItemLength.value.length > 7 && (
+              <div class={'tg-inquiry-form-collapse-button'}>
+                <Button
+                  icon={inquiryFormCollapsed.value ? <DownOutlined /> : <UpOutlined />}
+                  onClick={handleInquiryFormCollapsedChange}
+                />
+              </div>
             )
           }
-        </div>
-      </Form>
-    )
+        </Form>
+      )
+    }
   }
 
   return {

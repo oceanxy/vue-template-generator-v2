@@ -10,6 +10,8 @@ export default createStore({
       showMenu: true,
       // 页面中的侧边树折叠与展开状态切换（如果有）
       treeCollapsed: false,
+      // 页面中的搜索栏折叠与展开状态切换（如果有）
+      inquiryFormCollapsed: true,
       // 主题配置
       themeName: 'default'
     },
