@@ -24,7 +24,7 @@ export default {
       type: String,
       default: ''
     },
-    // 获取页面主数据时是否需要分页，主数据是指 moduleName 指向的接口数据
+    // 获取页面主数据时是否需要分页，主数据是指 router.currentRoute.value.name 指向的接口数据
     isPagination: {
       type: Boolean,
       default: true

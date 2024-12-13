@@ -1,6 +1,5 @@
 import './assets/styles/index.scss'
 import { computed, provide, ref, watch } from 'vue'
-import useModuleName from '@/composables/moduleName'
 import { Button, Modal, Spin } from 'ant-design-vue'
 import useThemeVars from '@/composables/themeVars'
 
@@ -23,7 +22,6 @@ export default function useTGModal({
   unWatch
 }) {
   const { cssVars } = useThemeVars()
-  const moduleName = useModuleName()
 
   const tgModal = ref(null)
   const style = ref('')
@@ -133,7 +131,6 @@ export default function useTGModal({
 
   return {
     TGModal,
-    moduleName,
     open,
     currentItem,
     handleCancel

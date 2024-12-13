@@ -12,8 +12,6 @@ import { firstLetterToUppercase, getFirstLetterOfEachWordOfAppName } from '@/uti
 import getBaseRoutes from '@/router/routes'
 import { message } from 'ant-design-vue'
 import { getEnvVar } from '@/utils/env'
-import { app } from '@/main'
-import { moduleName } from '@/composables/moduleName'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 
@@ -170,7 +168,6 @@ router.beforeEach(async (to, from, next) => {
   }
 
   document.title = title + configs.systemName
-  app.provide(moduleName, to.name)
 
   // 从search中获取token
   const searchToken = new URL(window.location.href).searchParams.get(configs.tokenConfig.fieldName)

@@ -8,7 +8,7 @@ import { Button } from 'ant-design-vue'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
 import { computed, inject } from 'vue'
-import { moduleName } from '@/composables/moduleName'
+import router from '@/router'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 let buttonPermissions
@@ -56,12 +56,10 @@ export default {
     }
   },
   setup(props, { slots, events }) {
-    const _moduleName = inject(moduleName)
-
     const innerDisabled = computed(() => {
       if (!configs.buttonPermissions) return false
 
-      return !buttonPermissions?.[_moduleName]?.includes(props.identification)
+      return !buttonPermissions?.[router.currentRoute.value.name]?.includes(props.identification)
     })
 
     const innerProps = computed(() => {

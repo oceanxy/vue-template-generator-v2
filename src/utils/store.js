@@ -8,17 +8,6 @@
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 
 /**
- * 在模块内触发全局 mutation 的封装
- * @param moduleName {string} 需要修改状态的模块名称
- * @param commit {Function} [moduleName]模块的commit (Vuex.commit)
- * @param mutation {string} Mutation
- * @param payload {*} 触发mutation的值
- */
-export function commitRootInModule(moduleName, commit, mutation, payload) {
-  commit(mutation, payload, { root: true })
-}
-
-/**
  * 为自定义 Vuex.store 模块注入 apis
  * @param actions
  * @param apis

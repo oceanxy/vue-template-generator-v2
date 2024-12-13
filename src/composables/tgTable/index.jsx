@@ -233,7 +233,7 @@ export default function useTGTable({
    * @param [getIds=(record) => record.id] {(Object) => string} - 从数据对象中获取唯一标识符，默认取`record`的`id`字段。
    * @param [nameKey='fullName'] {string} - 指定 record 数据对象中用来显示的字段名，主要用于操作之后的提示信息。 默认 'fullName'。
    *  例如：`$｛fullName｝的状态已更新！`
-   * @param [apiName] {string} - 自定义接口名，默认为`update[moduleName][fieldName]}`，采用驼峰命名。
+   * @param [apiName] {string} - 自定义接口名，默认为`update[router.currentRoute.value.name][fieldName]}`，采用驼峰命名。
    * @param [stateName='dataSource'] {string} - store.state 中存储该表格数据的字段名，默认 'dataSource'。
    * @param [optimisticUpdate=true] {boolean} - 乐观更新，是否在成功调用更新接口后向服务器请求新的列表数据。
    *  默认`true`，使用乐观更新，即不向服务器请求新的列表数据，前端执行乐观更新操作。
@@ -361,12 +361,19 @@ export default function useTGTable({
    * 处理打开弹窗的前置点击事件
    * @param record {Object}
    * @param modalStatusFieldName {string}
+   * @param [location='modalForEditing'] {string} - 默认为`modalForEditing`。
+   * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].form`的参数名。
    * @returns {Promise<void>}
    */
-  function handleClick(record, modalStatusFieldName) {
+  function handleClick(record, modalStatusFieldName, {
+    location,
+    injectSearchParams
+  } = {}) {
     store.setVisibilityOfModal({
       currentItem: record,
-      modalStatusFieldName
+      modalStatusFieldName,
+      location,
+      injectSearchParams
     })
   }
 

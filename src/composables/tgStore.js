@@ -1,5 +1,5 @@
 import { firstLetterToLowercase as toLowercase } from '@/utils/utilityFunction'
-import useModuleName from '@/composables/moduleName'
+import router from '@/router'
 
 const appName = process.env.TG_APP_NAME
 
@@ -15,8 +15,7 @@ export default function useStore(storeName) {
   let store
 
   if (!storeName) {
-    const moduleName = useModuleName()
-    store = require(`@/apps/${appName}/stores/modules/${toLowercase(moduleName.value)}`)
+    store = require(`@/apps/${appName}/stores/modules/${toLowercase(router.currentRoute.value.name)}`)
   } else {
     const _storeName = storeName.split('/').at(-1)
 

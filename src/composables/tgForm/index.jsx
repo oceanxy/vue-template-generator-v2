@@ -77,7 +77,7 @@ export default function useTGForm({
    * @param [apiName] {string} - 自定义接口名称，传递此值时，action将失效。
    * @param [action] {'update','add',string} - 操作类型，未定义 apiName 时生效。
    * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
-   * 主要用于生成接口地址，生成规则`{ACTION}{ModuleName}`。
+   * 主要用于生成接口地址，生成规则`{ACTION}{router.currentRoute.value.name}`。
    * @param [params] {(() => Object) | Object} - 接口参数，受`isMergeParam`影响。
    * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值合并，默认为 false。
    * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
@@ -199,7 +199,7 @@ export default function useTGForm({
             }
 
             // 接口加载完毕后对表单的处理逻辑
-            loaded(form)
+            typeof loaded === 'function' && loaded(form)
           }
         }, { immediate: true })
       }

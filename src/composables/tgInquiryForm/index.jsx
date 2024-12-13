@@ -207,9 +207,11 @@ export default function useInquiryForm({
     },
     setup(props, { slots }) {
       const fieldDom = ref()
-      const formItemLength = computed(() => {
-        return fieldDom.value?.querySelectorAll('.ant-form-item')?.length ?? 0
-      })
+      const showInquiryFormCollapsedButton = ref(true)
+
+      watch(() => fieldDom.value?.querySelectorAll('.ant-form-item')?.length, val => {
+        showInquiryFormCollapsedButton.value = props.fixedColumns && val > 7
+      }, { immediate: true })
 
       async function handleInquiryFormCollapsedChange() {
         const heightDifference = fieldDom.value.parentNode.clientHeight - fieldDom.value.clientHeight
@@ -238,13 +240,13 @@ export default function useInquiryForm({
         >
           <div class={'tg-inquiry-form-content'}>
             {slots.others?.(formModel)}
-            <div
-              ref={fieldDom}
-              class={'tg-inquiry-row-for-fields collapsed'}
-            >
-              {slots.default?.(formModel)}
-              {
-                slots.default && (
+            {
+              slots.default && (
+                <div
+                  ref={fieldDom}
+                  class={'tg-inquiry-row-for-fields collapsed'}
+                >
+                  {slots.default?.(formModel)}
                   <Space class={'tg-inquiry-row-for-buttons'}>
                     {
                       configs.buttonPermissions && !props.disabledButtonPermission
@@ -290,12 +292,12 @@ export default function useInquiryForm({
                         ]
                     }
                   </Space>
-                )
-              }
-            </div>
+                </div>
+              )
+            }
           </div>
           {
-            props.fixedColumns && formItemLength.value.length > 7 && (
+            showInquiryFormCollapsedButton.value && (
               <div class={'tg-inquiry-form-collapse-button'}>
                 <Button
                   icon={inquiryFormCollapsed.value ? <DownOutlined /> : <UpOutlined />}

@@ -17,7 +17,7 @@ import useStore from '@/composables/tgStore'
  * @param {Object} [module={}] - 需要合并到 store 的 state。
  * @param {string[] | boolean} [excludeFromState=[]] - 需要从 store 中排除的 state 集合，为 true 时将排除所有内置状态。
  * @param {boolean} [isRoot] - 是否是框架级的 store，默认 false。为 true 时将从框架的stores目录中引入模块。
- * @returns {Object}
+ * @returns {import('pinia').StoreDefinition}
  */
 export function createStore({
   moduleName,
@@ -202,7 +202,7 @@ export function createStore({
        * 获取列表、枚举等数据集
        * @param {boolean} [isPagination] - 是否分页。默认 false。
        * @param {string} [location] - 次级表格的 state。
-       * @param {string} [apiName] - 请求接口的名称，默认为 `get${moduleName}`。
+       * @param {string} [apiName] - 请求接口的名称，默认为 `get${router.currentRoute.value.name}`。
        * @param {string} [stateName='dataSource'] - 用以保存请求数据的字段名（store.state 中的字段名），默认为 dataSource。
        * @param {string} [storeName] - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
        * @param {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象。

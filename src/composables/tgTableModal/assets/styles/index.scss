@@ -1,0 +1,28 @@
+.tg-modal-inquiry-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .ant-form-item {
+    width: calc((100% - 30px) / 4);
+    min-width: 120px;
+    margin-bottom: 0;
+  }
+
+  .ant-form-item-control-input-content {
+    & > * {
+      width: 100%;
+    }
+  }
+
+  .tg-form-item-btn {
+    display: flex;
+    justify-content: flex-end;
+    margin-left: auto;
+
+    .ant-form-item-control-input-content {
+      display: flex;
+      gap: 10px;
+    }
+  }
+}

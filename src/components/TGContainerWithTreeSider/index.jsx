@@ -5,7 +5,6 @@ import TGContainerWithSider from '@/components/TGContainerWithSider'
 import { cloneDeep, debounce } from 'lodash'
 import { computed, onBeforeMount, provide, ref, watch } from 'vue'
 import useStore from '@/composables/tgStore'
-import useModuleName from '@/composables/moduleName'
 import router from '@/router'
 import { CaretDownOutlined, SearchOutlined } from '@ant-design/icons-vue'
 import configs from '@/configs'
@@ -115,16 +114,15 @@ export default {
     }
   },
   setup(props, { slots }) {
-    const moduleName = useModuleName()
     const store = useStore()
     let treeStore
 
-    const storeName = props.treeDataOptions?.storeName ?? moduleName
+    const storeName = props.treeDataOptions?.storeName ?? router.currentRoute.value.name
     const stateName = props.treeDataOptions?.stateName ?? 'dataSource'
 
-    if (storeName.value === moduleName.value) {
+    if (storeName.value === router.currentRoute.value.name) {
       if (stateName === 'dataSource') {
-        console.warn(`${moduleName} 页面的筛选树数据将覆盖本页面的表格数据（store.state.dataSource），可能发生意料之外的问题！`)
+        console.warn(`${router.currentRoute.value.name} 页面的筛选树数据将覆盖本页面的表格数据（store.state.dataSource），可能发生意料之外的问题！`)
       }
 
       treeStore = store
@@ -357,7 +355,7 @@ export default {
           ...router.currentRoute.value.params // 获取清空 query 后，通过 route.params 传递的参数。
         })
       } else {
-        return Promise.reject(new Error('未获取到树数据'))
+        return Promise.reject(new Error('未获取到树数据，已停止加载后续所有的依赖功能！'))
       }
     }
 
