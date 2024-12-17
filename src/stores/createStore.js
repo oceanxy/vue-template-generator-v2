@@ -51,9 +51,12 @@ export function createStore({
          * 初始化列表搜索参数（store.state.search）的任务队列
          */
         taskQueues: {
-          dependentTreeNode: [],
-          notDependentTreeNodeButRequired: [],
-          treeNode: []
+          // 左侧树的数据源加载相关的任务队列
+          treeNode: [],
+          // 搜索栏必需的参数的任务队列
+          required: [],
+          // 搜索栏非必需的参数的任务队列
+          notRequired: []
         },
         /**
          * 用于接收侧边树选中值的字段名，默认''，通过 @/components/TGContainerWithTreeSider 组件设置。
@@ -161,22 +164,36 @@ export function createStore({
         this.setSearchParams(searchParams, isPagination, location)
 
         if (isFetchList) {
-          if (isResetSelectedRows) {
-            if (!location && 'selectedRows' in this.$state) {
-              this.selectedRows = []
-            }
-
-            if (location && 'selectedRows' in this.$state[location]) {
-              this.$state[location].selectedRows = []
-            }
-          }
-
-          await this.getList({
-            ...optionsOfGetList,
+          await this.execSearch({
+            isResetSelectedRows,
+            isPagination,
             location,
-            isPagination
+            ...optionsOfGetList
           })
         }
+
+      },
+      async execSearch({
+        isResetSelectedRows = true,
+        isPagination = true,
+        location,
+        ...optionsOfGetList
+      }) {
+        if (isResetSelectedRows) {
+          if (!location && 'selectedRows' in this.$state) {
+            this.selectedRows = []
+          }
+
+          if (location && 'selectedRows' in this.$state[location]) {
+            this.$state[location].selectedRows = []
+          }
+        }
+
+        await this.getList({
+          ...optionsOfGetList,
+          location,
+          isPagination
+        })
       },
       /**
        * 设置搜索参数（当搜索参数变化时，会重置分页参数）。
@@ -210,7 +227,7 @@ export function createStore({
        * 默认 false，不合并，但是如果 paramsForGetList 参数的值不是对象或是一个空对象，则强制使用`store.state.search`的值作为参数。
        * 注意，当值为true时，不会改变`store.state.search`的值，仅仅是在调用接口处传递给接口。如果有同名参数，paramsForGetList 的优先级更高。
        * @param {string} [paramNameInSearchRO] - store.state.search 内对应选中枚举的参数名。
-       * @param {boolean | ((data: Object[]|Object) => any)} [getValueFormResponse] - 接口加载成功后，
+       * @param {boolean | ((data: Object[] | Object) => any)} [getValueFormResponse] - 接口加载成功后，
        * paramNameInSearchRO 参数所指向字段的默认值取值逻辑。默认 false 不取值，为 true 时取数据数组第一项的 ID 值。
        * @param {(data: any, store:import('pinia').StoreDefinition) => void} [setValueToStateName] - 把接口返回的数据
        * （response.data）设置到 stateName 对应字段的自定义实现。
@@ -382,9 +399,9 @@ export function createStore({
               } else {
                 if (typeof getValueFormResponse === 'boolean' && getValueFormResponse) {
                   if (location) {
-                    this.$state[location].form[paramNameInSearchRO] = store[location][stateName]?.list?.[0]?.id
+                    this.$state[location].form[paramNameInSearchRO] = store[location][stateName]?.list?.[0]?.id ?? ''
                   } else {
-                    this.search[paramNameInSearchRO] = store[stateName]?.list?.[0]?.id
+                    this.search[paramNameInSearchRO] = store[stateName]?.list?.[0]?.id ?? ''
                   }
                 }
               }

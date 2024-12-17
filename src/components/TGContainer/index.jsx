@@ -2,7 +2,7 @@ import './assets/styles/index.scss'
 import TGContainerWithTreeSider from '@/components/TGContainerWithTreeSider'
 import { Space } from 'ant-design-vue'
 import router from '@/router'
-import { onMounted, provide } from 'vue'
+import { nextTick, onMounted, provide } from 'vue'
 import useStore from '@/composables/tgStore'
 
 export default {
@@ -45,6 +45,93 @@ export default {
 
     // 提供给所有子级或插槽，以判断本页面是否存在列表组件
     provide('isTableExist', !!slots.table)
+    provide('initSearchParameters', initSearchParameters)
+
+    onMounted(async () => {
+      await initSearchParameters({ isFirstTime: true })
+    })
+
+    /**
+     * 参数初始化
+     * @param [isFirstTime] {boolean} - 是否是首次初始化
+     * @param [searchParams]
+     * @returns {Promise<void>}
+     */
+    async function initSearchParameters({
+      isFirstTime = false,
+      searchParams
+    } = {}) {
+      let payload = {}
+
+      try {
+        if (showTree && isFirstTime && Array.isArray(store.taskQueues.treeNode)) {
+          /* 初始化侧边树 */
+          const result = await Promise.all(store.taskQueues.treeNode)
+
+          for (const _payload of result) {
+            payload = { ...payload, ..._payload }
+          }
+        }
+
+        // 注入额外的搜索参数，注意：侧边树的搜索参数注入不在此组件内执行
+        if (!showTree && typeof injectSearchParamsOfTable === 'function') {
+          payload = injectSearchParamsOfTable({})
+        }
+
+        /* 执行枚举初始化并注册枚举值监听器 */
+        if (isFirstTime) {
+          // 注册必需的枚举值监听器
+          execListeners(
+            // 首次初始化时延迟执行非必需的枚举，以节省请求表格的资源
+            await Promise.all(store.taskQueues.required.map(cb => cb(isFirstTime)))
+          )
+          // 注册非必需的枚举值监听器
+          execListeners(
+            await Promise.all([
+              // 执行搜索
+              execSearch(payload),
+              // 首次初始化时可将非必需的枚举初始化流程延迟到此时执行
+              ...store.taskQueues.notRequired.map(cb => cb(isFirstTime))
+            ])
+          )
+        } else {
+          // 参数更新， 触发有依赖的字段的 watch
+          store.setSearchParams(searchParams, isPagination)
+
+          // 等待搜索枚举中有依赖字段的参数重置完成
+          await nextTick()
+
+          // 执行搜索
+          await store.execSearch({
+            isPagination,
+            ...(optionsOfGetList ?? {})
+          })
+        }
+      } catch (error) {
+        // 树数据加载失败，退出后续所有的数据加载逻辑
+        store.dataSource.loading = false
+        console.error(error)
+      }
+    }
+
+    async function execSearch(searchParams) {
+      await store.onSearch({
+        searchParams,
+        isResetSelectedRows: true,
+        isPagination,
+        ...(optionsOfGetList ?? {})
+      })
+    }
+
+    /**
+     * 注册枚举值监听器
+     * @param listeners
+     */
+    function execListeners(listeners) {
+      for (const listener of listeners) {
+        typeof listener === 'function' && listener()
+      }
+    }
 
     function filterSlots() {
       return [
@@ -82,48 +169,6 @@ export default {
       ]
     }
 
-    onMounted(async () => {
-      let payload = {}
-
-      try {
-        if (showTree) {
-          // 初始化侧边树
-          const result = await Promise.all(store.taskQueues.treeNode)
-
-          for (const _payload of result) {
-            payload = { ...payload, ..._payload }
-          }
-        }
-
-        // 执行枚举初始化
-        const listeners = await Promise.all([
-          ...store.taskQueues.dependentTreeNode.map(cb => cb()),
-          ...store.taskQueues.notDependentTreeNodeButRequired.map(cb => cb())
-        ])
-
-        // 注册枚举值监听器
-        for (const listener of listeners) {
-          listener()
-        }
-
-        // 侧边树的搜索参数注入不在此组件内执行
-        if (!showTree && typeof injectSearchParamsOfTable === 'function') {
-          payload = { ...payload, ...injectSearchParamsOfTable({}) }
-        }
-
-        await store.onSearch({
-          searchParams: payload,
-          isResetSelectedRows: true,
-          isPagination,
-          ...(optionsOfGetList ?? {})
-        })
-      } catch (error) {
-        // 树数据加载失败，退出后续所有的数据加载逻辑
-        store.dataSource.loading = false
-        console.error(error)
-      }
-    })
-
     return () => (
       <div class={`tg-container${attrs.class ? ` ${attrs.class}` : ''}`}>
         {
@@ -156,7 +201,6 @@ export default {
             ? (
               <TGContainerWithTreeSider
                 class={'tg-container-content'}
-                optionsOfGetList={optionsOfGetList}
                 injectSearchParamsOfTable={injectSearchParamsOfTable}
                 {...treeProps}
               >

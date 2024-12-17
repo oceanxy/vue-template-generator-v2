@@ -17,10 +17,10 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * 必需入参的配置
  * @global
  * @typedef SearchParamOption
- * @property [location] {string} - 在 store.state 中次级模块的字段名称。
  * @property stateName {string} - 在 store.state 中字段的名称。
+ * @property [location] {string} - 在 store.state 中次级模块的字段名称。
  * @property [storeName] {string} - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
- * @property apiName {string} - 接口名称。
+ * @property [apiName] {string} - 接口名称。
  * @property [paramsForGetList={}] {((state: Object) => Object) | Object} - 接口请求时的参数，默认为空对象。
  * @property [isRequired] {boolean} - 是否是必传参数。
  * @property [paramNameInSearchRO] {string} - store.state.search 内对应的字段名。
@@ -31,9 +31,8 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * - 返回值将赋值给 store.state.search 对象内 paramNameInSearchRO 指定的字段。
  * @property [raw] {boolean} - 原样输出接口返回的数据结构到 stateName 指定的字段中。
  * @property [done] {(data: Object) => Array<any>} - 当前枚举调用接口后的回调，参数为 response.data。
- * @property [dependentField] {string} - 请求接口所依赖`store.state.search`中的参数名。
- * @property [isDependentTreeNode] {boolean} - 是否依赖本页面左侧的树的选中项。[TODO]
- * @property [onTreeNodeChange] {Function} - 树节点变更回调，依赖 isDependentTreeNode。[TODO]
+ * @property [dependentField] {string | ((store) => string)} - 请求接口所依赖`store.state.search`中的参数名。
+ * @property [customData] {(dependentField) => Array} - 不请求接口，自定义数据的生成。依赖 dependentField。使用此参数时 apiName 及接口请求相关的参数都将失效。
  */
 
 /**
@@ -49,7 +48,6 @@ export default function useInquiryForm({
 } = {}) {
   const store = useStore()
   const commonStore = useStore('/common')
-  const hasTree = inject('hasTree', false)
   const searchParamNameRequired = inject('searchParamNameRequired', [])
 
   const treeCollapsed = computed(() => commonStore.treeCollapsed)
@@ -70,10 +68,12 @@ export default function useInquiryForm({
   const { resetFields, validate, validateInfos } = Form.useForm(formModel, formRules)
 
   async function onClear() {
+    // 防止必填属性被清空
     resetFields(searchParamNameRequired.reduce((acc, paramName) => {
       acc[paramName] = search.value[paramName]
       return acc
     }, {}))
+
     onFinish()
   }
 
@@ -96,10 +96,38 @@ export default function useInquiryForm({
       if (typeof isContinue !== 'boolean' || isContinue) {
         // 处理依赖参数的初始化
         if (dependentField) {
+          const _dependentField = typeof dependentField === 'function'
+            ? dependentField(store)
+            : dependentField
+
           await new Promise(resolve => {
-            watch(() => search.value[dependentField], async (newVal, oldValue) => {
+            watch(() => search.value[_dependentField], async (newVal, oldValue) => {
               if (newVal !== oldValue) {
-                resolve(await store.getList(options))
+                let res
+
+                // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已 选中的值
+                store.search[enumOptions.paramNameInSearchRO] = ''
+                store.setList(options.stateName, [], options.location)
+
+                if (typeof options.customData === 'function') {
+                  const data = await options.customData(newVal)
+
+                  if (!Array.isArray(data)) {
+                    throw new Error(`自定义枚举 ${options.stateName} 的 customData 函数返回值必须为一个数组。`)
+                  }
+
+                  store.setState(options.stateName, data)
+                  res = { status: true, data }
+                } else {
+                  if (!options.apiName) {
+                    throw new Error(`非自定义枚举 ${options.stateName} 必须指定 apiName。`)
+                  }
+
+                  res = await store.getList(options)
+                }
+
+                // 完成 promise
+                resolve(res)
               }
             })
           })
@@ -132,48 +160,24 @@ export default function useInquiryForm({
    * 必传枚举和非必传枚举的数据初始化
    */
   onMounted(async () => {
-    const enumFnsOfNotDependentTreeNodeAndNotRequired = []
     const enumFns = (searchParamOptions || []).reduce(
-      (fns, enumOptions) => {
+      (enumFns, enumOptions) => {
         // 处理各枚举的依赖关系，以确定其执行顺序
         if (enumOptions.isRequired) {
           searchParamNameRequired.push(enumOptions.paramNameInSearchRO)
-
-          if (enumOptions.isDependentTreeNode) {
-            fns.dependentTreeNode.required.push(execEnum(enumOptions))
-          } else {
-            fns.notDependentTreeNodeButRequired.push(execEnum(enumOptions))
-          }
+          enumFns.required.push(execEnum(enumOptions))
         } else {
-          if (enumOptions.isDependentTreeNode) {
-            fns.dependentTreeNode.notRequired.push(execEnum(enumOptions))
-          } else {
-            enumFnsOfNotDependentTreeNodeAndNotRequired.push(execEnum(enumOptions))
-          }
+          enumFns.notRequired.push(execEnum(enumOptions))
         }
 
-        return fns
+        return enumFns
       },
-      {
-        dependentTreeNode: { required: [], notRequired: [] },
-        notDependentTreeNodeButRequired: []
-      }
+      { required: [], notRequired: [] }
     )
 
-    store.taskQueues.notDependentTreeNodeButRequired.push(...enumFns.notDependentTreeNodeButRequired)
-
-    if (hasTree) {
-      // 将依赖树节点的枚举保存到队列中
-      store.taskQueues.dependentTreeNode.push(
-        ...enumFns.dependentTreeNode.required,
-        ...enumFns.dependentTreeNode.notRequired
-      )
-    }
-
-    // 不依赖树节点的非必须枚举队列直接执行
-    if (enumFnsOfNotDependentTreeNodeAndNotRequired.length) {
-      await Promise.all(enumFnsOfNotDependentTreeNodeAndNotRequired.map(cb => cb()))
-    }
+    // 将依赖树节点的枚举保存到队列中
+    store.taskQueues.required = enumFns.required
+    store.taskQueues.notRequired = enumFns.notRequired
   })
 
   onUnmounted(() => {

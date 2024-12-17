@@ -3,7 +3,7 @@ import { Empty, Input, Spin, Tree } from 'ant-design-vue'
 import { sleep } from '@/utils/utilityFunction'
 import TGContainerWithSider from '@/components/TGContainerWithSider'
 import { cloneDeep, debounce } from 'lodash'
-import { computed, onBeforeMount, provide, ref, watch } from 'vue'
+import { computed, inject, onBeforeMount, provide, ref, watch } from 'vue'
 import useStore from '@/composables/tgStore'
 import router from '@/router'
 import { CaretDownOutlined, SearchOutlined } from '@ant-design/icons-vue'
@@ -32,20 +32,9 @@ export default {
      * 获取侧边栏树的数据的相关配置
      *  treeDataOptions.apiName: API名称
      *  treeDataOptions.storeName: 存放树的数据的 store 名称，默认树所在页面对应的模块
-     *  treeDataOptions.stateName: 存放树的数据的字段名
+     *  treeDataOptions.stateName: 存放树的数据的字段名，默认`dataSource`
      */
     treeDataOptions: {
-      type: Object,
-      default: () => ({})
-    },
-    /**
-     * 获取侧边栏树所在页面的列表数据的相关配置（具体配置见 store.actions.getList）
-     * 非空模式（props.notNoneMode 为 true）下生效，所以务必配合 props.notNoneMode 使用。
-     *  optionsOfGetList.apiName: API名称
-     *  optionsOfGetList.moduleName: 存放树的数据的模块名
-     *  optionsOfGetList.stateName: 存放树的数据的字段名
-     */
-    optionsOfGetList: {
       type: Object,
       default: () => ({})
     },
@@ -114,6 +103,8 @@ export default {
     }
   },
   setup(props, { slots }) {
+    const initSearchParameters = inject('initSearchParameters')
+
     const store = useStore()
     let treeStore
 
@@ -307,11 +298,7 @@ export default {
         }
 
         if (treeIdField.value && payload[treeIdField.value] !== treeId.value[0]) {
-          await store.onSearch({
-            searchParams: payload,
-            isResetSelectedRows: true,
-            ...props.optionsOfGetList
-          })
+          initSearchParameters({ searchParams: payload })
         }
       }
     }
