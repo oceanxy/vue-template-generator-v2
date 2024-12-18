@@ -167,7 +167,7 @@ export default function useTGForm({
                 (enumOptions.isRequired && newVal && newVal !== oldValue) ||
                 (!enumOptions.isRequired && newVal !== oldValue)
               ) {
-                store.onSearch()
+                store.execSearchAndGetList()
               }
             }
           )

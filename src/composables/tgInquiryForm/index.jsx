@@ -78,7 +78,7 @@ export default function useInquiryForm({
   }
 
   function onFinish() {
-    validate().then(async () => await store.onSearch())
+    validate().then(async () => await store.execSearchAndGetList())
   }
 
   /**
@@ -146,7 +146,7 @@ export default function useInquiryForm({
                   (enumOptions.isRequired && newVal && newVal !== oldValue) ||
                   (!enumOptions.isRequired && newVal !== oldValue)
                 ) {
-                  store.onSearch()
+                  store.execSearchAndGetList()
                 }
               }
             )

@@ -535,15 +535,15 @@ export default function useTGTable({
       const TABLE_CONTENT = TABLE_CONTAINER.querySelector('.ant-table-content')
 
       if (TABLE_CONTENT) {
-        if (TABLE_CONTENT.clientHeight >= TABLE_CONTAINER.clientHeight) {
+        if (TABLE_CONTENT.offsetHeight >= TABLE_CONTAINER.clientHeight) {
           scroll.y = TABLE_CONTAINER.clientHeight
         }
       } else {
         const TABLE_HEADER = TABLE_CONTAINER.querySelector('.ant-table-header')
         const TABLE_BODY = TABLE_CONTAINER.querySelector('.ant-table-body')
 
-        if (TABLE_HEADER.clientHeight + TABLE_BODY.clientHeight >= TABLE_CONTAINER.clientHeight) {
-          scroll.y = TABLE_HEADER.clientHeight + TABLE_BODY.clientHeight
+        if (TABLE_HEADER.clientHeight + TABLE_BODY.offsetHeight > TABLE_CONTAINER.clientHeight) {
+          scroll.y = TABLE_HEADER.clientHeight + TABLE_BODY.offsetHeight
         }
       }
 
@@ -581,7 +581,7 @@ export default function useTGTable({
       window.addEventListener('resize', resizeCallback())
 
       // tg-inquiry-form 为可变高度的容器，这里监听一下该容器的高度变化，用来重置表格的高度
-      const inquiryForm = document.querySelector('.tg-inquiry-form')
+      const inquiryForm = document.querySelector('.tg-inquiry-form .tg-inquiry-form-content')
       const collapsedChart = document.querySelector('.tg-collapsed-chart')
 
       if (inquiryForm || collapsedChart) {
@@ -593,7 +593,7 @@ export default function useTGTable({
 
         inquiryForm && observer.observe(inquiryForm, {
           attributes: true,
-          attributeFilter: ['class']
+          attributeFilter: ['style']
         })
 
         collapsedChart && observer.observe(collapsedChart, {

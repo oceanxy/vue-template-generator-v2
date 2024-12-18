@@ -83,15 +83,15 @@ export default {
           // 注册必需的枚举值监听器
           execListeners(
             // 首次初始化时延迟执行非必需的枚举，以节省请求表格的资源
-            await Promise.all(store.taskQueues.required.map(cb => cb(isFirstTime)))
+            await Promise.all(store.taskQueues.required.map(cb => cb()))
           )
           // 注册非必需的枚举值监听器
           execListeners(
             await Promise.all([
               // 执行搜索
-              execSearch(payload),
+              execSearchAndGetList(payload),
               // 首次初始化时可将非必需的枚举初始化流程延迟到此时执行
-              ...store.taskQueues.notRequired.map(cb => cb(isFirstTime))
+              ...store.taskQueues.notRequired.map(cb => cb())
             ])
           )
         } else {
@@ -114,8 +114,8 @@ export default {
       }
     }
 
-    async function execSearch(searchParams) {
-      await store.onSearch({
+    async function execSearchAndGetList(searchParams) {
+      await store.execSearchAndGetList({
         searchParams,
         isResetSelectedRows: true,
         isPagination,

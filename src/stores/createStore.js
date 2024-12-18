@@ -153,7 +153,7 @@ export function createStore({
        * @param [...optionsOfGetList] {Object}
        * @returns {Promise<void>}
        */
-      async onSearch({
+      async execSearchAndGetList({
         searchParams,
         isFetchList = true,
         isResetSelectedRows = true,
