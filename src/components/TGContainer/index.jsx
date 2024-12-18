@@ -9,6 +9,11 @@ export default {
   name: 'TGContainer',
   inheritAttrs: false,
   props: {
+    // 是否自动初始化页面数据（页面数据接口按照`get{router.currentRoute.value.name}格式定义`）
+    isInit: {
+      type: Boolean,
+      default: true
+    },
     // 是否显示侧边树
     showTree: {
       type: Boolean,
@@ -20,7 +25,7 @@ export default {
       default: true
     },
     // 自定义容器的额外样式表
-    customContentClassName: {
+    contentClassName: {
       type: String,
       default: ''
     },
@@ -35,7 +40,7 @@ export default {
     const store = useStore()
     const {
       showTree,
-      customContentClassName,
+      contentClassName,
       showPageTitle,
       isPagination,
       optionsOfGetList,
@@ -46,9 +51,12 @@ export default {
     // 提供给所有子级或插槽，以判断本页面是否存在列表组件
     provide('isTableExist', !!slots.table)
     provide('initSearchParameters', initSearchParameters)
+    provide('isInit', props.isInit)
 
     onMounted(async () => {
-      await initSearchParameters({ isFirstTime: true })
+      if (props.isInit) {
+        await initSearchParameters({ isFirstTime: true })
+      }
     })
 
     /**
@@ -135,20 +143,26 @@ export default {
 
     function filterSlots() {
       return [
-        slots.inquiry?.() ?? slots.others?.(),
+        slots.inquiry?.(),
         slots.chart?.(),
-        // customContent 和 table 结构只能二选一，如果二者都存在，customContent 优先
-        slots.customContent
+        // default 和 table 结构只能二选一，如果二者都存在，table 优先
+        slots.table
           ? (
-            <div class={'tg-container-custom-content-container'}>
+            <div class={'tg-container-table-container'}>
+              {slots.table()}
+            </div>
+          )
+          : slots.default &&
+          (
+            <div class={'tg-container-content-container'}>
               <div
                 class={
-                  `tg-container-custom-content${customContentClassName
-                    ? ` ${customContentClassName}`
+                  `tg-container-content${contentClassName
+                    ? ` ${contentClassName}`
                     : ''}`
                 }
               >
-                {slots.customContent()}
+                {slots.default()}
               </div>
               {
                 slots.bottomFunctions && (
@@ -158,13 +172,7 @@ export default {
                 )
               }
             </div>
-          )
-          : slots.table && (
-          <div class={'tg-container-table-container'}>
-            {slots.table?.()}
-            {slots.default?.()}
-          </div>
-        ),
+          ),
         slots.modals && <div class="tg-container-modals">{slots.modals()}</div>
       ]
     }

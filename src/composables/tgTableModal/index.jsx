@@ -15,9 +15,9 @@ export default function useTGTableModal({
   setDetails,
   optionForGetList,
   rules
-}) {
+} = {}) {
   const { TGTable } = useTGTable({
-    props: tableProps.value,
+    props: tableProps?.value || {},
     location,
     isInjectRouterQuery: false,
     optionForGetList
@@ -39,9 +39,22 @@ export default function useTGTableModal({
     modalProps
   })
 
+  /**
+   * 含有表格的弹窗
+   * @param props
+   * @config [readonly] {boolean} - 只读弹窗，为true时，弹窗按钮只显示为一个关闭按钮。
+   * 若要更改按钮的文本请参照 ant-design-vue modal 组件的 API。
+   * @param slots
+   * @returns {JSX.Element}
+   * @constructor
+   */
   function TGTableModal(props, { slots }) {
     return (
-      <TGModal class={'tg-table-modal'} modalProps={modalProps}>
+      <TGModal
+        {...props}
+        class={'tg-table-modal'}
+        modalProps={modalProps}
+      >
         {
           slots.default && (
             <TGForm class={'tg-modal-inquiry-form'}>

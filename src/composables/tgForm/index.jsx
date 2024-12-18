@@ -8,9 +8,12 @@
 import './assets/styles/index.scss'
 import useStore from '@/composables/tgStore'
 import { computed, inject, onUnmounted, reactive, ref, watch } from 'vue'
-import { Form } from 'ant-design-vue'
+import { Button, Form } from 'ant-design-vue'
 
 /**
+ * @param [showButton] {boolean} - 是否确认按钮。
+ * @param [okButtonProps={}] {import('ant-design-vue.Button.props')} - okButton 按钮的属性。
+ * @param [okButtonParams={}] {{}} - ok按钮点击时的参数（handleFinish函数的参数）。
  * @param location {string}
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
  * @param [isGetDetails] {boolean} - 是否请求该弹窗的详情数据。
@@ -20,13 +23,12 @@ import { Form } from 'ant-design-vue'
  * @param [rules={}] {Object} - 验证规则，参考 ant-design-vue 的 Form.Item。
  * @param [modalStatusFieldName] {string} - 弹窗状态字段名。
  * @param [loaded] {(Object)=>void} - 所有 searchParamOptions 指定的接口全部加载完成时的回调。
- * @param [paramsForGetList={}] {((state: Object) => Object) | Object} - 搜索接口的额外参数，默认为空对象。
- * 注意：
- * - 搜索接口的默认参数为 store.state.search 对象内所有字段，本字段配置的参数会在调用接口前合并到接口参数中，但不会改变 store.state.search 的值。
- * - 如果与 store.state.search 有同名字段，本配置返回的字段的优先级更高。
  * @returns {Object}
  */
 export default function useTGForm({
+  showButton = false,
+  okButtonProps = {},
+  okButtonParams = {},
   location,
   searchParamOptions,
   isGetDetails,
@@ -34,8 +36,7 @@ export default function useTGForm({
   buttonDisabledFn,
   rules = {},
   modalStatusFieldName,
-  loaded,
-  paramsForGetList = {}
+  loaded
 } = {}) {
   const hasTree = inject('hasTree', false)
   const refreshTree = inject('refreshTree', undefined)
@@ -48,7 +49,7 @@ export default function useTGForm({
   const form = computed(() => store[location]?.form)
   const currentItem = computed(() => store.currentItem)
 
-  const formModel = reactive(form.value)
+  const formModel = reactive(location ? form.value : search.value)
   const formRules = reactive(rules)
 
   // 按钮禁用状态
@@ -84,7 +85,7 @@ export default function useTGForm({
    * @param [isRefreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
    * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
-   * @param [success] {()=>void} - 操作执行成功后的回调函数。
+   * @param [success] {(res: Object)=>void} - 操作执行成功后的回调函数，参数为接口的 Response。
    */
   function handleFinish({
     callback,
@@ -121,7 +122,7 @@ export default function useTGForm({
                 await refreshTree?.()
               }
 
-              success?.()
+              success?.(res)
             }
           }
 
@@ -184,9 +185,13 @@ export default function useTGForm({
     name: 'TGForm',
     setup(props, { slots, emit }) {
       const inModal = inject('inModal', false)
-      const open = computed(() => store[modalStatusFieldName])
+      const isInit = inject('isInit', false)
+
+      const { text, loading, ...restOkButtonProps } = okButtonProps
 
       if (inModal) {
+        const open = computed(() => store[modalStatusFieldName])
+
         watch(open, async val => {
           if (val) {
             if (searchParamOptions?.length) {
@@ -218,6 +223,20 @@ export default function useTGForm({
       return () => (
         <Form class={'tg-form'} colon={false}>
           {slots.default?.()}
+          {
+            showButton && (
+              <Button
+                {...restOkButtonProps}
+                loading={loading || confirmLoading.value}
+                onClick={() => handleFinish({
+                  ...okButtonParams,
+                  isRefreshTable: isInit
+                })}
+              >
+                {text}
+              </Button>
+            )
+          }
         </Form>
       )
     }

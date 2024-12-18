@@ -2,13 +2,14 @@ import './assets/styles/index.scss'
 import { computed, provide, ref, watch } from 'vue'
 import { Button, Modal, Spin } from 'ant-design-vue'
 import useThemeVars from '@/composables/themeVars'
+import useStore from '@/composables/tgStore'
 
 /**
  *
  * @param location
  * @param modalStatusFieldName
  * @param form
- * @param store
+ * @param [store] {import('pinia').defineStore} - 默认为当前页面的 store。
  * @param [confirmLoading] {Ref<UnwrapRef<boolean>, UnwrapRef<boolean> | boolean>} - `okButton`的`loading`值。
  * @param unWatch
  * @returns {Object}
@@ -28,6 +29,10 @@ export default function useTGModal({
   const initialPosition = ref({ x: 0, y: 0 })
   const isDragging = ref(false)
   const currentOffset = ref({ x: 0, y: 0 })
+
+  if (!store) {
+    store = useStore()
+  }
 
   const open = computed(() => store[modalStatusFieldName])
   const currentItem = computed(() => store.currentItem)
@@ -87,7 +92,7 @@ export default function useTGModal({
    * modal 组件
    * @param props
    * @config modalPorps {import('ant-design-vue').ModalProps}
-   * @config [readonly] {boolean} - 只显示取消按钮。
+   * @config [readonly] {boolean} - 只读弹窗，为true时，弹窗按钮只显示为一个关闭按钮。
    * 若要更改按钮的文本请参照 ant-design-vue modal 组件的 API。
    * @param slots
    * @returns {JSX.Element}

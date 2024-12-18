@@ -44,7 +44,7 @@
 
     &:has(
       .tg-container-chart-container,
-      .tg-container-custom-content-container,
+      .tg-container-content-container,
       .tg-container-table-container
     ) > * {
       flex: none;
@@ -52,7 +52,7 @@
       &:is(
         .tg-container-table-container,
         .tg-container-chart-container,
-        .tg-container-custom-content-container
+        .tg-container-content-container
       ) {
         flex: auto;
         height: 0;
@@ -80,7 +80,7 @@
 
         &:has(
           .tg-container-chart-container,
-          .tg-container-custom-content-container,
+          .tg-container-content-container,
           .tg-container-table-container
         ) > * {
           flex: none;
@@ -88,7 +88,7 @@
           &:is(
             .tg-container-table-container,
             .tg-container-chart-container,
-            .tg-container-custom-content-container
+            .tg-container-content-container
           ) {
             flex: auto;
           }

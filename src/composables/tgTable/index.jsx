@@ -10,7 +10,7 @@ import { verificationDialog } from '@/utils/message'
 
 /**
  *
- * @param props {import('ant-design-vue').Table.tableProps} - 表格属性。
+ * @param [props={}] {import('ant-design-vue').Table.tableProps} - 表格属性。
  * @param [location] {string} - 次级表格的 state。
  * @param [stateName] {string} - 表格数据源的属性名，默认 'dataSource'。
  * @param [isInjectRouterQuery=true] {boolean} - 是否自动注入路由的 query 参数，默认 true。
@@ -107,9 +107,9 @@ export default function useTGTable({
     columns: showSerialNumberColumn
       ? [
         ...serialNumberColumn,
-        ...props.columns
+        ...(props?.columns ?? [])
       ]
-      : props.columns,
+      : (props?.columns ?? []),
     loading,
     rowSelection: props.rowSelection
       ? {
@@ -121,7 +121,7 @@ export default function useTGTable({
         ...props.rowSelection
       }
       : null,
-    pagination: props.pagination !== false
+    pagination: props?.pagination !== false
       ? {
         showQuickJumper: true,
         showTotal: total => `共 ${total} 条数据`,
@@ -176,7 +176,7 @@ export default function useTGTable({
     await resize()
   })
 
-  if (props.pagination !== false) {
+  if (props?.pagination !== false) {
     watch(pagination, value => {
       defaultTableProps.pagination.total = value.total
       defaultTableProps.pagination.pageSize = value.pageSize
@@ -542,7 +542,7 @@ export default function useTGTable({
         const TABLE_HEADER = TABLE_CONTAINER.querySelector('.ant-table-header')
         const TABLE_BODY = TABLE_CONTAINER.querySelector('.ant-table-body')
 
-        if (TABLE_HEADER.clientHeight + TABLE_BODY.offsetHeight > TABLE_CONTAINER.clientHeight) {
+        if (TABLE_HEADER.clientHeight + TABLE_BODY.offsetHeight >= TABLE_CONTAINER.clientHeight) {
           scroll.y = TABLE_HEADER.clientHeight + TABLE_BODY.offsetHeight
         }
       }
