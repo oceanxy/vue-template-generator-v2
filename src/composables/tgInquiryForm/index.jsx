@@ -176,8 +176,8 @@ export default function useInquiryForm({
     )
 
     // 将依赖树节点的枚举保存到队列中
-    store.taskQueues.required = enumFns.required
-    store.taskQueues.notRequired = enumFns.notRequired
+    store.taskQueues.required.push(...enumFns.required)
+    store.taskQueues.notRequired.push(...enumFns.notRequired)
   })
 
   onUnmounted(() => {
