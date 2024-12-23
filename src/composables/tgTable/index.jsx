@@ -237,7 +237,7 @@ export default function useTGTable({
    * @param [stateName='dataSource'] {string} - store.state 中存储该表格数据的字段名，默认 'dataSource'。
    * @param [optimisticUpdate=true] {boolean} - 乐观更新，是否在成功调用更新接口后向服务器请求新的列表数据。
    *  默认`true`，使用乐观更新，即不向服务器请求新的列表数据，前端执行乐观更新操作。
-   * @param [customStatusValue=｛OPENED:1, CLOSED:2｝] {object} - 自定义状态值与参数值的映射关系，默认`{OPENED：1，CLOSED：2}`。
+   * @param [customStatusValue={OPENED:1, CLOSED:0}] {object} - 自定义状态值与参数值的映射关系，默认`{OPENED：1，CLOSED：0}`。
    * @returns {Promise<void>}
    */
   async function handleStatusChange({
@@ -250,7 +250,7 @@ export default function useTGTable({
     nameKey = 'fullName',
     apiName,
     stateName = 'dataSource',
-    customStatusValue = { OPENED: 1, CLOSED: 2 },
+    customStatusValue = { OPENED: 1, CLOSED: 0 },
     optimisticUpdate = true
   } = {}) {
     if (typeof getIds !== 'function') {
@@ -362,7 +362,8 @@ export default function useTGTable({
    * @param record {Object}
    * @param modalStatusFieldName {string}
    * @param [location='modalForEditing'] {string} - 默认为`modalForEditing`。
-   * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].form`的参数名。
+   * @param [injectSearchParams] {Array<string, (search)=>Object>} - 打开弹窗时，
+   * 需要从`store.search`传递到`store[location].form`的参数名。
    * @returns {Promise<void>}
    */
   function handleClick(record, modalStatusFieldName, {
@@ -395,12 +396,12 @@ export default function useTGTable({
    * 删除
    * @param record {{[key: string]: any }} - 列表数据对象
    * @param [options={}] 其他配置
-   * @config [idFieldName='ids'] {string} 删除接口用于接收删除ID的字段名，默认'ids'。
+   * @config [idFieldName='ids'] {string} 删除接口用于接收删除ID的字段名，默认 'ids'。
    * @config [params] {Object} - 调用删除需要的其他参数。
    * @config [done] {() => void} - 成功执行删除的回调。
    * @config [nameKey='fullName'] {string} - 在删除提示中显示当条数据中的某个字段信息。
    * @config [message] {string} - 自定义提示文案。
-   * @config [isRefreshTree] {boolean} - 是否刷新侧边树。默认false。依赖于`inject(hasTree)`。
+   * @config [isRefreshTree] {boolean} - 是否刷新侧边树，默认false。
    */
   async function handleDelete(record, options = {}) {
     // 处理 options 的默认值

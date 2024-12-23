@@ -9,14 +9,14 @@ import { set } from 'lodash/object'
  * @param modalProps
  * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
  * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
- * @param [location] {string}
+ * @param [location='modalForEditing'] {string}
  * @param [rules] {Object} - 表单验证规则
  * @param [isGetDetails] {boolean} - 是否在打开编辑弹窗时获取详情数据。
  * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
  * 数据后的自定义数据处理逻辑，不为函数时默认与`store.state.currentItem`合并。
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
  * @param [formModelFormatter] {(currentItem: Object) => Object} - 初始化表单数据函数，
- * 返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
+ * 参数为`currentItem`，返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
  * 一个数组，以供 Cascader 组件绑定使用。
  * @returns {Object}
  */
@@ -58,20 +58,22 @@ export default function useTGFormModal({
 
   // 将`store.currentItem`和`store[location].form`中的同名字段保持同步
   watch(tgModal.currentItem, async currentItem => {
-    if (location && Object.keys(currentItem).length) {
+    if (location) {
       const formModel = {}
 
-      for (const key in tgForm.formModel) {
-        if (key in currentItem) {
-          const formModelKey = tgForm.formModel[key]
-          const currentItemKey = toRaw(currentItem[key])
+      if (Object.keys(currentItem).length) {
+        for (const key in tgForm.formModel) {
+          if (key in currentItem) {
+            const formModelKey = tgForm.formModel[key]
+            const currentItemKey = toRaw(currentItem[key])
 
-          // 引用类型为假值时跳过
-          if (!currentItemKey && typeof formModelKey === 'object') {
-            continue
+            // 引用类型为假值时跳过
+            if (!currentItemKey && typeof formModelKey === 'object') {
+              continue
+            }
+
+            formModel[key] = currentItem[key]
           }
-
-          formModel[key] = currentItem[key]
         }
       }
 
@@ -126,7 +128,7 @@ export default function useTGFormModal({
     isRefreshTable = true,
     isRefreshTree,
     success
-  }) {
+  } = {}) {
     let paramsInjectId
 
     if (typeof params === 'function') {

@@ -147,11 +147,14 @@ export default function useTGForm({
       // 处理依赖参数的初始化
       if (dependentField) {
         await new Promise(resolve => {
-          watch(() => search.value[dependentField], async (newVal, oldValue) => {
-            if (newVal !== oldValue) {
-              resolve(await store.getList(options))
+          watch(
+            () => options.location ? form.value[dependentField] : search.value[dependentField],
+            async (newVal, oldValue) => {
+              if (newVal !== oldValue) {
+                resolve(await store.getList(options))
+              }
             }
-          })
+          )
         })
       } else {
         await store.getList(options)

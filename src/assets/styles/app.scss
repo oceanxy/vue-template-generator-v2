@@ -37,3 +37,13 @@ body,
     }
   }
 }
+
+svg {
+  path.stroke-color {
+    stroke: currentColor;
+  }
+
+  path.fill-color {
+    fill: currentColor;
+  }
+}

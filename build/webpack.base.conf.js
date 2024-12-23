@@ -76,8 +76,15 @@ module.exports = {
         use: ['thread-loader', 'babel-loader']
       },
       {
-        test: /.(png|jpg|jpeg|gif|svg|ico)$/, // 匹配图片文件
+        test: /\.svg$/,
+        loader: 'svg-sprite-loader',
+        include: [new RegExp(path.resolve(__dirname, '../src', '.*', 'svgComp', '.*.svg').replace(/\\/g, '\\\\'))],
+        options: { symbolId: 'tg-icon-[name]' }
+      },
+      {
+        test: /\.(png|jpg|jpeg|gif|svg|ico)$/, // 匹配图片文件
         type: 'asset', // type选择asset
+        exclude: [new RegExp(path.resolve(__dirname, '../src', '.*', 'svgComp', '.*.svg').replace(/\\/g, '\\\\'))], // 排除src/**/svgComp/*.svg路径的SVG文件
         parser: {
           dataUrlCondition: {
             maxSize: 10 * 1024 // 小于10kb转base64位

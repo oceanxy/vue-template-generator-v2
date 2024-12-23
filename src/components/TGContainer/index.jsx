@@ -143,21 +143,29 @@ export default {
 
     function filterSlots() {
       return [
-        slots.inquiry?.(),
-        slots.chart?.(),
+        slots.inquiry && (
+          <div class={'tg-container-inquiry-wrapper'}>
+            {slots.inquiry()}
+          </div>
+        ),
+        slots.chart && (
+          <div class={'tg-container-chart-wrapper'}>
+            {slots.chart()}
+          </div>
+        ),
         // default 和 table 结构只能二选一，如果二者都存在，table 优先
         slots.table
           ? (
-            <div class={'tg-container-table-container'}>
+            <div class={'tg-container-table-wrapper'}>
               {slots.table()}
             </div>
           )
           : slots.default &&
           (
-            <div class={'tg-container-content-container'}>
+            <div class={'tg-container-content-wrapper'}>
               <div
                 class={
-                  `tg-container-content${contentClassName
+                  `tg-container-others-content${contentClassName
                     ? ` ${contentClassName}`
                     : ''}`
                 }

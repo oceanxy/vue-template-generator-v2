@@ -22,8 +22,6 @@ export default function useTGModal({
   confirmLoading,
   unWatch
 }) {
-  const { cssVars } = useThemeVars()
-
   const tgModal = ref(null)
   const style = ref('')
   const initialPosition = ref({ x: 0, y: 0 })
@@ -103,17 +101,12 @@ export default function useTGModal({
       <Modal
         ref={tgModal}
         class={'tg-modal'}
+        getContainer={() => document.querySelector('.tg-container-modals')}
         {...confirmLoading ? { confirmLoading: confirmLoading.value } : {}}
         onCancel={handleCancel}
         open={open.value}
         maskClosable={false}
-        style={{
-          '--tg-theme-color-primary-bg': cssVars.value['--tg-theme-color-primary-bg'],
-          '--tg-theme-font-size-lg': cssVars.value['--tg-theme-font-size-lg'],
-          '--tg-theme-color-text': cssVars.value['--tg-theme-color-text'],
-          '--tg-theme-color-text-tertiary': cssVars.value['--tg-theme-color-text-tertiary'],
-          transform: style.value
-        }}
+        style={{ transform: style.value }}
         {...(props.readonly ? { footer: <Button onClick={handleCancel}>关闭</Button> } : {})}
         {...props.modalProps}
         title={

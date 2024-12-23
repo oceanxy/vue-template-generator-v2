@@ -143,6 +143,8 @@ export default function useThemeVars() {
       '--tg-theme-color-border': token.value.colorBorder,
       '--tg-theme-color-border-hover': token.value.colorPrimaryBorderHover,
       '--tg-theme-color-border-secondary': token.value.colorBorderSecondary,
+      '--tg-theme-color-icon': token.value.colorIcon,
+      '--tg-theme-color-icon-hover': token.value.colorIconHover,
       '--tg-theme-color-text': token.value.colorText,
       '--tg-theme-color-text-secondary': token.value.colorTextSecondary,
       '--tg-theme-color-text-tertiary': token.value.colorTextTertiary,

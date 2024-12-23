@@ -22,16 +22,16 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * @property [storeName] {string} - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
  * @property [apiName] {string} - 接口名称。
  * @property [paramsForGetList={}] {((state: Object) => Object) | Object} - 接口请求时的参数，默认为空对象。
- * @property [isRequired] {boolean} - 是否是必传参数。
- * @property [paramNameInSearchRO] {string} - store.state.search 内对应的字段名。
+ * @property [paramNameInSearchRO] {string} - store.state.search 内对应的字段名, 注意，一些配置会依赖该属性。
+ * @property [isRequired] {boolean} - 是否是必传参数，依赖`paramNameInSearchRO`参数。
  * @property [condition] {(() => boolean) | boolean}  - 执行条件。
  * @property [listener] {boolean} - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。
- * @property [getValueFormResponse] {(data: Object[]|Object) => any} - 接口数据加载成功后，paramNameInSearchRO字段的取值逻辑。
+ * @property [getValueFormResponse] {(data: Object[]|Object) => any} - 接口数据加载成功后，`paramNameInSearchRO`字段的取值逻辑。
  * - 参数 data 为接口请求的数据对象或数据数组；
  * - 返回值将赋值给 store.state.search 对象内 paramNameInSearchRO 指定的字段。
  * @property [raw] {boolean} - 原样输出接口返回的数据结构到 stateName 指定的字段中。
  * @property [done] {(data: Object) => Array<any>} - 当前枚举调用接口后的回调，参数为 response.data。
- * @property [dependentField] {string | ((store) => string)} - 请求接口所依赖`store.state.search`中的参数名。
+ * @property [dependentField] {string | ((store) => string)} - 请求接口所依赖`store.state.search`中的参数名，依赖`paramNameInSearchRO`参数。
  * @property [customData] {(dependentField) => Array} - 不请求接口，自定义数据的生成。依赖 dependentField。使用此参数时 apiName 及接口请求相关的参数都将失效。
  */
 

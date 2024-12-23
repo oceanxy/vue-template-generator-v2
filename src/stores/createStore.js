@@ -583,7 +583,9 @@ export function createStore({
        * @param [currentItem] {Object} - 当前行数据。
        * @param [merge] {boolean} - 是否合并，默认 false。
        * @param [location='modalForEditing'] {string} - 默认为`modalForEditing`。
-       * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].form`的参数名。
+       * @param [injectSearchParams] {Array<string, (search)=>Object>} - 打开弹窗时，
+       * 需要从`store.search`传递到`store[location].form`的参数名。
+       * 如果数组中的值为函数，则函数的参数为store.search，返回值为一个对象，对象的键为`store[location].form`中的参数名，值为自行设定的值。
        */
       setVisibilityOfModal({
         modalStatusFieldName = 'showModalForEditing',
@@ -614,7 +616,15 @@ export function createStore({
           this.$patch({
             [location]: {
               ['form' in this.$state[location] ? 'form' : 'search']: injectSearchParams.reduce((acc, cur) => {
-                acc[cur] = this.search[cur]
+                if (typeof cur === 'function') {
+                  const patch = cur(this.search)
+
+                  Object.entries(patch).forEach(([key, value]) => {
+                    acc[key] = value
+                  })
+                } else {
+                  acc[cur] = this.search[cur]
+                }
 
                 return acc
               }, {})

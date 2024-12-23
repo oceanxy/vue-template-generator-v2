@@ -31,14 +31,7 @@
         flex-wrap: wrap;
       }
 
-      .ant-form-item:not(.activity) {
-        //margin-right: 0;
-        //flex: none;
-        //min-width: 200px;
-        //box-sizing: border-box;
-        //display: inline-flex;
-        //align-items: center;
-
+      & > .ant-form-item {
         &.ant-form-item-with-help {
           margin-bottom: 0;
         }
@@ -46,52 +39,22 @@
         &.span-2 {
           min-width: 300px;
         }
-      }
 
-      .number-range.number-range {
-        display: flex;
-        align-items: center;
-        width: auto;
-
-        .ant-form-item-children {
+        .ant-input-group.number-range {
           display: flex;
           align-items: center;
+          width: 100%;
+          flex-wrap: nowrap;
 
-          .ant-form-item {
-            margin-right: 0;
-            width: 80px;
-
+          & > .ant-form-item {
             &:first-child,
             &:last-child {
               flex: auto;
+              margin-inline-end: 0;
             }
 
-            &:first-child {
-              .ant-input-number {
-                border-top-right-radius: 0;
-                border-bottom-right-radius: 0;
-              }
-            }
-
-            &:last-child {
-              .ant-input-number {
-                border-top-left-radius: 0;
-                border-bottom-left-radius: 0;
-              }
-            }
-          }
-
-          .identifier {
-            flex: none;
-            width: 40px;
-
-            .ant-input {
-              text-align: center;
-              flex: none;
-              padding: 0 4px;
-              border-left: none;
-              border-right: none;
-              border-radius: 0;
+            .ant-form-item-row {
+              width: 100%;
             }
           }
         }
