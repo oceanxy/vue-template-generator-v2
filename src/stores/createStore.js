@@ -515,22 +515,31 @@ export function createStore({
        * @param {string} stateName - store.state 中的字段名。不会改变对象或数组的内存地址。
        * @param {any} [value=null] - 值，不传则重置为 null。
        * @param {boolean} [merge=false] - 是否合并，默认 false。
+       * @param [location] {string}
        */
-      setState(stateName, value = null, merge = false) {
+      setState(stateName, value = null, { merge = false, location } = {}) {
         if (!stateName) throw new Error('[store.setState] stateName 不能为空！')
 
-        if (merge && typeof this.$state[stateName] === 'object') {
+        const targetState = location ? this.$state[location][stateName] : this.$state[stateName]
+
+        if (merge && typeof targetState === 'object') {
           // 合并数组和对象（不改变原始数组或对象的内存地址）
-          if (Array.isArray(this.$state[stateName])) {
-            this.$state[stateName].splice(-1, 0, ...value)
+          if (Array.isArray(targetState)) {
+            targetState.splice(-1, 0, ...value)
           } else {
-            Object.entries(value).forEach(([key, value]) => this.$state[stateName][key] = value)
+            Object.entries(value).forEach(([key, value]) => targetState[key] = value)
           }
         } else {
-          this.$state[stateName] = value
+          if (location) {
+            this.$state[location][stateName] = value
+          } else {
+            this.$state[stateName] = value
+          }
 
-          if (merge && typeof this.$state[stateName] !== 'object') {
-            console.warn(`[store.setState] ${moduleName}.state.${stateName}不是数组或对象，只能赋值，不能合并！`)
+          if (merge && typeof targetState !== 'object') {
+            console.warn(`[store.setState] ${moduleName}.state${
+              location ? `.${location}` : ''
+            }.${stateName}不是数组或对象，只能赋值，不能合并！`)
           }
         }
       },
