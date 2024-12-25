@@ -4,6 +4,7 @@ import useTGForm from '@/composables/tgForm'
 import { Button, Form } from 'ant-design-vue'
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
 import useTGTable from '@/composables/tgTable'
+import { watch } from 'vue'
 
 export default function useTGTableModal({
   modalStatusFieldName = 'showModalForEditing',
@@ -13,14 +14,14 @@ export default function useTGTableModal({
   searchParamOptions,
   isGetDetails,
   setDetails,
-  optionForGetList,
+  optionsOfGetList,
   rules
 } = {}) {
-  const { TGTable } = useTGTable({
-    props: tableProps?.value || {},
+  const { TGTable, ...tgTable } = useTGTable({
+    props: tableProps || {},
     location,
     isInjectRouterQuery: false,
-    optionForGetList
+    optionsOfGetList
   })
 
   const { TGForm, ...tgForm } = useTGForm({
@@ -38,6 +39,24 @@ export default function useTGTableModal({
     confirmLoading: tgForm.confirmLoading,
     modalProps
   })
+
+  watch(tgModal.open, async val => {
+    if (val) {
+      await tgTable.store.execSearch({
+        location,
+        isMergeParam: true,
+        ...optionsOfGetList
+      })
+    }
+  })
+
+  async function tableModalSearchCallback() {
+    await tgTable.store.execSearch({
+      location,
+      isMergeParam: true,
+      ...optionsOfGetList
+    })
+  }
 
   /**
    * 含有表格的弹窗
@@ -57,21 +76,23 @@ export default function useTGTableModal({
       >
         {
           slots.default && (
-            <TGForm class={'tg-modal-inquiry-form'}>
+            <TGForm class={'tg-table-modal-inquiry-form'}>
               {slots.default()}
               <Form.Item class={'tg-form-item-btn'}>
                 <Button
-                  icon={<SearchOutlined />}
-                  // disabled={loading.value || buttonDisabled.value}
-                  // loading={loading.value}
                   type="primary"
-                  // onClick={onFinish}
+                  icon={<SearchOutlined />}
+                  disabled={tgForm.confirmLoading.value || tgForm.buttonDisabled.value}
+                  loading={tgForm.confirmLoading.value}
+                  onClick={() => tgForm.handleFinish({
+                    callback: tableModalSearchCallback
+                  })}
                 >
                   查询
                 </Button>
                 <Button
-                  // disabled={loading.value || buttonDisabled.value}
-                  // onClick={onClear}
+                  disabled={tgForm.confirmLoading.value || tgForm.buttonDisabled.value}
+                  onClick={() => tgForm.handleClear({ callback: tableModalSearchCallback })}
                   icon={<ReloadOutlined />}
                 >
                   重置
@@ -80,7 +101,7 @@ export default function useTGTableModal({
             </TGForm>
           )
         }
-        <TGTable style={{ marginTop: '12px' }} />
+        <TGTable class={'tg-table-modal-content'} />
       </TGModal>
     )
   }
