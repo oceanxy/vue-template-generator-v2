@@ -11,12 +11,14 @@ import { computed, inject, onUnmounted, reactive, ref, watch } from 'vue'
 import { Button, Form } from 'ant-design-vue'
 
 /**
- * @param [showButton] {boolean} - 是否确认按钮。
+ * @param [showButton] {boolean} - 是否显示确认按钮。
  * @param [okButtonProps={}] {import('ant-design-vue.Button.props')} - okButton 按钮的属性。
  * @param [okButtonParams={}] {{}} - ok按钮点击时的参数（handleFinish函数的参数）。
  * @param location {string}
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
  * @param [isGetDetails] {boolean} - 是否请求该弹窗的详情数据。
+ * @param [apiName] {string} - 自定义获取详情的接口名称，依赖`isGetDetails`，默认为`getDetailsOf{route.name}`。
+ * @param [getParams] {((currentItem:Object) => Object) | Object} - 自定义获取详情的参数，默认为`store.state.currentItem.id`。
  * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
  * 数据后的自定义数据处理逻辑，不为函数时默认与`store.state.currentItem`合并。
  * @param [buttonDisabledFn] {()=>boolean} - 禁用查询和重置按钮的方法。
@@ -32,6 +34,8 @@ export default function useTGForm({
   location,
   searchParamOptions,
   isGetDetails,
+  apiName,
+  getParams,
   setDetails,
   buttonDisabledFn,
   rules = {},
@@ -44,7 +48,7 @@ export default function useTGForm({
   const store = useStore()
   const commonStore = useStore('./common')
 
-  const loading = computed(() => store[location].loading)
+  const formLoading = computed(() => store[location].loading)
   const search = computed(() => store.search)
   const form = computed(() => store[location]?.form)
   const currentItem = computed(() => store.currentItem)
@@ -67,14 +71,19 @@ export default function useTGForm({
     validateInfos
   } = Form.useForm(formModel, formRules)
 
-  async function handleClear() {
+  /**
+   * 重置表单
+   * @param handleFinishOptions {Object} - handleFinish 函数的参数
+   * @returns {Promise<void>}
+   */
+  async function handleClear(handleFinishOptions) {
     resetFields()
-    handleFinish()
+    handleFinish(handleFinishOptions)
   }
 
   /**
    * 提交表单
-   * @param [callback] {()=>void} - 自定义验证成功后执行的回调函数，该参数与本函数的其他所有参数互斥。
+   * @param [callback] {()=>void} - 自定义表单验证完成且成功后的逻辑，该参数与本函数的其他所有参数互斥。
    * @param [apiName] {string} - 自定义接口名称，传递此值时，action将失效。
    * @param [action] {'update','add',string} - 操作类型，未定义 apiName 时生效。
    * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
@@ -140,18 +149,51 @@ export default function useTGForm({
   async function execEnum(enumOptions) {
     const { listener, condition, dependentField, ...options } = enumOptions
     const isContinue = typeof condition === 'function'
-      ? condition()
+      ? condition(store.$state)
       : condition
 
     if (typeof isContinue !== 'boolean' || isContinue) {
       // 处理依赖参数的初始化
       if (dependentField) {
+        const _dependentField = typeof dependentField === 'function'
+          ? dependentField(store)
+          : dependentField
+
         await new Promise(resolve => {
           watch(
-            () => options.location ? form.value[dependentField] : search.value[dependentField],
+            () => options.location ? form.value[_dependentField] : search.value[_dependentField],
             async (newVal, oldValue) => {
               if (newVal !== oldValue) {
-                resolve(await store.getList(options))
+                let res
+
+                // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已选中的值
+                if (options.location) {
+                  store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = ''
+                } else {
+                  store.search[enumOptions.paramNameInSearchRO] = ''
+                }
+
+                store.setList(options.stateName, [], options.location)
+
+                if (typeof options.customData === 'function') {
+                  const data = await options.customData(newVal)
+
+                  if (!Array.isArray(data)) {
+                    throw new Error(`自定义枚举 ${options.stateName} 的 customData 函数返回值必须为一个数组。`)
+                  }
+
+                  store.setState(options.stateName, data, { location: options.location })
+                  res = { status: true, data }
+                } else {
+                  if (!options.apiName) {
+                    throw new Error(`非自定义枚举 ${options.stateName} 必须指定 apiName。`)
+                  }
+
+                  res = await store.getList(options)
+                }
+
+                // 完成 promise
+                resolve(res)
               }
             }
           )
@@ -171,7 +213,7 @@ export default function useTGForm({
                 (enumOptions.isRequired && newVal && newVal !== oldValue) ||
                 (!enumOptions.isRequired && newVal !== oldValue)
               ) {
-                store.execSearchAndGetList()
+                store.saveParamsAndExecSearch()
               }
             }
           )
@@ -213,9 +255,17 @@ export default function useTGForm({
       }
 
       async function getDetails() {
-        if (isGetDetails && currentItem.value.id) {
+        let params = getParams
+
+        if (typeof getParams === 'function') {
+          params = getParams(currentItem.value)
+        }
+
+        if (isGetDetails && (params || currentItem.value?.id)) {
           return await store.getDetails({
             location,
+            params,
+            apiName,
             setValue: setDetails
           })
         }
@@ -255,7 +305,7 @@ export default function useTGForm({
     store,
     commonStore,
     buttonDisabled,
-    loading,
+    formLoading,
     confirmLoading,
     handleClear,
     TGForm

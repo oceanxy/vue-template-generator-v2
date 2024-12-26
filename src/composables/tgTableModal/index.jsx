@@ -4,7 +4,7 @@ import useTGForm from '@/composables/tgForm'
 import { Button, Form } from 'ant-design-vue'
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
 import useTGTable from '@/composables/tgTable'
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 
 export default function useTGTableModal({
   modalStatusFieldName = 'showModalForEditing',
@@ -36,9 +36,11 @@ export default function useTGTableModal({
   const { TGModal, ...tgModal } = useTGModal({
     modalStatusFieldName,
     store: tgForm.store,
-    confirmLoading: tgForm.confirmLoading,
-    modalProps
+    confirmLoading: tgForm.confirmLoading
   })
+
+  const loading = computed(() => tgTable.store[location].dataSource.loading
+  )
 
   watch(tgModal.open, async val => {
     if (val) {
@@ -68,6 +70,22 @@ export default function useTGTableModal({
    * @constructor
    */
   function TGTableModal(props, { slots }) {
+    const { okButtonProps } = modalProps
+    const okButtonLoading = loading.value ||
+      tgModal.modalContentLoading.value ||
+      tgForm.confirmLoading.value ||
+      tgTable.exportButtonDisabled.value
+
+    if (okButtonProps) {
+      modalProps.okButtonProps.disabled = okButtonLoading
+      modalProps.okButtonProps.loading = tgTable.exportButtonDisabled.value
+    } else {
+      modalProps.okButtonProps = {
+        disabled: okButtonLoading,
+        loading: tgTable.exportButtonDisabled.value
+      }
+    }
+
     return (
       <TGModal
         {...props}
@@ -109,6 +127,7 @@ export default function useTGTableModal({
   return {
     TGTableModal,
     ...tgModal,
-    ...tgForm
+    ...tgForm,
+    ...tgTable
   }
 }

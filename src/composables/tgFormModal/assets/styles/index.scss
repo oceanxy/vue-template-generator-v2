@@ -4,9 +4,15 @@
     flex-wrap: wrap;
     column-gap: 24px;
 
-    .ant-form-item {
+    .ant-form-item,
+    .ant-form-item-control-input-content:has(.half, .one-third, .two-third, .combo, .custom) {
       width: 100%;
       display: flex;
+      column-gap: 24px;
+
+      &:has(.ant-form-item) {
+        margin-bottom: 0;
+      }
 
       .ant-form-item-row {
         width: 100%;

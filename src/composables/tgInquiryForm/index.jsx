@@ -24,22 +24,24 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * @property [paramsForGetList={}] {((state: Object) => Object) | Object} - 接口请求时的参数，默认为空对象。
  * @property [paramNameInSearchRO] {string} - store.state.search 内对应的字段名, 注意，一些配置会依赖该属性。
  * @property [isRequired] {boolean} - 是否是必传参数，依赖`paramNameInSearchRO`参数。
- * @property [condition] {(() => boolean) | boolean}  - 执行条件。
+ * @property [condition] {((state: Object) => boolean) | boolean}  - 执行条件。
  * @property [listener] {boolean} - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。
  * @property [getValueFormResponse] {(data: Object[]|Object) => any} - 接口数据加载成功后，`paramNameInSearchRO`字段的取值逻辑。
  * - 参数 data 为接口请求的数据对象或数据数组；
  * - 返回值将赋值给 store.state.search 对象内 paramNameInSearchRO 指定的字段。
  * @property [raw] {boolean} - 原样输出接口返回的数据结构到 stateName 指定的字段中。
  * @property [done] {(data: Object) => Array<any>} - 当前枚举调用接口后的回调，参数为 response.data。
- * @property [dependentField] {string | ((store) => string)} - 请求接口所依赖`store.state.search`中的参数名，依赖`paramNameInSearchRO`参数。
- * @property [customData] {(dependentField) => Array} - 不请求接口，自定义数据的生成。依赖 dependentField。使用此参数时 apiName 及接口请求相关的参数都将失效。
+ * @property [dependentField] {string | ((store) => string)} - 请求接口所依赖`store.state.search`中的参数名，
+ * 依赖`paramNameInSearchRO`参数。
+ * @property [customData] {(dependentField) => Array} - 不请求接口，自定义数据的生成。
+ * 依赖 dependentField。使用此参数时 apiName 及接口请求相关的参数都将失效。
  */
 
 /**
  * @param {SearchParamOption[]} [searchParamOptions] - 搜索参数配置。
  * @param {()=>boolean} [buttonDisabledFn] - 禁用查询和重置按钮的方法。
  * @param {Object} [rules={}] - 验证规则，参考 ant-design-vue 的 Form.Item。
- * @returns {Promise<{onFinish: onFinish}>}
+ * @returns {{}}
  */
 export default function useInquiryForm({
   searchParamOptions,
@@ -67,18 +69,18 @@ export default function useInquiryForm({
 
   const { resetFields, validate, validateInfos } = Form.useForm(formModel, formRules)
 
-  async function onClear() {
+  async function handleClear() {
     // 防止必填属性被清空
     resetFields(searchParamNameRequired.reduce((acc, paramName) => {
       acc[paramName] = search.value[paramName]
       return acc
     }, {}))
 
-    onFinish()
+    handleFinish()
   }
 
-  function onFinish() {
-    validate().then(async () => await store.execSearchAndGetList())
+  function handleFinish() {
+    validate().then(async () => await store.saveParamsAndExecSearch())
   }
 
   /**
@@ -90,7 +92,7 @@ export default function useInquiryForm({
     return async () => {
       const { listener, condition, dependentField, ...options } = enumOptions
       const isContinue = typeof condition === 'function'
-        ? condition()
+        ? condition(store.$state)
         : condition
 
       if (typeof isContinue !== 'boolean' || isContinue) {
@@ -101,35 +103,38 @@ export default function useInquiryForm({
             : dependentField
 
           await new Promise(resolve => {
-            watch(() => search.value[_dependentField], async (newVal, oldValue) => {
-              if (newVal !== oldValue) {
-                let res
+            watch(
+              () => search.value[_dependentField],
+              async (newVal, oldValue) => {
+                if (newVal !== oldValue) {
+                  let res
 
-                // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已 选中的值
-                store.search[enumOptions.paramNameInSearchRO] = ''
-                store.setList(options.stateName, [], options.location)
+                  // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已选中的值
+                  store.search[enumOptions.paramNameInSearchRO] = ''
+                  store.setList(options.stateName, [], options.location)
 
-                if (typeof options.customData === 'function') {
-                  const data = await options.customData(newVal)
+                  if (typeof options.customData === 'function') {
+                    const data = await options.customData(newVal)
 
-                  if (!Array.isArray(data)) {
-                    throw new Error(`自定义枚举 ${options.stateName} 的 customData 函数返回值必须为一个数组。`)
+                    if (!Array.isArray(data)) {
+                      throw new Error(`自定义枚举 ${options.stateName} 的 customData 函数返回值必须为一个数组。`)
+                    }
+
+                    store.setState(options.stateName, data)
+                    res = { status: true, data }
+                  } else {
+                    if (!options.apiName) {
+                      throw new Error(`非自定义枚举 ${options.stateName} 必须指定 apiName。`)
+                    }
+
+                    res = await store.getList(options)
                   }
 
-                  store.setState(options.stateName, data)
-                  res = { status: true, data }
-                } else {
-                  if (!options.apiName) {
-                    throw new Error(`非自定义枚举 ${options.stateName} 必须指定 apiName。`)
-                  }
-
-                  res = await store.getList(options)
+                  // 完成 promise
+                  resolve(res)
                 }
-
-                // 完成 promise
-                resolve(res)
               }
-            })
+            )
           })
         } else {
           await store.getList(options)
@@ -146,7 +151,7 @@ export default function useInquiryForm({
                   (enumOptions.isRequired && newVal && newVal !== oldValue) ||
                   (!enumOptions.isRequired && newVal !== oldValue)
                 ) {
-                  store.execSearchAndGetList()
+                  store.saveParamsAndExecSearch()
                 }
               }
             )
@@ -262,7 +267,7 @@ export default function useInquiryForm({
                             disabledType={disabledType.DISABLE}
                             disabled={loading.value || buttonDisabled.value}
                             identification={props.buttonPermissionIdentification}
-                            onClick={onFinish}
+                            onClick={handleFinish}
                           >
                             查询
                           </TGPermissionsButton>,
@@ -271,25 +276,25 @@ export default function useInquiryForm({
                             disabledType={disabledType.DISABLE}
                             disabled={loading.value || buttonDisabled.value}
                             identification={props.buttonPermissionIdentification}
-                            onClick={onClear}
+                            onClick={handleClear}
                           >
                             重置
                           </TGPermissionsButton>
                         ]
                         : [
                           <Button
+                            type="primary"
                             icon={<SearchOutlined />}
                             disabled={loading.value || buttonDisabled.value}
                             loading={loading.value}
-                            type="primary"
-                            onClick={onFinish}
+                            onClick={handleFinish}
                           >
                             查询
                           </Button>,
                           <Button
-                            disabled={loading.value || buttonDisabled.value}
-                            onClick={onClear}
                             icon={<ReloadOutlined />}
+                            disabled={loading.value || buttonDisabled.value}
+                            onClick={handleClear}
                           >
                             重置
                           </Button>
@@ -318,14 +323,14 @@ export default function useInquiryForm({
   return {
     validateInfos,
     resetFields,
-    onFinish,
+    handleFinish,
     formModel,
     store,
     commonStore,
     treeCollapsed,
     buttonDisabled,
     loading,
-    onClear,
+    handleClear,
     TGInquiryForm
   }
 }

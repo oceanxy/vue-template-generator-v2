@@ -144,7 +144,7 @@ export function createStore({
     },
     actions: {
       /**
-       * 执行表格搜索
+       * 保存搜索参数并执行列表搜索。
        * @param searchParams {Object} - 执行搜索前，需要合并到 store.state.search 的值。搜索接口会调用合并后的 store.state.search。
        * @param isFetchList {boolean=true} - 是否执行列表查询，默认 true。
        * @param isPagination {boolean=true} - 是否分页，默认 true。
@@ -153,7 +153,7 @@ export function createStore({
        * @param [...optionsOfGetList] {Object}
        * @returns {Promise<void>}
        */
-      async execSearchAndGetList({
+      async saveParamsAndExecSearch({
         searchParams,
         isFetchList = true,
         isResetSelectedRows = true,
@@ -171,7 +171,6 @@ export function createStore({
             ...optionsOfGetList
           })
         }
-
       },
       async execSearch({
         isResetSelectedRows = true,
@@ -179,12 +178,18 @@ export function createStore({
         location,
         ...optionsOfGetList
       }) {
+        if (isPagination) {
+          if (!location && 'pagination' in this.$state) {
+            this.pagination.pageIndex = 0
+          } else if (location && 'pagination' in this.$state[location]) {
+            this.$state[location].pagination.pageIndex = 0
+          }
+        }
+
         if (isResetSelectedRows) {
           if (!location && 'selectedRows' in this.$state) {
             this.selectedRows = []
-          }
-
-          if (location && 'selectedRows' in this.$state[location]) {
+          } else if (location && 'selectedRows' in this.$state[location]) {
             this.$state[location].selectedRows = []
           }
         }
@@ -203,16 +208,10 @@ export function createStore({
        * @param [location]
        */
       setSearchParams(searchParams = {}, isPagination, location) {
-        const state = location && this.$state[location] ? this.$state[location] : this.$state
-
-        if (state) {
-          if (isPagination && 'pagination' in state) {
-            state.pagination.pageIndex = 0
-          }
-
-          if ('search' in state) {
-            this.$patch({ [location || 'search']: searchParams })
-          }
+        if (!location && 'search' in this.$state) {
+          this.$patch({ search: searchParams })
+        } else if (location && 'form' in this.$state[location]) {
+          this.$patch({ [location]: { form: searchParams } })
         }
       },
       /**
@@ -604,20 +603,31 @@ export function createStore({
         merge = false,
         injectSearchParams
       } = {}) {
-        this.setState('currentItem', currentItem, merge)
+        let modalStatusValue
 
         if (typeof value === 'boolean') {
-          this.$state[modalStatusFieldName] = value
-
-          if (!value) {
-            this.$state.currentItem = {}
-          }
+          modalStatusValue = value
         } else {
-          this.$state[modalStatusFieldName] = !this.$state[modalStatusFieldName]
+          modalStatusValue = !this.$state[modalStatusFieldName]
+        }
+
+        this.$state[modalStatusFieldName] = modalStatusValue
+
+        if ('currentItem' in this.$state) {
+          if (modalStatusValue) {
+            const isCurrentItemEmpty = !Object.keys(this.currentItem).length
+            this.setState('currentItem', isCurrentItemEmpty ? currentItem : {
+              _prevCurrentItem: this.currentItem,
+              ...currentItem
+            }, { merge })
+          } else {
+            const existPrevCurrentItem = '_prevCurrentItem' in this.currentItem
+            this.setState('currentItem', existPrevCurrentItem ? this.currentItem._prevCurrentItem : {}, { merge })
+          }
         }
 
         if (
-          this.$state[modalStatusFieldName] &&
+          modalStatusValue &&
           Array.isArray(injectSearchParams) &&
           injectSearchParams.length &&
           location

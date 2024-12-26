@@ -12,18 +12,19 @@ import { message, Space } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import router from '@/router'
 import TGPermissionsButton from '@/components/TGPermissionsButton'
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { DeleteOutlined, EditOutlined, ExportOutlined, PlusOutlined } from '@ant-design/icons-vue'
 
 /**
  * 基本按钮枚举
  * @global
  * @readonly
- * @enum {'ADD'|'EDIT'|'DELETE'}
+ * @enum {'ADD' | 'EDIT' | 'DELETE' | 'EXPORT'}
  */
-export const controlBarBaseButtons = {
+export const FunctionButtonEnum = {
   ADD: 'ADD',
   EDIT: 'EDIT',
-  DELETE: 'DELETE'
+  DELETE: 'DELETE',
+  EXPORT: 'EXPORT'
 }
 
 /**
@@ -32,9 +33,15 @@ export const controlBarBaseButtons = {
  *  接收一个参数 selectedRows。当前选中行数组。
  *  返回一个对象，对象的键（fieldName）为控制禁用权限的字段名（如： 'editButtonDisabled'），对象的值为布尔值。
  *  默认不传，相当于至少勾选了一行列表即解除禁用。
+ * @param [setAddParams] {() => Object} - 设置 handleAdd 函数的参数。
+ * @param [setExportParams] {() => Object} - 设置 handleExport 函数的参数。
  * @returns {{store: *}}
  */
-export default function useFunction({ controlButtonPermissions } = {}) {
+export default function useFunction({
+  controlButtonPermissions,
+  setAddParams,
+  setExportParams
+} = {}) {
   /**
    * 判断本页面是否存在侧边树组件
    * 来自于 @/src/components/TGContainerWithTreeSider 组件
@@ -79,13 +86,46 @@ export default function useFunction({ controlButtonPermissions } = {}) {
     ids.value = value.map(item => item.id).join()
   })
 
-  /**['parentId']
+  /**
+   * 处理打开弹窗的前置点击事件
+   * @param currentItem {Object}
+   * @param modalStatusFieldName {string}
+   * @param location
+   * @param injectSearchParams
+   * @param merge
+   * @returns {Promise<void>}
+   */
+  function handleClick({
+    currentItem,
+    modalStatusFieldName,
+    location,
+    injectSearchParams,
+    merge
+  } = {}) {
+    store.setVisibilityOfModal({
+      currentItem,
+      modalStatusFieldName,
+      location,
+      injectSearchParams,
+      merge
+    })
+  }
+
+  /**
    * 新增
    * @param [currentItem={}] {Object} - 当前数据
-   * @param [injectSearchParams] {string[]} - 打开弹窗时，需要从`store.search`传递到`store[location].form`的参数名。
+   * @param [injectSearchParams] {Array<string, (search)=>Object>} - 打开弹窗时，
+   * 需要从`store.search`传递到`store[location].form`的参数名。
    * @returns {Promise<void>}
    */
   async function handleAdd({ currentItem = {}, injectSearchParams } = {}) {
+    if (typeof setAddParams === 'function') {
+      const params = setAddParams()
+
+      currentItem = params.currentItem || currentItem
+      injectSearchParams = params.injectSearchParams || injectSearchParams
+    }
+
     await store.setVisibilityOfModal({
       currentItem,
       injectSearchParams
@@ -97,7 +137,9 @@ export default function useFunction({ controlButtonPermissions } = {}) {
    * @returns {Promise<void>}
    */
   async function handleEdit() {
-    await store.setVisibilityOfModal({ ...this.editedRow, _isBulkOperations: true })
+    await store.setVisibilityOfModal({
+      currentItem: { ...editedRow.value }
+    })
   }
 
   /**
@@ -142,7 +184,7 @@ export default function useFunction({ controlButtonPermissions } = {}) {
    * @param [fileName] {string} 导出文件名 默认为本页面的 title。
    * @param [payload] {Object} 自定义导出参数，会联合该模块的 store.state.search 一起传递给接口。
    * @param [apiName] {string} 自定义导出接口名，默认为`export${MODULE_NAME}`。
-   * @param [isTimeName] {boolean} 默认false，开启之后filename后添加时间格式命名。
+   * @param [isTimeName] {boolean} 默认false，开启之后在`filename`后添加时间格式命名。
    * @returns {Promise<void>}
    */
   async function handleExport(fileName, payload, apiName, isTimeName = false) {
@@ -151,15 +193,24 @@ export default function useFunction({ controlButtonPermissions } = {}) {
       duration: 0
     })
 
+    if (typeof setExportParams === 'function') {
+      const params = setExportParams()
+
+      fileName = params.fileName || fileName
+      payload = params.payload || payload
+      apiName = params.apiName || apiName
+      isTimeName = params.isTimeName || isTimeName
+    }
+
     // 获取当前日期
-    const date = dayjs(new Date()).format('YYYYMMDDHHmmss')
+    const getDateTime = () => `[${dayjs(new Date()).format('YYYYMMDDHHmmss')}]`
 
     exportButtonDisabled.value = true
 
     await store.exportData({
       params: { ...router.currentRoute.value.query, ...payload },
       apiName,
-      fileName: `${fileName && isTimeName ? `[${date}]` : ''}${fileName}`
+      fileName: `${fileName && isTimeName ? getDateTime() : ''}${fileName}`
     })
 
     exportButtonDisabled.value = false
@@ -184,93 +235,74 @@ export default function useFunction({ controlButtonPermissions } = {}) {
   }
 
   /**
-   * 处理打开弹窗的前置点击事件
-   * @param record {Object}
-   * @param modalStatusFieldName {string}
-   * @returns {Promise<void>}
-   */
-  function handleClick(record, modalStatusFieldName) {
-    store.setVisibilityOfModal({
-      currentItem: record,
-      modalStatusFieldName
-    })
-  }
-
-  /**
    * @param props
    * @config [align] {'left'|'center'|'right'} - 按钮对齐方式，默认为 'right'。支持 'left','center','right'。
-   * @config [isOverrideDefaultButtons] {boolean} - 是否覆盖默认按钮，默认为 false。
-   * @config {controlBarBaseButtons[]} [baseOperationButtons] - 默认按钮，
-   * 默认为 ['ADD', 'DELETE', 'EDIT']，即默认显示新增、删除、修改按钮。
+   * @config {FunctionButtonEnum[]} [functionButtons] - 默认按钮，默认为`[]`，即默认不显示内置按钮。
    * @param slots
    * @returns {JSX.Element}
    * @constructor
    */
   function TGFunction(props, { slots }) {
-    const {
-      align = 'right',
-      isOverrideDefaultButtons,
-      baseOperationButtons = [controlBarBaseButtons.ADD, controlBarBaseButtons.EDIT, controlBarBaseButtons.DELETE]
-    } = props
+    const { align = 'right', functionButtons = [] } = props
 
     return (
       <Space class={`tg-function${align ? ` ${align}` : ''}`}>
-        {
-          !isOverrideDefaultButtons
-            ? [
-              baseOperationButtons?.includes(controlBarBaseButtons.ADD)
-                ? (
-                  <TGPermissionsButton
-                    type="primary"
-                    identification={'ADD'}
-                    disabled={buttonDisabled.value}
-                    onClick={() => handleAdd()}
-                    icon={<PlusOutlined />}
-                  >
-                    新增
-                  </TGPermissionsButton>
-                )
-                : null,
-              baseOperationButtons?.includes(controlBarBaseButtons.DELETE)
-                ? (
-                  <TGPermissionsButton
-                    danger
-                    identification={'DELETE'}
-                    disabled={deleteButtonDisabled.value}
-                    onClick={() => handleDelete()}
-                    icon={<DeleteOutlined />}
-                  >
-                    删除
-                  </TGPermissionsButton>
-                )
-                : null,
-              baseOperationButtons?.includes(controlBarBaseButtons.EDIT)
-                ? (
-                  <TGPermissionsButton
-                    identification={'UPDATE'}
-                    disabled={editButtonDisabled.value}
-                    onClick={() => handleEdit()}
-                    icon={<EditOutlined />}
-                  >
-                    修改
-                  </TGPermissionsButton>
-                )
-                : null
-            ]
-            : null
-        }
-        {slots.default?.()}
+        {[
+          functionButtons?.includes(FunctionButtonEnum.ADD) && (
+            <TGPermissionsButton
+              type="primary"
+              identification={'ADD'}
+              disabled={buttonDisabled.value}
+              onClick={() => handleAdd()}
+              icon={<PlusOutlined />}
+            >
+              新增
+            </TGPermissionsButton>
+          ),
+          functionButtons?.includes(FunctionButtonEnum.DELETE) && (
+            <TGPermissionsButton
+              danger
+              identification={'DELETE'}
+              disabled={deleteButtonDisabled.value}
+              onClick={() => handleDelete()}
+              icon={<DeleteOutlined />}
+            >
+              删除
+            </TGPermissionsButton>
+          ),
+          functionButtons?.includes(FunctionButtonEnum.EDIT) && (
+            <TGPermissionsButton
+              identification={'UPDATE'}
+              disabled={editButtonDisabled.value}
+              onClick={() => handleEdit()}
+              icon={<EditOutlined />}
+            >
+              修改
+            </TGPermissionsButton>
+          ),
+          functionButtons?.includes(FunctionButtonEnum.EXPORT) && (
+            <TGPermissionsButton
+              identification={'EXPORT'}
+              disabled={exportButtonDisabled.value}
+              onClick={() => handleExport()}
+              icon={<ExportOutlined />}
+            >
+              导出
+            </TGPermissionsButton>
+          )
+        ]}
+        {slots.default && slots.default()}
       </Space>
     )
   }
 
   return {
-    controlBarBaseButtons,
+    FunctionButtonEnum,
     buttonDisabled,
-    editButtonDisabled: buttonDisabled.value ? buttonDisabled : editButtonDisabled,
-    deleteButtonDisabled: buttonDisabled.value ? buttonDisabled : deleteButtonDisabled,
-    auditButtonDisabled: buttonDisabled.value ? buttonDisabled : auditButtonDisabled,
-    exportButtonDisabled: buttonDisabled.value ? buttonDisabled : exportButtonDisabled,
+    editButtonDisabled: computed(() => buttonDisabled.value || editButtonDisabled.value),
+    deleteButtonDisabled: computed(() => buttonDisabled.value || deleteButtonDisabled.value),
+    auditButtonDisabled: computed(() => buttonDisabled.value || auditButtonDisabled.value),
+    exportButtonDisabled: computed(() => buttonDisabled.value || exportButtonDisabled.value),
     editedRow,
     ids,
     store,

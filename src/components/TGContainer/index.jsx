@@ -97,7 +97,7 @@ export default {
           execListeners(
             await Promise.all([
               // 执行搜索
-              execSearchAndGetList(payload),
+              saveParamsAndExecSearch(payload),
               // 首次初始化时可将非必需的枚举初始化流程延迟到此时执行
               ...store.taskQueues.notRequired.map(cb => cb())
             ])
@@ -122,8 +122,8 @@ export default {
       }
     }
 
-    async function execSearchAndGetList(searchParams) {
-      await store.execSearchAndGetList({
+    async function saveParamsAndExecSearch(searchParams) {
+      await store.saveParamsAndExecSearch({
         searchParams,
         isResetSelectedRows: true,
         isPagination,

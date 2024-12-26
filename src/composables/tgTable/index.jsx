@@ -7,28 +7,32 @@ import { message, Table } from 'ant-design-vue'
 import useThemeVars from '@/composables/themeVars'
 import { omit, throttle } from 'lodash'
 import { verificationDialog } from '@/utils/message'
+import dayjs from 'dayjs'
 
 /**
- *
- * @param [props={}] {import('ant-design-vue').Table.tableProps} - 表格属性。
  * @param [location] {string} - 次级表格的 state。
+ * @param [open] {vue.Ref<boolean>} - 是否显示弹窗，在弹窗内的表格组件需要。
  * @param [stateName] {string} - 表格数据源的属性名，默认 'dataSource'。
  * @param [isInjectRouterQuery=true] {boolean} - 是否自动注入路由的 query 参数，默认 true。
  * 注意此参数为 true 时，表格的请求参数会被路由 query 中的同名参数覆盖。
  * @param [getDataSource] {(store: import('pinia').defineStore) => any} - 自定义数据源的取值逻辑。
- * 默认为`store => location ? store[location].dataSource.list : store.dataSource.list`
+ * 默认为`store => location ? store[location].dataSource.list : store.dataSource.list`。
+ * @param [props={}] {import('ant-design-vue').Table.tableProps} - 表格属性。
+ * @config columns {import('ant-design-vue').Table.columnType[] | (()=>import('ant-design-vue').Table.columnType[])}
+ * - 表格列配置。
  * @param [showSerialNumberColumn=true] {boolean} - 是否显示序号列，默认 true。
- * @param [optionForGetList] {Object} - getList 函数参数。
+ * @param [optionsOfGetList] {Object} - getList 函数参数。
  * @returns {{}|string}
  */
 export default function useTGTable({
   stateName = 'dataSource',
   location,
+  open,
   isInjectRouterQuery,
   getDataSource,
   props = {},
   showSerialNumberColumn = true,
-  optionForGetList
+  optionsOfGetList
 } = {}) {
   let observer = null
   let timer = null
@@ -101,15 +105,25 @@ export default function useTGTable({
     }
   ]
 
+  const columns = computed(() => {
+    let _columns = props.columns
+
+    if (typeof props.columns === 'function') {
+      _columns = props.columns()
+    }
+
+    return showSerialNumberColumn
+      ? [
+        ...serialNumberColumn,
+        ...(_columns || [])
+      ]
+      : (_columns || [])
+  })
+
   const defaultTableProps = reactive({
     rowKey: rowKey.value,
     dataSource: [],
-    columns: showSerialNumberColumn
-      ? [
-        ...serialNumberColumn,
-        ...(props?.columns ?? [])
-      ]
-      : (props?.columns ?? []),
+    columns: columns.value,
     loading,
     rowSelection: props.rowSelection
       ? {
@@ -140,6 +154,10 @@ export default function useTGTable({
       return index % 2 === 1 ? 'tg-table-striped' : ''
     },
     onChange: handleChange
+  })
+
+  watch(columns, val => {
+    defaultTableProps.columns = val
   })
 
   watch(selectedRowKeys, value => {
@@ -176,6 +194,14 @@ export default function useTGTable({
     await resize()
   })
 
+  if (open) {
+    watch(open, async val => {
+      if (val) {
+        await fetchList()
+      }
+    })
+  }
+
   if (props?.pagination !== false) {
     watch(pagination, value => {
       defaultTableProps.pagination.total = value.total
@@ -186,10 +212,11 @@ export default function useTGTable({
 
   /**
    * 获取列表数据
-   * @param {string} [stateName] -
-   * @param {Object} [paramsForGetList] -
-   * @param {boolean} [isMergeParam=false] - 是否合并数据，默认false，优先级低于 isInjectRouterQuery。
-   * @param {boolean} [isPagination] -
+   * @param [stateName] {string} - 保存接口返回数据的字段名。
+   * @param [paramsForGetList] {Object} - 获取列表的参数。
+   * @param [isMergeParam] {boolean} - 是否合并数据，默认false，优先级低于 isInjectRouterQuery。
+   * 当 location 为 true 时，该值强制为 true。
+   * @param [isPagination] {boolean} - 是否分页。
    * @returns {Promise<void>}
    */
   async function fetchList({
@@ -197,27 +224,36 @@ export default function useTGTable({
     isMergeParam = false,
     isPagination = false
   } = {}) {
+    const _paramsForGetList = typeof optionsOfGetList?.paramsForGetList === 'function'
+      ? optionsOfGetList.paramsForGetList(store.$state)
+      : optionsOfGetList.paramsForGetList
+
     if (!location) {
       return await store.getList({
         stateName,
+        ...optionsOfGetList,
         paramsForGetList: {
           ...paramsForGetList,
+          ..._paramsForGetList,
           ...(isInjectRouterQuery ? router.currentRoute.value.query : {})
         },
-        isMergeParam: isInjectRouterQuery || isMergeParam,
-        isPagination
+        isMergeParam: isInjectRouterQuery || typeof isMergeParam !== 'boolean'
+          ? optionsOfGetList.isMergeParam
+          : isMergeParam,
+        isPagination: typeof isPagination !== 'boolean' ? optionsOfGetList.isPagination : isPagination
       })
     } else {
-      if (!optionForGetList?.apiName) {
+      if (!optionsOfGetList?.apiName) {
         throw new Error('location 为真值时，apiName 必传。')
       }
 
       return await store.getList({
         location,
         stateName,
-        apiName: optionForGetList?.apiName,
-        setValueToStateName: optionForGetList?.setValueToStateName,
-        paramsForGetList: optionForGetList?.getParams?.(currentItem),
+        ...optionsOfGetList,
+        isPagination: typeof isPagination !== 'boolean' ? optionsOfGetList.isPagination : isPagination,
+        // 弹窗中不处理 isInjectRouterQuery 参数，请在打开弹窗时传递该需要的路由参数到需要的位置。
+        paramsForGetList: { ...paramsForGetList, ..._paramsForGetList },
         isMergeParam: true
       })
     }
@@ -464,24 +500,33 @@ export default function useTGTable({
   }
 
   /**
-   * 导出数据
-   * @param payload {Object} 参数
-   * @param [fileName] {string} 文件名称，默认路由名称（route.meta.title）
-   * @param [modalStatusFieldName] 成功导出后需要关闭的弹窗控制字段，一般在弹出
+   * 导出
+   * @param [params] {Object} - 额外的导出参数，默认为`store.state.search`，
+   * 传递的参数会与`store.state.search`合并后传递给接口，不改变`store.state.search`。
+   * @param [apiName] {string} - 自定义导出接口名，默认为`export${route.name}`。
+   * @param [fileName] {string} - 文件名称，默认路由名称（route.meta.title）
+   * @param [modalStatusFieldName] {string} - 成功导出后需要关闭的弹窗控制字段。
+   * @param [isTimeName] {boolean} - 默认false，开启之后在`filename`后添加时间格式命名。
    * @returns {Promise<void>}
    */
   async function handleExport({
     params,
+    apiName,
     fileName,
-    modalStatusFieldName
+    modalStatusFieldName,
+    isTimeName = false
   }) {
     message.loading({ content: '正在导出，请稍候...', duration: 0 })
 
     exportButtonDisabled.value = true
 
+    // 获取当前日期
+    const getDateTime = () => `[${dayjs(new Date()).format('YYYYMMDDHHmmss')}]`
+
     await store.exportData({
       params,
-      fileName: fileName || router.currentRoute.value.meta.title,
+      apiName,
+      fileName: `${fileName && isTimeName ? getDateTime() : ''}${fileName}`,
       modalStatusFieldName
     })
 
@@ -490,22 +535,27 @@ export default function useTGTable({
   }
 
   /**
-   * antd vue Table 的 change 事件
-   * 分页、排序、筛选变化时触发
+   * antd vue Table 组件的 change 事件（分页、排序、筛选变化时触发）
    * @param pagination
    * @param filters
    * @param sorter
    * @returns {Promise<void>}
    */
   async function handleChange(pagination, filters, sorter) {
-    store.$patch({
+    let getListParams = {
       pagination: {
         pageIndex: pagination.current - 1,
         pageSize: pagination.pageSize
       },
       // 排序变了，序号也重新计算了，所以需要清空已选择的行数据
       selectedRows: []
-    })
+    }
+
+    if (location) {
+      getListParams = { [location]: getListParams }
+    }
+
+    store.$patch(getListParams)
 
     await fetchList({
       // 组装后端接收的排序参数
@@ -576,9 +626,7 @@ export default function useTGTable({
       )
     }
 
-    if (inModal) {
-      await fetchList()
-    } else {
+    if (!inModal) {
       window.addEventListener('resize', resizeCallback())
 
       // tg-inquiry-form 为可变高度的容器，这里监听一下该容器的高度变化，用来重置表格的高度
@@ -631,9 +679,11 @@ export default function useTGTable({
   }
 
   return {
+    fetchList,
     store,
     currentItem,
     dataSource,
+    exportButtonDisabled,
     handleChange,
     handleAdd,
     handleEdit,

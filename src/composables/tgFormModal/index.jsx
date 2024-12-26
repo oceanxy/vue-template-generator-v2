@@ -12,6 +12,8 @@ import { set } from 'lodash/object'
  * @param [location='modalForEditing'] {string}
  * @param [rules] {Object} - 表单验证规则
  * @param [isGetDetails] {boolean} - 是否在打开编辑弹窗时获取详情数据。
+ * @param [apiName] {string} - 自定义获取详情的接口名称，依赖`isGetDetails`，默认为`getDetailsOf{route.name}`。
+ * @param [getParams] {((currentItem:Object) => Object) | Object} - 自定义获取详情的参数，默认为`store.state.currentItem.id`。
  * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
  * 数据后的自定义数据处理逻辑，不为函数时默认与`store.state.currentItem`合并。
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
@@ -26,6 +28,8 @@ export default function useTGFormModal({
   location = 'modalForEditing',
   rules,
   isGetDetails,
+  apiName,
+  getParams,
   setDetails,
   searchParamOptions,
   formModelFormatter
@@ -39,6 +43,8 @@ export default function useTGFormModal({
     rules,
     searchParamOptions,
     isGetDetails,
+    apiName,
+    getParams,
     setDetails,
     modalStatusFieldName,
     loaded
@@ -166,7 +172,11 @@ export default function useTGFormModal({
 
   function TGFormModal(props, { slots }) {
     return (
-      <TGModal class={'tg-form-modal'} modalProps={_modalProps}>
+      <TGModal
+        class={'tg-form-modal'}
+        modalProps={_modalProps}
+        readonly={props.readonly}
+      >
         <TGForm>
           {slots.default?.()}
         </TGForm>
