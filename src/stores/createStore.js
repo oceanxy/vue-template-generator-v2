@@ -431,7 +431,7 @@ export function createStore({
       /**
        * 获取详情数据
        * @param {string} location
-       * @param {Object} [params] - 查询参数，默认`store.currentItem.id`。
+       * @param {Object} [params] - 查询参数，默认`store.currentItem.id`，受`store.state.rowKey`影响。
        * @param {string} [apiName] - 接口名称，默认`getDetailsOf${moduleName}`。
        * @param {(data: Object, store: import('pinia').StoreDefinition) => void} [setValue] - 处理接口返回值的函数，
        * 该值不为函数时，接口返回值默认与`store.currentItem`合并。
@@ -451,7 +451,7 @@ export function createStore({
         api = apiName || `getDetailsOf${firstLetterToUppercase(moduleName)}`
 
         if (apis[api]) {
-          res = await apis[api](params || { id: this.currentItem.id })
+          res = await apis[api](params || { id: this.currentItem[this.rowKey] })
         } else {
           console.error(`接口未定义：${moduleName} 页面的 ${api} 接口未定义！`)
         }
@@ -591,9 +591,9 @@ export function createStore({
        * @param [currentItem] {Object} - 当前行数据。
        * @param [merge] {boolean} - 是否合并，默认 false。
        * @param [location='modalForEditing'] {string} - 默认为`modalForEditing`。
-       * @param [injectSearchParams] {Array<string, (search)=>Object>} - 打开弹窗时，
-       * 需要从`store.search`传递到`store[location].form`的参数名。
-       * 如果数组中的值为函数，则函数的参数为store.search，返回值为一个对象，对象的键为`store[location].form`中的参数名，值为自行设定的值。
+       * @param [injectSearchParams] {Array<string, (search)=>Object>} - 打开弹窗时，需要从`store.search`传递到
+       * `store[location].form`的参数名。如果数组中的值为函数，则函数的参数为store.search，返回值为一个对象，对象的键为
+       * `store[location].form`中的参数名，值为自行设定的值。
        */
       setVisibilityOfModal({
         modalStatusFieldName = 'showModalForEditing',
@@ -626,6 +626,18 @@ export function createStore({
           }
         }
 
+        // 无感化处理`form`的唯一标识符，用于弹窗的编辑等功能
+        if (this.rowKey in this.currentItem) {
+          this.$patch({
+            [location]: {
+              form: {
+                [this.rowKey]: this.currentItem[this.rowKey]
+              }
+            }
+          })
+        }
+
+        // 处理需要从`search`传递到`form`的值
         if (
           modalStatusValue &&
           Array.isArray(injectSearchParams) &&
@@ -741,7 +753,7 @@ export function createStore({
        * @param [location]
        * @param [apiName] {string} - 接口名称，默认值为 `${ACTION}${MODULE_NAME}`。
        * @param [action] {'update','add',string} - 操作类型，未定义 apiName 时生效。
-       * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
+       * 默认根据`store.state.currentItem`中是否存在`id`字段来判断当前操作是 'update' 还是 'add'，其他情况则需要自行传递。
        * 主要用于生成接口地址，生成规则`{ACTION}{ModuleName}`。
        * @param [params] {Object} - 自定义参数，默认值为 store.state.search 的值。
        * 当 location 为有效值时，默认值为 store.state[location].form 的值。
@@ -766,7 +778,7 @@ export function createStore({
 
         if (!apiName) {
           if (!action) {
-            action = this.currentItem.id ? 'update' : 'add'
+            action = this.currentItem[this.rowKey] ? 'update' : 'add'
           }
 
           apiName = `${action}${MODULE_NAME}`

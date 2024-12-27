@@ -21,7 +21,7 @@ import dayjs from 'dayjs'
  * @config columns {import('ant-design-vue').Table.columnType[] | (()=>import('ant-design-vue').Table.columnType[])}
  * - 表格列配置。
  * @param [showSerialNumberColumn=true] {boolean} - 是否显示序号列，默认 true。
- * @param [optionsOfGetList] {Object} - getList 函数参数。
+ * @param [optionsOfGetList={}] {Object} - getList 函数参数，默认`{}`。
  * @returns {{}|string}
  */
 export default function useTGTable({
@@ -32,7 +32,7 @@ export default function useTGTable({
   getDataSource,
   props = {},
   showSerialNumberColumn = true,
-  optionsOfGetList
+  optionsOfGetList = {}
 } = {}) {
   let observer = null
   let timer = null
@@ -189,6 +189,11 @@ export default function useTGTable({
 
   // 为 list 创建动态侦听器
   watch(dataSource, async value => {
+    if (value.length && !(store.rowKey in value[0])) {
+      throw new Error(`未在表格数据中找到唯一标识符（${store.rowKey}），这将导致异常错误！` +
+        '请检查表格数据是否规范，或者是否正确设置了`store.state.rowKey`的值。')
+    }
+
     defaultTableProps.dataSource = value
 
     await resize()
@@ -266,7 +271,7 @@ export default function useTGTable({
    * @param [fieldName='status'] {string} - 自定义传递状态值给接口的参数名。默认 'status'。
    * @param [actualFieldName='status'] {string} - 数据列表中实际用于保存该状态的字段名，用于乐观更新或还原本地数据。默认 'status'。
    * @param [idKey='id'] {string} - 自定义传递唯一标识符给接口的参数名。为了适配某些接口可能接收`ids`为参数名的情况，默认 'id'。
-   * @param [getIds=(record) => record.id] {(Object) => string} - 从数据对象中获取唯一标识符，默认取`record`的`id`字段。
+   * @param [getIds] {(record: Object) => string} - 从数据对象中获取唯一标识符，默认取`record.id`，受`store.state.rowKey`影响。
    * @param [nameKey='fullName'] {string} - 指定 record 数据对象中用来显示的字段名，主要用于操作之后的提示信息。 默认 'fullName'。
    *  例如：`$｛fullName｝的状态已更新！`
    * @param [apiName] {string} - 自定义接口名，默认为`update[router.currentRoute.value.name][fieldName]}`，采用驼峰命名。
@@ -282,7 +287,7 @@ export default function useTGTable({
     fieldName = 'status',
     actualFieldName = 'status',
     idKey = 'id',
-    getIds = record => record.id,
+    getIds = record => record[store.rowKey],
     nameKey = 'fullName',
     apiName,
     stateName = 'dataSource',
@@ -433,6 +438,7 @@ export default function useTGTable({
    * @param record {{[key: string]: any }} - 列表数据对象
    * @param [options={}] 其他配置
    * @config [idFieldName='ids'] {string} 删除接口用于接收删除ID的字段名，默认 'ids'。
+   * @config [getIds] {(record: Object) => string} - 从数据对象中获取唯一标识符，默认取`record.id`，受`store.state.rowKey`影响。
    * @config [params] {Object} - 调用删除需要的其他参数。
    * @config [done] {() => void} - 成功执行删除的回调。
    * @config [nameKey='fullName'] {string} - 在删除提示中显示当条数据中的某个字段信息。
@@ -444,6 +450,7 @@ export default function useTGTable({
     options = {
       idFieldName: 'ids',
       nameKey: 'fullName',
+      getIds: record => record[store.rowKey],
       ...options
     }
 
@@ -453,7 +460,7 @@ export default function useTGTable({
           action: 'delete',
           params: {
             ...options.params,
-            [options.idFieldName]: record.id
+            [options.idFieldName]: options.getIds(record)
           },
           isRefreshTable: true
         })
