@@ -189,9 +189,11 @@ export default function useTGTable({
 
   // 为 list 创建动态侦听器
   watch(dataSource, async value => {
-    if (value.length && !(store.rowKey in value[0])) {
-      throw new Error(`未在表格数据中找到唯一标识符（${store.rowKey}），这将导致异常错误！` +
-        '请检查表格数据是否规范，或者是否正确设置了`store.state.rowKey`的值。')
+    const rowKey = location ? store[location].rowKey : store.rowKey
+
+    if (process.env.NODE_ENV === 'development' && value.length && !(rowKey in value[0])) {
+      console.warn(`tgTable：未在表格数据中找到唯一标识符（${rowKey || 'id'}），这可能会导致异常的错误！` +
+        `请检查表格数据中是否存在'id'字段，或者是否正确设置了\`store.state${location ? `.${location}` : ''}.rowKey\`的值。`)
     }
 
     defaultTableProps.dataSource = value

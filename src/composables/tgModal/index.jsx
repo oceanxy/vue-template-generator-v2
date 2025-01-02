@@ -10,7 +10,7 @@ import useStore from '@/composables/tgStore'
  * @param modalStatusFieldName
  * @param form
  * @param [store] {import('pinia').defineStore} - 默认为当前页面的 store。
- * @param [confirmLoading] {Ref<UnwrapRef<boolean>, UnwrapRef<boolean> | boolean>} - `okButton`的`loading`值。
+ * @param [confirmLoading] {import('@vue/reactivity').Ref<boolean>} - `okButton`的`loading`值。
  * @param unWatch
  * @returns {Object}
  */

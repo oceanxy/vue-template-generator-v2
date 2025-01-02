@@ -11,6 +11,8 @@ import { computed, inject, onUnmounted, reactive, ref, watch } from 'vue'
 import { Button, Form } from 'ant-design-vue'
 
 /**
+ * @param [isFormInitComplete=ref(true)] {import('@vue/reactivity').Ref<boolean>} - 表单的数据源formModel（通常指store里面保存的表单值）
+ * 是否初始化完成。外部组件如果需要对formModel值做处理，则需要通过该字段来控制状态，默认 true。
  * @param [showButton] {boolean} - 是否显示确认按钮。
  * @param [okButtonProps={}] {import('ant-design-vue.Button.props')} - okButton 按钮的属性。
  * @param [okButtonParams={}] {{}} - ok按钮点击时的参数（handleFinish函数的参数）。
@@ -28,6 +30,7 @@ import { Button, Form } from 'ant-design-vue'
  * @returns {Object}
  */
 export default function useTGForm({
+  isFormInitComplete,
   showButton = false,
   okButtonProps = {},
   okButtonParams = {},
@@ -42,6 +45,9 @@ export default function useTGForm({
   modalStatusFieldName,
   loaded
 } = {}) {
+  if (!isFormInitComplete) isFormInitComplete = ref(true)
+  const unWatch = ref([])
+
   const hasTree = inject('hasTree', false)
   const refreshTree = inject('refreshTree', undefined)
 
@@ -156,47 +162,63 @@ export default function useTGForm({
       // 处理依赖参数的初始化
       if (dependentField) {
         const _dependentField = typeof dependentField === 'function'
-          ? dependentField(store)
+          ? dependentField(store.$state)
           : dependentField
 
         await new Promise(resolve => {
-          watch(
+          unWatch.value.push(watch(
             () => options.location ? form.value[_dependentField] : search.value[_dependentField],
             async (newVal, oldValue) => {
+              // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已选中的值
               if (newVal !== oldValue) {
                 let res
 
-                // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已选中的值
-                if (options.location) {
-                  store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = ''
-                } else {
-                  store.search[enumOptions.paramNameInSearchRO] = ''
+                // 如果外部对formModel的处理还未完成，则此步不做formModel的修改
+                if (isFormInitComplete.value) {
+                  if (options.location) {
+                    const paramValue = store[enumOptions.location].form[enumOptions.paramNameInSearchRO]
+
+                    if (paramValue === undefined || typeof paramValue === 'object') {
+                      store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = undefined
+                    } else {
+                      // 为默认枚举值重置为“全部”选项。注意这里可能会有问题，因为目前没有一个规则可以判定当前字段是否是枚举值
+                      store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = ''
+                    }
+                  } else {
+                    // 为默认枚举值重置为“全部”选项。注意这里可能会有问题，因为目前没有一个规则可以判定当前字段是否是枚举值
+                    store.search[enumOptions.paramNameInSearchRO] = ''
+                  }
                 }
 
+                // 清空枚举列表
                 store.setList(options.stateName, [], options.location)
 
-                if (typeof options.customData === 'function') {
-                  const data = await options.customData(newVal)
+                // 依赖值为有效值时才执行枚举刷新
+                if (newVal) {
+                  if (typeof options.customData === 'function') {
+                    const data = await options.customData(newVal)
 
-                  if (!Array.isArray(data)) {
-                    throw new Error(`自定义枚举 ${options.stateName} 的 customData 函数返回值必须为一个数组。`)
+                    if (!Array.isArray(data)) {
+                      throw new Error(`自定义枚举 ${options.stateName} 的 customData 函数返回值必须为一个数组。`)
+                    }
+
+                    store.setState(options.stateName, data, { location: options.location })
+                    res = { status: true, data }
+                  } else {
+                    if (!options.apiName) {
+                      throw new Error(`非自定义枚举 ${options.stateName} 必须指定 apiName。`)
+                    }
+
+                    res = await store.getList(options)
                   }
-
-                  store.setState(options.stateName, data, { location: options.location })
-                  res = { status: true, data }
-                } else {
-                  if (!options.apiName) {
-                    throw new Error(`非自定义枚举 ${options.stateName} 必须指定 apiName。`)
-                  }
-
-                  res = await store.getList(options)
                 }
 
                 // 完成 promise
                 resolve(res)
               }
-            }
-          )
+            },
+            { immediate: true }
+          ))
         })
       } else {
         await store.getList(options)
@@ -250,6 +272,14 @@ export default function useTGForm({
 
             // 接口加载完毕后对表单的处理逻辑
             typeof loaded === 'function' && loaded(form)
+          } else {
+            // 关闭弹窗时，取消依赖字段的监听
+            unWatch.value.forEach(unWatchCb => {
+              unWatchCb()
+            })
+
+            // 监听器清空完成后，重置unWatch为空数组
+            unWatch.value = []
           }
         }, { immediate: true })
       }

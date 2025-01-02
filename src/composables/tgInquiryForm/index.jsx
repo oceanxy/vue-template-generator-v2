@@ -24,7 +24,7 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * @property [paramsForGetList={}] {((state: Object) => Object) | Object} - 接口请求时的参数，默认为空对象。
  * @property [paramNameInSearchRO] {string} - store.state.search 内对应的字段名, 注意，一些配置会依赖该属性。
  * @property [isRequired] {boolean} - 是否是必传参数，依赖`paramNameInSearchRO`参数。
- * @property [condition] {((state: Object) => boolean) | boolean}  - 执行条件。
+ * @property [condition] {((state: Object) => boolean) | boolean}  - 执行枚举初始化/更新的条件。
  * @property [listener] {boolean} - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。
  * @property [getValueFormResponse] {(data: Object[]|Object) => any} - 接口数据加载成功后，`paramNameInSearchRO`字段的取值逻辑。
  * - 参数 data 为接口请求的数据对象或数据数组；
@@ -99,7 +99,7 @@ export default function useInquiryForm({
         // 处理依赖参数的初始化
         if (dependentField) {
           const _dependentField = typeof dependentField === 'function'
-            ? dependentField(store)
+            ? dependentField(store.$state)
             : dependentField
 
           await new Promise(resolve => {

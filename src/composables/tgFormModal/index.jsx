@@ -37,8 +37,10 @@ export default function useTGFormModal({
   provide('inModal', true)
 
   let unWatch = ref(undefined)
+  const isFormInitComplete = ref(false)
 
   const { TGForm, ...tgForm } = useTGForm({
+    isFormInitComplete,
     location,
     rules,
     searchParamOptions,
@@ -64,6 +66,9 @@ export default function useTGFormModal({
 
   // 将`store.currentItem`和`store[location].form`中的同名字段保持同步
   watch(tgModal.currentItem, async currentItem => {
+    // 取消依赖字段的监听
+    isFormInitComplete.value = false
+
     if (location) {
       const formModel = {}
 
@@ -83,6 +88,7 @@ export default function useTGFormModal({
         }
       }
 
+      // 初始化表单默认值，回填表单数据
       tgForm.store.$patch({
         [location]: {
           form: {
@@ -94,6 +100,9 @@ export default function useTGFormModal({
 
       await nextTick()
 
+      // 恢复依赖字段的监听
+      isFormInitComplete.value = true
+      // 清空验证信息
       tgForm.clearValidate()
     }
   }, { deep: true })
