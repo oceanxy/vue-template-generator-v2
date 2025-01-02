@@ -242,3 +242,34 @@ export function setValueToStringKey(stringKey, value, obj) {
     obj[stringKey] = value
   }
 }
+
+/**
+ * 将枚举对象转换为对应的数组。
+ * @param enumeration {Object} - 枚举对象，键为值，值为标签。
+ * @param [options={}] {Object} - 配置选项。
+ * @config [containsTheAllOption] {boolean} - 是否包含“全部”选项。
+ * @config [convertValueToNumber] {boolean} - 是否将返回值中的`value`字段转换成`Number`类型。
+ * @returns {{label: *, value: *}[]} - 包含标签和值的对象数组。
+ * @throws {Error} 如果 enumeration 不是一个有效的对象。
+ */
+export function getArrayFromEnum(enumeration, options = {}) {
+  if (typeof enumeration !== 'object' || enumeration === null) {
+    throw new Error('The enumeration parameter must be a valid object.')
+  }
+
+  // 解构赋值并提供默认值
+  const { containsTheAllOption = false, convertValueToNumber = false } = options
+
+  // 获取枚举对象的键值对，并确保顺序一致
+  const array = Object.keys(enumeration).map(key => ({
+    label: enumeration[key],
+    value: convertValueToNumber ? +key : key
+  }))
+
+  // 处理包含“全部”选项的情况
+  if (containsTheAllOption) {
+    array.unshift({ label: '全部', value: '' })
+  }
+
+  return array
+}
