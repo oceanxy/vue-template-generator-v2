@@ -152,7 +152,7 @@ export function getFirstLetterOfEachWordOfAppName(appName = process.env.TG_APP_N
  * @param {number} [radix=16] - 基数。默认16，即16进制数
  * @returns {string}
  */
-export function uuid(len = 16, radix = 16) {
+export function getUUID(len = 16, radix = 16) {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
   const uuid = []
   let i
@@ -247,7 +247,8 @@ export function setValueToStringKey(stringKey, value, obj) {
  * 将枚举对象转换为对应的数组。
  * @param enumeration {Object} - 枚举对象，键为值，值为标签。
  * @param [options={}] {Object} - 配置选项。
- * @config [containsTheAllOption] {boolean} - 是否包含“全部”选项。
+ * @config [showEmptyOption] {boolean} - 在枚举数组中新增一个值为空字符串的选项。
+ * @config [emptyOptionLabel] {boolean} - 值为空字符串的选项对应的文本，默认“全部”。
  * @config [convertValueToNumber] {boolean} - 是否将返回值中的`value`字段转换成`Number`类型。
  * @returns {{label: *, value: *}[]} - 包含标签和值的对象数组。
  * @throws {Error} 如果 enumeration 不是一个有效的对象。
@@ -258,7 +259,11 @@ export function getArrayFromEnum(enumeration, options = {}) {
   }
 
   // 解构赋值并提供默认值
-  const { containsTheAllOption = false, convertValueToNumber = false } = options
+  const {
+    showEmptyOption = false,
+    convertValueToNumber = false,
+    emptyOptionLabel = '全部'
+  } = options
 
   // 获取枚举对象的键值对，并确保顺序一致
   const array = Object.keys(enumeration).map(key => ({
@@ -267,8 +272,8 @@ export function getArrayFromEnum(enumeration, options = {}) {
   }))
 
   // 处理包含“全部”选项的情况
-  if (containsTheAllOption) {
-    array.unshift({ label: '全部', value: '' })
+  if (showEmptyOption) {
+    array.unshift({ label: emptyOptionLabel, value: '' })
   }
 
   return array

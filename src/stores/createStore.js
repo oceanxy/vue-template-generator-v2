@@ -451,7 +451,7 @@ export function createStore({
         api = apiName || `getDetailsOf${firstLetterToUppercase(moduleName)}`
 
         if (apis[api]) {
-          res = await apis[api](params || { id: this.currentItem[this.rowKey] })
+          res = await apis[api](params || { [this.rowKey]: this.currentItem[this.rowKey] })
         } else {
           console.error(`接口未定义：${moduleName} 页面的 ${api} 接口未定义！`)
         }

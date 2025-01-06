@@ -54,7 +54,7 @@ export default function useThemeVars() {
   }
 
   /**
-   * Converts an HSL color value to RGB.
+   * Converts an HUE color value to RGB.
    * @param p {number}
    * @param q {number}
    * @param t {number}
@@ -96,6 +96,29 @@ export default function useThemeVars() {
     }
 
     return [r * 255, g * 255, b * 255]
+  }
+
+  function hexToRgba(hex, alpha = 1) {
+    // 去掉#号
+    hex = hex.replace('#', '')
+
+    // 处理3位和6位的十六进制颜色
+    let r,
+      g,
+      b
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16)
+      g = parseInt(hex[1] + hex[1], 16)
+      b = parseInt(hex[2] + hex[2], 16)
+    } else if (hex.length === 6) {
+      r = parseInt(hex.substring(0, 2), 16)
+      g = parseInt(hex.substring(2, 4), 16)
+      b = parseInt(hex.substring(4, 6), 16)
+    } else {
+      throw new Error('Invalid hex color format')
+    }
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
   }
 
   /**
@@ -140,9 +163,13 @@ export default function useThemeVars() {
       '--tg-theme-color-primary-bg-hover': token.value.colorPrimaryBgHover,
       '--tg-theme-color-primary-border': token.value.colorPrimaryBorder,
       '--tg-theme-color-primary-border-hover': token.value.colorPrimaryBorderHover,
+      '--tg-theme-color-error': token.value.colorError,
       '--tg-theme-color-border': token.value.colorBorder,
       '--tg-theme-color-border-hover': token.value.colorPrimaryBorderHover,
       '--tg-theme-color-border-secondary': token.value.colorBorderSecondary,
+      '--tg-theme-color-error-border': token.value.colorErrorBorder,
+      '--tg-theme-color-error-border-hover': token.value.colorErrorBorderHover,
+      '--tg-theme-color-error-shadow': hexToRgba(token.value.colorErrorBorder, 0.5),
       '--tg-theme-color-icon': token.value.colorIcon,
       '--tg-theme-color-icon-hover': token.value.colorIconHover,
       '--tg-theme-color-text': token.value.colorText,

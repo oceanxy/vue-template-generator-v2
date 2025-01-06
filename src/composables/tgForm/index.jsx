@@ -291,7 +291,7 @@ export default function useTGForm({
           params = getParams(currentItem.value)
         }
 
-        if (isGetDetails && (params || currentItem.value?.id)) {
+        if (isGetDetails && (params || currentItem.value?.[store.rowKey])) {
           return await store.getDetails({
             location,
             params,
