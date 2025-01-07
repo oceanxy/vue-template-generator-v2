@@ -42,14 +42,13 @@ module.exports = {
   enableTabPage: false,
   // 面包屑分隔符，如：首页 / 首页
   breadCrumbSeparator: '/',
-  // 统一上传地址
-  uploadPath: '',
   // 文件上传地址
-  fileUploadPath: '',
-  // 图片上传地址
-  imageUploadPath: '',
-  // 视频上传地址
-  videoUploadPath: '',
+  uploadPath: {
+    common: '',
+    file: '',
+    image: '',
+    video: ''
+  },
   // 系统名称
   systemName: '后台管理系统快速启动模板',
   systemNameEn: 'vue-template-generator',

@@ -15,16 +15,22 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
 
 /**
  * 必需入参的配置
- * @global
  * @typedef SearchParamOption
+ * @global
+ * @note [重要提示]：`location`与`storeName`同时存在时，可能会导致功能运行不正常，因为`storeName`会引入其他`store`，当在一个配置对象内
+ * 同时存在两个`store`时，`location`的所属会变得模糊。此时应该区分`stateName`、`apiName`等用于初始化枚举相关的API和`dependentField`、
+ * `paramNameInSearchRO`等用于服务弹窗内表单联动的API，二者可能会有不同的`location`需求。
+ * @todo 完成`location`在同时引入多个store时的适配。
+ * @solution 目前的解决方案是禁止`location`和`storeName`同时存在。
  * @property stateName {string} - 在 store.state 中字段的名称。
- * @property [location] {string} - 在 store.state 中次级模块的字段名称。
+ * @property [location] {string} - 在 store.state 中次级模块的字段名称，此字段会影响`apiName`、·stateName·、`paramNameInSearchRO`
+ * 以及`dependentField`等字段。
  * @property [storeName] {string} - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
  * @property [apiName] {string} - 接口名称。
  * @property [paramsForGetList={}] {((state: Object) => Object) | Object} - 接口请求时的参数，默认为空对象。
  * @property [paramNameInSearchRO] {string} - store.state.search 内对应的字段名, 注意，一些配置会依赖该属性。
  * @property [isRequired] {boolean} - 是否是必传参数，依赖`paramNameInSearchRO`参数。
- * @property [condition] {((state: Object) => boolean) | boolean}  - 执行枚举初始化/更新的条件。
+ * @property [condition] {((state: Object) => boolean) | boolean} - 页面/弹窗中枚举的初始化执行条件。
  * @property [listener] {boolean} - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。
  * @property [getValueFormResponse] {(data: Object[]|Object) => any} - 接口数据加载成功后，`paramNameInSearchRO`字段的取值逻辑。
  * - 参数 data 为接口请求的数据对象或数据数组；

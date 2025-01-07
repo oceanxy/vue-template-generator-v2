@@ -173,7 +173,7 @@ export default function useTGForm({
               if (newVal !== oldValue) {
                 let res
 
-                // 如果外部对formModel的处理还未完成，则此步不做formModel的修改
+                // 如果外部对formModel的处理还未完成，则此步不做formModel的修改，防止修改冲突
                 if (isFormInitComplete.value) {
                   if (options.location) {
                     const paramValue = store[enumOptions.location].form[enumOptions.paramNameInSearchRO]
