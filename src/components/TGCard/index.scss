@@ -74,7 +74,7 @@
   }
 
   & > .box-content {
-    background: #ffffff;
+    background: var(--tg-theme-color-bg-container);
     flex: auto;
     padding: 20px;
     overflow: auto;

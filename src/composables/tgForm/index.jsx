@@ -252,7 +252,7 @@ export default function useTGForm({
     name: 'TGForm',
     setup(props, { slots, emit }) {
       const inModal = inject('inModal', false)
-      const isInit = inject('isInit', false)
+      const isInitTable = inject('isInitTable', false)
 
       const { text, loading, ...restOkButtonProps } = okButtonProps
 
@@ -313,7 +313,7 @@ export default function useTGForm({
                 loading={loading || confirmLoading.value}
                 onClick={() => handleFinish({
                   ...okButtonParams,
-                  isRefreshTable: isInit
+                  isRefreshTable: isInitTable
                 })}
               >
                 {text}

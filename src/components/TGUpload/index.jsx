@@ -24,6 +24,8 @@ export default {
       type: String,
       default: ''
     },
+    // 上传所需参数或返回上传参数的方法
+    data: Upload.props.data,
     accept: {
       type: String,
       default: '*'
@@ -46,15 +48,9 @@ export default {
       default: 'text'
     },
     // ant-design Button 组件的 type prop
-    buttonType: {
-      type: String, // 'primary', 'dashed', 'danger', 'link'
-      required: false
-    },
+    buttonType: Button.props.type,
     // ant-design Button 组件的 size prop
-    buttonSize: {
-      type: String, // 'small', 'large'
-      required: false
-    },
+    buttonSize: Button.props.size,
     /**
      * 上传组件所在表单的实例对象（form，用于验证文件并反馈给表单信息）
      */
@@ -168,8 +164,10 @@ export default {
       _fileList = _fileList.map(file => {
         if (file.status === 'done' && 'response' in file) {
           if (file.response.status) {
-            file.url = file.response.data[0].path
-            file.key = file.response.data[0].key
+            if (Array.isArray(file.response.data)) {
+              file.url = file.response.data[0].path
+              file.key = file.response.data[0].key
+            }
           } else {
             file.status = 'error'
             file.response = file.response.message
@@ -207,6 +205,7 @@ export default {
         <Upload
           accept={props.accept}
           action={props.action || configs.uploadPath.common}
+          data={props.data}
           listType={props.listType}
           name={name.value}
           fileList={files.value}

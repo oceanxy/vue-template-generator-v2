@@ -161,7 +161,7 @@ export function createStore({
         location,
         ...optionsOfGetList
       } = {}) {
-        this.setSearchParams(searchParams, isPagination, location)
+        this.setSearchParams(searchParams, location)
 
         if (isFetchList) {
           await this.execSearch({
@@ -204,10 +204,9 @@ export function createStore({
        * 设置搜索参数（当搜索参数变化时，会重置分页参数）。
        * 注意该 Action 的使用场景：仅在搜索参数变化时用来更新搜索参数（store.state.search）
        * @param searchParams
-       * @param isPagination
        * @param [location]
        */
-      setSearchParams(searchParams = {}, isPagination, location) {
+      setSearchParams(searchParams = {}, location) {
         if (!location && 'search' in this.$state) {
           this.$patch({ search: searchParams })
         } else if (location && 'form' in this.$state[location]) {
@@ -737,9 +736,15 @@ export function createStore({
         }
 
         if (buffer) {
-          const blob = new Blob([buffer])
+          let blobOrUrl
 
-          downloadFile(blob, fileName ? `${fileName}` : undefined)
+          if (buffer.type === 'application/json') {
+            blobOrUrl = buffer.data
+          } else {
+            blobOrUrl = new Blob([buffer])
+          }
+
+          downloadFile(blobOrUrl, fileName ? `${fileName}` : undefined)
 
           if (modalStatusFieldName) {
             this.setState(modalStatusFieldName, false)

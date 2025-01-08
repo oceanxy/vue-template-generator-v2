@@ -58,7 +58,7 @@
       & > .tg-container-trigger {
         border-radius: 0 var(--tg-theme-border-radius) var(--tg-theme-border-radius) 0;
         right: -16px;
-        background: #ffffff;
+        background: var(--tg-theme-color-bg-container);
       }
 
       & > *:not(.tg-container-trigger) {

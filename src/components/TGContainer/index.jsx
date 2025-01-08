@@ -2,7 +2,7 @@ import './assets/styles/index.scss'
 import TGContainerWithTreeSider from '@/components/TGContainerWithTreeSider'
 import { Space } from 'ant-design-vue'
 import router from '@/router'
-import { nextTick, onMounted, provide } from 'vue'
+import { computed, nextTick, onMounted, provide } from 'vue'
 import useStore from '@/composables/tgStore'
 
 export default {
@@ -10,7 +10,8 @@ export default {
   inheritAttrs: false,
   props: {
     // 是否自动初始化页面数据（页面数据接口按照`get{router.currentRoute.value.name}格式定义`）
-    isInit: {
+    // 注意：使用了`slots.table`才会生效。
+    isInitTable: {
       type: Boolean,
       default: true
     },
@@ -34,7 +35,11 @@ export default {
       type: Boolean,
       default: true
     },
-    ...TGContainerWithTreeSider.props
+    ...TGContainerWithTreeSider.props,
+    injectSearchParamsOfTable: {
+      type: Function,
+      default: null
+    }
   },
   setup(props, { slots, attrs }) {
     const store = useStore()
@@ -48,15 +53,20 @@ export default {
       ...treeProps
     } = props
 
-    // 提供给所有子级或插槽，以判断本页面是否存在列表组件
-    provide('isTableExist', !!slots.table)
+    const initTable = computed(() => {
+      return props.isInitTable && slots.table && 'dataSource' in store.$state
+    })
+
     provide('initSearchParameters', initSearchParameters)
-    provide('isInit', props.isInit)
+    // 提供给所有子级或插槽，以判断本页面是否存在列表组件
+    provide('isInitTable', initTable.value)
 
     onMounted(async () => {
-      if (props.isInit) {
-        await initSearchParameters({ isFirstTime: true })
+      if (!initTable.value) {
+        store.dataSource.loading = false
       }
+
+      await initSearchParameters({ isFirstTime: true })
     })
 
     /**
@@ -103,32 +113,39 @@ export default {
             ])
           )
         } else {
-          // 参数更新， 触发有依赖的字段的 watch
-          store.setSearchParams(searchParams, isPagination)
+          // 参数更新，触发有依赖的字段的 watch
+          store.setSearchParams(searchParams)
 
-          // 等待搜索枚举中有依赖字段的参数重置完成
-          await nextTick()
+          if (initTable.value) {
+            // 等待搜索枚举中有依赖字段的参数重置完成
+            await nextTick()
 
-          // 执行搜索
-          await store.execSearch({
-            isPagination,
-            ...(optionsOfGetList ?? {})
-          })
+            // 执行搜索
+            await store.execSearch({
+              isPagination,
+              ...(optionsOfGetList ?? {})
+            })
+          }
         }
       } catch (error) {
-        // 树数据加载失败，退出后续所有的数据加载逻辑
-        store.dataSource.loading = false
+        if ('dataSource' in store.$state) {
+          // 树数据加载失败，退出后续所有的数据加载逻辑
+          store.dataSource.loading = false
+        }
+
         console.error(error)
       }
     }
 
     async function saveParamsAndExecSearch(searchParams) {
-      await store.saveParamsAndExecSearch({
-        searchParams,
-        isResetSelectedRows: true,
-        isPagination,
-        ...(optionsOfGetList ?? {})
-      })
+      if (initTable.value) {
+        await store.saveParamsAndExecSearch({
+          searchParams,
+          isResetSelectedRows: true,
+          isPagination,
+          ...(optionsOfGetList ?? {})
+        })
+      }
     }
 
     /**

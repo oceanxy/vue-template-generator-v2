@@ -10,7 +10,7 @@
     flex-direction: column;
     row-gap: 10px;
     column-gap: 10px;
-    background: #ffffff;
+    background: var(--tg-theme-color-bg-container);
     padding: 12px 20px;
     overflow: auto;
     border-radius: var(--tg-theme-border-radius);

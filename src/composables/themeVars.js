@@ -176,8 +176,11 @@ export default function useThemeVars() {
       '--tg-theme-color-text-secondary': token.value.colorTextSecondary,
       '--tg-theme-color-text-tertiary': token.value.colorTextTertiary,
       '--tg-theme-color-text-quaternary': token.value.colorTextQuaternary,
+      '--tg-theme-color-bg-container': token.value.colorBgContainer,
       '--tg-theme-font-size': token.value.fontSize + 'px',
+      '--tg-theme-font-size-sm': token.value.fontSizeSM + 'px',
       '--tg-theme-font-size-lg': token.value.fontSizeLG + 'px',
+      '--tg-theme-font-size-xl': token.value.fontSizeXL + 'px',
       '--tg-theme-border-radius': token.value.borderRadius + 'px',
       '--tg-theme-control-item-bg-hover': token.value.controlItemBgHover
     }

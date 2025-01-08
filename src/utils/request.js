@@ -73,11 +73,15 @@ export default function getService(conf, router) {
           const fileReader = new FileReader()
 
           fileReader.onloadend = async () => {
-            return await cb(JSON.parse(fileReader.result))
+            const res = JSON.parse(fileReader.result)
+            res.type = 'application/json'
+
+            return await cb(res)
           }
 
           fileReader.readAsText(res)
         } else {
+          res.type = 'application/json'
           return Promise.resolve(res)
         }
       } else {
