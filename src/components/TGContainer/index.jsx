@@ -54,7 +54,7 @@ export default {
     } = props
 
     const initTable = computed(() => {
-      return props.isInitTable && slots.table && 'dataSource' in store.$state
+      return props.isInitTable && !!slots.table && 'dataSource' in store.$state
     })
 
     provide('initSearchParameters', initSearchParameters)

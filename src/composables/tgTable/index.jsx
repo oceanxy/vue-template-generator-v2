@@ -10,8 +10,9 @@ import { verificationDialog } from '@/utils/message'
 import dayjs from 'dayjs'
 
 /**
+ * @param [isStaticTable] {boolean} - 是否是静态表格。静态表格不需要从接口获取数据，但需要强制指定`stateName`参数。
  * @param [location] {string} - 次级表格的 state。
- * @param [open] {vue.Ref<boolean>} - 是否显示弹窗，在弹窗内的表格组件需要。
+ * @param [open] {import('@vue/reactivity').Ref<boolean>} - 是否显示弹窗，在弹窗内的表格组件需要。
  * @param [stateName] {string} - 表格数据源的属性名，默认 'dataSource'。
  * @param [isInjectRouterQuery=true] {boolean} - 是否自动注入路由的 query 参数，默认 true。
  * 注意此参数为 true 时，表格的请求参数会被路由 query 中的同名参数覆盖。
@@ -25,15 +26,21 @@ import dayjs from 'dayjs'
  * @returns {{}|string}
  */
 export default function useTGTable({
+  isStaticTable,
   stateName = 'dataSource',
   location,
-  open,
+  modalStatusFieldName,
+  open: _open,
   isInjectRouterQuery,
   getDataSource,
   props = {},
   showSerialNumberColumn = true,
   optionsOfGetList = {}
 } = {}) {
+  if (isStaticTable && !stateName) {
+    console.warn('静态表格需要 stateName 的值来确定数据源！')
+  }
+
   let observer = null
   let timer = null
 
@@ -41,12 +48,19 @@ export default function useTGTable({
   const hasTree = inject('hasTree', null)
   const refreshTree = inject('refreshTree', null)
   const getRefOfChild = inject('getRefOfChild', null)
+  let open = null
 
   const { token } = useThemeVars()
   let store = useStore()
 
   const tableRef = ref(null)
   const exportButtonDisabled = ref(false)
+
+  if (!_open && modalStatusFieldName) {
+    open = computed(() => store[modalStatusFieldName])
+  } else if (_open) {
+    open = _open
+  }
 
   const currentItem = computed(() => store.currentItem)
   const dataSource = computed(() => {
@@ -81,7 +95,7 @@ export default function useTGTable({
   } else {
     /** 弹窗内表格等附表格逻辑 **/
     rowKey = computed(() => store[location].rowKey)
-    pagination = computed(() => store[location].pagination)
+    pagination = computed(() => store[location]?.pagination)
     currentPageStartNumber = computed(() => {
       return (pagination.value?.pageIndex ?? 0) * (pagination.value?.pageSize ?? 10)
     })
@@ -135,7 +149,7 @@ export default function useTGTable({
         ...props.rowSelection
       }
       : null,
-    pagination: props?.pagination !== false
+    pagination: props?.pagination !== false && typeof pagination.value === 'object'
       ? {
         showQuickJumper: true,
         showTotal: total => `共 ${total} 条数据`,
@@ -147,6 +161,7 @@ export default function useTGTable({
     // 此外，这里会引发报错：ResizeObserver loop completed with undelivered notifications。
     // 具体信息可以参考：https://juejin.cn/post/7262623363700981797
     // scroll: { x: '100%', y: 500 },
+    scroll: { x: 'max-content' },
     tableLayout: 'fixed',
     size: 'middle',
     bordered: true,
@@ -193,7 +208,9 @@ export default function useTGTable({
 
     if (process.env.NODE_ENV === 'development' && value.length && !(rowKey in value[0])) {
       console.warn(`tgTable：未在表格数据中找到唯一标识符（${rowKey || 'id'}），这可能会导致异常的错误！` +
-        `请检查表格数据中是否存在'id'字段，或者是否正确设置了\`store.state${location ? `.${location}` : ''}.rowKey\`的值。`)
+        `请检查表格数据中是否存在'id'字段，或者是否正确设置了\`store.state${location
+          ? `.${location}`
+          : ''}.rowKey\`的值。`)
     }
 
     defaultTableProps.dataSource = value
@@ -201,15 +218,15 @@ export default function useTGTable({
     await resize()
   })
 
-  if (open) {
+  if (open && !isStaticTable) {
     watch(open, async val => {
       if (val) {
         await fetchList()
       }
-    })
+    }, { immediate: true })
   }
 
-  if (props?.pagination !== false) {
+  if (props?.pagination !== false && typeof pagination.value === 'object') {
     watch(pagination, value => {
       defaultTableProps.pagination.total = value.total
       defaultTableProps.pagination.pageSize = value.pageSize
@@ -514,7 +531,7 @@ export default function useTGTable({
    * 传递的参数会与`store.state.search`合并后传递给接口，不改变`store.state.search`。
    * @param [apiName] {string} - 自定义导出接口名，默认为`export${route.name}`。
    * @param [fileName] {string} - 文件名称，默认路由名称（route.meta.title）
-   * @param [modalStatusFieldName] {string} - 成功导出后需要关闭的弹窗控制字段。
+   * @param [modalStatusFieldName] {string} - 成功导出后需要关闭弹窗的控制字段，不关闭弹窗可不传该值。
    * @param [isTimeName] {boolean} - 默认false，开启之后在`filename`后添加时间格式命名。
    * @returns {Promise<void>}
    */

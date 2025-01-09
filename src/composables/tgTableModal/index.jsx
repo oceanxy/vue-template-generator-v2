@@ -7,6 +7,8 @@ import useTGTable from '@/composables/tgTable'
 import { computed, watch } from 'vue'
 
 export default function useTGTableModal({
+  showSearch = true,
+  isStaticTable = false,
   modalStatusFieldName = 'showModalForEditing',
   modalProps,
   tableProps,
@@ -17,40 +19,54 @@ export default function useTGTableModal({
   optionsOfGetList,
   rules
 } = {}) {
+  let confirmLoading
+  let tgForm = {}
+  let TGForm
+
   const { TGTable, ...tgTable } = useTGTable({
+    isStaticTable,
     props: tableProps || {},
     location,
     isInjectRouterQuery: false,
     optionsOfGetList
   })
 
-  const { TGForm, ...tgForm } = useTGForm({
-    location,
-    rules,
-    searchParamOptions,
-    isGetDetails,
-    setDetails,
-    modalStatusFieldName
-  })
+  if (showSearch) {
+    const { TGForm: _TGForm, ..._tgForm } = useTGForm({
+      location,
+      rules,
+      searchParamOptions,
+      isGetDetails,
+      setDetails,
+      modalStatusFieldName
+    })
+
+    tgForm = _tgForm
+    TGForm = _TGForm
+    confirmLoading = tgForm.confirmLoading
+  } else {
+    confirmLoading = computed(() => tgTable.store[location]?.dataSource?.loading ?? false)
+  }
 
   const { TGModal, ...tgModal } = useTGModal({
     modalStatusFieldName,
-    store: tgForm.store,
-    confirmLoading: tgForm.confirmLoading
+    store: tgTable.store,
+    confirmLoading
   })
 
-  const loading = computed(() => tgTable.store[location].dataSource.loading
-  )
+  const loading = computed(() => tgTable.store[location].dataSource.loading)
 
-  watch(tgModal.open, async val => {
-    if (val) {
-      await tgTable.store.execSearch({
-        location,
-        isMergeParam: true,
-        ...optionsOfGetList
-      })
-    }
-  })
+  if (showSearch && !isStaticTable) {
+    watch(tgModal.open, async val => {
+      if (val) {
+        await tgTable.store.execSearch({
+          location,
+          isMergeParam: true,
+          ...optionsOfGetList
+        })
+      }
+    })
+  }
 
   async function tableModalSearchCallback() {
     await tgTable.store.execSearch({
@@ -73,7 +89,7 @@ export default function useTGTableModal({
     const { okButtonProps } = modalProps
     const okButtonLoading = loading.value ||
       tgModal.modalContentLoading.value ||
-      tgForm.confirmLoading.value ||
+      confirmLoading.value ||
       tgTable.exportButtonDisabled.value
 
     if (okButtonProps) {
@@ -93,15 +109,15 @@ export default function useTGTableModal({
         modalProps={modalProps}
       >
         {
-          slots.default && (
+          showSearch && !!slots.default && (
             <TGForm class={'tg-table-modal-inquiry-form'}>
               {slots.default()}
               <Form.Item class={'tg-form-item-btn'}>
                 <Button
                   type="primary"
                   icon={<SearchOutlined />}
-                  disabled={tgForm.confirmLoading.value || tgForm.buttonDisabled.value}
-                  loading={tgForm.confirmLoading.value}
+                  disabled={confirmLoading.value || tgForm.buttonDisabled.value}
+                  loading={confirmLoading.value}
                   onClick={() => tgForm.handleFinish({
                     callback: tableModalSearchCallback
                   })}
@@ -109,7 +125,7 @@ export default function useTGTableModal({
                   查询
                 </Button>
                 <Button
-                  disabled={tgForm.confirmLoading.value || tgForm.buttonDisabled.value}
+                  disabled={confirmLoading.value || tgForm.buttonDisabled.value}
                   onClick={() => tgForm.handleClear({ callback: tableModalSearchCallback })}
                   icon={<ReloadOutlined />}
                 >

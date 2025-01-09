@@ -78,7 +78,7 @@ export default {
       return files.value.findIndex(item => item.status === 'error') > -1
     })
 
-    watch(props.value, val => {
+    watch(() => props.value, val => {
       const temp = []
 
       if (val?.length) {

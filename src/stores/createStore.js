@@ -146,11 +146,11 @@ export function createStore({
       /**
        * 保存搜索参数并执行列表搜索。
        * @param searchParams {Object} - 执行搜索前，需要合并到 store.state.search 的值。搜索接口会调用合并后的 store.state.search。
-       * @param isFetchList {boolean=true} - 是否执行列表查询，默认 true。
-       * @param isPagination {boolean=true} - 是否分页，默认 true。
-       * @param isResetSelectedRows {boolean=true} - 是否重置 store.state.selectedRows，默认 true。
+       * @param [isFetchList] {boolean=true} - 是否执行列表查询，默认 true。
+       * @param [isPagination] {boolean=true} - 是否分页，默认 true。
+       * @param [isResetSelectedRows] {boolean=true} - 是否重置 store.state.selectedRows，默认 true。
        * @param [location] {string} - 搜索参数所在的 store 的次级模块名称。
-       * @param [...optionsOfGetList] {Object}
+       * @param [...optionsOfGetList] {Object} - 其他`getList`函数的参数。
        * @returns {Promise<void>}
        */
       async saveParamsAndExecSearch({
@@ -172,12 +172,20 @@ export function createStore({
           })
         }
       },
+      /**
+       *
+       * @param [isResetSelectedRows] {boolean=true} - 是否重置 store.state.selectedRows，默认 true。
+       * @param [isPagination] {boolean=true} - 是否分页，默认 true。
+       * @param [location] {string}- 搜索参数所在的 store 的次级模块名称。
+       * @param [...optionsOfGetList] {Object} - 其他`getList`函数的参数。
+       * @returns {Promise<void>}
+       */
       async execSearch({
         isResetSelectedRows = true,
         isPagination = true,
         location,
         ...optionsOfGetList
-      }) {
+      } = {}) {
         if (isPagination) {
           if (!location && 'pagination' in this.$state) {
             this.pagination.pageIndex = 0
@@ -585,6 +593,7 @@ export function createStore({
       },
       /**
        * 设置模态框的显示状态
+       * @param [beforeOpen] {() => void} - 打开弹窗前的逻辑。
        * @param [modalStatusFieldName='showModalForEditing'] {string} - 模态框的显示状态字段名，默认为 showModalForEditing。
        * @param [value] {boolean} - 显示状态，默认当前值取反，初始值 false。
        * @param [currentItem] {Object} - 当前行数据。
@@ -595,6 +604,7 @@ export function createStore({
        * `store[location].form`中的参数名，值为自行设定的值。
        */
       setVisibilityOfModal({
+        beforeOpen,
         modalStatusFieldName = 'showModalForEditing',
         location = 'modalForEditing',
         value,
@@ -610,8 +620,6 @@ export function createStore({
           modalStatusValue = !this.$state[modalStatusFieldName]
         }
 
-        this.$state[modalStatusFieldName] = modalStatusValue
-
         if ('currentItem' in this.$state) {
           if (modalStatusValue) {
             const isCurrentItemEmpty = !Object.keys(this.currentItem).length
@@ -623,17 +631,17 @@ export function createStore({
             const existPrevCurrentItem = '_prevCurrentItem' in this.currentItem
             this.setState('currentItem', existPrevCurrentItem ? this.currentItem._prevCurrentItem : {}, { merge })
           }
-        }
 
-        // 无感化处理`form`的唯一标识符，用于弹窗的编辑等功能
-        if (this.rowKey in this.currentItem) {
-          this.$patch({
-            [location]: {
-              form: {
-                [this.rowKey]: this.currentItem[this.rowKey]
+          // 无感化处理`form`的唯一标识符，用于弹窗的编辑等功能
+          if (this.rowKey in this.currentItem) {
+            this.$patch({
+              [location]: {
+                form: {
+                  [this.rowKey]: this.currentItem[this.rowKey]
+                }
               }
-            }
-          })
+            })
+          }
         }
 
         // 处理需要从`search`传递到`form`的值
@@ -661,6 +669,10 @@ export function createStore({
             }
           })
         }
+
+        if (typeof beforeOpen === 'function') beforeOpen()
+
+        this.$state[modalStatusFieldName] = modalStatusValue
       },
       /**
        * 更新行状态

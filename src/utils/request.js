@@ -80,10 +80,11 @@ export default function getService(conf, router) {
           }
 
           fileReader.readAsText(res)
-        } else {
+        } else if (!(res instanceof Blob)) {
           res.type = 'application/json'
-          return Promise.resolve(res)
         }
+
+        return Promise.resolve(res)
       } else {
         return await cb(res)
       }

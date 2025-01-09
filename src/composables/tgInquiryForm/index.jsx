@@ -54,6 +54,7 @@ export default function useInquiryForm({
   buttonDisabledFn,
   rules = {}
 } = {}) {
+  const isInitTable = inject('isInitTable', true)
   const store = useStore()
   const commonStore = useStore('/common')
   const searchParamNameRequired = inject('searchParamNameRequired', [])
@@ -157,7 +158,9 @@ export default function useInquiryForm({
                   (enumOptions.isRequired && newVal && newVal !== oldValue) ||
                   (!enumOptions.isRequired && newVal !== oldValue)
                 ) {
-                  store.saveParamsAndExecSearch()
+                  if (isInitTable) {
+                    store.execSearch()
+                  }
                 }
               }
             )
@@ -224,9 +227,11 @@ export default function useInquiryForm({
       const fieldDom = ref()
       const showInquiryFormCollapsedButton = ref(true)
 
-      watch(() => fieldDom.value?.querySelectorAll('.ant-form-item')?.length, val => {
-        showInquiryFormCollapsedButton.value = props.fixedColumns && val > 7
-      }, { immediate: true })
+      watch(
+        () => fieldDom.value?.querySelectorAll('.ant-form-item')?.length,
+        val => showInquiryFormCollapsedButton.value = props.fixedColumns && val > 7,
+        { immediate: true }
+      )
 
       async function handleInquiryFormCollapsedChange() {
         const heightDifference = fieldDom.value.parentNode.clientHeight - fieldDom.value.clientHeight
