@@ -767,6 +767,7 @@ export function createStore({
       },
       /**
        *
+       * @param [loading=true] {boolean} - 是否启用加载状态，默认`true`。
        * @param [location]
        * @param [apiName] {string} - 接口名称，默认值为 `${ACTION}${MODULE_NAME}`。
        * @param [action] {'update','add',string} - 操作类型，未定义 apiName 时生效。
@@ -781,6 +782,7 @@ export function createStore({
        * @returns {Promise<Object>}
        */
       async fetch({
+        loading = true,
         location,
         apiName,
         action,
@@ -791,7 +793,9 @@ export function createStore({
       }) {
         let res = { status: false }
 
-        this.setLoading(location ? { stateName: location } : {})
+        if (loading) {
+          this.setLoading(location ? { stateName: location } : {})
+        }
 
         if (!apiName) {
           if (!action) {
@@ -817,7 +821,9 @@ export function createStore({
           console.error(`接口未定义：${moduleName} 页面的 ${apiName} 接口未定义！`)
         }
 
-        this.setLoading(location ? { stateName: location } : {})
+        if (loading) {
+          this.setLoading(location ? { stateName: location } : {})
+        }
 
         if (res.status) {
           // 关闭编辑弹窗

@@ -181,7 +181,7 @@ export default function useFunction({
 
   /**
    * 导出功能
-   * @param fileName {string} 导出文件名 默认为本页面的 title。
+   * @param [fileName] {string} 导出文件名 默认为本页面的 title。
    * @param [payload] {Object} 自定义导出参数，会联合该模块的 store.state.search 一起传递给接口。
    * @param [apiName] {string} 自定义导出接口名，默认为`export${MODULE_NAME}`。
    * @param [isTimeName] {boolean} 默认false，开启之后在`filename`后添加时间格式命名。
@@ -200,6 +200,10 @@ export default function useFunction({
       payload = params.payload || payload
       apiName = params.apiName || apiName
       isTimeName = params.isTimeName || isTimeName
+    }
+
+    if (!fileName) {
+      throw new Error('请传入导出文件名')
     }
 
     // 获取当前日期
