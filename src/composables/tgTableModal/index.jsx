@@ -125,9 +125,9 @@ export default function useTGTableModal({
                   查询
                 </Button>
                 <Button
+                  icon={<ReloadOutlined />}
                   disabled={confirmLoading.value || tgForm.buttonDisabled.value}
                   onClick={() => tgForm.handleClear({ callback: tableModalSearchCallback })}
-                  icon={<ReloadOutlined />}
                 >
                   重置
                 </Button>

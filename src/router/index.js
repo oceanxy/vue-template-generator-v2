@@ -157,6 +157,9 @@ async function resetRouter() {
 const router = createRouter()
 
 router.beforeEach(async (to, from, next) => {
+  // TODO [性能优化] vue路由跳转时取消上一个页面的http请求
+  // TODO [体验优化] 保存token时，将localstorage与cookie结合使用，在退出页面时清空登录信息
+
   if (to.query.title) {
     to.meta.title = decodeURIComponent(to.query.title)
   }

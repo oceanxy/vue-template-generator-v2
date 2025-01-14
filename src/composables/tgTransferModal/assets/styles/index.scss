@@ -1,28 +1,65 @@
-.tg-modal-inquiry-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.tg-transfer-modal {
+  .ant-modal-body {
+    height: calc(90vh - 200px);
+    overflow: hidden !important;
 
-  .ant-form-item {
-    width: calc((100% - 30px) / 4);
-    min-width: 120px;
-    margin-bottom: 0;
-  }
-
-  .ant-form-item-control-input-content {
-    & > * {
-      width: 100%;
+    .ant-spin-nested-loading,
+    .ant-spin-container {
+      height: 100%;
+      overflow: hidden;
     }
-  }
 
-  .tg-form-item-btn {
-    display: flex;
-    justify-content: flex-end;
-    margin-left: auto;
-
-    .ant-form-item-control-input-content {
+    & > .ant-spin-nested-loading > .ant-spin-container {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      overflow: hidden;
+      gap: 20px;
+
+      .tg-transfer-modal-inquiry-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        flex: none;
+        height: 32px;
+
+        .ant-form-item {
+          width: calc((100% - 30px) / 4);
+          min-width: 120px;
+          margin-bottom: 0;
+        }
+
+        .ant-form-item-control-input-content {
+          & > * {
+            width: 100%;
+          }
+        }
+
+        .tg-form-item-btn {
+          display: flex;
+          justify-content: flex-end;
+          margin-left: auto;
+
+          .ant-form-item-control-input-content {
+            display: flex;
+            gap: 10px;
+          }
+        }
+      }
+
+      .tg-transfer-modal-content {
+        flex: auto;
+
+        .ant-transfer {
+          height: 100%;
+        }
+      }
+    }
+
+    .ant-table-wrapper {
+      .tg-table-modal-content {
+        flex: auto;
+        height: 100%;
+      }
     }
   }
 }
