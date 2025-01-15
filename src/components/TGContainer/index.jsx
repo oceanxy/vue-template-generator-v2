@@ -9,7 +9,7 @@ export default {
   name: 'TGContainer',
   inheritAttrs: false,
   props: {
-    // 是否自动初始化页面数据（页面数据接口按照`get{router.currentRoute.value.name}格式定义`）
+    // 是否自动初始化页面数据（页面数据接口按照`get{router.currentRoute.value.name}`格式定义）
     // 注意：使用了`slots.table`才会生效。
     isInitTable: {
       type: Boolean,
@@ -53,16 +53,16 @@ export default {
       ...treeProps
     } = props
 
-    const initTable = computed(() => {
+    const _isInitTable = computed(() => {
       return props.isInitTable && !!slots.table && 'dataSource' in store.$state
     })
 
     provide('initSearchParameters', initSearchParameters)
     // 提供给所有子级或插槽，以判断本页面是否存在列表组件
-    provide('isInitTable', initTable.value)
+    provide('isInitTable', _isInitTable.value)
 
     onMounted(async () => {
-      if (!initTable.value) {
+      if (!_isInitTable.value) {
         store.dataSource.loading = false
       }
 
@@ -103,7 +103,7 @@ export default {
             // 首次初始化时延迟执行非必需的枚举，以节省请求表格的资源
             await Promise.all(store.taskQueues.required.map(cb => cb()))
           )
-          // 注册非必需的枚举值监听器
+          // 请求页面主数据，同时注册非必需的枚举值监听器
           execListeners(
             await Promise.all([
               // 执行搜索
@@ -116,7 +116,7 @@ export default {
           // 参数更新，触发有依赖的字段的 watch
           store.setSearchParams(searchParams)
 
-          if (initTable.value) {
+          if (_isInitTable.value) {
             // 等待搜索枚举中有依赖字段的参数重置完成
             await nextTick()
 
@@ -138,7 +138,7 @@ export default {
     }
 
     async function saveParamsAndExecSearch(searchParams) {
-      if (initTable.value) {
+      if (_isInitTable.value) {
         await store.saveParamsAndExecSearch({
           searchParams,
           isResetSelectedRows: true,

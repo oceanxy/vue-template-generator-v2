@@ -622,25 +622,34 @@ export function createStore({
 
         if ('currentItem' in this.$state) {
           if (modalStatusValue) {
+            // 当打开弹窗时，存在已经打开的弹窗，缓存已存在弹窗的`currentItem`
             const isCurrentItemEmpty = !Object.keys(this.currentItem).length
-            this.setState('currentItem', isCurrentItemEmpty ? currentItem : {
-              _prevCurrentItem: this.currentItem,
-              ...currentItem
-            }, { merge })
+
+            this.setState(
+              'currentItem',
+              {
+                _prevCurrentItem: isCurrentItemEmpty ? undefined : this.currentItem,
+                _location: location, // 用于标识当前currentItem数据属于哪一层弹窗
+                ...currentItem
+              },
+              { merge }
+            )
           } else {
-            const existPrevCurrentItem = '_prevCurrentItem' in this.currentItem
-            this.setState('currentItem', existPrevCurrentItem ? this.currentItem._prevCurrentItem : {}, { merge })
+            // 关闭弹窗时，如果存在缓存的`currentItem`，则恢复之
+            this.setState(
+              'currentItem',
+              this.currentItem._prevCurrentItem ? this.currentItem._prevCurrentItem : {},
+              { merge }
+            )
           }
 
+          const rowKey = this[location].rowKey || this.rowKey
+
           // 无感化处理`form`的唯一标识符，用于弹窗的编辑等功能
-          if (this.rowKey in this.currentItem) {
-            this.$patch({
-              [location]: {
-                form: {
-                  [this.rowKey]: this.currentItem[this.rowKey]
-                }
-              }
-            })
+          if (rowKey in this.currentItem) {
+            this.$state[location].form[rowKey] = this.currentItem[rowKey]
+          } else {
+            delete this.$state[location].form[rowKey]
           }
         }
 

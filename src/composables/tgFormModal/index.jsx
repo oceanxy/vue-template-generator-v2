@@ -1,7 +1,7 @@
 import './assets/styles/index.scss'
 import useTGModal from '@/composables/tgModal'
 import useTGForm from '@/composables/tgForm'
-import { nextTick, provide, reactive, ref, toRaw, watch } from 'vue'
+import { provide, reactive, ref, watch } from 'vue'
 import { set } from 'lodash/object'
 
 /**
@@ -37,10 +37,8 @@ export default function useTGFormModal({
   provide('inModal', true)
 
   let unWatch = ref(undefined)
-  const isFormInitComplete = ref(false)
 
   const { TGForm, ...tgForm } = useTGForm({
-    isFormInitComplete,
     location,
     rules,
     searchParamOptions,
@@ -48,6 +46,7 @@ export default function useTGFormModal({
     apiName,
     getParams,
     setDetails,
+    formModelFormatter,
     modalStatusFieldName,
     loaded
   })
@@ -63,49 +62,6 @@ export default function useTGFormModal({
       resetFields: tgForm.resetFields
     }
   })
-
-  // 将`store.currentItem`和`store[location].form`中的同名字段保持同步
-  watch(tgModal.currentItem, async currentItem => {
-    // 取消依赖字段的监听
-    isFormInitComplete.value = false
-
-    if (location) {
-      const formModel = {}
-
-      if (Object.keys(currentItem).length) {
-        for (const key in tgForm.formModel) {
-          if (key in currentItem) {
-            const formModelKey = tgForm.formModel[key]
-            const currentItemKey = toRaw(currentItem[key])
-
-            // 引用类型为假值时跳过
-            if (!currentItemKey && typeof formModelKey === 'object') {
-              continue
-            }
-
-            formModel[key] = currentItem[key]
-          }
-        }
-      }
-
-      // 初始化表单默认值，回填表单数据
-      tgForm.store.$patch({
-        [location]: {
-          form: {
-            ...formModel,
-            ...formModelFormatter?.(currentItem)
-          }
-        }
-      })
-
-      await nextTick()
-
-      // 恢复依赖字段的监听
-      isFormInitComplete.value = true
-      // 清空验证信息
-      tgForm.clearValidate()
-    }
-  }, { deep: true })
 
   const _modalProps = reactive(modalProps)
 

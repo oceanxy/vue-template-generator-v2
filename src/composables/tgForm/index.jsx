@@ -7,46 +7,49 @@
 
 import './assets/styles/index.scss'
 import useStore from '@/composables/tgStore'
-import { computed, inject, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, inject, nextTick, onUnmounted, reactive, ref, toRaw, watch } from 'vue'
 import { Button, Form } from 'ant-design-vue'
 
 /**
- * @param [isFormInitComplete=ref(true)] {import('@vue/reactivity').Ref<boolean>} - 表单的数据源formModel（通常指store里面保存的表单值）
- * 是否初始化完成。外部组件如果需要对formModel值做处理，则需要通过该字段来控制状态，默认 true。
  * @param [showButton] {boolean} - 是否显示确认按钮。
  * @param [okButtonProps={}] {import('ant-design-vue.Button.props')} - okButton 按钮的属性。
  * @param [okButtonParams={}] {{}} - ok按钮点击时的参数（handleFinish函数的参数）。
  * @param location {string}
+ * @param [modalStatusFieldName] {string} - 弹窗状态字段名。
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
  * @param [isGetDetails] {boolean} - 是否请求该弹窗的详情数据。
  * @param [apiName] {string} - 自定义获取详情的接口名称，依赖`isGetDetails`，默认为`getDetailsOf{route.name}`。
  * @param [getParams] {((currentItem:Object) => Object) | Object} - 自定义获取详情的参数，默认为`store.state.currentItem.id`。
  * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
  * 数据后的自定义数据处理逻辑，不为函数时默认与`store.state.currentItem`合并。
+ * @param [formModelFormatter] {(currentItem: Object) => Object} - 初始化表单数据函数，
+ * 参数为`currentItem`，返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
+ * 一个数组，以供 Cascader 组件绑定使用。
  * @param [buttonDisabledFn] {()=>boolean} - 禁用查询和重置按钮的方法。
  * @param [rules={}] {Object} - 验证规则，参考 ant-design-vue 的 Form.Item。
- * @param [modalStatusFieldName] {string} - 弹窗状态字段名。
  * @param [loaded] {(Object)=>void} - 所有 searchParamOptions 指定的接口全部加载完成时的回调。
  * @returns {Object}
  */
 export default function useTGForm({
-  isFormInitComplete,
   showButton = false,
   okButtonProps = {},
   okButtonParams = {},
   location,
+  modalStatusFieldName,
   searchParamOptions,
   isGetDetails,
   apiName,
   getParams,
   setDetails,
+  formModelFormatter,
   buttonDisabledFn,
   rules = {},
-  modalStatusFieldName,
   loaded
 } = {}) {
-  if (!isFormInitComplete) isFormInitComplete = ref(true)
   const unWatch = ref([])
+  // 表单的数据源`formModel`（通常指`store[location].form`对象的值）是否从`currentItem`中初始化完成。
+  // 外部组件如果需要对`formModel`值做处理，则需要通过该字段来控制状态，默认 true。
+  const isFormInitCompleted = ref(true)
 
   const hasTree = inject('hasTree', false)
   const refreshTree = inject('refreshTree', undefined)
@@ -58,6 +61,7 @@ export default function useTGForm({
   const search = computed(() => store.search)
   const form = computed(() => store[location]?.form)
   const currentItem = computed(() => store.currentItem)
+  const open = computed(() => store[modalStatusFieldName] || false)
 
   const formModel = reactive(location ? form.value : search.value)
   const formRules = reactive(rules)
@@ -76,6 +80,66 @@ export default function useTGForm({
     validate,
     validateInfos
   } = Form.useForm(formModel, formRules)
+
+  // 处理`formModel`的次数。isGetDetails 为 true 时，最大为2次，为 false 时为1次。
+  const count = ref(0)
+
+  if (location) {
+    // 将`store.currentItem`和`store[location].form`中的同名字段保持同步
+    watch(currentItem, async currentItem => {
+      if (((isGetDetails && count.value < 2) || (!isGetDetails && count.value < 1)) &&
+        open.value &&
+        location === currentItem._location
+      ) {
+        // 取消依赖字段的监听
+        isFormInitCompleted.value = false
+
+        const _formModel = {}
+
+        // 预处理从`currentItem`中同步到`formModel`的数据
+        if (Object.keys(currentItem).length - 2 > 0) {
+          // TODO [性能优化]
+          //  当 isGetDetails 为 true 时，此处会执行两次。
+          //  原因是首次打开弹窗时会为 currentItem 赋值，获取到详情数据后会再次覆盖 currentItem，
+          //  导致watch.currentItem执行了两次。
+          //  优化方案：1、考虑在第二次执行时跳过已经赋值的字段，仅为新字段赋值。
+          //  2、考虑在 isGetDetails 为 true 时，首次监听不执行以下逻辑，在获取到详情数据时一并执行。
+
+          for (const key in formModel) {
+            if (key in currentItem) {
+              const formModelKey = formModel[key]
+              const currentItemKey = toRaw(currentItem[key])
+
+              // 引用类型为假值时跳过
+              if (!currentItemKey && typeof formModelKey === 'object') {
+                continue
+              }
+
+              _formModel[key] = currentItem[key]
+            }
+          }
+        }
+
+        // 初始化表单默认值，回填表单数据
+        store.$patch({
+          [location]: {
+            form: {
+              ..._formModel,
+              ...formModelFormatter?.(currentItem)
+            }
+          }
+        })
+
+        await nextTick()
+
+        // 恢复依赖字段的监听
+        isFormInitCompleted.value = true
+        // 清空验证信息
+        clearValidate()
+        count.value++
+      }
+    }, { deep: true })
+  }
 
   /**
    * 重置表单
@@ -174,7 +238,7 @@ export default function useTGForm({
                 let res
 
                 // 如果外部对formModel的处理还未完成，则此步不做formModel的修改，防止修改冲突
-                if (isFormInitComplete.value) {
+                if (isFormInitCompleted.value) {
                   if (options.location) {
                     const paramValue = store[enumOptions.location].form[enumOptions.paramNameInSearchRO]
 

@@ -3,7 +3,8 @@ import useTGModal from '@/composables/tgModal'
 import useTGForm from '@/composables/tgForm'
 import { Button, Form, Spin, Transfer } from 'ant-design-vue'
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
+import { set } from 'lodash/object'
 
 /**
  *
@@ -55,8 +56,7 @@ export default function useTGTransferModal({
   }
 
   const dataSource = computed(() => tgForm.store[location].dataSource)
-  const targetKeys = ref([])
-  const selectedKeys = ref([])
+  const _modalProps = reactive(modalProps)
 
   const { TGModal, ...tgModal } = useTGModal({
     modalStatusFieldName,
@@ -93,53 +93,68 @@ export default function useTGTransferModal({
    * @returns {JSX.Element}
    * @constructor
    */
-  function TGTransferModal(props, { slots }) {
-    return (
-      <TGModal
-        {...props}
-        class={'tg-transfer-modal'}
-        modalProps={modalProps}
-      >
-        {
-          showSearch && !!slots.default && (
-            <TGForm class={'tg-transfer-modal-inquiry-form'}>
-              {slots.default()}
-              <Form.Item class={'tg-form-item-btn'}>
-                <Button
-                  type="primary"
-                  icon={<SearchOutlined />}
-                  disabled={confirmLoading.value || dataSource.value.loading || tgForm.buttonDisabled.value}
-                  loading={confirmLoading.value || dataSource.value.loading}
-                  onClick={() => tgForm.handleFinish({
-                    callback: transferModalSearchCallback
-                  })}
-                >
-                  查询
-                </Button>
-                <Button
-                  icon={<ReloadOutlined />}
-                  disabled={confirmLoading.value || dataSource.value.loading || tgForm.buttonDisabled.value}
-                  onClick={() => tgForm.handleClear({ callback: transferModalSearchCallback })}
-                >
-                  重置
-                </Button>
-              </Form.Item>
-            </TGForm>
-          )
-        }
-        <Spin
-          wrapperClassName={'tg-transfer-modal-content'}
-          spinning={confirmLoading.value || dataSource.value.loading}
+  const TGTransferModal = {
+    name: 'TGTransferModal',
+    props: {
+      value: {
+        type: Array,
+        default: () => []
+      }
+    },
+    setup(props, { emit, slots }) {
+      const selectedKeys = ref([])
+
+      return () => (
+        <TGModal
+          {...props}
+          class={'tg-transfer-modal'}
+          modalProps={_modalProps}
         >
-          <Transfer
-            {...transferProps}
-            dataSource={dataSource.value.list}
-            vModel:targetKeys={targetKeys.value}
-            vModel:selectedKeys={selectedKeys.value}
-          />
-        </Spin>
-      </TGModal>
-    )
+          {
+            showSearch && !!slots.default && (
+              <TGForm class={'tg-transfer-modal-inquiry-form'}>
+                {slots.default()}
+                <Form.Item class={'tg-form-item-btn'}>
+                  <Button
+                    type="primary"
+                    icon={<SearchOutlined />}
+                    disabled={confirmLoading.value || dataSource.value.loading || tgForm.buttonDisabled.value}
+                    loading={confirmLoading.value || dataSource.value.loading}
+                    onClick={() => tgForm.handleFinish({
+                      callback: transferModalSearchCallback
+                    })}
+                  >
+                    查询
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    disabled={confirmLoading.value || dataSource.value.loading || tgForm.buttonDisabled.value}
+                    onClick={() => tgForm.handleClear({ callback: transferModalSearchCallback })}
+                  >
+                    重置
+                  </Button>
+                </Form.Item>
+              </TGForm>
+            )
+          }
+          <Spin
+            wrapperClassName={'tg-transfer-modal-content'}
+            spinning={confirmLoading.value || dataSource.value.loading}
+          >
+            <Transfer
+              {...transferProps}
+              dataSource={dataSource.value.list}
+              targetKeys={props.value}
+              vModel:selectedKeys={selectedKeys.value}
+              onChange={(targetKeys, direction, moveKeys) => {
+                emit('update:value', targetKeys)
+                set(_modalProps, 'okButtonProps.disabled', !targetKeys.length)
+              }}
+            />
+          </Spin>
+        </TGModal>
+      )
+    }
   }
 
   return {
