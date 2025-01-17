@@ -1,12 +1,12 @@
 import './assets/styles/index.scss'
 import useTGModal from '@/composables/tgModal'
 import useTGForm from '@/composables/tgForm'
-import { provide, reactive, ref, watch } from 'vue'
+import { provide, reactive, watch } from 'vue'
 import { set } from 'lodash/object'
 
 /**
- *
- * @param modalProps
+ * TGFormModal
+ * @param modalProps {import('ant-design-vue').ModalProps}
  * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
  * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
  * @param [location='modalForEditing'] {string}
@@ -36,10 +36,13 @@ export default function useTGFormModal({
 }) {
   provide('inModal', true)
 
-  let unWatch = ref(undefined)
+  const _modalProps = reactive(modalProps)
+  // FormModel 组件默认禁用提交按钮
+  set(_modalProps, 'okButtonProps.disabled', true)
 
   const { TGForm, ...tgForm } = useTGForm({
     location,
+    modalStatusFieldName,
     rules,
     searchParamOptions,
     isGetDetails,
@@ -47,32 +50,36 @@ export default function useTGFormModal({
     getParams,
     setDetails,
     formModelFormatter,
-    modalStatusFieldName,
     loaded
   })
 
   const { TGModal, ...tgModal } = useTGModal({
     location,
     modalStatusFieldName,
+    modalProps: _modalProps,
     store: tgForm.store,
-    confirmLoading: tgForm.confirmLoading,
-    unWatch,
     form: {
       clearValidate: tgForm.clearValidate,
       resetFields: tgForm.resetFields
     }
   })
 
-  const _modalProps = reactive(modalProps)
-
-  // 设置 okButtonProps 的默认禁用状态为true
-  set(_modalProps, 'okButtonProps.disabled', true)
-
-  watch(tgModal.open, async val => {
-    if (!val) {
-      set(_modalProps, 'okButtonProps.disabled', true)
-    }
+  watch(tgModal.open, val => {
+    // 当弹窗显示状态发生改变时，重置弹窗的提交按钮的禁用状态
+    set(_modalProps, 'okButtonProps.disabled', true)
   })
+
+  /**
+   * 当所有弹窗内的枚举和详情数据加载完成后（formModel初始化完成后），开始监听 formModel，
+   * 以在数据有更改时，解除 Modal 组件提交按钮的禁用状态。
+   * @param formModel {Object} - Form组件内字段的值
+   */
+  function loaded(formModel) {
+    const unWatch = watch(formModel, () => {
+      set(_modalProps, 'okButtonProps.disabled', false)
+      unWatch()
+    }, { deep: true })
+  }
 
   /**
    * 为`TGFormModal`组件自动注入唯一标识符（id）参数
@@ -90,7 +97,7 @@ export default function useTGFormModal({
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
    * @param [success] {()=>void} - 操作执行成功后的回调函数。
    */
-  function handleFinish({
+  async function handleFinish({
     callback,
     apiName,
     action,
@@ -112,7 +119,7 @@ export default function useTGFormModal({
       paramsInjectId.id = tgModal.currentItem.value[tgForm.store.rowKey]
     }
 
-    tgForm.handleFinish({
+    await tgForm.handleFinish({
       params: paramsInjectId,
       callback,
       apiName,
@@ -125,23 +132,9 @@ export default function useTGFormModal({
     })
   }
 
-  /**
-   * 当所有弹窗内的数据加载完成后，解除 Modal 组件提交按钮的禁用状态
-   * @param formModel {Object} - Form组件内字段的值
-   */
-  function loaded(formModel) {
-    unWatch.value = watch(formModel, () => {
-      set(_modalProps, 'okButtonProps.disabled', false)
-    }, { deep: true })
-  }
-
   function TGFormModal(props, { slots }) {
     return (
-      <TGModal
-        class={'tg-form-modal'}
-        modalProps={_modalProps}
-        readonly={props.readonly}
-      >
+      <TGModal class={'tg-form-modal'} readonly={props.readonly}>
         <TGForm>
           {slots.default?.()}
         </TGForm>

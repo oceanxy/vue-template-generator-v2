@@ -623,24 +623,23 @@ export function createStore({
         if ('currentItem' in this.$state) {
           if (modalStatusValue) {
             // 当打开弹窗时，存在已经打开的弹窗，缓存已存在弹窗的`currentItem`
-            const isCurrentItemEmpty = !Object.keys(this.currentItem).length
-
             this.setState(
               'currentItem',
               {
-                _prevCurrentItem: isCurrentItemEmpty ? undefined : this.currentItem,
+                _prevCurrentItem: this.currentItem,
                 _location: location, // 用于标识当前currentItem数据属于哪一层弹窗
+                _type: 'new', // 用于标识当前currentItem数据属于来源，当首次打开该弹窗时为“new”，在当前弹窗中打开次级弹窗，再关闭刺激弹框后，该值为“restore”。
                 ...currentItem
               },
               { merge }
             )
           } else {
             // 关闭弹窗时，如果存在缓存的`currentItem`，则恢复之
-            this.setState(
-              'currentItem',
-              this.currentItem._prevCurrentItem ? this.currentItem._prevCurrentItem : {},
-              { merge }
-            )
+            if (this.currentItem._prevCurrentItem && Object.keys(this.currentItem._prevCurrentItem).length) {
+              this.currentItem._prevCurrentItem._type = 'restore'
+            }
+
+            this.setState('currentItem', this.currentItem._prevCurrentItem, { merge })
           }
 
           const rowKey = this[location].rowKey || this.rowKey
@@ -775,7 +774,7 @@ export function createStore({
         return buffer
       },
       /**
-       *
+       * 接口请求（一般用于调用除表格查询外的大多数接口）
        * @param [loading=true] {boolean} - 是否启用加载状态，默认`true`。
        * @param [location]
        * @param [apiName] {string} - 接口名称，默认值为 `${ACTION}${MODULE_NAME}`。
@@ -803,7 +802,7 @@ export function createStore({
         let res = { status: false }
 
         if (loading) {
-          this.setLoading(location ? { stateName: location } : {})
+          this.setLoading(location ? { stateName: location, value: true } : {})
         }
 
         if (!apiName) {
@@ -814,14 +813,14 @@ export function createStore({
           apiName = `${action}${MODULE_NAME}`
         }
 
-        const search = location ? this.$state[location].form : this.search
+        if (isMergeParam) {
+          const search = location ? this.$state[location].form : this.search
 
-        if (params) {
-          if (isMergeParam) {
+          if (params) {
             params = { ...search, ...params }
+          } else {
+            params = search
           }
-        } else {
-          params = search
         }
 
         if (apis[apiName]) {
@@ -831,7 +830,7 @@ export function createStore({
         }
 
         if (loading) {
-          this.setLoading(location ? { stateName: location } : {})
+          this.setLoading(location ? { stateName: location, value: false } : {})
         }
 
         if (res.status) {

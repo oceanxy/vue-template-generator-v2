@@ -50,6 +50,7 @@ export default function useTGTableModal({
 
   const { TGModal, ...tgModal } = useTGModal({
     modalStatusFieldName,
+    modalProps,
     store: tgTable.store,
     confirmLoading
   })
@@ -88,7 +89,6 @@ export default function useTGTableModal({
   function TGTableModal(props, { slots }) {
     const { okButtonProps } = modalProps
     const okButtonLoading = loading.value ||
-      tgModal.modalContentLoading.value ||
       confirmLoading.value ||
       tgTable.exportButtonDisabled.value
 
@@ -103,11 +103,7 @@ export default function useTGTableModal({
     }
 
     return (
-      <TGModal
-        {...props}
-        class={'tg-table-modal'}
-        modalProps={modalProps}
-      >
+      <TGModal {...props} class={'tg-table-modal'}>
         {
           showSearch && !!slots.default && (
             <TGForm class={'tg-table-modal-inquiry-form'}>

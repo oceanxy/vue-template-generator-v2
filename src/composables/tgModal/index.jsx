@@ -1,28 +1,24 @@
 import './assets/styles/index.scss'
-import { computed, provide, ref, watch } from 'vue'
+import { computed, provide, reactive, ref, watch } from 'vue'
 import { Button, Modal, Spin } from 'ant-design-vue'
-import useThemeVars from '@/composables/themeVars'
 import useStore from '@/composables/tgStore'
 
 /**
- *
- * @param location
- * @param modalStatusFieldName
- * @param form
- * @param [store] {import('pinia').defineStore} - 默认为当前页面的 store。
- * @param [confirmLoading] {import('@vue/reactivity').Ref<boolean>} - `okButton`的`loading`值。
- * @param unWatch
+ * TGModal 组件
+ * @param [location='modalForEditing'] {string} - 弹窗位置，默认为 'modal'。
+ * @param [modalStatusFieldName='showModalForEditing'] {string}
+ * @param [modalProps] {import('ant-design-vue').ModalProps} - 弹窗的属性。
+ * @param [form] {Object} - useForm API 返回的方法，主要用于在弹窗内操作表单。
+ * @param [store] {import('pinia')} - 默认为当前页面的 store。
  * @returns {Object}
  */
 export default function useTGModal({
-  location,
+  location = 'modalForEditing',
   modalStatusFieldName = 'showModalForEditing',
+  modalProps,
   form,
-  store,
-  confirmLoading,
-  unWatch
+  store
 }) {
-  const tgModal = ref(null)
   const style = ref('')
   const initialPosition = ref({ x: 0, y: 0 })
   const isDragging = ref(false)
@@ -32,18 +28,36 @@ export default function useTGModal({
     store = useStore()
   }
 
+  const {
+    onCancel,
+    onOk,
+    okButtonProps,
+    ...restModalProps
+  } = modalProps
+
+  const _modalProps = reactive(restModalProps)
+  const _okButtonProps = reactive(okButtonProps)
+  const _okButtonLoading = ref(false)
   const open = computed(() => store[modalStatusFieldName])
   const currentItem = computed(() => store.currentItem)
-  const modalContentLoading = computed(() => store?.[location]?.loading ?? false)
+  const modalContentLoading = computed({
+    get: () => {
+      if (!('loading' in store[location])) {
+        store[location].loading = false
+      }
 
-  provide('inModal', true)
+      return store[location].loading
+    },
+    set: val => store[location].loading = val
+  })
 
   watch(open, val => {
     if (!val) {
-      if (typeof unWatch?.value === 'function') {
-        unWatch.value()
-      }
-
+      store.setLoading({
+        value: false,
+        stateName: 'loading',
+        location
+      })
       form?.resetFields()
       form?.clearValidate()
       initialPosition.value = { x: 0, y: 0 }
@@ -54,15 +68,28 @@ export default function useTGModal({
 
   /**
    * 关闭弹窗
-   * @param [callback] {()=>void} - 关闭弹窗后的回调。
    * @returns {Promise<void>}
    */
-  async function handleCancel({ callback } = {}) {
-    if (typeof callback === 'function') {
-      callback()
+  async function handleCancel() {
+    if (typeof onCancel === 'function') {
+      onCancel()
     }
+  }
 
-    store.setVisibilityOfModal({ modalStatusFieldName })
+  async function handleOk() {
+    if (typeof onOk === 'function') {
+      handleModalContentStatusChange(true)
+      await onOk()
+      handleModalContentStatusChange(false)
+    } else {
+      console.warn('tgModal：未找到 okButton 点击事件绑定的函数，请确认！')
+    }
+  }
+
+  function handleModalContentStatusChange(status) {
+    _okButtonLoading.value = status
+    _okButtonProps.disabled = status
+    store.setLoading({ stateName: 'loading', location })
   }
 
   function handleMouseDown(event) {
@@ -96,42 +123,56 @@ export default function useTGModal({
    * @returns {JSX.Element}
    * @constructor
    */
-  function TGModal(props, { slots }) {
-    return (
-      <Modal
-        ref={tgModal}
-        class={'tg-modal'}
-        getContainer={() => document.querySelector('.tg-container-modals')}
-        {...confirmLoading ? { confirmLoading: confirmLoading.value } : {}}
-        onCancel={handleCancel}
-        open={open.value}
-        maskClosable={false}
-        style={{ transform: style.value }}
-        {...(props.readonly ? { footer: <Button onClick={handleCancel}>关闭</Button> } : {})}
-        {...props.modalProps}
-        title={
-          <div
-            style={{ cursor: 'move', userSelect: 'none' }}
-            onMousedown={handleMouseDown}
-            onMousemove={handleMouseMove}
-            onMouseup={handleMouseUp}
-          >
-            {props.modalProps?.title?.replace('{ACTION}', currentItem.value?.id ? '编辑' : '新增')}
-          </div>
-        }
-      >
-        <Spin spinning={modalContentLoading.value}>
-          {slots.default?.()}
-        </Spin>
-      </Modal>
-    )
+  const TGModal = {
+    name: 'TGModal',
+    props: {
+      readonly: {
+        type: Boolean,
+        default: false
+      }
+    },
+    setup(props, { slots }) {
+      provide('inModal', true)
+
+      return () => (
+        <Modal
+          class={'tg-modal'}
+          getContainer={() => document.querySelector('.tg-container-modals')}
+          vModel:open={store[modalStatusFieldName]}
+          onCancel={handleCancel}
+          onOk={handleOk}
+          maskClosable={false}
+          style={{ transform: style.value }}
+          {...(props.readonly ? { footer: <Button onClick={handleCancel}>关闭</Button> } : {})}
+          {..._modalProps}
+          okButtonProps={{
+            ..._okButtonProps,
+            disabled: modalContentLoading.value || _okButtonProps.disabled,
+            loading: _okButtonLoading.value
+          }}
+          title={
+            <div
+              style={{ cursor: 'move', userSelect: 'none' }}
+              onMousedown={handleMouseDown}
+              onMousemove={handleMouseMove}
+              onMouseup={handleMouseUp}
+            >
+              {_modalProps?.title?.replace('{ACTION}', currentItem.value?.id ? '编辑' : '新增')}
+            </div>
+          }
+        >
+          <Spin spinning={modalContentLoading.value}>
+            {slots.default?.()}
+          </Spin>
+        </Modal>
+      )
+    }
   }
 
   return {
     TGModal,
     open,
     currentItem,
-    modalContentLoading,
     handleCancel
   }
 }

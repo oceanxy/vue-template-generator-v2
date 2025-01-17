@@ -1,20 +1,17 @@
-/**
- * 表单
- * @Author: Omsber
- * @Email: xyzsyx@163.com
- * @Date: 2024-10-18 周五 15:44:52
- */
-
 import './assets/styles/index.scss'
 import useStore from '@/composables/tgStore'
 import { computed, inject, nextTick, onUnmounted, reactive, ref, toRaw, watch } from 'vue'
 import { Button, Form } from 'ant-design-vue'
 
 /**
- * @param [showButton] {boolean} - 是否显示确认按钮。
- * @param [okButtonProps={}] {import('ant-design-vue.Button.props')} - okButton 按钮的属性。
- * @param [okButtonParams={}] {{}} - ok按钮点击时的参数（handleFinish函数的参数）。
- * @param location {string}
+ * TGForm 组件
+ * @param [showSubmitButton] {boolean} - 是否显示表单的提交按钮。
+ * @param [submitButtonProps={}] {import('ant-design-vue').ButtonProps} - `submitButton`按钮的属性，依赖`showSubmitButton`参数。
+ * @param [submitButtonProps.submitParams] {Object} - `submitButton`按钮的内置提交事件（handleFinish函数）的参数。
+ * 如果传递了`submitButtonProps.onClick`，则不会调用内置的提交事件，且此参数无效。
+ * @param [submitButtonProps.onClick] {Button.props.onClick} - `submitButton`按钮的提交事件，默认值为本组件内置的
+ * `handleFinish`提交函数。如果显示地传入该值，则不再调用本组件的内置提交函数，而是调用此参数指定的函数。
+ * @param [location] {string}
  * @param [modalStatusFieldName] {string} - 弹窗状态字段名。
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
  * @param [isGetDetails] {boolean} - 是否请求该弹窗的详情数据。
@@ -27,13 +24,12 @@ import { Button, Form } from 'ant-design-vue'
  * 一个数组，以供 Cascader 组件绑定使用。
  * @param [buttonDisabledFn] {()=>boolean} - 禁用查询和重置按钮的方法。
  * @param [rules={}] {Object} - 验证规则，参考 ant-design-vue 的 Form.Item。
- * @param [loaded] {(Object)=>void} - 所有 searchParamOptions 指定的接口全部加载完成时的回调。
+ * @param [loaded] {(Object)=>void} - 所有 searchParamOptions 指定的接口和获取详情接口（如果有）全部加载完成后的回调。
  * @returns {Object}
  */
 export default function useTGForm({
-  showButton = false,
-  okButtonProps = {},
-  okButtonParams = {},
+  showSubmitButton = false,
+  submitButtonProps = {},
   location,
   modalStatusFieldName,
   searchParamOptions,
@@ -57,7 +53,7 @@ export default function useTGForm({
   const store = useStore()
   const commonStore = useStore('./common')
 
-  const formLoading = computed(() => store[location].loading)
+  const formLoading = computed(() => location ? store[location].loading : store.loading)
   const search = computed(() => store.search)
   const form = computed(() => store[location]?.form)
   const currentItem = computed(() => store.currentItem)
@@ -66,9 +62,15 @@ export default function useTGForm({
   const formModel = reactive(location ? form.value : search.value)
   const formRules = reactive(rules)
 
+  const {
+    text,
+    loading,
+    onClick: handleSubmitButtonClick,
+    ...restSubmitButtonProps
+  } = submitButtonProps
+
   // 按钮禁用状态
   const buttonDisabled = ref(false)
-  const confirmLoading = ref(false)
 
   if (typeof buttonDisabledFn === 'function') {
     watch(formModel, () => buttonDisabled.value = buttonDisabledFn())
@@ -83,13 +85,39 @@ export default function useTGForm({
 
   // 处理`formModel`的次数。isGetDetails 为 true 时，最大为2次，为 false 时为1次。
   const count = ref(0)
+  const isNewModal = computed(() => !((store[location]?.rowKey ?? store.rowKey) in currentItem.value))
 
   if (location) {
+    if (location !== 'modalForEditing' && !modalStatusFieldName) {
+      throw new Error('tgForm：请传入 modalStatusFieldName')
+    }
+
+    if (modalStatusFieldName) {
+      watch(open, val => {
+        if (!val) {
+          // 关闭弹窗时，重置计数器
+          count.value = 0
+        }
+      })
+    }
+
     // 将`store.currentItem`和`store[location].form`中的同名字段保持同步
     watch(currentItem, async currentItem => {
-      if (((isGetDetails && count.value < 2) || (!isGetDetails && count.value < 1)) &&
+      if (
+        // 判断弹窗状态
         open.value &&
-        location === currentItem._location
+        // 判断弹窗主体与当前currentItem数据是否匹配
+        location === currentItem._location &&
+        // 判断当前操作是新增还是编辑
+        (
+          (
+            // 判断当前是编辑弹窗
+            !isNewModal.value &&
+            // 判断currentItem更新次数，防止过度监听
+            ((isGetDetails && count.value < 2) || (!isGetDetails && count.value < 1))
+          ) ||
+          (isNewModal.value && count.value < 1)
+        )
       ) {
         // 取消依赖字段的监听
         isFormInitCompleted.value = false
@@ -97,7 +125,7 @@ export default function useTGForm({
         const _formModel = {}
 
         // 预处理从`currentItem`中同步到`formModel`的数据
-        if (Object.keys(currentItem).length - 2 > 0) {
+        if (Object.keys(currentItem).length - 3 > 0) {
           // TODO [性能优化]
           //  当 isGetDetails 为 true 时，此处会执行两次。
           //  原因是首次打开弹窗时会为 currentItem 赋值，获取到详情数据后会再次覆盖 currentItem，
@@ -148,7 +176,7 @@ export default function useTGForm({
    */
   async function handleClear(handleFinishOptions) {
     resetFields()
-    handleFinish(handleFinishOptions)
+    await handleFinish(handleFinishOptions)
   }
 
   /**
@@ -166,7 +194,7 @@ export default function useTGForm({
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
    * @param [success] {(res: Object)=>void} - 操作执行成功后的回调函数，参数为接口的 Response。
    */
-  function handleFinish({
+  async function handleFinish({
     callback,
     apiName,
     action,
@@ -176,39 +204,37 @@ export default function useTGForm({
     isRefreshTree,
     success
   } = {}) {
-    validate()
-      .then(async () => {
-          confirmLoading.value = true
+    return new Promise(resolve => {
+      validate().then(async () => {
+        if (showSubmitButton && typeof callback === 'function') {
+          await callback()
+          resolve()
+        } else {
+          params = typeof params === 'function' ? params() : params
 
-          if (typeof callback === 'function') {
-            await callback?.()
-          } else {
-            params = typeof params === 'function' ? params() : params
+          const res = await store.fetch({
+            action,
+            apiName,
+            location,
+            params,
+            isMergeParam,
+            isRefreshTable,
+            modalStatusFieldName
+          })
 
-            const res = await store.fetch({
-              action,
-              apiName,
-              location,
-              params,
-              isMergeParam,
-              isRefreshTable,
-              modalStatusFieldName
-            })
+          resolve()
 
-            if (res.status) {
-              // 执行侧边树刷新操作
-              if (isRefreshTree && hasTree) {
-                await refreshTree?.()
-              }
-
-              success?.(res)
+          if (res.status) {
+            // 执行侧边树刷新操作
+            if (isRefreshTree && hasTree) {
+              await refreshTree?.()
             }
-          }
 
-          confirmLoading.value = false
+            success?.(res)
+          }
         }
-      )
-      .catch(e => {/***/})
+      }).catch(e => {/***/})
+    })
   }
 
   /**
@@ -318,8 +344,6 @@ export default function useTGForm({
       const inModal = inject('inModal', false)
       const isInitTable = inject('isInitTable', false)
 
-      const { text, loading, ...restOkButtonProps } = okButtonProps
-
       if (inModal) {
         const open = computed(() => store[modalStatusFieldName])
 
@@ -367,18 +391,27 @@ export default function useTGForm({
         return Promise.resolve()
       }
 
+      async function handleSubmit() {
+        if (typeof handleSubmitButtonClick === 'function') {
+          handleSubmitButtonClick()
+        } else {
+          await handleFinish({
+            isRefreshTable: isInitTable,
+            ...submitButtonProps.submitParams
+          })
+        }
+      }
+
       return () => (
         <Form class={'tg-form'} colon={false}>
           {slots.default?.()}
           {
-            showButton && (
+            showSubmitButton && (
               <Button
-                {...restOkButtonProps}
-                loading={loading || confirmLoading.value}
-                onClick={() => handleFinish({
-                  ...okButtonParams,
-                  isRefreshTable: isInitTable
-                })}
+                {...restSubmitButtonProps}
+                loading={loading || formLoading.value}
+                disabled={loading || formLoading.value}
+                onClick={handleSubmit}
               >
                 {text}
               </Button>
@@ -399,8 +432,7 @@ export default function useTGForm({
     store,
     commonStore,
     buttonDisabled,
-    formLoading,
-    confirmLoading,
+    confirmLoading: formLoading,
     handleClear,
     TGForm
   }

@@ -3,7 +3,7 @@ import useTGModal from '@/composables/tgModal'
 import useTGForm from '@/composables/tgForm'
 import { Button, Form, Spin, Transfer } from 'ant-design-vue'
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { set } from 'lodash/object'
 
 /**
@@ -19,7 +19,7 @@ import { set } from 'lodash/object'
  * @param setDetails
  * @param optionsOfGetList {Object} - 请求接口的options，如未定义，会默认使用useTGTransferModal的location
  * @param rules
- * @returns {{TGTransferModal: (function({readonly?: boolean}, {slots: *}): *), open: ComputedRef<*>, currentItem: ComputedRef<*>, modalContentLoading: ComputedRef<*>, handleCancel: function({callback?: (function(): void)}=): Promise<void>}}
+ * @returns {{TGTransferModal: (function({readonly?: boolean}, {slots: *}): *), open: ComputedRef<*>, currentItem: ComputedRef<*>, handleCancel: function({callback?: (function(): void)}=): Promise<void>}}
  */
 export default function useTGTransferModal({
   showSearch = true,
@@ -61,7 +61,12 @@ export default function useTGTransferModal({
   const { TGModal, ...tgModal } = useTGModal({
     modalStatusFieldName,
     store: tgForm.store,
-    confirmLoading
+    modalProps,
+    confirmLoading,
+    form: {
+      clearValidate: tgForm.clearValidate,
+      resetFields: tgForm.resetFields
+    }
   })
 
   if (showSearch && !isStaticTransfer) {
@@ -102,14 +107,8 @@ export default function useTGTransferModal({
       }
     },
     setup(props, { emit, slots }) {
-      const selectedKeys = ref([])
-
       return () => (
-        <TGModal
-          {...props}
-          class={'tg-transfer-modal'}
-          modalProps={_modalProps}
-        >
+        <TGModal {...props} class={'tg-transfer-modal'}>
           {
             showSearch && !!slots.default && (
               <TGForm class={'tg-transfer-modal-inquiry-form'}>
@@ -145,7 +144,6 @@ export default function useTGTransferModal({
               {...transferProps}
               dataSource={dataSource.value.list}
               targetKeys={props.value}
-              vModel:selectedKeys={selectedKeys.value}
               onChange={(targetKeys, direction, moveKeys) => {
                 emit('update:value', targetKeys)
                 set(_modalProps, 'okButtonProps.disabled', !targetKeys.length)
