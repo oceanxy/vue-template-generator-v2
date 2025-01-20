@@ -5,16 +5,17 @@ import { Button, Form } from 'ant-design-vue'
 
 /**
  * TGForm 组件
+ * @param [isSearchForm] {boolean} - 是否是作为搜索表单使用，默认false：作为数据表单使用。
  * @param [showSubmitButton] {boolean} - 是否显示表单的提交按钮。
  * @param [submitButtonProps={}] {import('ant-design-vue').ButtonProps} - `submitButton`按钮的属性，依赖`showSubmitButton`参数。
  * @param [submitButtonProps.submitParams] {Object} - `submitButton`按钮的内置提交事件（handleFinish函数）的参数。
  * 如果传递了`submitButtonProps.onClick`，则不会调用内置的提交事件，且此参数无效。
  * @param [submitButtonProps.onClick] {Button.props.onClick} - `submitButton`按钮的提交事件，默认值为本组件内置的
  * `handleFinish`提交函数。如果显示地传入该值，则不再调用本组件的内置提交函数，而是调用此参数指定的函数。
- * @param [location] {string}
+ * @param [location] {string} - store内弹窗数据的存储位置。
  * @param [modalStatusFieldName] {string} - 弹窗状态字段名。
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
- * @param [isGetDetails] {boolean} - 是否请求该弹窗的详情数据。
+ * @param [isGetDetails] {boolean} - 是否请求该弹窗内数据表单的详情数据（注意区分数据表单与搜索表单）。
  * @param [apiName] {string} - 自定义获取详情的接口名称，依赖`isGetDetails`，默认为`getDetailsOf{route.name}`。
  * @param [getParams] {((currentItem:Object) => Object) | Object} - 自定义获取详情的参数，默认为`store.state.currentItem.id`。
  * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
@@ -28,6 +29,7 @@ import { Button, Form } from 'ant-design-vue'
  * @returns {Object}
  */
 export default function useTGForm({
+  isSearchForm = false,
   showSubmitButton = false,
   submitButtonProps = {},
   location,
@@ -61,6 +63,7 @@ export default function useTGForm({
 
   const formModel = reactive(location ? form.value : search.value)
   const formRules = reactive(rules)
+  const initSearchParamResult = ref(searchParamOptions?.length <= 0)
 
   const {
     text,
@@ -85,6 +88,7 @@ export default function useTGForm({
 
   // 处理`formModel`的次数。isGetDetails 为 true 时，最大为2次，为 false 时为1次。
   const count = ref(0)
+  // 用于区分当前弹窗的编辑模式：新增数据/编辑数据
   const isNewModal = computed(() => !((store[location]?.rowKey ?? store.rowKey) in currentItem.value))
 
   if (location) {
@@ -101,72 +105,74 @@ export default function useTGForm({
       })
     }
 
-    // 将`store.currentItem`和`store[location].form`中的同名字段保持同步
-    watch(currentItem, async currentItem => {
-      if (
-        // 判断弹窗状态
-        open.value &&
-        // 判断弹窗主体与当前currentItem数据是否匹配
-        location === currentItem._location &&
-        // 判断当前操作是新增还是编辑
-        (
+    if (!isSearchForm) {
+      // 作为数据表单使用时，将`store.currentItem`和`store[location].form`中的同名字段保持同步
+      watch(currentItem, async currentItem => {
+        if (
+          // 判断弹窗状态
+          open.value &&
+          // 判断弹窗主体与当前currentItem数据是否匹配
+          location === currentItem._location &&
+          // 判断当前操作是新增还是编辑
           (
-            // 判断当前是编辑弹窗
-            !isNewModal.value &&
-            // 判断currentItem更新次数，防止过度监听
-            ((isGetDetails && count.value < 2) || (!isGetDetails && count.value < 1))
-          ) ||
-          (isNewModal.value && count.value < 1)
-        )
-      ) {
-        // 取消依赖字段的监听
-        isFormInitCompleted.value = false
+            (
+              // 判断当前是编辑弹窗
+              !isNewModal.value &&
+              // 判断currentItem更新次数，防止过度监听
+              ((isGetDetails && count.value < 2) || (!isGetDetails && count.value < 1))
+            ) ||
+            (isNewModal.value && count.value < 1)
+          )
+        ) {
+          // 暂时取消依赖字段的监听
+          isFormInitCompleted.value = false
 
-        const _formModel = {}
+          const _formModel = {}
 
-        // 预处理从`currentItem`中同步到`formModel`的数据
-        if (Object.keys(currentItem).length - 3 > 0) {
-          // TODO [性能优化]
-          //  当 isGetDetails 为 true 时，此处会执行两次。
-          //  原因是首次打开弹窗时会为 currentItem 赋值，获取到详情数据后会再次覆盖 currentItem，
-          //  导致watch.currentItem执行了两次。
-          //  优化方案：1、考虑在第二次执行时跳过已经赋值的字段，仅为新字段赋值。
-          //  2、考虑在 isGetDetails 为 true 时，首次监听不执行以下逻辑，在获取到详情数据时一并执行。
+          // 预处理从`currentItem`中同步到`formModel`的数据
+          if (Object.keys(currentItem).length - 3 > 0) {
+            // TODO [性能优化]
+            //  当 isGetDetails 为 true 时，此处会执行两次。
+            //  原因是首次打开弹窗时会为 currentItem 赋值，获取到详情数据后会再次覆盖 currentItem，
+            //  导致watch.currentItem执行了两次。
+            //  优化方案：1、考虑在第二次执行时跳过已经赋值的字段，仅为新字段赋值。
+            //  2、考虑在 isGetDetails 为 true 时，首次监听不执行以下逻辑，在获取到详情数据时一并执行。
 
-          for (const key in formModel) {
-            if (key in currentItem) {
-              const formModelKey = formModel[key]
-              const currentItemKey = toRaw(currentItem[key])
+            for (const key in formModel) {
+              if (key in currentItem) {
+                const formModelKey = formModel[key]
+                const currentItemKey = toRaw(currentItem[key])
 
-              // 引用类型为假值时跳过
-              if (!currentItemKey && typeof formModelKey === 'object') {
-                continue
+                // 引用类型为假值时跳过
+                if (!currentItemKey && typeof formModelKey === 'object') {
+                  continue
+                }
+
+                _formModel[key] = currentItem[key]
               }
-
-              _formModel[key] = currentItem[key]
             }
           }
+
+          // 初始化表单默认值，回填表单数据
+          store.$patch({
+            [location]: {
+              form: {
+                ..._formModel,
+                ...formModelFormatter?.(currentItem)
+              }
+            }
+          })
+
+          await nextTick()
+
+          // 恢复依赖字段的监听
+          isFormInitCompleted.value = true
+          // 清空验证信息
+          clearValidate()
+          count.value++
         }
-
-        // 初始化表单默认值，回填表单数据
-        store.$patch({
-          [location]: {
-            form: {
-              ..._formModel,
-              ...formModelFormatter?.(currentItem)
-            }
-          }
-        })
-
-        await nextTick()
-
-        // 恢复依赖字段的监听
-        isFormInitCompleted.value = true
-        // 清空验证信息
-        clearValidate()
-        count.value++
-      }
-    }, { deep: true })
+      }, { deep: true })
+    }
   }
 
   /**
@@ -206,7 +212,7 @@ export default function useTGForm({
   } = {}) {
     return new Promise(resolve => {
       validate().then(async () => {
-        if (showSubmitButton && typeof callback === 'function') {
+        if (typeof callback === 'function') {
           await callback()
           resolve()
         } else {
@@ -261,27 +267,9 @@ export default function useTGForm({
             async (newVal, oldValue) => {
               // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已选中的值
               if (newVal !== oldValue) {
+                clearCache(enumOptions)
+
                 let res
-
-                // 如果外部对formModel的处理还未完成，则此步不做formModel的修改，防止修改冲突
-                if (isFormInitCompleted.value) {
-                  if (options.location) {
-                    const paramValue = store[enumOptions.location].form[enumOptions.paramNameInSearchRO]
-
-                    if (paramValue === undefined || typeof paramValue === 'object') {
-                      store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = undefined
-                    } else {
-                      // 为默认枚举值重置为“全部”选项。注意这里可能会有问题，因为目前没有一个规则可以判定当前字段是否是枚举值
-                      store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = ''
-                    }
-                  } else {
-                    // 为默认枚举值重置为“全部”选项。注意这里可能会有问题，因为目前没有一个规则可以判定当前字段是否是枚举值
-                    store.search[enumOptions.paramNameInSearchRO] = ''
-                  }
-                }
-
-                // 清空枚举列表
-                store.setList(options.stateName, [], options.location)
 
                 // 依赖值为有效值时才执行枚举刷新
                 if (newVal) {
@@ -334,6 +322,49 @@ export default function useTGForm({
     }
   }
 
+  function watchTrigger(paramNameInSearchRO) {
+    searchParamOptions
+      .filter(options => options.dependentField === paramNameInSearchRO)
+      .forEach(options => {
+        clearCache(options)
+      })
+  }
+
+  function clearCache(enumOptions) {
+    // 如果外部对formModel的处理还未完成，则此步不做formModel的修改，防止修改冲突
+    if (isFormInitCompleted.value) {
+      if (enumOptions.location) {
+        const paramValue = store[enumOptions.location].form[enumOptions.paramNameInSearchRO]
+
+        if (paramValue === undefined || paramValue === null || typeof paramValue === 'object') {
+          // 如果依赖值无变化，不足以触发依赖本字段的其他字段的 watch，则手动触发之
+          if (paramValue === undefined || paramValue === null) {
+            watchTrigger(enumOptions.paramNameInSearchRO)
+          }
+
+          store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = null
+        } else {
+          if (paramValue === '') {
+            watchTrigger(enumOptions.paramNameInSearchRO)
+          } else {
+            // 为默认枚举值重置为“全部”选项。注意这里可能会有问题，因为目前没有一个规则可以判定当前字段是否是枚举值
+            store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = ''
+          }
+        }
+      } else {
+        if (store.search[enumOptions.paramNameInSearchRO] === '') {
+          watchTrigger(enumOptions.paramNameInSearchRO)
+        } else {
+          // 为默认枚举值重置为“全部”选项。注意这里可能会有问题，因为目前没有一个规则可以判定当前字段是否是枚举值
+          store.search[enumOptions.paramNameInSearchRO] = ''
+        }
+      }
+    }
+
+    // 清空枚举列表
+    store.setList(enumOptions.stateName, [], enumOptions.location)
+  }
+
   onUnmounted(() => {
     store.$reset()
   })
@@ -349,10 +380,10 @@ export default function useTGForm({
 
         watch(open, async val => {
           if (val) {
-            if (searchParamOptions?.length) {
+            if (!initSearchParamResult.value) {
               await Promise.all([
                 getDetails(),
-                ...searchParamOptions.map(enumOptions => execEnum(enumOptions))
+                initSearchParams()
               ])
             } else {
               await getDetails()
@@ -372,20 +403,30 @@ export default function useTGForm({
         }, { immediate: true })
       }
 
+      async function initSearchParams() {
+        await Promise.all(searchParamOptions.map(enumOptions => execEnum(enumOptions)))
+
+        initSearchParamResult.value = true
+      }
+
       async function getDetails() {
-        let params = getParams
+        if (isGetDetails) {
+          let params
 
-        if (typeof getParams === 'function') {
-          params = getParams(currentItem.value)
-        }
+          if (typeof getParams === 'function') {
+            params = getParams(currentItem.value)
+          } else {
+            params = getParams
+          }
 
-        if (isGetDetails && (params || currentItem.value?.[store.rowKey])) {
-          return await store.getDetails({
-            location,
-            params,
-            apiName,
-            setValue: setDetails
-          })
+          if (params || currentItem.value?.[store.rowKey]) {
+            return await store.getDetails({
+              location,
+              params,
+              apiName,
+              setValue: setDetails
+            })
+          }
         }
 
         return Promise.resolve()
@@ -434,6 +475,7 @@ export default function useTGForm({
     buttonDisabled,
     confirmLoading: formLoading,
     handleClear,
+    initSearchParamResult,
     TGForm
   }
 }

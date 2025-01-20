@@ -7,45 +7,53 @@ import { computed, reactive, watch } from 'vue'
 import { set } from 'lodash/object'
 
 /**
- *
+ * TGTransferModal
  * @param showSearch
- * @param isStaticTransfer
  * @param modalStatusFieldName
  * @param modalProps
  * @param transferProps
  * @param location
  * @param searchParamOptions
- * @param isGetDetails
- * @param setDetails
- * @param optionsOfGetList {Object} - 请求接口的options，如未定义，会默认使用useTGTransferModal的location
- * @param rules
+ * @param [setTargetKeys] {(data: Array, store: import('pinia').defineStore) => void} - 设置组件`targetKeys`的函数，如果不为函数，
+ * 会将数据与`currentItem`合并。
+ * @param [paramsOfGetTargetKeys] {((currentItem:Object) => Object) | Object} - 自定义获取`targetKeys`的参数，默认为`store.state.currentItem.id`。
+ * @param isGetTargetKeys
+ * @param apiNameOfGetTargetKeys {string} - 获取`targetKeys`的接口名称。
+ * @param optionsOfGetDataSource {Object} - 搜索表单的搜索参数，具体参数请参考 API `store.getList`。如其内未定义`location`，
+ *  会默认使用`useTGTransferModal`的`location`
  * @returns {{TGTransferModal: (function({readonly?: boolean}, {slots: *}): *), open: ComputedRef<*>, currentItem: ComputedRef<*>, handleCancel: function({callback?: (function(): void)}=): Promise<void>}}
  */
 export default function useTGTransferModal({
   showSearch = true,
-  isStaticTransfer = false,
+  location = 'modalForEditing',
   modalStatusFieldName = 'showModalForEditing',
   modalProps,
   transferProps,
-  location,
   searchParamOptions,
-  isGetDetails,
-  setDetails,
-  optionsOfGetList,
-  rules
+  paramsOfGetTargetKeys,
+  isGetTargetKeys,
+  setTargetKeys,
+  apiNameOfGetTargetKeys,
+  optionsOfGetDataSource
 } = {}) {
   let confirmLoading
   let tgForm = {}
   let TGForm
 
+  // if (isGetTargetKeys && typeof setTargetKeys !== 'function') {
+  //   throw new Error('TGTransferModal：当isGetTargetKeys 为 true 时，setTargetKeys 必传。')
+  // }
+
   if (showSearch) {
     const { TGForm: _TGForm, ..._tgForm } = useTGForm({
+      isSearchForm: true,
       location,
-      rules,
+      modalStatusFieldName,
       searchParamOptions,
-      isGetDetails,
-      setDetails,
-      modalStatusFieldName
+      isGetDetails: isGetTargetKeys,
+      setDetails: setTargetKeys,
+      getParams: paramsOfGetTargetKeys,
+      apiName: apiNameOfGetTargetKeys
     })
 
     tgForm = _tgForm
@@ -59,6 +67,7 @@ export default function useTGTransferModal({
   const _modalProps = reactive(modalProps)
 
   const { TGModal, ...tgModal } = useTGModal({
+    location,
     modalStatusFieldName,
     store: tgForm.store,
     modalProps,
@@ -69,14 +78,14 @@ export default function useTGTransferModal({
     }
   })
 
-  if (showSearch && !isStaticTransfer) {
-    watch(tgModal.open, async val => {
-      if (val) {
-        await tgForm.store.execSearch({
-          location,
-          isMergeParam: true,
-          ...optionsOfGetList
-        })
+  // todo 本组件内需调用的接口及其调用顺序
+  //  1 初始化搜索表单内的枚举（如果有），调用详情数据接口（右侧数据，依赖open时传递的id）
+  //  2 初始化transfer的数据源（左侧数据，无依赖），通过调用搜索接口实现（依赖搜索表单的枚举执行情况）
+
+  if (showSearch) {
+    watch([tgModal.open, tgForm.initSearchParamResult], async val => {
+      if (!val.some(item => !item)) {
+        await transferModalSearchCallback()
       }
     })
   }
@@ -85,7 +94,7 @@ export default function useTGTransferModal({
     await tgForm.store.execSearch({
       location,
       isMergeParam: true,
-      ...optionsOfGetList
+      ...optionsOfGetDataSource
     })
   }
 
@@ -138,12 +147,13 @@ export default function useTGTransferModal({
           }
           <Spin
             wrapperClassName={'tg-transfer-modal-content'}
-            spinning={confirmLoading.value || dataSource.value.loading}
+            spinning={dataSource.value.loading}
           >
             <Transfer
               {...transferProps}
               dataSource={dataSource.value.list}
               targetKeys={props.value}
+              disabled={confirmLoading.value.loading}
               onChange={(targetKeys, direction, moveKeys) => {
                 emit('update:value', targetKeys)
                 set(_modalProps, 'okButtonProps.disabled', !targetKeys.length)
