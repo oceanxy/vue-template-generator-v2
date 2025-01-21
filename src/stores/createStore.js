@@ -467,9 +467,13 @@ export function createStore({
           if (typeof setValue === 'function') {
             setValue(res.data, this)
           } else {
-            this.$patch({
-              currentItem: res.data
-            })
+            if (Object.prototype.toString.call(res.data) === '[object Object]') {
+              this.$patch({
+                currentItem: res.data
+              })
+            } else {
+              throw new Error(`store.getDetails：当接口（${api}）返回值是一个数组时，必须传递setValue回调函数！`)
+            }
           }
         }
 
@@ -783,7 +787,7 @@ export function createStore({
        * 主要用于生成接口地址，生成规则`{ACTION}{ModuleName}`。
        * @param [params] {Object} - 自定义参数，默认值为 store.state.search 的值。
        * 当 location 为有效值时，默认值为 store.state[location].form 的值。
-       * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值合并，默认为 false。
+       * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值(store.search)合并，默认为 false。
        * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
        * @param [isRefreshTable] {boolean} - 是否刷新表格数据，默认 false。
        * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作完成后关闭指定弹窗。

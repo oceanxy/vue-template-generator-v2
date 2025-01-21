@@ -8,18 +8,22 @@ import { set } from 'lodash/object'
 
 /**
  * TGTransferModal
+ * @note 本组件内需调用的接口及其调用顺序
+ *  - 1、初始化搜索表单内的枚举（如果有），同时获取transfer选中数据（右侧数据）;
+ *  - 2、初始化transfer的数据源（左侧数据），通过调用tgForm组件的搜索功能实现（依赖搜索表单的枚举执行情况）。
  * @param showSearch
  * @param modalStatusFieldName
  * @param modalProps
  * @param transferProps
  * @param location
- * @param searchParamOptions
+ * @param searchParamOptions {SearchParamOption[]}
  * @param [setTargetKeys] {(data: Array, store: import('pinia').defineStore) => void} - 设置组件`targetKeys`的函数，如果不为函数，
  * 会将数据与`currentItem`合并。
- * @param [paramsOfGetTargetKeys] {((currentItem:Object) => Object) | Object} - 自定义获取`targetKeys`的参数，默认为`store.state.currentItem.id`。
- * @param isGetTargetKeys
- * @param apiNameOfGetTargetKeys {string} - 获取`targetKeys`的接口名称。
- * @param optionsOfGetDataSource {Object} - 搜索表单的搜索参数，具体参数请参考 API `store.getList`。如其内未定义`location`，
+ * @param [paramsOfGetTargetKeys] {((currentItem:Object) => Object) | Object} - 自定义获取`targetKeys`的参数，
+ * 默认为`store.state.currentItem.id`。参数为`currentItem`。
+ * @param isGetTargetKeys {boolean} - 是否获取`targetKeys`。
+ * @param apiNameOfGetTargetKeys {string} - 获取`targetKeys`的接口名称，默认为`get{route.name}`。
+ * @param optionsOfGetDataSource {Object} - 执行搜索表单入参，具体请参考 API `store.getList`。如其内未定义`location`，
  *  会默认使用`useTGTransferModal`的`location`
  * @returns {{TGTransferModal: (function({readonly?: boolean}, {slots: *}): *), open: ComputedRef<*>, currentItem: ComputedRef<*>, handleCancel: function({callback?: (function(): void)}=): Promise<void>}}
  */
@@ -39,10 +43,6 @@ export default function useTGTransferModal({
   let confirmLoading
   let tgForm = {}
   let TGForm
-
-  // if (isGetTargetKeys && typeof setTargetKeys !== 'function') {
-  //   throw new Error('TGTransferModal：当isGetTargetKeys 为 true 时，setTargetKeys 必传。')
-  // }
 
   if (showSearch) {
     const { TGForm: _TGForm, ..._tgForm } = useTGForm({
@@ -77,10 +77,6 @@ export default function useTGTransferModal({
       resetFields: tgForm.resetFields
     }
   })
-
-  // todo 本组件内需调用的接口及其调用顺序
-  //  1 初始化搜索表单内的枚举（如果有），调用详情数据接口（右侧数据，依赖open时传递的id）
-  //  2 初始化transfer的数据源（左侧数据，无依赖），通过调用搜索接口实现（依赖搜索表单的枚举执行情况）
 
   if (showSearch) {
     watch([tgModal.open, tgForm.initSearchParamResult], async val => {

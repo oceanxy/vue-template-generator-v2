@@ -64,6 +64,7 @@ export default function useTGForm({
   const formModel = reactive(location ? form.value : search.value)
   const formRules = reactive(rules)
   const initSearchParamResult = ref(searchParamOptions?.length <= 0)
+  const hasRequiredEnum = searchParamOptions.some(_enum => _enum.isRequired === true)
 
   const {
     text,
@@ -101,6 +102,7 @@ export default function useTGForm({
         if (!val) {
           // 关闭弹窗时，重置计数器
           count.value = 0
+          initSearchParamResult.value = false
         }
       })
     }
@@ -380,13 +382,18 @@ export default function useTGForm({
 
         watch(open, async val => {
           if (val) {
-            if (!initSearchParamResult.value) {
-              await Promise.all([
-                getDetails(),
-                initSearchParams()
-              ])
-            } else {
+            if (hasRequiredEnum) {
+              await initSearchParams()
               await getDetails()
+            } else {
+              if (!initSearchParamResult.value) {
+                await Promise.all([
+                  getDetails(),
+                  initSearchParams()
+                ])
+              } else {
+                await getDetails()
+              }
             }
 
             // 接口加载完毕后对表单的处理逻辑

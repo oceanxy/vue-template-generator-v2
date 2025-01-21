@@ -33,7 +33,7 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * @property [condition] {((state: Object) => boolean) | boolean} - 页面/弹窗中枚举的初始化执行条件。
  * @property [listener] {boolean} - 是否为 store.state.search[paramNameInSearchRO] 设置监听，以在该值变化时更新 store.state.dataSource。
  * @property [getValueFormResponse] {(data: Object[]|Object) => any} - 接口数据加载成功后，`paramNameInSearchRO`字段的取值逻辑。
- * - 参数 data 为接口请求的数据对象或数据数组；
+ * - 参数 data 为 接口请求的数据对象或数据数组，会被赋值给 store[stateName]。
  * - 返回值将赋值给 store.state.search 对象内 paramNameInSearchRO 指定的字段。
  * @property [raw] {boolean} - 原样输出接口返回的数据结构到 stateName 指定的字段中。
  * @property [done] {(data: Object) => Array<any>} - 当前枚举调用接口后的回调，参数为 response.data。
