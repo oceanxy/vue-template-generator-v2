@@ -64,7 +64,7 @@ export default function useTGForm({
   const formModel = reactive(location ? form.value : search.value)
   const formRules = reactive(rules)
   const initSearchParamResult = ref(searchParamOptions?.length <= 0)
-  const hasRequiredEnum = searchParamOptions.some(_enum => _enum.isRequired === true)
+  const hasRequiredEnum = searchParamOptions?.some(_enum => _enum.isRequired === true)
 
   const {
     text,
@@ -326,8 +326,8 @@ export default function useTGForm({
 
   function watchTrigger(paramNameInSearchRO) {
     searchParamOptions
-      .filter(options => options.dependentField === paramNameInSearchRO)
-      .forEach(options => {
+      ?.filter(options => options.dependentField === paramNameInSearchRO)
+      ?.forEach(options => {
         clearCache(options)
       })
   }
@@ -411,7 +411,9 @@ export default function useTGForm({
       }
 
       async function initSearchParams() {
-        await Promise.all(searchParamOptions.map(enumOptions => execEnum(enumOptions)))
+        if (Array.isArray(searchParamOptions) && searchParamOptions.length) {
+          await Promise.all(searchParamOptions.map(enumOptions => execEnum(enumOptions)))
+        }
 
         initSearchParamResult.value = true
       }
