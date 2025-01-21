@@ -438,10 +438,10 @@ export function createStore({
       /**
        * 获取详情数据
        * @param {string} location
-       * @param {Object} [params] - 查询参数，默认`store.currentItem.id`，受`store.state.rowKey`影响。
-       * @param {string} [apiName] - 接口名称，默认`getDetailsOf${moduleName}`。
+       * @param {Object} [params] - 查询参数。默认`store.currentItem.id`，默认值受`store.state.rowKey`影响。
+       * @param {string} [apiName] - 接口名称，默认`getDetailsOf${route.name}`。
        * @param {(data: Object, store: import('pinia').StoreDefinition) => void} [setValue] - 处理接口返回值的函数，
-       * 该值不为函数时，接口返回值默认与`store.currentItem`合并。
+       * 该值不为函数时，接口返回值将与`store.currentItem`合并。
        * @returns {Promise<{}>}
        */
       async getDetails({
@@ -499,7 +499,7 @@ export function createStore({
         const currentState = targetState[stateName]
 
         // 类型检查和赋值
-        if (currentState && typeof currentState === 'object') {
+        if (currentState && Object.prototype.toString.call(currentState) === '[object Object]') {
           if (typeof value === 'object' && !Array.isArray(value)) {
             if ('data' in currentState) {
               currentState.data = value
@@ -513,7 +513,7 @@ export function createStore({
             currentState.data = value
           }
         } else {
-          targetState[stateName || 'list'] = value
+          targetState[stateName] = value
         }
       },
       /**
@@ -642,7 +642,7 @@ export function createStore({
             this.setState('currentItem', this.currentItem._prevCurrentItem, { merge })
           }
 
-          const rowKey = this[location].rowKey || this.rowKey
+          const rowKey = this[location]?.rowKey || this.rowKey
 
           // 无感化处理`form`的唯一标识符，用于弹窗的编辑等功能
           if (rowKey in this.currentItem) {
