@@ -1,0 +1,16 @@
+.tg-data-upload-content {
+  &.tg-modal .ant-modal-content .ant-modal-body {
+    padding-top: 0;
+  }
+
+  .tg-data-upload-functions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .tg-data-upload-trigger {
+    padding-bottom: 10px;
+  }
+}
