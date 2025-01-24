@@ -24,7 +24,6 @@ export default {
       handleExport,
       TGTableModal
     } = useTGTableModal({
-      showSearch: false,
       isStaticTable: true,
       modalStatusFieldName,
       location,

@@ -10,7 +10,7 @@ import { verificationDialog } from '@/utils/message'
 import dayjs from 'dayjs'
 
 /**
- * @param [isStaticTable] {boolean} - 是否是静态表格。静态表格不需要从接口获取数据，但需要强制指定`stateName`参数。
+ * @param [isStaticTable] {boolean} - 是否是静态表格，默认false。静态表格不需要从接口获取数据，但需要强制指定`stateName`参数。
  * @param [location] {string} - 次级表格的 state。
  * @param [open] {import('@vue/reactivity').Ref<boolean>} - 是否显示弹窗，在弹窗内的表格组件需要。
  * @param [stateName] {string} - 表格数据源的属性名，默认 'dataSource'。
@@ -518,10 +518,11 @@ export default function useTGTable({
 
   /**
    * 表格行change事件回调
-   * @param selectedRows {Object[]} - 当前页选中的数据对象
+   * @param selectedRowKeys {string[]} - 当前页选中的数据键集合
+   * @param selectedRows {Object[]} - 当前页选中的数据对象集合
    * @returns {Promise<void>}
    */
-  function onRowSelectionChange(selectedRows) {
+  function onRowSelectionChange(selectedRowKeys, selectedRows) {
     store.setState('selectedRows', selectedRows)
   }
 
@@ -531,6 +532,8 @@ export default function useTGTable({
    * 传递的参数会与`store.state.search`合并后传递给接口，不改变`store.state.search`。
    * @param [apiName] {string} - 自定义导出接口名，默认为`export${route.name}`。
    * @param [fileName] {string} - 文件名称，默认路由名称（route.meta.title）
+   * @param [location] {string} - 次级弹窗位置。
+   * @param [isMergeParam] {boolean} - 是否将参数与search合并, 默认true，`location=true`时，与`store[location].form`合并。
    * @param [modalStatusFieldName] {string} - 成功导出后需要关闭弹窗的控制字段，不关闭弹窗可不传该值。
    * @param [isTimeName] {boolean} - 默认false，开启之后在`filename`后添加时间格式命名。
    * @returns {Promise<void>}
@@ -539,6 +542,8 @@ export default function useTGTable({
     params,
     apiName,
     fileName,
+    location,
+    isMergeParam,
     modalStatusFieldName,
     isTimeName = false
   }) {
@@ -552,6 +557,8 @@ export default function useTGTable({
     await store.exportData({
       params,
       apiName,
+      location,
+      isMergeParam,
       fileName: `${fileName && isTimeName ? getDateTime() : ''}${fileName}`,
       modalStatusFieldName
     })

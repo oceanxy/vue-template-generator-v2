@@ -8,7 +8,7 @@ import { Button, Form } from 'ant-design-vue'
  * @param [isSearchForm] {boolean} - 是否是作为搜索表单使用，默认false：作为数据表单使用。
  * @param [showSubmitButton] {boolean} - 是否显示表单的提交按钮。
  * @param [submitButtonProps={}] {import('ant-design-vue').ButtonProps} - `submitButton`按钮的属性，依赖`showSubmitButton`参数。
- * @param [submitButtonProps.submitParams] {Object} - `submitButton`按钮的内置提交事件（handleFinish函数）的参数。
+ * @param [submitButtonProps.submitOptions] {Object} - `submitButton`按钮的内置提交事件（handleFinish函数）的参数。
  * 如果传递了`submitButtonProps.onClick`，则不会调用内置的提交事件，且此参数无效。
  * @param [submitButtonProps.onClick] {Button.props.onClick} - `submitButton`按钮的提交事件，默认值为本组件内置的
  * `handleFinish`提交函数。如果显示地传入该值，则不再调用本组件的内置提交函数，而是调用此参数指定的函数。
@@ -55,12 +55,15 @@ export default function useTGForm({
   const store = useStore()
   const commonStore = useStore('./common')
 
+  if (location && !store[location].form) {
+    store[location].form = {}
+  }
+
   const formLoading = computed(() => location ? store[location].loading : store.loading)
   const search = computed(() => store.search)
   const form = computed(() => store[location]?.form)
   const currentItem = computed(() => store.currentItem)
   const open = computed(() => store[modalStatusFieldName] || false)
-
   const formModel = reactive(location ? form.value : search.value)
   const formRules = reactive(rules)
   const initSearchParamResult = ref(searchParamOptions?.length <= 0)
@@ -194,7 +197,7 @@ export default function useTGForm({
    * @param [action] {'update','add',string} - 操作类型，未定义 apiName 时生效。
    * 默认根据`store.state.currentItem`中的`id`字段自动判断是 'update' 还是 'add'，其他情况则需要自行传递。
    * 主要用于生成接口地址，生成规则`{ACTION}{router.currentRoute.value.name}`。
-   * @param [params] {(() => Object) | Object} - 接口参数，受`isMergeParam`影响。
+   * @param [params] {(() => Object) | Object} - 接口参数，默认`store.search`受`isMergeParam`影响。
    * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值合并，默认为 false。
    * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
    * @param [isRefreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
@@ -215,8 +218,7 @@ export default function useTGForm({
     return new Promise(resolve => {
       validate().then(async () => {
         if (typeof callback === 'function') {
-          await callback()
-          resolve()
+          resolve(await callback())
         } else {
           params = typeof params === 'function' ? params() : params
 
@@ -230,7 +232,7 @@ export default function useTGForm({
             modalStatusFieldName
           })
 
-          resolve()
+          resolve(res)
 
           if (res.status) {
             // 执行侧边树刷新操作
@@ -241,7 +243,9 @@ export default function useTGForm({
             success?.(res)
           }
         }
-      }).catch(e => {/***/})
+      }).catch(e => {
+        resolve({ status: false })
+      })
     })
   }
 
@@ -263,43 +267,35 @@ export default function useTGForm({
           ? dependentField(store.$state)
           : dependentField
 
-        await new Promise(resolve => {
-          unWatch.value.push(watch(
-            () => options.location ? form.value[_dependentField] : search.value[_dependentField],
-            async (newVal, oldValue) => {
-              // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已选中的值
-              if (newVal !== oldValue) {
-                clearCache(enumOptions)
+        unWatch.value.push(watch(
+          () => options.location ? form.value[_dependentField] : search.value[_dependentField],
+          async (newVal, oldValue) => {
+            // 依赖参数变化时，清空有依赖的参数的枚举列表，并重置已选中的值
+            if (newVal !== oldValue) {
+              clearCache(enumOptions)
 
-                let res
+              // 依赖值为有效值时才执行枚举刷新
+              if (newVal) {
+                if (typeof options.customData === 'function') {
+                  const data = await options.customData(newVal)
 
-                // 依赖值为有效值时才执行枚举刷新
-                if (newVal) {
-                  if (typeof options.customData === 'function') {
-                    const data = await options.customData(newVal)
-
-                    if (!Array.isArray(data)) {
-                      throw new Error(`自定义枚举 ${options.stateName} 的 customData 函数返回值必须为一个数组。`)
-                    }
-
-                    store.setState(options.stateName, data, { location: options.location })
-                    res = { status: true, data }
-                  } else {
-                    if (!options.apiName) {
-                      throw new Error(`非自定义枚举 ${options.stateName} 必须指定 apiName。`)
-                    }
-
-                    res = await store.getList(options)
+                  if (!Array.isArray(data)) {
+                    throw new Error(`自定义枚举 ${options.stateName} 的 customData 函数返回值必须为一个数组。`)
                   }
-                }
 
-                // 完成 promise
-                resolve(res)
+                  store.setState(options.stateName, data, { location: options.location })
+                } else {
+                  if (!options.apiName) {
+                    throw new Error(`非自定义枚举 ${options.stateName} 必须指定 apiName。`)
+                  }
+
+                  await store.getList(options)
+                }
               }
-            },
-            { immediate: true }
-          ))
-        })
+            }
+          },
+          { immediate: true }
+        ))
       } else {
         await store.getList(options)
       }
@@ -349,16 +345,16 @@ export default function useTGForm({
           if (paramValue === '') {
             watchTrigger(enumOptions.paramNameInSearchRO)
           } else {
-            // 为默认枚举值重置为“全部”选项。注意这里可能会有问题，因为目前没有一个规则可以判定当前字段是否是枚举值
-            store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = ''
+            // 搜索表单将默认值重置为“全部”选项，数据表单重置为 null。
+            store[enumOptions.location].form[enumOptions.paramNameInSearchRO] = isSearchForm ? '' : null
           }
         }
       } else {
         if (store.search[enumOptions.paramNameInSearchRO] === '') {
           watchTrigger(enumOptions.paramNameInSearchRO)
         } else {
-          // 为默认枚举值重置为“全部”选项。注意这里可能会有问题，因为目前没有一个规则可以判定当前字段是否是枚举值
-          store.search[enumOptions.paramNameInSearchRO] = ''
+          // 搜索表单将默认值重置为“全部”选项，数据表单重置为 null。
+          store.search[enumOptions.paramNameInSearchRO] = isSearchForm ? '' : null
         }
       }
     }
@@ -416,9 +412,13 @@ export default function useTGForm({
         }
 
         initSearchParamResult.value = true
+
+        return Promise.resolve()
       }
 
       async function getDetails() {
+        let res = {}
+
         if (isGetDetails) {
           let params
 
@@ -429,7 +429,7 @@ export default function useTGForm({
           }
 
           if (params || currentItem.value?.[store.rowKey]) {
-            return await store.getDetails({
+            res = await store.getDetails({
               location,
               params,
               apiName,
@@ -438,7 +438,7 @@ export default function useTGForm({
           }
         }
 
-        return Promise.resolve()
+        return Promise.resolve(res)
       }
 
       async function handleSubmit() {
@@ -447,7 +447,7 @@ export default function useTGForm({
         } else {
           await handleFinish({
             isRefreshTable: isInitTable,
-            ...submitButtonProps.submitParams
+            ...submitButtonProps.submitOptions
           })
         }
       }

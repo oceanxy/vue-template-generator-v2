@@ -1,5 +1,5 @@
 import './assets/styles/index.scss'
-import { computed, provide, reactive, ref, watch } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import { Button, Modal, Spin } from 'ant-design-vue'
 import useStore from '@/composables/tgStore'
 
@@ -31,13 +31,19 @@ export default function useTGModal({
   const {
     onCancel,
     onOk,
-    okButtonProps,
     ...restModalProps
   } = modalProps
 
-  const _modalProps = reactive(restModalProps)
-  const _okButtonProps = reactive(okButtonProps)
+  // watch(
+  //   () => modalProps.okButtonProps,
+  //   val => {
+  //
+  //   }, { deep: true }
+  // )
+
+  const _okButtonProps = computed(() => modalProps.okButtonProps || {})
   const _okButtonLoading = ref(false)
+  const _okButtonDisabled = ref(false)
   const open = computed(() => store[modalStatusFieldName])
   const currentItem = computed(() => store.currentItem)
   const modalContentLoading = computed({
@@ -88,8 +94,8 @@ export default function useTGModal({
 
   function handleModalContentStatusChange(status) {
     _okButtonLoading.value = status
-    _okButtonProps.disabled = status
-    store.setLoading({ stateName: 'loading', location })
+    _okButtonDisabled.value = status
+    store.setLoading({ stateName: 'loading', value: status, location })
   }
 
   function handleMouseDown(event) {
@@ -144,11 +150,11 @@ export default function useTGModal({
           maskClosable={false}
           style={{ transform: style.value }}
           {...(props.readonly ? { footer: <Button onClick={handleCancel}>关闭</Button> } : {})}
-          {..._modalProps}
+          {...restModalProps}
           okButtonProps={{
-            ..._okButtonProps,
-            disabled: modalContentLoading.value || _okButtonProps.disabled,
-            loading: _okButtonLoading.value
+            ..._okButtonProps.value,
+            disabled: modalContentLoading.value || _okButtonProps.value.disabled || _okButtonDisabled.value,
+            loading: _okButtonProps.value.loading || _okButtonLoading.value
           }}
           title={
             <div
@@ -157,7 +163,7 @@ export default function useTGModal({
               onMousemove={handleMouseMove}
               onMouseup={handleMouseUp}
             >
-              {_modalProps?.title?.replace('{ACTION}', currentItem.value?.id ? '编辑' : '新增')}
+              {restModalProps?.title?.replace('{ACTION}', currentItem.value?.id ? '编辑' : '新增')}
             </div>
           }
         >

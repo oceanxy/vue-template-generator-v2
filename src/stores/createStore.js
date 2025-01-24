@@ -649,10 +649,12 @@ export function createStore({
           const rowKey = this[location]?.rowKey || this.rowKey
 
           // 无感化处理`form`的唯一标识符，用于弹窗的编辑等功能
-          if (rowKey in this.currentItem) {
+          if (rowKey in this.currentItem && 'form' in this.$state[location]) {
             this.$state[location].form[rowKey] = this.currentItem[rowKey]
           } else {
-            delete this.$state[location].form[rowKey]
+            if ('form' in this.$state[location]) {
+              delete this.$state[location].form[rowKey]
+            }
           }
         }
 
@@ -723,6 +725,7 @@ export function createStore({
       /**
        * 导出表格数据
        * @param {Object} [params] - 参数，默认为 store.state.search 的值。
+       * @param [isMergeParam] {boolean} - 是否将参数与search合并, 默认true，`location=true`时，与`store[location].form`合并。
        * @param {string} [fileName] - 不包含后缀名
        * @param {string} [apiName] - 导出接口的名字
        * @param {string} [modalStatusFieldName] - 成功导出后要关闭的弹窗的控制字段（定义在对应模块的 store.state 内）
@@ -731,20 +734,25 @@ export function createStore({
        */
       async exportData({
         params,
+        isMergeParam = true,
         fileName,
         apiName,
         modalStatusFieldName,
         location
       }) {
         const api = apiName ? apiName : `export${MODULE_NAME}`
-        let search
+        let search = params
         let buffer
 
         if (apis[api]) {
           if (!location) {
-            search = { ...this.search, ...params }
+            if (isMergeParam) {
+              search = { ...this.search, ...params }
+            }
           } else {
-            search = { ...this.$state[location].form }
+            if (isMergeParam) {
+              search = { ...this.$state[location].form, ...params }
+            }
           }
 
           if ('dateRange' in search) {
@@ -756,7 +764,7 @@ export function createStore({
 
           buffer = await apis[api]?.(search)
         } else {
-          console.error(`接口未定义：${moduleName} 页面的 ${api} 接口未定义！`)
+          throw new Error(`接口未定义：${moduleName} 页面的 ${api} 接口未定义！`)
         }
 
         if (buffer) {
@@ -789,8 +797,9 @@ export function createStore({
        * 当 location 为有效值时，默认值为 store.state[location].form 的值。
        * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值(store.search)合并，默认为 false。
        * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
-       * @param [isRefreshTable] {boolean} - 是否刷新表格数据，默认 false。
-       * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作完成后关闭指定弹窗。
+       * @param [isRefreshTable] {boolean} - 成功后，是否刷新表格数据，默认 false。
+       * @param [isClearSelectedRows] {boolean} - 成功后，是否清除表格已选行，默认 false。
+       * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作成功后关闭指定弹窗。
        * @returns {Promise<Object>}
        */
       async fetch({
@@ -801,6 +810,7 @@ export function createStore({
         params,
         isMergeParam,
         isRefreshTable,
+        isClearSelectedRows,
         modalStatusFieldName
       }) {
         let res = { status: false }
@@ -817,7 +827,7 @@ export function createStore({
           apiName = `${action}${MODULE_NAME}`
         }
 
-        if (isMergeParam) {
+        if (isMergeParam || !params) {
           const search = location ? this.$state[location].form : this.search
 
           if (params) {
@@ -850,6 +860,10 @@ export function createStore({
             await this.getList({
               isPagination: true
             })
+          }
+
+          if (isClearSelectedRows) {
+            this.selectedRows = []
           }
         }
 

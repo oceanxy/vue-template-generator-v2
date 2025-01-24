@@ -11,7 +11,7 @@ import { set } from 'lodash/object'
  * @note 本组件内需调用的接口及其调用顺序
  *  - 1、初始化搜索表单内的枚举（如果有），同时获取transfer选中数据（右侧数据）;
  *  - 2、初始化transfer的数据源（左侧数据），通过调用tgForm组件的搜索功能实现（依赖搜索表单的枚举执行情况）。
- * @param showSearch
+ * @param isStatic {boolean} - 是否为静态组件，默认为false。
  * @param modalStatusFieldName
  * @param modalProps
  * @param transferProps
@@ -28,7 +28,7 @@ import { set } from 'lodash/object'
  * @returns {{TGTransferModal: (function({readonly?: boolean}, {slots: *}): *), open: ComputedRef<*>, currentItem: ComputedRef<*>, handleCancel: function({callback?: (function(): void)}=): Promise<void>}}
  */
 export default function useTGTransferModal({
-  showSearch = true,
+  isStatic,
   location = 'modalForEditing',
   modalStatusFieldName = 'showModalForEditing',
   modalProps,
@@ -44,7 +44,7 @@ export default function useTGTransferModal({
   let tgForm = {}
   let TGForm
 
-  if (showSearch) {
+  if (!isStatic) {
     const { TGForm: _TGForm, ..._tgForm } = useTGForm({
       isSearchForm: true,
       location,
@@ -78,7 +78,7 @@ export default function useTGTransferModal({
     }
   })
 
-  if (showSearch) {
+  if (!isStatic) {
     watch([tgModal.open, tgForm.initSearchParamResult], async val => {
       if (!val.some(item => !item)) {
         await transferModalSearchCallback()
@@ -115,7 +115,7 @@ export default function useTGTransferModal({
       return () => (
         <TGModal {...props} class={'tg-transfer-modal'}>
           {
-            showSearch && !!slots.default && (
+            !isStatic && !!slots.default && (
               <TGForm class={'tg-transfer-modal-inquiry-form'}>
                 {slots.default()}
                 <Form.Item class={'tg-form-item-btn'}>

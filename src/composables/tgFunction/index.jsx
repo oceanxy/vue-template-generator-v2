@@ -62,6 +62,7 @@ export default function useFunction({
   const editedRow = ref({})
   const ids = ref('')
 
+  const search = computed(() => store.search)
   const selectedRowKeys = computed(() => store.selectedRowKeys)
   const selectedRows = computed(() => store.selectedRows)
   const buttonDisabled = computed(() => store.dataSource?.loading)
@@ -308,6 +309,9 @@ export default function useFunction({
     auditButtonDisabled: computed(() => buttonDisabled.value || auditButtonDisabled.value),
     exportButtonDisabled: computed(() => buttonDisabled.value || exportButtonDisabled.value),
     editedRow,
+    selectedRows,
+    selectedRowKeys,
+    search,
     ids,
     store,
     TGFunction,

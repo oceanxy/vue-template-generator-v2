@@ -7,8 +7,7 @@ import useTGTable from '@/composables/tgTable'
 import { computed, watch } from 'vue'
 
 export default function useTGTableModal({
-  showSearch = true,
-  isStaticTable = false,
+  isStaticTable,
   modalStatusFieldName = 'showModalForEditing',
   modalProps,
   tableProps,
@@ -31,7 +30,7 @@ export default function useTGTableModal({
     optionsOfGetList
   })
 
-  if (showSearch) {
+  if (!isStaticTable) {
     const { TGForm: _TGForm, ..._tgForm } = useTGForm({
       location,
       rules,
@@ -57,14 +56,10 @@ export default function useTGTableModal({
 
   const loading = computed(() => tgTable.store[location].dataSource.loading)
 
-  if (showSearch && !isStaticTable) {
+  if (!isStaticTable) {
     watch(tgModal.open, async val => {
       if (val) {
-        await tgTable.store.execSearch({
-          location,
-          isMergeParam: true,
-          ...optionsOfGetList
-        })
+        await tableModalSearchCallback()
       }
     })
   }
@@ -105,7 +100,7 @@ export default function useTGTableModal({
     return (
       <TGModal {...props} class={'tg-table-modal'}>
         {
-          showSearch && !!slots.default && (
+          !isStaticTable && !!slots.default && (
             <TGForm class={'tg-table-modal-inquiry-form'}>
               {slots.default()}
               <Form.Item class={'tg-form-item-btn'}>

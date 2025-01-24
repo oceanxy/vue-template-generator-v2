@@ -119,7 +119,7 @@ export default function useTGFormModal({
       paramsInjectId.id = tgModal.currentItem.value[tgForm.store.rowKey]
     }
 
-    await tgForm.handleFinish({
+    return await tgForm.handleFinish({
       params: paramsInjectId,
       callback,
       apiName,
@@ -132,9 +132,20 @@ export default function useTGFormModal({
     })
   }
 
+  /**
+   *
+   * @param props {{labelWidth: number|string}}
+   * @param slots
+   * @returns {JSX.Element}
+   * @constructor
+   */
   function TGFormModal(props, { slots }) {
     return (
-      <TGModal class={'tg-form-modal'} readonly={props.readonly}>
+      <TGModal
+        class={'tg-form-modal'}
+        style={{ '--label-width': props.labelWidth || '80px' }}
+        readonly={props.readonly}
+      >
         <TGForm>
           {slots.default?.()}
         </TGForm>

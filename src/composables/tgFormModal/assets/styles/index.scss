@@ -19,7 +19,7 @@
         flex-wrap: nowrap;
 
         .ant-form-item-label {
-          width: 80px;
+          width: var(--label-width);
           flex: none;
         }
 
