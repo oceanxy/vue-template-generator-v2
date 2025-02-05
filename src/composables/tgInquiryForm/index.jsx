@@ -233,6 +233,11 @@ export default function useInquiryForm({
         { immediate: true }
       )
 
+      onUnmounted(() => {
+        // 卸载组件时，重置折叠状态
+        commonStore.inquiryFormCollapsed = true
+      })
+
       async function handleInquiryFormCollapsedChange() {
         const heightDifference = fieldDom.value.parentNode.clientHeight - fieldDom.value.clientHeight
 
