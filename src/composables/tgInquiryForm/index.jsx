@@ -90,6 +90,28 @@ export default function useInquiryForm({
     validate().then(async () => await store.saveParamsAndExecSearch())
   }
 
+  function execListener(isListen, enumOptions) {
+    if (isListen && enumOptions.paramNameInSearchRO) {
+      // 监听 store.state.search[paramNameInSearchRO]，以更新 store.state.dataSource
+      return () => watch(
+        () => search.value[enumOptions.paramNameInSearchRO],
+        async (newVal, oldValue) => {
+          if (
+            // 必需时值变化，或者非必需时值有变化
+            (enumOptions.isRequired && newVal && newVal !== oldValue) ||
+            (!enumOptions.isRequired && newVal !== oldValue)
+          ) {
+            if (isInitTable) {
+              await store.execSearch()
+            }
+          }
+        }
+      )
+    }
+
+    return null
+  }
+
   /**
    * 枚举执行函数
    * @param enumOptions
@@ -137,6 +159,7 @@ export default function useInquiryForm({
                     res = await store.getList(options)
                   }
 
+                  res.execListener = execListener(listener, enumOptions)
                   // 完成 promise
                   resolve(res)
                 }
@@ -144,27 +167,22 @@ export default function useInquiryForm({
             )
           })
         } else {
-          await store.getList(options)
+          const res = await store.getList(options)
+
+          res.execListener = execListener(listener, enumOptions)
+          return res
+        }
+      } else {
+        if (options.isRequired) {
+          return {
+            status: false,
+            message: `请求 ${options.apiName} 接口前，执行条件未通过。`
+          }
         }
 
-        if (listener) {
-          // 返回函数：监听 store.state.search[paramNameInSearchRO]，以更新 store.state.dataSource
-          return () => {
-            watch(
-              () => search.value[enumOptions.paramNameInSearchRO],
-              (newVal, oldValue) => {
-                if (
-                  // 必填时值变化，或者非必填时值有变化
-                  (enumOptions.isRequired && newVal && newVal !== oldValue) ||
-                  (!enumOptions.isRequired && newVal !== oldValue)
-                ) {
-                  if (isInitTable) {
-                    store.execSearch()
-                  }
-                }
-              }
-            )
-          }
+        return {
+          status: true,
+          message: `请求 ${options.apiName} 接口前，执行条件未通过，已跳过。`
         }
       }
     }

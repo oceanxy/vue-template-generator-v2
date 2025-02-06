@@ -151,7 +151,7 @@ export function createStore({
        * @param [isResetSelectedRows] {boolean=true} - 是否重置 store.state.selectedRows，默认 true。
        * @param [location] {string} - 搜索参数所在的 store 的次级模块名称。
        * @param [...optionsOfGetList] {Object} - 其他`getList`函数的参数。
-       * @returns {Promise<void>}
+       * @returns {Promise<Object>}
        */
       async saveParamsAndExecSearch({
         searchParams,
@@ -164,13 +164,15 @@ export function createStore({
         this.setSearchParams(searchParams, location)
 
         if (isFetchList) {
-          await this.execSearch({
+          return await this.execSearch({
             isResetSelectedRows,
             isPagination,
             location,
             ...optionsOfGetList
           })
         }
+
+        return Promise.resolve({ status: true })
       },
       /**
        *
@@ -178,7 +180,7 @@ export function createStore({
        * @param [isPagination] {boolean=true} - 是否分页，默认 true。
        * @param [location] {string}- 搜索参数所在的 store 的次级模块名称。
        * @param [...optionsOfGetList] {Object} - 其他`getList`函数的参数。
-       * @returns {Promise<void>}
+       * @returns {Promise<Object>}
        */
       async execSearch({
         isResetSelectedRows = true,
@@ -202,7 +204,7 @@ export function createStore({
           }
         }
 
-        await this.getList({
+        return await this.getList({
           ...optionsOfGetList,
           location,
           isPagination

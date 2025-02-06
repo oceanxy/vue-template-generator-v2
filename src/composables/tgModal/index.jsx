@@ -2,6 +2,7 @@ import './assets/styles/index.scss'
 import { computed, provide, ref, watch } from 'vue'
 import { Button, Modal, Spin } from 'ant-design-vue'
 import useStore from '@/composables/tgStore'
+import { set } from 'lodash/object'
 
 /**
  * TGModal 组件
@@ -34,13 +35,6 @@ export default function useTGModal({
     ...restModalProps
   } = modalProps
 
-  // watch(
-  //   () => modalProps.okButtonProps,
-  //   val => {
-  //
-  //   }, { deep: true }
-  // )
-
   const _okButtonProps = computed(() => modalProps.okButtonProps || {})
   const _okButtonLoading = ref(false)
   const _okButtonDisabled = ref(false)
@@ -48,8 +42,8 @@ export default function useTGModal({
   const currentItem = computed(() => store.currentItem)
   const modalContentLoading = computed({
     get: () => {
-      if (!('loading' in store[location])) {
-        store[location].loading = false
+      if (!store[location] || !('loading' in store[location])) {
+        set(store, `${location}.loading`, false)
       }
 
       return store[location].loading

@@ -14,6 +14,15 @@ import { message } from 'ant-design-vue'
 import { getEnvVar } from '@/utils/env'
 
 const appName = getFirstLetterOfEachWordOfAppName()
+let abortController = createAbortController()
+
+function createAbortController() {
+  return new AbortController()
+}
+
+function getAbortController() {
+  return abortController
+}
 
 /**
  * 根据后台数据生成路由
@@ -157,7 +166,10 @@ async function resetRouter() {
 const router = createRouter()
 
 router.beforeEach(async (to, from, next) => {
-  // TODO [性能优化] vue路由跳转时取消上一个页面的http请求
+  // vue路由跳转时取消上一个页面的http请求
+  abortController.abort()
+  abortController = createAbortController()
+
   // TODO [体验优化] 保存token时，将localstorage与cookie结合使用，在退出页面时清空登录信息
 
   if (to.query.title) {
@@ -264,6 +276,6 @@ router.beforeEach(async (to, from, next) => {
 
 router.resetRouter = resetRouter
 
-export { useRouter, resetRouter }
+export { useRouter, resetRouter, getAbortController }
 
 export default router

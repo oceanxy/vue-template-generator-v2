@@ -1,6 +1,6 @@
 import './assets/styles/index.scss'
 import TGContainerWithTreeSider from '@/components/TGContainerWithTreeSider'
-import { Space } from 'ant-design-vue'
+import { message, Space } from 'ant-design-vue'
 import router from '@/router'
 import { computed, nextTick, onMounted, provide } from 'vue'
 import useStore from '@/composables/tgStore'
@@ -73,7 +73,7 @@ export default {
      * 参数初始化
      * @param [isFirstTime] {boolean} - 是否是首次初始化
      * @param [searchParams]
-     * @returns {Promise<void>}
+     * @returns {Promise<Object>}
      */
     async function initSearchParameters({
       isFirstTime = false,
@@ -98,20 +98,31 @@ export default {
 
         /* 执行枚举初始化并注册枚举值监听器 */
         if (isFirstTime) {
-          // 注册必需的枚举值监听器
-          execListeners(
-            // 首次初始化时延迟执行非必需的枚举，以节省请求表格的资源
-            await Promise.all(store.taskQueues.required.map(cb => cb()))
-          )
-          // 请求页面主数据，同时注册非必需的枚举值监听器
-          execListeners(
-            await Promise.all([
-              // 执行搜索
-              saveParamsAndExecSearch(payload),
-              // 首次初始化时可将非必需的枚举初始化流程延迟到此时执行
-              ...store.taskQueues.notRequired.map(cb => cb())
-            ])
-          )
+          // 首次初始化时延迟执行非必需的枚举，以节省请求表格的资源
+          const requiredResponses = await Promise.all(store.taskQueues.required.map(cb => cb()))
+
+          if (!requiredResponses.length || requiredResponses[0]?.message === 'canceled') {
+            return Promise.resolve()
+          } else if (!requiredResponses[0]?.status) {
+            message.error({
+              content: '页面加载异常，请稍后再试。',
+              duration: 0
+            })
+            return Promise.reject('页面必需参数加载异常')
+          }
+
+          // 请求页面主数据
+          const notRequiredResponses = await Promise.all([
+            // 执行搜索
+            saveParamsAndExecSearch(payload),
+            // 首次初始化时可将非必需的枚举初始化流程延迟到此时执行
+            ...store.taskQueues.notRequired.map(cb => cb())
+          ])
+
+          // 执行监听器
+          for (const res of [...requiredResponses, ...notRequiredResponses]) {
+            typeof res.execListener === 'function' && res.execListener()
+          }
         } else {
           // 参数更新，触发有依赖的字段的 watch
           store.setSearchParams(searchParams)
@@ -139,22 +150,17 @@ export default {
 
     async function saveParamsAndExecSearch(searchParams) {
       if (_isInitTable.value) {
-        await store.saveParamsAndExecSearch({
+        return await store.saveParamsAndExecSearch({
           searchParams,
           isResetSelectedRows: true,
           isPagination,
           ...(optionsOfGetList ?? {})
         })
-      }
-    }
-
-    /**
-     * 注册枚举值监听器
-     * @param listeners
-     */
-    function execListeners(listeners) {
-      for (const listener of listeners) {
-        typeof listener === 'function' && listener()
+      } else {
+        return Promise.resolve({
+          status: true,
+          message: '当前页面不存在列表或不执行列表数据初始化。'
+        })
       }
     }
 

@@ -4,6 +4,7 @@ import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
 import { getEnvVar } from '@/utils/env'
 import useStore from '@/composables/tgStore'
+import { getAbortController } from '@/router'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 
@@ -16,6 +17,10 @@ export default function getService(conf, router) {
   // request interceptor
   service.interceptors.request.use(
     async config => {
+      // 处理接口取消参数
+      config.signal = getAbortController().signal
+
+      // 处理后台令牌
       const highPriorityToken = config.params?.token
       const token = localStorage.getItem(`${appName}-${conf.tokenConfig.fieldName}`)
 
@@ -47,10 +52,12 @@ export default function getService(conf, router) {
       return config
     },
     async error => {
-      showMessage({
-        message: error.message,
-        type: 'error'
-      })
+      if (!axios.isCancel(error)) {
+        showMessage({
+          message: error.message,
+          type: 'error'
+        })
+      }
 
       return Promise.resolve({
         code: 0,
@@ -130,10 +137,12 @@ export default function getService(conf, router) {
       }
     },
     async error => {
-      showMessage({
-        message: error.message,
-        type: 'error'
-      })
+      if (!axios.isCancel(error)) {
+        showMessage({
+          message: error.message,
+          type: 'error'
+        })
+      }
 
       return Promise.resolve({
         code: 0,
