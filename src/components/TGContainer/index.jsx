@@ -38,7 +38,7 @@ export default {
     ...TGContainerWithTreeSider.props,
     injectSearchParamsOfTable: {
       type: Function,
-      default: null
+      default: undefined
     }
   },
   setup(props, { slots, attrs }) {
