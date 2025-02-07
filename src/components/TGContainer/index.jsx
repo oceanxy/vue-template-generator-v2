@@ -43,6 +43,9 @@ export default {
   },
   setup(props, { slots, attrs }) {
     const store = useStore()
+
+    const taskQueues = computed(() => store.taskQueues)
+
     const {
       showTree,
       contentClassName,
@@ -66,6 +69,12 @@ export default {
         store.dataSource.loading = false
       }
 
+      // 任务队列的初始化在 TGInquiryForm 中进行，当未传递 inquiry 组件时，将在此初始化任务队列，以满足后续逻辑需要
+      if (!slots.inquiry) {
+        store.taskQueues.required = []
+        store.taskQueues.notRequired = []
+      }
+
       await initSearchParameters({ isFirstTime: true })
     })
 
@@ -82,9 +91,9 @@ export default {
       let payload = {}
 
       try {
-        if (showTree && isFirstTime && Array.isArray(store.taskQueues.treeNode)) {
+        if (showTree && isFirstTime && Array.isArray(taskQueues.value.treeNode)) {
           /* 初始化侧边树 */
-          const result = await Promise.all(store.taskQueues.treeNode)
+          const result = await Promise.all(taskQueues.value.treeNode)
 
           for (const _payload of result) {
             payload = { ...payload, ..._payload }
@@ -98,30 +107,44 @@ export default {
 
         /* 执行枚举初始化并注册枚举值监听器 */
         if (isFirstTime) {
-          // 首次初始化时延迟执行非必需的枚举，以节省请求表格的资源
-          const requiredResponses = await Promise.all(store.taskQueues.required.map(cb => cb()))
+          if (slots.inquiry) {
+            // 任务队列因为任何故障导致未完成初始化，则不进行下一步操作
+            // 这个故障可能包括组件报错、路有变化（快速切换路由，组件已经被卸载）等原因
+            if (!Array.isArray(taskQueues.value.required)) return
 
-          if (!requiredResponses.length || requiredResponses[0]?.message === 'canceled') {
-            return Promise.resolve()
-          } else if (!requiredResponses[0]?.status) {
-            message.error({
-              content: '页面加载异常，请稍后再试。',
-              duration: 0
+            // 首次初始化时延迟执行非必需的枚举，以节省请求表格的资源
+            const requiredResponses = await Promise.all(taskQueues.value.required.map(cb => cb()))
+
+            // 必需参数初始化失败，则取消后续操作
+            if (!requiredResponses.length || requiredResponses.some(res => res?.message === 'canceled')) {
+              return
+            } else if (requiredResponses.some(res => !res.status)) {
+              message.error('页面加载异常，请稍后再试。')
+              return console.error('页面必需参数加载异常')
+            }
+
+            if (!Array.isArray(taskQueues.value.notRequired)) return
+
+            // 请求页面主数据
+            const notRequiredResponses = await Promise.all([
+              // 执行搜索
+              saveParamsAndExecSearch(payload),
+              // 首次初始化时可将非必需的枚举初始化流程延迟到此时执行
+              ...taskQueues.value.notRequired.map(cb => cb())
+            ])
+
+            // 执行监听器
+            for (const res of [...requiredResponses, ...notRequiredResponses]) {
+              if (res.status && typeof res.execListener === 'function') {
+                res.execListener()
+              }
+            }
+          } else {
+            // 直接执行搜索
+            await store.execSearch({
+              isPagination,
+              ...(optionsOfGetList ?? {})
             })
-            return Promise.reject('页面必需参数加载异常')
-          }
-
-          // 请求页面主数据
-          const notRequiredResponses = await Promise.all([
-            // 执行搜索
-            saveParamsAndExecSearch(payload),
-            // 首次初始化时可将非必需的枚举初始化流程延迟到此时执行
-            ...store.taskQueues.notRequired.map(cb => cb())
-          ])
-
-          // 执行监听器
-          for (const res of [...requiredResponses, ...notRequiredResponses]) {
-            typeof res.execListener === 'function' && res.execListener()
           }
         } else {
           // 参数更新，触发有依赖的字段的 watch

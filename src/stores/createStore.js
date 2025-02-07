@@ -52,11 +52,11 @@ export function createStore({
          */
         taskQueues: {
           // 左侧树的数据源加载相关的任务队列
-          treeNode: [],
+          treeNode: null,
           // 搜索栏必需的参数的任务队列
-          required: [],
+          required: null,
           // 搜索栏非必需的参数的任务队列
-          notRequired: []
+          notRequired: null
         },
         /**
          * 用于接收侧边树选中值的字段名，默认''，通过 @/components/TGContainerWithTreeSider 组件设置。

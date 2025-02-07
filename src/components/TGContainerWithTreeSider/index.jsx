@@ -377,7 +377,7 @@ export default {
     // 非空模式下会在获取到树的数据后自动请求列表数据
     if (props.notNoneMode) {
       // 将初始化异步参数任务加入任务队列
-      store.taskQueues.treeNode.push(initSearchParams())
+      store.taskQueues.treeNode = [initSearchParams()]
     }
 
     return () => (

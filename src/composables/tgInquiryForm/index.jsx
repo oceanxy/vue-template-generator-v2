@@ -208,8 +208,17 @@ export default function useInquiryForm({
     )
 
     // 将依赖树节点的枚举保存到队列中
-    store.taskQueues.required.push(...enumFns.required)
-    store.taskQueues.notRequired.push(...enumFns.notRequired)
+    if (Array.isArray(store.taskQueues.required)) {
+      store.taskQueues.required.push(...enumFns.required)
+    } else {
+      store.taskQueues.required = enumFns.required
+    }
+
+    if (Array.isArray(store.taskQueues.notRequired)) {
+      store.taskQueues.notRequired.push(...enumFns.notRequired)
+    } else {
+      store.taskQueues.notRequired = enumFns.notRequired
+    }
   })
 
   onUnmounted(() => {
