@@ -1,8 +1,9 @@
 import './assets/styles/index.scss'
-import { computed, provide, ref, watch } from 'vue'
+import { computed, provide, ref, watch, watchEffect } from 'vue'
 import { Button, Modal, Spin } from 'ant-design-vue'
 import useStore from '@/composables/tgStore'
 import { set } from 'lodash/object'
+import { useDraggable } from '@vueuse/core'
 
 /**
  * TGModal 组件
@@ -20,14 +21,12 @@ export default function useTGModal({
   form,
   store
 }) {
-  const style = ref('')
-  const initialPosition = ref({ x: 0, y: 0 })
-  const isDragging = ref(false)
-  const currentOffset = ref({ x: 0, y: 0 })
-
   if (!store) {
     store = useStore()
   }
+
+  const modalTitleRef = ref(null)
+  const { x, y, isDragging } = useDraggable(modalTitleRef)
 
   const {
     onCancel,
@@ -51,6 +50,54 @@ export default function useTGModal({
     set: val => store[location].loading = val
   })
 
+  const startX = ref(0)
+  const startY = ref(0)
+  const startedDrag = ref(false)
+  const transformX = ref(0)
+  const transformY = ref(0)
+  const preTransformX = ref(0)
+  const preTransformY = ref(0)
+  const dragRect = ref({ left: 0, right: 0, top: 0, bottom: 0 })
+
+  watch([x, y], () => {
+    if (!startedDrag.value) {
+      startX.value = x.value
+      startY.value = y.value
+      const bodyRect = document.body.getBoundingClientRect()
+      const titleRect = modalTitleRef.value.getBoundingClientRect()
+      dragRect.value.right = bodyRect.width - titleRect.width
+      dragRect.value.bottom = bodyRect.height - titleRect.height
+      preTransformX.value = transformX.value
+      preTransformY.value = transformY.value
+    }
+    startedDrag.value = true
+  })
+
+  watch(isDragging, () => {
+    if (!isDragging) {
+      startedDrag.value = false
+    }
+  })
+
+  watchEffect(() => {
+    if (startedDrag.value) {
+      transformX.value =
+        preTransformX.value +
+        Math.min(Math.max(dragRect.value.left, x.value), dragRect.value.right) -
+        startX.value
+      transformY.value =
+        preTransformY.value +
+        Math.min(Math.max(dragRect.value.top, y.value), dragRect.value.bottom) -
+        startY.value
+    }
+  })
+
+  const transformStyle = computed(() => {
+    return {
+      transform: `translate(${transformX.value}px, ${transformY.value}px)`
+    }
+  })
+
   watch(open, val => {
     if (!val) {
       store.setLoading({
@@ -60,9 +107,6 @@ export default function useTGModal({
       })
       form?.resetFields()
       form?.clearValidate()
-      initialPosition.value = { x: 0, y: 0 }
-      currentOffset.value = { x: 0, y: 0 }
-      style.value = `translate(${currentOffset.value.x}px, ${currentOffset.value.y}px)`
     }
   })
 
@@ -71,6 +115,12 @@ export default function useTGModal({
    * @returns {Promise<void>}
    */
   async function handleCancel() {
+    store.setVisibilityOfModal({
+      modalStatusFieldName,
+      location,
+      value: false
+    })
+
     if (typeof onCancel === 'function') {
       onCancel()
     }
@@ -90,27 +140,6 @@ export default function useTGModal({
     _okButtonLoading.value = status
     _okButtonDisabled.value = status
     store.setLoading({ stateName: 'loading', value: status, location })
-  }
-
-  function handleMouseDown(event) {
-    isDragging.value = true
-    initialPosition.value = { x: event.clientX, y: event.clientY }
-  }
-
-  function handleMouseMove(event) {
-    if (!isDragging.value) return
-
-    const deltaX = event.clientX - initialPosition.value.x
-    const deltaY = event.clientY - initialPosition.value.y
-
-    currentOffset.value = { x: currentOffset.value.x + deltaX, y: currentOffset.value.y + deltaY }
-    initialPosition.value = { x: event.clientX, y: event.clientY }
-
-    style.value = `translate(${currentOffset.value.x}px, ${currentOffset.value.y}px)`
-  }
-
-  function handleMouseUp() {
-    isDragging.value = false
   }
 
   /**
@@ -138,11 +167,11 @@ export default function useTGModal({
         <Modal
           class={'tg-modal'}
           getContainer={() => document.querySelector('.tg-container-modals')}
-          vModel:open={store[modalStatusFieldName]}
+          open={store[modalStatusFieldName]}
           onCancel={handleCancel}
           onOk={handleOk}
           maskClosable={false}
-          style={{ transform: style.value }}
+          wrapStyle={{ overflow: 'hidden' }}
           {...(props.readonly ? { footer: <Button onClick={handleCancel}>关闭</Button> } : {})}
           {...restModalProps}
           okButtonProps={{
@@ -151,19 +180,23 @@ export default function useTGModal({
             loading: _okButtonProps.value.loading || _okButtonLoading.value
           }}
           title={
-            <div
-              style={{ cursor: 'move', userSelect: 'none' }}
-              onMousedown={handleMouseDown}
-              onMousemove={handleMouseMove}
-              onMouseup={handleMouseUp}
-            >
+            <div ref={modalTitleRef} style={{ cursor: 'move', userSelect: 'none' }}>
               {restModalProps?.title?.replace('{ACTION}', currentItem.value?.id ? '编辑' : '新增')}
             </div>
           }
         >
-          <Spin spinning={modalContentLoading.value}>
-            {slots.default?.()}
-          </Spin>
+          {{
+            default: () => (
+              <Spin spinning={modalContentLoading.value}>
+                {slots.default?.()}
+              </Spin>
+            ),
+            modalRender: ({ originVNode: OriginVNode }) => (
+              <div style={transformStyle.value}>
+                <OriginVNode />
+              </div>
+            )
+          }}
         </Modal>
       )
     }
