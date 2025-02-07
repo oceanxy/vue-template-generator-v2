@@ -13,6 +13,8 @@
   }
 
   .tg-responsive-layout-sider {
+    overflow-y: auto;
+
     .ant-layout-sider-children {
       display: flex;
       flex-direction: column;

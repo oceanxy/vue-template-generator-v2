@@ -9,7 +9,7 @@ import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 export default {
   name: 'TGMenu',
   setup() {
-    const appName = getFirstLetterOfEachWordOfAppName('shm')
+    const appName = getFirstLetterOfEachWordOfAppName()
     const openKeys = ref([])
     const selectedKeys = ref([])
     const menuRoutes = ref([])
