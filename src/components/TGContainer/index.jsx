@@ -116,14 +116,19 @@ export default {
             const requiredResponses = await Promise.all(taskQueues.value.required.map(cb => cb()))
 
             // 必需参数初始化失败，则取消后续操作
-            if (!requiredResponses.length || requiredResponses.some(res => res?.message === 'canceled')) {
+            if (
+              (taskQueues.value.required?.length && !requiredResponses.length) ||
+              requiredResponses.some(res => res?.message === 'canceled')
+            ) {
               return
             } else if (requiredResponses.some(res => !res.status)) {
               message.error('页面加载异常，请稍后再试。')
               return console.error('页面必需参数加载异常')
             }
 
-            if (!Array.isArray(taskQueues.value.notRequired)) return
+            if (!Array.isArray(taskQueues.value.notRequired)) {
+              return
+            }
 
             // 请求页面主数据
             const notRequiredResponses = await Promise.all([
@@ -140,11 +145,13 @@ export default {
               }
             }
           } else {
-            // 直接执行搜索
-            await store.execSearch({
-              isPagination,
-              ...(optionsOfGetList ?? {})
-            })
+            if (_isInitTable.value) {
+              // 直接执行搜索
+              await store.execSearch({
+                isPagination,
+                ...(optionsOfGetList ?? {})
+              })
+            }
           }
         } else {
           // 参数更新，触发有依赖的字段的 watch
