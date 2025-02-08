@@ -1,5 +1,5 @@
 import './assets/styles/index.scss'
-import { Empty, Input, Spin, Tree } from 'ant-design-vue'
+import { Input, Spin, Tree } from 'ant-design-vue'
 import { sleep } from '@/utils/utilityFunction'
 import TGContainerWithSider from '@/components/TGContainerWithSider'
 import { cloneDeep, debounce } from 'lodash'
@@ -121,8 +121,9 @@ export default {
       treeStore = useStore(storeName)
     }
 
-    const dataSource = computed(() => treeStore[stateName])
-
+    const _dataSource = ref([])
+    const dataSource = computed(() => treeStore[stateName].list)
+    const loading = computed(() => treeStore[stateName].loading)
     const tableRef = ref(null)
     const status = ref(false)
     const defaultExpandedTreeIds = ref([])
@@ -142,7 +143,7 @@ export default {
 
       // 展开所有搜索结果（一般在搜索树时使用，搜索树时会清空 expandedKeysFormEvent 数组）
       if (searchValue.value) {
-        return getAllParentIds(dataSource.value.list)
+        return getAllParentIds(dataSource.value)
       }
 
       if (isCollapsedManually.value) {
@@ -152,7 +153,7 @@ export default {
       // 默认展开的树节点，如果 defaultExpandedTreeIds 为空，则默认展开所有层级的第一个子节点
       return defaultExpandedTreeIds.value?.length
         ? defaultExpandedTreeIds.value
-        : getAllParentIds(dataSource.value.list, true)
+        : getAllParentIds(dataSource.value, true)
     })
 
     provide('getRefOfChild', ref => tableRef.value = ref)
@@ -177,8 +178,7 @@ export default {
     provide('refreshTree', getTree)
 
     watch(searchValue, value => {
-      const newTreeDataSource = cloneDeep(dataSource.value.list)
-      dataSource.value.list = filter(newTreeDataSource, value)
+      _dataSource.value = filter(dataSource.value, value)
     })
 
     /**
@@ -200,17 +200,19 @@ export default {
      */
     function getAllParentIds(dataSource, onlyFirstParentNode) {
       let ids = []
+      const keyField = props.fieldNames.key
+      const childrenField = props.fieldNames.children
 
       for (const item of dataSource) {
         if (
           item.isParent ||
           (
-            Array.isArray(item[props.fieldNames.children]) &&
-            item[props.fieldNames.children]?.length
+            Array.isArray(item[childrenField]) &&
+            item[childrenField]?.length
           )
         ) {
-          ids.push(item[props.fieldNames.key])
-          ids = ids.concat(getAllParentIds(item[props.fieldNames.children], onlyFirstParentNode))
+          ids.push(item[keyField])
+          ids = ids.concat(getAllParentIds(item[childrenField], onlyFirstParentNode))
         }
 
         if (onlyFirstParentNode) break
@@ -226,18 +228,21 @@ export default {
      * @returns {*[]}
      */
     function filter(dataSource, searchValue) {
+      if (!Array.isArray(dataSource) || typeof searchValue !== 'string') return []
+      if (searchValue === '') return []
+
+      const copyOfDataSource = cloneDeep(dataSource)
       const temp = []
+      const titleField = props.fieldNames.title
+      const childrenField = props.fieldNames.children
 
-      for (const item of dataSource) {
-        if (item[props.fieldNames.title].includes(searchValue)) {
+      for (const item of copyOfDataSource) {
+        if (item[titleField].includes(searchValue)) {
           temp.push(item)
-        } else if (
-          Array.isArray(item[props.fieldNames.children]) &&
-          item[props.fieldNames.children].length
-        ) {
-          item[props.fieldNames.children] = filter(item[props.fieldNames.children], searchValue)
+        } else if (Array.isArray(item[childrenField]) && item[childrenField].length) {
+          item[childrenField] = filter(item[childrenField], searchValue)
 
-          if (item[props.fieldNames.children].length) {
+          if (item[childrenField].length) {
             temp.push(item)
           }
         }
@@ -291,8 +296,8 @@ export default {
         } else {
           if (treeIdField.value) {
             payload = {
-              ...props.injectSearchParamsOfTable(props.notNoneMode ? dataSource.value.list?.[0] : {}),
-              [treeIdField.value]: props.notNoneMode ? dataSource.value.list?.[0]?.[props.fieldNames.key] : ''
+              ...props.injectSearchParamsOfTable(props.notNoneMode ? dataSource.value[0] : {}),
+              [treeIdField.value]: props.notNoneMode ? dataSource.value[0]?.[props.fieldNames.key] : ''
             }
           }
         }
@@ -333,10 +338,10 @@ export default {
         await sleep(100)
       }
 
-      if (dataSource.value.list?.length) {
+      if (dataSource.value.length) {
         return Promise.resolve({
-          ...props.injectSearchParamsOfTable(dataSource.value.list?.[0] ?? {}), // 获取额外请求参数
-          [treeIdField.value]: dataSource.value.list?.[0]?.[props.fieldNames.key], // 获取树ID
+          ...props.injectSearchParamsOfTable(dataSource.value[0] ?? {}), // 获取额外请求参数
+          [treeIdField.value]: dataSource.value[0]?.[props.fieldNames.key], // 获取树ID
           ...router.currentRoute.value.query, // 获取地址栏的值
           /* #1 （一个书签，与本组件 #2 书签配合） */
           ...router.currentRoute.value.params // 获取清空 query 后，通过 route.params 传递的参数。
@@ -399,46 +404,53 @@ export default {
                 placeholder={props.placeholder}
                 onChange={debounce(onTreeSearch, 300)}
               />
-              <Spin spinning={dataSource.value?.loading}>
-                {
-                  dataSource.value.list?.length
-                    ? (
-                      <Tree
-                        showLine
-                        showIcon
-                        blockNode
-                        selectedKeys={treeId.value}
-                        onSelect={onSelect}
-                        expandedKeys={expandedKeys.value}
-                        onExpand={onExpand}
-                        treeData={dataSource.value.list}
-                        fieldNames={props.fieldNames}
-                      >
-                        {{
-                          icon: ({ dataRef }) => {
-                            if (!dataRef.children?.length) {
-                              return (
-                                <svg
-                                  viewBox="200 200 650 650"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="1em"
-                                  height="1em"
-                                  fill="currentColor"
-                                >
-                                  <path d="M512 601.6a89.6 89.6 0 1 0-89.6-89.6 89.59 89.59 0 0 0 89.6 89.6z m0 0" />
-                                </svg>
-                              )
-                            }
+              <Spin spinning={loading.value}>
+                <Tree
+                  showLine
+                  showIcon
+                  blockNode
+                  selectedKeys={treeId.value}
+                  onSelect={onSelect}
+                  expandedKeys={expandedKeys.value}
+                  onExpand={onExpand}
+                  treeData={_dataSource.value.length ? _dataSource.value : dataSource.value}
+                  fieldNames={props.fieldNames}
+                >
+                  {{
+                    icon: ({ dataRef }) => {
+                      if (!dataRef.children?.length) {
+                        return (
+                          <svg
+                            viewBox="200 200 650 650"
+                            version="1.1"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="1em"
+                            height="1em"
+                            fill="currentColor"
+                          >
+                            <path d="M512 601.6a89.6 89.6 0 1 0-89.6-89.6 89.59 89.59 0 0 0 89.6 89.6z m0 0" />
+                          </svg>
+                        )
+                      }
 
-                            return null
-                          },
-                          switcherIcon: () => <CaretDownOutlined style={{ fontSize: '10px' }} />
-                        }}
-                      </Tree>
-                    )
-                    : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                }
+                      return null
+                    },
+                    switcherIcon: () => <CaretDownOutlined style={{ fontSize: '10px' }} />,
+                    title: ({ name }) => {
+                      if (searchValue.value && name.indexOf(searchValue.value) > -1) {
+                        return (
+                          <span>
+                            {name.substring(0, name.indexOf(searchValue.value))}
+                            <span style={{ color: 'var(--tg-theme-color-primary)' }}>{searchValue.value}</span>
+                            {name.substring(name.indexOf(searchValue.value) + searchValue.value.length)}
+                          </span>
+                        )
+                      } else {
+                        return name
+                      }
+                    }
+                  }}
+                </Tree>
               </Spin>
             </div>
           )
