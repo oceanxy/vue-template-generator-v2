@@ -60,7 +60,7 @@ export default function getService(conf, router) {
       }
 
       return Promise.resolve({
-        code: 0,
+        code: error.code || 0,
         status: false,
         message: error.message
       })
@@ -130,7 +130,7 @@ export default function getService(conf, router) {
         }
 
         return Promise.resolve({
-          code: 0,
+          code: res.code || 0,
           status: false,
           data: res.data,
           message: res.message
@@ -146,7 +146,7 @@ export default function getService(conf, router) {
       }
 
       return Promise.resolve({
-        code: 0,
+        code: error.code || 0,
         status: false,
         message: error.message
       })

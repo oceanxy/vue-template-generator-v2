@@ -78,7 +78,7 @@ export default {
       // 检测是否是跳转到本路由
       if (toPath !== router.currentRoute.value.path) {
         await push(toPath)
-        menuScrollTop.value = menuDomRef.value.$el.scrollTop
+        menuScrollTop.value = menuDomRef.value?.$el?.scrollTop ?? 0
 
         setTimeout(() => {
           if (router.currentRoute.value.path !== key) {

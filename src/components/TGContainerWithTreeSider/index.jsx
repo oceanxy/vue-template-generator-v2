@@ -347,7 +347,7 @@ export default {
           ...router.currentRoute.value.params // 获取清空 query 后，通过 route.params 传递的参数。
         })
       } else {
-        if (status.value.message !== 'canceled') {
+        if (status.value.message !== 'canceled' && +status.value.code !== 30001) {
           return Promise.reject(new Error('未获取到树数据，已停止加载后续所有的依赖功能！'))
         }
 
