@@ -1,5 +1,5 @@
 import './styles/index.scss'
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject, onBeforeMount, ref } from 'vue'
 import { Avatar, Divider, Dropdown, Layout, Menu, Space, Spin, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
@@ -28,13 +28,22 @@ export default {
       return name ? name.at(-1).toUpperCase() : ''
     })
     const { useToken } = theme
-    const { token } = useToken()
+    const { token: themeToken } = useToken()
     const { header } = inject('customTheme')
 
-    watch(userInfo, async val => {
+    onBeforeMount(async () => {
+      await verifyUserInfo()
+    })
+
+    /**
+     * 预防页面刷新丢失用户信息
+     * @returns {Promise<void>}
+     */
+    async function verifyUserInfo() {
       if (!loading.value) {
         const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
-        const loginTimeDiff = dayjs().diff(dayjs(lastLoginTime.value), 'seconds')
+        const loginTime = localStorage.getItem(`${appName}-lastLoginTime`) || lastLoginTime.value
+        const loginTimeDiff = dayjs().diff(dayjs(loginTime), 'hour')
         const {
           NODE_ENV,
           VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS
@@ -49,14 +58,14 @@ export default {
           ) &&
           (
             token !== lastLoginToken.value || // 兼容第三方携带token登录的方式
-            loginTimeDiff >= 3600 || // 与上一次登录时间间隔大于1小时之后刷新一下用户信息
-            !Object.keys(val).length
+            loginTimeDiff >= 2 || // 与上一次登录时间间隔大于2小时之后刷新一下用户信息
+            !Object.keys(userInfo.value).length
           )
         ) {
           await loginStore.getUserInfo({ token })
         }
       }
-    }, { immediate: true })
+    }
 
     /**
      * 注销
@@ -128,10 +137,10 @@ export default {
         style={{
           background: header.colorPrimaryBg,
           color: header.colorPrimary,
-          fontSize: token.value.fontSizeLG
+          fontSize: themeToken.value.fontSizeLG
         }}
       >
-        <TGLogo style={`font-size: ${token.value.fontSizeLG}px`} />
+        <TGLogo style={`font-size: ${themeToken.value.fontSizeLG}px`} />
         <Space class={'tg-layout-header-content'}>
           {
             showMenu.value && (
@@ -161,7 +170,7 @@ export default {
                         {avatarForLetter.value}
                       </Avatar>
                       <div class={'tg-user-info'}>
-                        <div class={'tg-header-username'} style={`font-size: ${token.value.fontSizeLG}px`}>
+                        <div class={'tg-header-username'} style={`font-size: ${themeToken.value.fontSizeLG}px`}>
                           {userInfo.value.nickName || userInfo.value.fullName || '暂无用户名'}
                         </div>
                         <div class={'tg-header-tel'} style={{ color: header.colorTextSecondary }}>

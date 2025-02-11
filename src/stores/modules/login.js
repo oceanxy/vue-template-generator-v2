@@ -95,6 +95,7 @@ export default createStore({
           localStorage.setItem(`${appName}-menu`, JSON.stringify(menuList))
           localStorage.setItem(`${appName}-buttonPermissions`, JSON.stringify(null))
           localStorage.setItem(`${appName}-theme`, userInfo.themeFileName || configs.header.buttons.theme.default)
+          localStorage.setItem(`${appName}-lastLoginTime`, this.lastLoginTime)
 
           this.setParamsUseInHeader()
         }
@@ -111,7 +112,6 @@ export default createStore({
 
         // if (response.status) {
         await this.clear()
-        router.removeRoute('Home')
         message.destroy()
         // }
 
@@ -155,6 +155,7 @@ export default createStore({
           this.lastLoginToken = payload.token
           this.setParamsUseInHeader()
 
+          localStorage.setItem(`${appName}-lastLoginTime`, this.lastLoginTime)
           localStorage.setItem(`${appName}-theme`, userInfo.themeFileName || configs.header.buttons.theme.default)
         }
 
@@ -184,6 +185,8 @@ export default createStore({
        * @returns {Promise<boolean>}
        */
       async clear() {
+        router.removeRoute('Home')
+
         const appName = getFirstLetterOfEachWordOfAppName()
 
         this.userInfo = {}
@@ -194,6 +197,7 @@ export default createStore({
         localStorage.removeItem(`${appName}-defaultRoute`)
         localStorage.removeItem(`${appName}-menu`)
         localStorage.removeItem(`${appName}-buttonPermissions`)
+        localStorage.removeItem(`${appName}-lastLoginTime`)
 
         localStorage.setItem(`${appName}-theme`, configs.header.buttons.theme.default)
         localStorage.removeItem(`${appName}-openKeys`)

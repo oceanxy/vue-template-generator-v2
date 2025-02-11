@@ -12,9 +12,12 @@ import { firstLetterToUppercase, getFirstLetterOfEachWordOfAppName } from '@/uti
 import getBaseRoutes from '@/router/routes'
 import { message } from 'ant-design-vue'
 import { getEnvVar } from '@/utils/env'
+import dayjs from 'dayjs'
+import useStore from '@/composables/tgStore'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 let abortController = createAbortController()
+let isAppStarted = false
 
 function createAbortController() {
   return new AbortController()
@@ -165,13 +168,19 @@ async function resetRouter() {
 
 const router = createRouter()
 
+router.afterEach((to, from) => {
+  // 应用启动，首次加载
+  if (!isAppStarted) {
+    isAppStarted = true
+  }
+})
+
 router.beforeEach(async (to, from, next) => {
   // vue路由跳转时取消上一个页面的http请求
   abortController.abort()
   abortController = createAbortController()
 
-  // TODO [体验优化] 保存token时，将localstorage与cookie结合使用，在退出页面时清空登录信息
-
+  // 如果路由中存在title，则使用路由的title作为页面标题
   if (to.query.title) {
     to.meta.title = decodeURIComponent(to.query.title)
   }
@@ -202,12 +211,27 @@ router.beforeEach(async (to, from, next) => {
       process.env.TG_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on'
     )
   ) {
+    let isLoginInvalid = false
+
+    if (!isAppStarted) {
+      const loginStore = useStore('/login')
+      const _lastLoginTime = localStorage.getItem(`${appName}-lastLoginTime`) || loginStore.lastLoginTime
+
+      isLoginInvalid = !_lastLoginTime || dayjs().diff(dayjs(_lastLoginTime), 'hour') >= 2
+
+      if (isLoginInvalid) {
+        loginStore.clear()
+      }
+    }
+
     if (
       !localToken ||
       // 如果地址栏带了 token，且与本地存储的 token 不一致，强制重定向到登录页鉴权
       (token && token !== localToken) ||
       // 处理某些第三方不通过地址栏传递 token，而通过 cookie 的方式传递 token 的情况
-      (cookieToken && cookieToken !== localToken)
+      (cookieToken && cookieToken !== localToken) ||
+      // 判断是否为第一次进入应用，如果为第一次进入应用，则判断是否已超过2小时，如果超过2小时，则强制重定向到登录页鉴权
+      !isAppStarted && isLoginInvalid
     ) {
       next({
         ...to,
