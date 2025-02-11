@@ -338,7 +338,7 @@ export default {
         await sleep(100)
       }
 
-      if (dataSource.value.length) {
+      if (status.value.status) {
         return Promise.resolve({
           ...props.injectSearchParamsOfTable(dataSource.value[0] ?? {}), // 获取额外请求参数
           [treeIdField.value]: dataSource.value[0]?.[props.fieldNames.key], // 获取树ID
@@ -347,7 +347,11 @@ export default {
           ...router.currentRoute.value.params // 获取清空 query 后，通过 route.params 传递的参数。
         })
       } else {
-        return Promise.reject(new Error('未获取到树数据，已停止加载后续所有的依赖功能！'))
+        if (status.value.message !== 'canceled') {
+          return Promise.reject(new Error('未获取到树数据，已停止加载后续所有的依赖功能！'))
+        }
+
+        return Promise.resolve(status.value)
       }
     }
 

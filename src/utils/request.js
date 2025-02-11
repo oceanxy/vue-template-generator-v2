@@ -61,7 +61,8 @@ export default function getService(conf, router) {
 
       return Promise.resolve({
         code: 0,
-        status: false
+        status: false,
+        message: error.message
       })
     }
   )

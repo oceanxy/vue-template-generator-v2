@@ -95,6 +95,10 @@ export default {
           /* 初始化侧边树 */
           const result = await Promise.all(taskQueues.value.treeNode)
 
+          if (result.some(res => res?.message === 'canceled')) {
+            return
+          }
+
           for (const _payload of result) {
             payload = { ...payload, ..._payload }
           }
