@@ -23,3 +23,8 @@ yarn install
 > 缓存到`currentItem._prevCurrentItem`中。此时如果在下层弹窗中有对currentItem的监听（watch），则可能会引
 > 起*异常行为*以及*性能损耗*。所以推荐在弹窗的开启和关闭时，手动对该弹窗的`currentItem`监听进行清除。幸运的是，
 > `vue3`提供了此`API`，如要清除监听，调用`watch`返回的函数即可。
+
+### 关闭弹窗时，表单未清空
+
+> 请检查`store[location].form[fieldName]`中否定义了与表单绑定的字段。默认情况下，关闭弹窗会清空弹窗内的表单，
+> 依赖于`ant-design-vue`的`Form`组件的`useForm`API返回的`resetFields`方法。
