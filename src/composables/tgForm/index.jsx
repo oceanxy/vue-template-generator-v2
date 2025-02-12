@@ -5,6 +5,7 @@ import { Button, Form } from 'ant-design-vue'
 
 /**
  * TGForm 组件
+ * @param [storeName] {string} - store名称，store名称，默认为当前页面的store模块。
  * @param [isSearchForm] {boolean} - 是否是作为搜索表单使用，默认false：作为数据表单使用。
  * @param [showSubmitButton] {boolean} - 是否显示表单的提交按钮。
  * @param [submitButtonProps={}] {import('ant-design-vue').ButtonProps} - `submitButton`按钮的属性，依赖`showSubmitButton`参数。
@@ -29,6 +30,7 @@ import { Button, Form } from 'ant-design-vue'
  * @returns {Object}
  */
 export default function useTGForm({
+  storeName,
   isSearchForm = false,
   showSubmitButton = false,
   submitButtonProps = {},
@@ -52,7 +54,7 @@ export default function useTGForm({
   const hasTree = inject('hasTree', false)
   const refreshTree = inject('refreshTree', undefined)
 
-  const store = useStore()
+  const store = useStore(storeName)
   const commonStore = useStore('./common')
 
   if (location && !store[location].form) {
@@ -106,6 +108,9 @@ export default function useTGForm({
           // 关闭弹窗时，重置计数器
           count.value = 0
           initSearchParamResult.value = false
+          // 关闭弹窗，重置表单字段及表单验证信息
+          resetFields()
+          clearValidate()
         }
       })
     }
@@ -203,7 +208,8 @@ export default function useTGForm({
    * @param [isRefreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
    * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
-   * @param [success] {(res: Object)=>void} - 操作执行成功后的回调函数，参数为接口的 Response。
+   * @param [success] {(res: Object, currentItemCache: Object) => void} - 操作执行成功后的回调函数，
+   * 参数为接口的`Response`和`currentItemCache`。
    */
   async function handleFinish({
     callback,
@@ -221,6 +227,7 @@ export default function useTGForm({
           resolve(await callback())
         } else {
           params = typeof params === 'function' ? params() : params
+          const currentItemCache = toRaw(currentItem.value)
 
           const res = await store.fetch({
             action,
@@ -240,7 +247,7 @@ export default function useTGForm({
               await refreshTree?.()
             }
 
-            success?.(res)
+            success?.(res, currentItemCache)
           }
         }
       }).catch(e => {

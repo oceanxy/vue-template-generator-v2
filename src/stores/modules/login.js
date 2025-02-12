@@ -21,12 +21,13 @@ export default createStore({
       lastLoginToken: '',
       // 用户信息
       userInfo: {},
-      // 全局修改密码弹窗的显示状态
-      showModalForEditingPassword: false,
       // 验证码
       codeKey: '',
       // 用于保存当前页面内弹窗可能用到的临时数据
-      currentItem: {}
+      currentItem: {},
+      // 全局修改密码弹窗的显示状态
+      showModalForChangePassword: false,
+      modalForChangePassword: {}
     },
     actions: {
       async jumpAfterLogin() {
@@ -113,6 +114,12 @@ export default createStore({
         // if (response.status) {
         await this.clear()
         message.destroy()
+
+        await router.replace({
+          name: 'Login',
+          // 提供给子项目的登录页面处理注销后的逻辑
+          params: { logout: '1' }
+        })
         // }
 
         this.loading = false

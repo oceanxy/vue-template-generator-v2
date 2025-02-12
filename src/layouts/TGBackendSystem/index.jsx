@@ -11,12 +11,6 @@ import useStore from '@/composables/tgStore'
 
 export default {
   name: 'TGBackendSystemLayout',
-  mounted() {
-    // 注册全局扩展组件
-    // this.$nextTick(async () => {
-    //   await import('@/extend')
-    // })
-  },
   setup() {
     const store = useStore('/common')
     const showMenu = computed(() => store.showMenu)

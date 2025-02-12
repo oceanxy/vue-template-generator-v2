@@ -10,7 +10,6 @@ import { useDraggable } from '@vueuse/core'
  * @param [location='modalForEditing'] {string} - 弹窗位置，默认为 'modal'。
  * @param [modalStatusFieldName='showModalForEditing'] {string}
  * @param [modalProps] {import('ant-design-vue').ModalProps} - 弹窗的属性。
- * @param [form] {Object} - useForm API 返回的方法，主要用于在弹窗内操作表单。
  * @param [store] {import('pinia')} - 默认为当前页面的 store。
  * @returns {Object}
  */
@@ -18,7 +17,6 @@ export default function useTGModal({
   location = 'modalForEditing',
   modalStatusFieldName = 'showModalForEditing',
   modalProps,
-  form,
   store
 }) {
   if (!store) {
@@ -105,8 +103,6 @@ export default function useTGModal({
         stateName: 'loading',
         location
       })
-      form?.resetFields()
-      form?.clearValidate()
     }
   })
 
@@ -166,7 +162,7 @@ export default function useTGModal({
       return () => (
         <Modal
           class={'tg-modal'}
-          getContainer={() => document.querySelector('.tg-container-modals')}
+          getContainer={() => document.querySelector('#tg-global-modals')}
           open={store[modalStatusFieldName]}
           onCancel={handleCancel}
           onOk={handleOk}

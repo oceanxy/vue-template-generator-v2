@@ -6,6 +6,7 @@ import { set } from 'lodash/object'
 
 /**
  * TGFormModal
+ * @param [storeName] {string} - store名称，默认为当前页面的store模块。
  * @param modalProps {import('ant-design-vue').ModalProps}
  * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
  * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
@@ -23,6 +24,7 @@ import { set } from 'lodash/object'
  * @returns {Object}
  */
 export default function useTGFormModal({
+  storeName,
   modalProps,
   modalStatusFieldName = 'showModalForEditing',
   location = 'modalForEditing',
@@ -41,6 +43,7 @@ export default function useTGFormModal({
   set(_modalProps, 'okButtonProps.disabled', true)
 
   const { TGForm, ...tgForm } = useTGForm({
+    storeName,
     location,
     modalStatusFieldName,
     rules,
@@ -57,11 +60,7 @@ export default function useTGFormModal({
     location,
     modalStatusFieldName,
     modalProps: _modalProps,
-    store: tgForm.store,
-    form: {
-      clearValidate: tgForm.clearValidate,
-      resetFields: tgForm.resetFields
-    }
+    store: tgForm.store
   })
 
   watch(tgModal.open, val => {

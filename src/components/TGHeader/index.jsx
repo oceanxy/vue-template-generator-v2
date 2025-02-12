@@ -1,12 +1,13 @@
 import './styles/index.scss'
 import { computed, inject, onBeforeMount, ref } from 'vue'
-import { Avatar, Divider, Dropdown, Layout, Menu, Space, Spin, theme } from 'ant-design-vue'
+import { Avatar, Dropdown, Layout, Menu, Space, Spin, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
 import dayjs from 'dayjs'
+import UpdatePassword from '@app/views/organizations/StaffManagement/components/ModalForChangePassword'
 
 export default {
   name: 'TGLayoutHeader',
@@ -72,15 +73,7 @@ export default {
      * @returns {Promise<void>}
      */
     async function onLogOutClick() {
-      const response = await loginStore.logout()
-
-      if (response.status) {
-        await replace({
-          name: 'Login',
-          // 提供给子项目的登录页面处理注销后的逻辑
-          params: { logout: '1' }
-        })
-      }
+      await loginStore.logout()
     }
 
     /**
@@ -89,33 +82,6 @@ export default {
      */
     function handleChange(activeKey) {
       this.activeKey = activeKey
-    }
-
-    /**
-     *
-     * @param id
-     * @param targetAddress
-     * @returns {Promise<void>}
-     */
-    async function onClick({ id, targetAddress }) {
-      if (targetAddress) {
-        const split = targetAddress.split('?')
-        const path = this.$router.resolve({ name: split[0] }).href
-        const paramArr = split[1].split('&')
-
-        const query = paramArr.reduce((params, str) => {
-          const p = str.split('=')
-
-          return { ...params, [p[0]]: p[1] }
-        }, {})
-
-        await this.$store.dispatch('custom', {
-          payload: { ids: id },
-          customApiName: 'setMessageToRead'
-        })
-
-        await push({ path, query })
-      }
     }
 
     /**
@@ -129,7 +95,13 @@ export default {
       })
     }
 
-    function resetPwd() {}
+    function resetPwd() {
+      loginStore.setVisibilityOfModal({
+        modalStatusFieldName: 'showModalForChangePassword',
+        location: 'modalForChangePassword',
+        value: true
+      })
+    }
 
     return () => (
       <Layout.Header
@@ -183,23 +155,32 @@ export default {
                 ),
                 overlay: () => (
                   <Menu>
-                    <Menu.Item key={'1'} onClick={resetPwd}>
-                      重置密码
-                    </Menu.Item>
-                    <Menu.Item key={'2'} onClick={onLogOutClick}>
-                      注销
-                    </Menu.Item>
+                    {
+                      configs.header?.buttons?.resetPwd?.show && (
+                        <Menu.Item key={'1'} onClick={resetPwd}>
+                          {configs.header?.buttons?.resetPwd?.text}
+                        </Menu.Item>
+                      )
+                    }
+                    {
+                      configs.header?.buttons?.logout?.show && (
+                        <Menu.Item key={'2'} onClick={onLogOutClick}>
+                          {configs.header?.buttons?.logout?.text}
+                        </Menu.Item>
+                      )
+                    }
                   </Menu>
                 )
               }}
             </Dropdown>
-            <Divider
-              type={'vertical'}
-              class={'tg-header-divider'}
-              style={{ background: header.colorTextSecondary }}
-            />
+            {/*<Divider*/}
+            {/*  type={'vertical'}*/}
+            {/*  class={'tg-header-divider'}*/}
+            {/*  style={{ background: header.colorTextSecondary }}*/}
+            {/*/>*/}
           </div>
         </Space>
+        <UpdatePassword type={'global'} />
       </Layout.Header>
     )
   }
