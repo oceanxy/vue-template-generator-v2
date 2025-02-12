@@ -238,7 +238,7 @@ export default {
               }
             </div>
           ),
-        slots.modals && <div class="tg-container-modals">{slots.modals()}</div>
+        slots.modals && slots.modals()
       ]
     }
 

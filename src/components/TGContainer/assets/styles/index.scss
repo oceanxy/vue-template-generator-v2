@@ -139,9 +139,5 @@
       padding: 16px 20px;
       border-radius: var(--tg-theme-border-radius);
     }
-
-    & .tg-container-modals {
-      position: absolute; // 使该容器脱离文档，抵消该元素造成的底部 gap 值
-    }
   }
 }
