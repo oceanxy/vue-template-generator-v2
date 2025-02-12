@@ -1,7 +1,7 @@
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 const inquirer = require('inquirer')
-const { readdirSync } = require('node:fs')
+const { readdirSync, statSync } = require('node:fs')
 const args = require('minimist')(process.argv.slice(2))
 const { resolve, join } = require('path')
 const AppNameInjectionPlugin = require('./plugins/AppNameInjectionPlugin')
@@ -12,6 +12,8 @@ const dotenv = require('dotenv')
 const dotenvExpand = require('dotenv-expand')
 
 const appNames = readdirSync(resolve(join(__dirname, `../src/apps`)))
+  .filter(file => statSync(resolve(join(__dirname, '../src/apps', file))).isDirectory())
+
 let appName = null
 const { NODE_ENV, BASE_ENV } = process.env
 const ENV_TEXT = NODE_ENV === 'development' ? '启动' : '编译'
