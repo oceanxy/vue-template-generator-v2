@@ -230,7 +230,7 @@ export function createStore({
        * @param {string} [apiName] - 请求接口的名称，默认为 `get${router.currentRoute.value.name}`。
        * @param {string} [stateName='dataSource'] - 用以保存请求数据的字段名（store.state 中的字段名），默认为 dataSource。
        * @param {string} [storeName] - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
-       * @param {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象。
+       * @param {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象，参数为`store.state`。
        * @param {boolean} [isMergeParam] - 请求接口时，是否将 paramsForGetList 参数与 store.state.search 合并，
        * 默认 false，不合并，但是如果 paramsForGetList 参数的值不是对象或是一个空对象，则强制使用`store.state.search`的值作为参数。
        * 注意，当值为true时，不会改变`store.state.search`的值，仅仅是在调用接口处传递给接口。如果有同名参数，paramsForGetList 的优先级更高。

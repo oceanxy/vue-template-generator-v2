@@ -47,12 +47,14 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * @param {SearchParamOption[]} [searchParamOptions] - 搜索参数配置。
  * @param {()=>boolean} [buttonDisabledFn] - 禁用查询和重置按钮的方法。
  * @param {Object} [rules={}] - 验证规则，参考 ant-design-vue 的 Form.Item。
+ * @param [formattingParameters] {(state: Object) => Object} - 格式化搜索接口的参数，返回值将与`store.search`合并后传递给接口。
  * @returns {{}}
  */
 export default function useInquiryForm({
   searchParamOptions,
   buttonDisabledFn,
-  rules = {}
+  rules = {},
+  formattingParameters
 } = {}) {
   const isInitTable = inject('isInitTable', true)
   const store = useStore()
@@ -69,6 +71,8 @@ export default function useInquiryForm({
 
   // 按钮禁用状态
   const buttonDisabled = ref(false)
+  // 仅重置搜索参数，不执行列表搜索
+  const resetParams = ref(true)
 
   if (typeof buttonDisabledFn === 'function') {
     watch(formModel, () => buttonDisabled.value = buttonDisabledFn())
@@ -83,11 +87,25 @@ export default function useInquiryForm({
       return acc
     }, {}))
 
-    handleFinish()
+    if (!resetParams.value && !buttonDisabled.value) {
+      await handleFinish()
+    }
+
+    resetParams.value = true
   }
 
   function handleFinish() {
-    validate().then(async () => await store.saveParamsAndExecSearch())
+    return new Promise(resolve => {
+      validate()
+        .then(async () => {
+          resetParams.value = false
+          await store.saveParamsAndExecSearch({
+            paramsForGetList: formattingParameters,
+            isMergeParam: true
+          })
+        })
+        .finally(() => resolve())
+    })
   }
 
   function execListener(isListen, enumOptions) {
@@ -317,11 +335,11 @@ export default function useInquiryForm({
                           <TGPermissionsButton
                             icon={<ReloadOutlined />}
                             disabledType={disabledType.DISABLE}
-                            disabled={loading.value || buttonDisabled.value}
+                            disabled={loading.value}
                             identification={props.buttonPermissionIdentification}
                             onClick={handleClear}
                           >
-                            重置
+                            {resetParams.value || buttonDisabled.value ? '重置参数' : '重置'}
                           </TGPermissionsButton>
                         ]
                         : [
@@ -336,10 +354,10 @@ export default function useInquiryForm({
                           </Button>,
                           <Button
                             icon={<ReloadOutlined />}
-                            disabled={loading.value || buttonDisabled.value}
+                            disabled={loading.value}
                             onClick={handleClear}
                           >
-                            重置
+                            {resetParams.value || buttonDisabled.value ? '重置参数' : '重置'}
                           </Button>
                         ]
                     }
