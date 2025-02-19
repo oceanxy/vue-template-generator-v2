@@ -114,7 +114,11 @@ export default function useTGFormModal({
       paramsInjectId = params || {}
     }
 
-    if (!apiName && (tgForm.store.rowKey in tgModal.currentItem.value) && !paramsInjectId[tgForm.store.rowKey]) {
+    if (
+      !apiName
+      && (tgForm.store.rowKey in (tgModal.currentItem.value || {}))
+      && !paramsInjectId[tgForm.store.rowKey]
+    ) {
       paramsInjectId.id = tgModal.currentItem.value[tgForm.store.rowKey]
     }
 
