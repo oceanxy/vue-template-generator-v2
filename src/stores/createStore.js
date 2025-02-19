@@ -651,10 +651,10 @@ export function createStore({
           const rowKey = this[location]?.rowKey || this.rowKey
 
           // 无感化处理`form`的唯一标识符，用于弹窗的编辑等功能
-          if (rowKey in this.currentItem && 'form' in this.$state[location]) {
+          if (rowKey in this.currentItem && 'form' in (this.$state[location] || {})) {
             this.$state[location].form[rowKey] = this.currentItem[rowKey]
           } else {
-            if ('form' in this.$state[location]) {
+            if ('form' in (this.$state[location] || {})) {
               delete this.$state[location].form[rowKey]
             }
           }
