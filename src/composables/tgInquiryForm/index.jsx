@@ -149,7 +149,7 @@ export default function useInquiryForm({
             ? dependentField(store.$state)
             : dependentField
 
-          await new Promise(resolve => {
+          return new Promise(resolve => {
             watch(
               () => search.value[_dependentField],
               async (newVal, oldValue) => {
@@ -181,7 +181,8 @@ export default function useInquiryForm({
                   // 完成 promise
                   resolve(res)
                 }
-              }
+              },
+              { immediate: true }
             )
           })
         } else {
