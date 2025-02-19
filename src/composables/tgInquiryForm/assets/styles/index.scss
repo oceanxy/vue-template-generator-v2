@@ -142,8 +142,30 @@
             }
           }
 
-          .ant-form-item-control-input-content > * {
-            width: 100%;
+          .ant-form-item-control-input-content {
+            & > *:not(.ant-form-item) {
+              width: 100%;
+            }
+
+            &:has(.ant-form-item) {
+              display: flex;
+
+              & > * {
+                flex: auto;
+
+                &.ant-form-item {
+                  margin-inline-end: 4px;
+
+                  &:last-child {
+                    margin-inline-end: 0;
+                  }
+                }
+
+                .ant-form-item-row {
+                  width: 100%;
+                }
+              }
+            }
           }
         }
       }
