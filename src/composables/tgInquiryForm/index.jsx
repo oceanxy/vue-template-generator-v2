@@ -274,7 +274,7 @@ export default function useInquiryForm({
       const showInquiryFormCollapsedButton = ref(true)
 
       watch(
-        () => fieldDom.value?.querySelectorAll('.ant-form-item')?.length,
+        () => fieldDom.value?.querySelectorAll('& > .ant-form-item')?.length,
         val => showInquiryFormCollapsedButton.value = props.fixedColumns && val > 7,
         { immediate: true }
       )
