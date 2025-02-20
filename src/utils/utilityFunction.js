@@ -250,6 +250,7 @@ export function setValueToStringKey(stringKey, value, obj) {
  * @config [showEmptyOption] {boolean} - 在枚举数组中新增一个值为空字符串的选项。
  * @config [emptyOptionLabel] {boolean} - 值为空字符串的选项对应的文本，默认“全部”。
  * @config [convertValueToNumber] {boolean} - 是否将返回值中的`value`字段转换成`Number`类型。
+ * 注意，如果值为空字符串时，该值将不会转换，直接原样输出。
  * @returns {{label: *, value: *}[]} - 包含标签和值的对象数组。
  * @throws {Error} 如果 enumeration 不是一个有效的对象。
  */
