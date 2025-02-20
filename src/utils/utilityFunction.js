@@ -268,7 +268,7 @@ export function getArrayFromEnum(enumeration, options = {}) {
   // 获取枚举对象的键值对，并确保顺序一致
   const array = Object.keys(enumeration).map(key => ({
     label: enumeration[key],
-    value: convertValueToNumber ? +key : key
+    value: convertValueToNumber && key !== '' ? +key : key
   }))
 
   // 处理包含“全部”选项的情况
