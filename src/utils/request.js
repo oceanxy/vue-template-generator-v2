@@ -76,22 +76,21 @@ export default function getService(conf, router) {
       //   res = INTERFACE_MAPPINGS.response(response.data)
       // }
 
-      if (res?.status === true || response.config.responseType === 'blob') {
-        if (res instanceof Blob && res?.status === false) {
+      if (response.config.responseType === 'blob') {
+        if (res instanceof Blob && res.type === 'application/json') {
           const fileReader = new FileReader()
 
           fileReader.onloadend = async () => {
             const res = JSON.parse(fileReader.result)
-            res.type = 'application/json'
 
             return await cb(res)
           }
 
           fileReader.readAsText(res)
-        } else if (!(res instanceof Blob)) {
-          res.type = 'application/json'
+        } else {
+          return Promise.resolve(res)
         }
-
+      } else if (res?.status) {
         return Promise.resolve(res)
       } else {
         return await cb(res)
