@@ -44,8 +44,30 @@
           }
 
           & > .ant-tree-node-content-wrapper {
+            display: flex;
+
             &:hover {
               background: none;
+            }
+
+            .ant-tree-icon__customize {
+              margin-left: -4px; // 隐藏叶子节点图标后，对齐自定义叶子节点icon与父节点switchIcon
+              vertical-align: middle;
+              flex: none;
+              width: 0;
+              display: inline-flex;
+              justify-content: center;
+              align-items: center;
+
+              &:has(svg) {
+                width: 24px;
+              }
+            }
+
+            .ant-tree-title {
+              flex: auto;
+              padding-block: 4px;
+              line-height: 16px;
             }
           }
 
@@ -69,14 +91,6 @@
 
           .ant-tree-switcher-noop {
             display: none; // 隐藏叶子节点的文件图标
-          }
-
-          .ant-tree-node-content-wrapper {
-            .ant-tree-icon__customize {
-              margin-left: -4px; // 隐藏叶子节点图标后，对齐自定义叶子节点icon与父节点switchIcon
-              margin-right: 4px;
-              vertical-align: middle;
-            }
           }
         }
       }
