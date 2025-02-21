@@ -289,10 +289,10 @@ export default function useTGTable({
    * @param record {Object|Object[]} - 列表数据对象或对象集合。
    * @param [fieldName='status'] {string} - 自定义传递状态值给接口的参数名。默认 'status'。
    * @param [actualFieldName='status'] {string} - 数据列表中实际用于保存该状态的字段名，用于乐观更新或还原本地数据。默认 'status'。
-   * @param [idKey='id'] {string} - 自定义传递唯一标识符给接口的参数名。为了适配某些接口可能接收`ids`为参数名的情况，默认 'id'。
-   * @param [getIds] {(record: Object) => string} - 从数据对象中获取唯一标识符，默认取`record.id`，受`store.state.rowKey`影响。
-   * @param [nameKey='fullName'] {string} - 指定 record 数据对象中用来显示的字段名，主要用于操作之后的提示信息。 默认 'fullName'。
-   *  例如：`$｛fullName｝的状态已更新！`
+   * @param [idKey='id'] {string} - 传递给接口的唯一标识符名称，默认`id`。为了适配某些接口可能为`ids`的情况。
+   * @param [getIds] {(record: Object) => string} - 从数据对象中获取唯一标识符的值，默认`record[store.state.rowKey] || record.id`。
+   * @param [nameKey='fullName'] {string | (() => string)} - 指定 record 数据对象中用来显示的字段名，主要用于操作之后的提示信息。
+   * 默认 'fullName'。例如：`$｛fullName｝的状态已更新！`。如果是一个函数，则函数返回需要显示的文本。
    * @param [apiName] {string} - 自定义接口名，默认为`update[router.currentRoute.value.name][fieldName]}`，采用驼峰命名。
    * @param [stateName='dataSource'] {string} - store.state 中存储该表格数据的字段名，默认 'dataSource'。
    * @param [optimisticUpdate=true] {boolean} - 乐观更新，是否在成功调用更新接口后向服务器请求新的列表数据。
@@ -306,7 +306,7 @@ export default function useTGTable({
     fieldName = 'status',
     actualFieldName = 'status',
     idKey = 'id',
-    getIds = record => record[store.rowKey],
+    getIds = record => (inModal ? record[store[location].rowKey] : record[store.rowKey]) || record.id,
     nameKey = 'fullName',
     apiName,
     stateName = 'dataSource',
@@ -342,21 +342,26 @@ export default function useTGTable({
     })
 
     if (status) {
-      // 适配`nameKey`的值为`a.b`的形式，解析为`record[a][b]`
-      const name = getValueFromStringKey(nameKey, record)
-
-      if (isBulkOperation) {
-        message.success('批量更新状态已完成！')
+      if (typeof nameKey === 'function') {
+        message.success(nameKey())
       } else {
-        message.success([
-          <span style={{ color: `${token.value.colorPrimary}` }}>
-            {name}
-          </span>,
-          '的状态已更新！'
-        ])
+        // 适配`nameKey`的值为`a.b`的形式，解析为`record[a][b]`
+        const name = getValueFromStringKey(nameKey, record)
+
+        if (isBulkOperation) {
+          message.success('批量更新状态已完成！')
+        } else {
+          message.success([
+            name
+              ? [<span style={{ color: `${token.value.colorPrimary}` }}>{name}</span>, '的']
+              : '',
+            '状态已更新。'
+          ])
+        }
       }
 
       if (optimisticUpdate) {
+        // 处理数据集
         let dataSource
 
         if (typeof getDataSource === 'function') {
