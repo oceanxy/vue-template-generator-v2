@@ -71,7 +71,7 @@ class GlobalVariableInjectionPlugin {
               this.preloadResources(
                 `src/apps/${appName}/views/Login/index.jsx`,
                 resource => {
-                  this.log(`登录组件（src/apps/${appName}/views/Login.jsx）`)
+                  this.log(`登录组件（src/apps/${appName}/views/index.jsx）`)
                   plugin.definitions.__TG_APP_LOGIN_COMPONENT__ = resource
                 },
                 () => {
@@ -83,82 +83,20 @@ class GlobalVariableInjectionPlugin {
                     },
                     () => {
                       this.preloadResources(
-                        `src/apps/${appName}/views/Login/index.jsx`,
+                        `src/views/Login/index.jsx`,
                         resource => {
-                          this.log(`登录组件（src/apps/${appName}/views/Login.jsx）`)
                           plugin.definitions.__TG_APP_LOGIN_COMPONENT__ = resource
                         },
                         () => {
                           this.preloadResources(
-                            `src/views/Login/index.jsx`,
+                            `src/views/Login/index.vue`,
                             resource => {
                               plugin.definitions.__TG_APP_LOGIN_COMPONENT__ = resource
-                            },
-                            () => {
-                              this.preloadResources(
-                                `src/views/Login/index.vue`,
-                                resource => {
-                                  plugin.definitions.__TG_APP_LOGIN_COMPONENT__ = resource
-                                }
-                              )
                             }
                           )
                         }
                       )
                     }
-                  )
-                }
-              )
-            }
-
-            // 预加载 App 入口文件
-            if (!plugin.definitions.__TG_APP_COMPONENT__) {
-              this.preloadResources(
-                `src/apps/${appName}/App.jsx`,
-                resource => {
-                  this.log(`入口组件（src/apps/${appName}/App.jsx）`)
-                  plugin.definitions.__TG_APP_COMPONENT__ = resource
-                },
-                (e) => {
-                  this.preloadResources(
-                    'src/apps/${appName}/App.vue',
-                    resource => {
-                      this.log(`入口组件（src/apps/${appName}/App.vue）`)
-                      plugin.definitions.__TG_APP_COMPONENT__ = resource
-                    },
-                    () => {
-                      this.preloadResources(
-                        'src/App.jsx',
-                        resource => {
-                          plugin.definitions.__TG_APP_COMPONENT__ = resource
-                        },
-                        () => {
-                          this.preloadResources(
-                            'src/App.vue',
-                            resource => {
-                              plugin.definitions.__TG_APP_COMPONENT__ = resource
-                            }
-                          )
-                        }
-                      )
-                    }
-                  )
-                }
-              )
-            }
-
-            // 预加载 IconFont 文件
-            if (!plugin.definitions.__TG_APP_ICON_FONT__) {
-              this.preloadResources(
-                `src/apps/${appName}/assets/iconfont.js`,
-                resource => {
-                  this.log(`图标文件（src/apps/${appName}/assets/iconfont.js）`)
-                  plugin.definitions.__TG_APP_ICON_FONT__ = resource
-                },
-                () => {
-                  this.preloadResources(
-                    'src/assets/iconfont.js',
-                    resource => plugin.definitions.__TG_APP_ICON_FONT__ = resource
                   )
                 }
               )

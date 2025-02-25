@@ -2,9 +2,10 @@
  * ant design vue 组件相关设置
  */
 
-import { message as Message} from 'ant-design-vue'
+import { message as Message } from 'ant-design-vue'
 import configs from '@/configs'
 import { createFromIconfontCN } from '@ant-design/icons-vue'
+import ICON_FONT from '@app/assets/iconfont'
 
 export default function antDesignConfig(app) {
   // 全局消息数量设置
@@ -14,7 +15,7 @@ export default function antDesignConfig(app) {
   let iconfontUrl = configs.iconFontSymbol
 
   if (!iconfontUrl) {
-    iconfontUrl = __TG_APP_ICON_FONT__
+    iconfontUrl = ICON_FONT
   }
 
   const IconFont = createFromIconfontCN({
