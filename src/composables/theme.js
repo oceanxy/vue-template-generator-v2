@@ -1,4 +1,3 @@
-import { storeToRefs } from 'pinia'
 import customThemes from '@/assets/styles/themes'
 import { provide } from 'vue'
 import useStore from '@/composables/tgStore'
