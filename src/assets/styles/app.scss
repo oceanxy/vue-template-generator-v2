@@ -36,6 +36,11 @@ body,
       //background-image: url('~@/assets/images/notFound.png');
     }
   }
+
+  // 目前发现 ant-design-vue 的按钮为 link 时，颜色不会跟随主题色，所以这里重置一下
+  .ant-btn-link {
+    color: var(--tg-theme-color-primary);
+  }
 }
 
 svg {

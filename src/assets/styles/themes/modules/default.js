@@ -12,7 +12,7 @@ export const customTheme = {
 }
 
 export default {
-  name: '健康绿',
+  name: '蓝色',
   token: {
     // 主题色
     colorPrimary,
