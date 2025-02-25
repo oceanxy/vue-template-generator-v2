@@ -1,5 +1,5 @@
 import './styles/index.scss'
-import { computed, inject, onBeforeMount, ref } from 'vue'
+import { computed, getCurrentInstance, inject, onBeforeMount, onUnmounted, ref } from 'vue'
 import { Avatar, Dropdown, Layout, Menu, Space, Spin, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
@@ -7,11 +7,13 @@ import useStore from '@/composables/tgStore'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
 import dayjs from 'dayjs'
-import UpdatePassword from '@app/views/organizations/StaffManagement/components/ModalForChangePassword'
+import { dynamicCompMount } from '@/utils/dynamicCompMount'
 
 export default {
   name: 'TGLayoutHeader',
   setup(props) {
+    let instance
+    const { proxy } = getCurrentInstance()
     const appName = getFirstLetterOfEachWordOfAppName()
     const activeKey = ref(1)
     const { push, replace } = useRouter()
@@ -34,6 +36,10 @@ export default {
 
     onBeforeMount(async () => {
       await verifyUserInfo()
+    })
+
+    onUnmounted(() => {
+      instance?.unmount?.()
     })
 
     /**
@@ -95,12 +101,18 @@ export default {
       })
     }
 
-    function resetPwd() {
-      loginStore.setVisibilityOfModal({
-        modalStatusFieldName: 'showModalForChangePassword',
-        location: 'modalForChangePassword',
-        value: true
-      })
+    async function resetPwd() {
+      if (proxy.GlobalUpdatePassword) {
+        instance = await dynamicCompMount(proxy.GlobalUpdatePassword, { type: 'global' })
+
+        loginStore.setVisibilityOfModal({
+          modalStatusFieldName: 'showModalForChangePassword',
+          location: 'modalForChangePassword',
+          value: true
+        })
+      } else {
+        console.warn('未找到可用的全局注册组件：GlobalUpdatePassword')
+      }
     }
 
     return () => (
@@ -180,7 +192,6 @@ export default {
             {/*/>*/}
           </div>
         </Space>
-        <UpdatePassword type={'global'} />
       </Layout.Header>
     )
   }
