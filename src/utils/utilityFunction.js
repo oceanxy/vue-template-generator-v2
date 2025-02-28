@@ -193,23 +193,6 @@ export function replacePath(path) {
 }
 
 /**
- * 显示 APP 级别的 loading 状态图标
- * @param {boolean} activelyHide - 是否主动隐藏 loading 图标
- * @param {() => Promise} callback - loading状态下需要做的事情
- * @return {Promise<void>}
- */
-export async function showAppLoading(activelyHide, callback) {
-  if (document.querySelector('#tg-responsive-layout')) {
-    document.querySelector('#tg-responsive-layout').style.display = 'none'
-    await callback()
-
-    if (activelyHide) {
-      document.querySelector('#tg-responsive-layout').style.display = 'unset'
-    }
-  }
-}
-
-/**
  * 睡眠函数
  * @param {number} [time=200] - 睡眠时间，默认200毫秒
  * @return {Promise<unknown>}
