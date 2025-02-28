@@ -192,8 +192,8 @@ export default {
               title={'校验完成！'}
               subTitle={[
                 '校验通过数据：',
-                <span>{result.value.successSize} 条，</span>,
-                '校验失败数据：',
+                <span>{result.value.successSize} 条</span>,
+                '，校验失败数据：',
                 <span>{result.value.failSize} 条</span>,
                 !!result.value.failSize && (
                   <Button

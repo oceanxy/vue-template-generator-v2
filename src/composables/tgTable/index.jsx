@@ -51,6 +51,7 @@ export default function useTGTable({
   let open = null
 
   const { token } = useThemeVars()
+  const commonStore = useStore('/common')
   let store = useStore()
 
   const tableRef = ref(null)
@@ -153,7 +154,7 @@ export default function useTGTable({
       ? {
         showQuickJumper: true,
         showTotal: total => `共 ${total} 条数据`,
-        size: 'large',
+        size: commonStore.componentSize,
         ...props.pagination
       }
       : false,
@@ -163,7 +164,7 @@ export default function useTGTable({
     // scroll: { x: '100%', y: 500 },
     scroll: { x: 'max-content' },
     tableLayout: 'fixed',
-    size: 'middle',
+    size: commonStore.componentSize,
     bordered: true,
     rowClassName(record, index) {
       return index % 2 === 1 ? 'tg-table-striped' : ''
@@ -180,6 +181,11 @@ export default function useTGTable({
       defaultTableProps.rowSelection.selectedRowKeys = value
     }
   }, { immediate: true })
+
+  watch(() => commonStore.componentSize, val => {
+    defaultTableProps.size = val
+    defaultTableProps.pagination.size = val
+  })
 
   // 监听排序集合，根据后端返回的值初始化表头
   watch(sortFieldList, value => {

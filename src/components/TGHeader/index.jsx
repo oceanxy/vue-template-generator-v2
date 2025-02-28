@@ -1,6 +1,6 @@
-import './styles/index.scss'
-import { computed, getCurrentInstance, inject, onBeforeMount, onUnmounted, ref } from 'vue'
-import { Avatar, Dropdown, Layout, Menu, Space, Spin, theme } from 'ant-design-vue'
+import './assets/styles/index.scss'
+import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref } from 'vue'
+import { Avatar, Button, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
@@ -8,6 +8,11 @@ import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
 import dayjs from 'dayjs'
 import { dynamicCompMount } from '@/utils/dynamicCompMount'
+import './assets/images/svgComp/moon.svg'
+import './assets/images/svgComp/sun.svg'
+import './assets/images/svgComp/font-size.svg'
+import useThemeVars from '@/composables/themeVars'
+import { COMPONENT_SIZE } from '@/configs/enums'
 
 export default {
   name: 'TGLayoutHeader',
@@ -16,9 +21,10 @@ export default {
     const { proxy } = getCurrentInstance()
     const appName = getFirstLetterOfEachWordOfAppName()
     const activeKey = ref(1)
-    const { push, replace } = useRouter()
+    const { push } = useRouter()
     const commonStore = useStore('/common')
     const loginStore = useStore('/login')
+    const { increaseBrightness } = useThemeVars()
     const collapsed = computed(() => commonStore.collapsed)
     const lastLoginTime = computed(() => loginStore.lastLoginTime)
     const lastLoginToken = computed(() => loginStore.lastLoginToken)
@@ -32,7 +38,25 @@ export default {
     })
     const { useToken } = theme
     const { token: themeToken } = useToken()
-    const { header } = inject('customTheme')
+    const headerTheme = computed(() => {
+      return commonStore.algorithm === 'defaultAlgorithm'
+        ? {
+          background: increaseBrightness(themeToken.value.colorPrimary, -10),
+          color: themeToken.value.colorWhite,
+          fontSize: themeToken.value.fontSizeLG
+        }
+        : {
+          background: increaseBrightness(themeToken.value.colorPrimary, -80),
+          color: themeToken.value.colorWhite,
+          fontSize: themeToken.value.fontSizeLG
+        }
+    })
+    const _fontSize = ref(commonStore.fontSize)
+    const currentThemeName = computed(() => {
+      return localStorage.getItem(`${appName}-theme`) ||
+        loginStore?.userInfo?.themeFileName ||
+        configs.header?.buttons?.theme.default
+    })
 
     onBeforeMount(async () => {
       await verifyUserInfo()
@@ -115,15 +139,35 @@ export default {
       }
     }
 
+    function resetFontSize() {
+      commonStore.componentSize = 'middle'
+      commonStore.fontSize = 14
+    }
+
+    function updateFontSize(val) {
+      commonStore.fontSize = val
+    }
+
+    async function switchThemes(themeFileName) {
+      // await this.$store.dispatch('custom', {
+      //   customApiName: 'setThemeFileName',
+      //   payload: { themeFileName }
+      // })
+      //
+      // this.$store.commit('setState', {
+      //   stateName: 'userInfo',
+      //   value: { themeFileName },
+      //   moduleName: 'login',
+      //   merge: true
+      // })
+      //
+      // localStorage.setItem(`${appName}-theme`, themeFileName)
+      //
+      // return Promise.resolve()
+    }
+
     return () => (
-      <Layout.Header
-        class={'tg-layout-header'}
-        style={{
-          background: header.colorPrimaryBg,
-          color: header.colorPrimary,
-          fontSize: themeToken.value.fontSizeLG
-        }}
-      >
+      <Layout.Header class={'tg-layout-header'} style={headerTheme.value}>
         <TGLogo style={`font-size: ${themeToken.value.fontSizeLG}px`} />
         <Space class={'tg-layout-header-content'}>
           {
@@ -142,7 +186,10 @@ export default {
           {/*  </Input>*/}
           {/*</div>*/}
           <div class={'tg-header-info'}>
-            <Dropdown overlayClassName={'tg-header-user-overlay'} arrow={{ pointAtCenter: true }}>
+            <Dropdown
+              overlayClassName={'tg-header-user-overlay'}
+              arrow={{ pointAtCenter: true }}
+            >
               {{
                 default: () => (
                   <div class={'tg-header-user-content'}>
@@ -150,14 +197,22 @@ export default {
                       spinning={loading.value}
                       wrapperClassName={`tg-header-user-spin-content${loading.value ? ' blur' : ''}`}
                     >
-                      <Avatar shape={'circle'} style={{ backgroundColor: header.colorBgAvatar }}>
+                      <Avatar
+                        shape={'circle'}
+                        style={{
+                          backgroundColor: themeToken.value.colorPrimaryBgHover,
+                          color: themeToken.value.colorPrimary,
+                          fontWeight: 'bolder',
+                          fontSize: `${themeToken.value.fontSizeLG}px`
+                        }}
+                      >
                         {avatarForLetter.value}
                       </Avatar>
                       <div class={'tg-user-info'}>
                         <div class={'tg-header-username'} style={`font-size: ${themeToken.value.fontSizeLG}px`}>
                           {userInfo.value.nickName || userInfo.value.fullName || '暂无用户名'}
                         </div>
-                        <div class={'tg-header-tel'} style={{ color: header.colorTextSecondary }}>
+                        <div class={'tg-header-tel'}>
                           {userInfo.value.loginName}
                         </div>
                       </div>
@@ -185,11 +240,112 @@ export default {
                 )
               }}
             </Dropdown>
-            {/*<Divider*/}
-            {/*  type={'vertical'}*/}
-            {/*  class={'tg-header-divider'}*/}
-            {/*  style={{ background: header.colorTextSecondary }}*/}
-            {/*/>*/}
+            <Divider
+              type={'vertical'}
+              class={'tg-header-divider'}
+              style={{ background: themeToken.value.colorSplit }}
+            />
+            <Space class={'tg-header-functions'}>
+              <Popover placement="bottomRight">
+                {{
+                  default: () => (
+                    <Switch
+                      vModel:checked={commonStore.algorithm}
+                      checkedValue={'defaultAlgorithm'}
+                      unCheckedValue={'darkAlgorithm'}
+                      class={'tg-header-mode'}
+                    >
+                      {{
+                        checkedChildren: () => (
+                          <svg>
+                            <use xlinkHref={'#tg-icon-sun'} />
+                          </svg>
+                        ),
+                        unCheckedChildren: () => (
+                          <svg>
+                            <use xlinkHref={'#tg-icon-moon'} />
+                          </svg>
+                        )
+                      }}
+                    </Switch>
+                  ),
+                  content: () => `切换为${commonStore.algorithm === 'defaultAlgorithm' ? '暗色' : '亮色'}模式`
+                }}
+              </Popover>
+              <Popover placement="bottomRight">
+                {{
+                  default: () => (
+                    <svg>
+                      <use xlinkHref={'#tg-icon-font-size'} />
+                    </svg>
+                  ),
+                  content: () => (
+                    <Space direction={'vertical'}>
+                      <div>当前全局字号：{commonStore.fontSize}px</div>
+                      <Slider
+                        vModel:value={_fontSize.value}
+                        onAfterChange={updateFontSize}
+                        min={12}
+                        max={20}
+                      />
+                      <div>当前组件尺寸：{COMPONENT_SIZE[commonStore.componentSize]}</div>
+                      <RadioGroup
+                        vModel:value={commonStore.componentSize}
+                        class={'tg-header-component-size'}
+                        size={'default'}
+                      >
+                        <Radio value={'small'}>小</Radio>
+                        <Radio value={'middle'}>中</Radio>
+                        <Radio value={'large'}>大</Radio>
+                      </RadioGroup>
+                      {
+                        (commonStore.componentSize !== 'middle' || commonStore.fontSize !== 14) && (
+                          <div style={{ marginTop: '10px' }}>
+                            <Button
+                              type={'primary'}
+                              onClick={resetFontSize}
+                            >
+                              恢复默认值
+                            </Button>
+                          </div>
+                        )
+                      }
+                    </Space>
+                  )
+                }}
+              </Popover>
+              {
+                configs.header?.buttons?.theme?.show && (
+                  <Dropdown placement="bottomRight" arrow>
+                    {{
+                      default: () => (
+                        <IconFont
+                          type={'icon-global-hf'}
+                          style={{
+                            color: '#ffffff',
+                            fontSize: `${themeToken.value.fontSizeXL}px`
+                          }}
+                        />
+                      ),
+                      overlay: () => (
+                        <Menu>
+                          {
+                            configs.header?.buttons?.theme?.availableThemes.map(item => (
+                              <Menu.Item
+                                disabled={currentThemeName.value === item.fileName}
+                                onClick={() => switchThemes(item.fileName)}
+                              >
+                                {item.name}
+                              </Menu.Item>
+                            ))
+                          }
+                        </Menu>
+                      )
+                    }}
+                  </Dropdown>
+                )
+              }
+            </Space>
           </div>
         </Space>
       </Layout.Header>

@@ -4,6 +4,11 @@
     padding-inline: 0;
     height: 50px;
 
+    .ant-space,
+    .ant-space-item {
+      line-height: 0;
+    }
+
     .tg-layout-header-content {
       display: flex;
       align-items: center;
@@ -61,7 +66,6 @@
               height: 29px;
               line-height: 29px;
               color: #ffffff;
-              // font-size: 14px; // 全局默认字号为14号
               border: none;
 
               &:focus {
@@ -96,48 +100,11 @@
       }
 
       .tg-header-info {
+        height: 100%;
         margin-left: auto;
         display: flex;
         justify-content: center;
         align-items: center;
-
-        .tg-header-params {
-          flex: auto;
-          min-width: 150px;
-
-          .ant-select-selection {
-            //background: $primary-color-hover;
-            transition: all .2s var(--tg-theme-motion-ease-in-out);
-
-            &:hover {
-              //border-radius: $border-radius-base;
-              box-shadow: 0 0 0 2px rgb(#ffffff, 20%);
-            }
-
-            .ant-select-selection__placeholder {
-              //color: $input-placeholder-color-light;
-            }
-
-            .ant-select-selection-selected-value {
-              //color: $white;
-            }
-
-            .ant-select-arrow {
-              //color: $white;
-              opacity: 0.6;
-              font-size: 1.3em;
-              top: 40%;
-
-              &:hover {
-                opacity: 1;
-              }
-            }
-          }
-
-          &:focus {
-            box-shadow: unset;
-          }
-        }
 
         .tg-header-user-content {
           .tg-header-user-spin-content.blur .ant-spin-container {
@@ -159,14 +126,15 @@
               padding-right: 16px;
 
               .tg-header-username {
-                font-weight: 400;
-                line-height: 18px;
+                font-weight: 600;
+                line-height: calc(var(--tg-theme-font-size) + 2px);
               }
 
               .tg-header-tel {
-                font-size: 12px;
+                font-size: var(--tg-theme-font-size-sm);
                 font-weight: 400;
-                line-height: 15px;
+                line-height: var(--tg-theme-font-size);
+                color: var(--tg-theme-color-header-text);
               }
             }
           }
@@ -179,22 +147,34 @@
           margin-right: 24px;
         }
 
-        .tg-header-icon {
-          color: #ffffff;
-          font-size: 1.8em;
-          margin-left: 8px;
-          margin-right: 8px;
-          opacity: 0.6;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-
+        .tg-header-functions {
           .anticon {
             vertical-align: unset;
           }
 
-          &:hover {
-            opacity: 1;
+          svg {
+            width: 1.2rem;
+            height: 1.2rem;
+            outline: none;
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+            margin-inline: 6px;
+            fill: #ffffff;
+
+            &:hover {
+              opacity: 0.5;
+            }
+          }
+
+          .ant-switch {
+            vertical-align: unset;
+
+            svg {
+              width: 1rem;
+              height: 1rem;
+              margin-inline: unset;
+              vertical-align: text-top;
+            }
           }
         }
       }

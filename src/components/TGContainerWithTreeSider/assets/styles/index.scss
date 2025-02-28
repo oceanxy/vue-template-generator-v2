@@ -1,3 +1,21 @@
+@function tree-node-switcher-color($color: rgba(0, 0, 0, 0.88)) {
+  @return url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'200 200 650 650\' fill=\'#{$color}\'><path d=\'M512 601.6a89.6 89.6 0 1 0-89.6-89.6 89.59 89.59 0 0 0 89.6 89.6z m0 0\' /></svg>');
+}
+
+.ant-app[data-doc-theme='dark'] .tg-container-with-tree-sider {
+  & > .tg-container-with-sider--sider.tg-container-with-tree-sider--sider {
+    & > .tg-search-tree-container {
+      .ant-tree .ant-tree-list .ant-tree-treenode {
+        .ant-tree-switcher.ant-tree-switcher-noop {
+          .anticon {
+            background-image: tree-node-switcher-color(rgba(255, 255, 255, 0.85));
+          }
+        }
+      }
+    }
+  }
+}
+
 .tg-container-with-tree-sider {
   //@include container-border-radius;
   //gap: 12px;
@@ -43,54 +61,23 @@
             box-shadow 0s var(--tg-theme-motion-ease-in-out);
           }
 
-          & > .ant-tree-node-content-wrapper {
-            display: flex;
-
-            &:hover {
-              background: none;
+          .ant-tree-switcher.ant-tree-switcher-noop {
+            svg {
+              display: none;
             }
 
-            .ant-tree-icon__customize {
-              margin-left: -4px; // 隐藏叶子节点图标后，对齐自定义叶子节点icon与父节点switchIcon
-              vertical-align: middle;
-              flex: none;
-              width: 0;
-              display: inline-flex;
-              justify-content: center;
-              align-items: center;
-
-              &:has(svg) {
-                width: 24px;
-              }
+            .anticon {
+              width: 1em;
+              height: 1em;
+              color: currentColor;
+              background-image: tree-node-switcher-color();
             }
+          }
 
+          .ant-tree-node-content-wrapper {
             .ant-tree-title {
-              flex: auto;
-              padding-block: 4px;
-              line-height: 16px;
+              line-height: var(--tg-theme-line-height);
             }
-          }
-
-          & > .ant-tree-switcher {
-            border-top-left-radius: var(--tg-theme-border-radius);
-            border-bottom-left-radius: var(--tg-theme-border-radius);
-
-            &:not(.ant-tree-switcher-noop) + .ant-tree-node-content-wrapper {
-              border-top-left-radius: 0;
-              border-bottom-left-radius: 0;
-            }
-          }
-
-          &.ant-tree-treenode-selected > .ant-tree-switcher {
-            background: var(--tg-theme-color-primary-bg);
-          }
-
-          &:hover > :is(.ant-tree-switcher, .ant-tree-node-content-wrapper) {
-            background: var(--tg-theme-control-item-bg-hover);
-          }
-
-          .ant-tree-switcher-noop {
-            display: none; // 隐藏叶子节点的文件图标
           }
         }
       }

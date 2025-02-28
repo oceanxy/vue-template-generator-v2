@@ -1,10 +1,10 @@
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { theme } from 'ant-design-vue'
 
 export default function useThemeVars() {
   const { useToken, defaultAlgorithm, defaultSeed } = theme
   const { token } = useToken()
-  const staticToken = defaultAlgorithm(defaultSeed)
+  const staticToken = ref(defaultAlgorithm(defaultSeed))
   const cssVars = ref({})
 
   /**
@@ -153,18 +153,27 @@ export default function useThemeVars() {
     return code
   }
 
-  onMounted(() => {
+  async function updateCssVars(mode) {
+    await nextTick()
+    staticToken.value = defaultAlgorithm(defaultSeed)
     cssVars.value = {
-      '--tg-theme-motion-ease-in-out': staticToken.motionEaseInOut,
+      '--tg-theme-motion-ease-in-out': staticToken.value.motionEaseInOut,
+      '--tg-theme-line-height': token.value.lineHeight,
+      '--tg-theme-color-white': token.value.colorWhite,
       '--tg-theme-color-primary': token.value.colorPrimary,
       '--tg-theme-color-primary-hover': token.value.colorPrimaryHover,
       '--tg-theme-color-primary-active': token.value.colorPrimaryActive,
       '--tg-theme-color-primary-bg': token.value.colorPrimaryBg,
       '--tg-theme-color-primary-bg-hover': token.value.colorPrimaryBgHover,
+      '--tg-theme-color-primary-text': token.value.colorPrimaryText,
+      '--tg-theme-color-primary-text-active': token.value.colorPrimaryTextActive,
+      '--tg-theme-color-primary-text-hover': token.value.colorPrimaryTextHover,
       '--tg-theme-color-primary-border': token.value.colorPrimaryBorder,
       '--tg-theme-color-primary-border-hover': token.value.colorPrimaryBorderHover,
       '--tg-theme-color-error': token.value.colorError,
       '--tg-theme-color-border': token.value.colorBorder,
+      '--tg-theme-color-border-reset': mode !== 'darkAlgorithm' ? token.value.colorBorderSecondary : '#303030',
+      '--tg-theme-color-header-text': mode !== 'darkAlgorithm' ? '#c2c2c2' : '#7f7f7f',
       '--tg-theme-color-border-hover': token.value.colorPrimaryBorderHover,
       '--tg-theme-color-border-secondary': token.value.colorBorderSecondary,
       '--tg-theme-color-error-border': token.value.colorErrorBorder,
@@ -177,13 +186,20 @@ export default function useThemeVars() {
       '--tg-theme-color-text-tertiary': token.value.colorTextTertiary,
       '--tg-theme-color-text-quaternary': token.value.colorTextQuaternary,
       '--tg-theme-color-bg-container': token.value.colorBgContainer,
+      '--tg-theme-color-bg-elevated': token.value.colorBgElevated,
+      '--tg-theme-color-split': token.value.colorSplit,
       '--tg-theme-font-size': token.value.fontSize + 'px',
       '--tg-theme-font-size-sm': token.value.fontSizeSM + 'px',
       '--tg-theme-font-size-lg': token.value.fontSizeLG + 'px',
       '--tg-theme-font-size-xl': token.value.fontSizeXL + 'px',
       '--tg-theme-border-radius': token.value.borderRadius + 'px',
+      '--tg-theme-control-item-bg-active': token.value.controlItemBgActive,
       '--tg-theme-control-item-bg-hover': token.value.controlItemBgHover
     }
+  }
+
+  onMounted(async () => {
+    await updateCssVars()
   })
 
   return {
@@ -199,6 +215,7 @@ export default function useThemeVars() {
      * 用于CSS变量
      */
     cssVars,
-    increaseBrightness
+    increaseBrightness,
+    updateCssVars
   }
 }

@@ -1,3 +1,15 @@
+.ant-app[data-doc-theme='light'] .ant-table {
+  .tg-table-striped td {
+    background-color: #fafafa;
+  }
+}
+
+.ant-app[data-doc-theme='dark'] .ant-table {
+  .tg-table-striped td {
+    background-color: rgb(29, 29, 29);
+  }
+}
+
 .tg-table.ant-table-wrapper {
   height: 100%;
 
@@ -14,10 +26,6 @@
         overflow: hidden;
         flex: auto;
 
-        .tg-table-striped td {
-          background: #fafafa;
-        }
-
         .ant-table-container {
           height: 100%;
           display: flex;
@@ -27,7 +35,7 @@
 
           .ant-table-content,
           .ant-table-header {
-            border-inline-start: 1px solid var(--tg-theme-color-border-secondary);
+            border-inline-start: 1px solid var(--tg-theme-color-border-reset);
             border-start-start-radius: var(--tg-theme-border-radius);
           }
 

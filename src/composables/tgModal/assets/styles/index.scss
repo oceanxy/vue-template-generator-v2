@@ -5,7 +5,7 @@
 
       .ant-modal-header {
         margin: 0;
-        background: linear-gradient(to bottom, var(--tg-theme-color-primary-bg), #ffffff);
+        background: linear-gradient(to bottom, var(--tg-theme-color-primary-bg), var(--tg-theme-color-bg-elevated));
 
         .ant-modal-title > div {
           padding: 20px 24px;

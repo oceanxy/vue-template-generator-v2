@@ -7,7 +7,6 @@ const modules = themeFiles.keys().reduce((modules, modulePath) => {
   const value = themeFiles(modulePath)
 
   modules[moduleName] = value.default
-  modules[moduleName].customTheme = value.customTheme
 
   return modules
 }, {})

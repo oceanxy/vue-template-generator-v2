@@ -1,19 +1,12 @@
 import { theme } from 'ant-design-vue'
 
-const colorPrimary = '#1677ff'
-
-export const customTheme = {
-  header: {
-    colorPrimaryBg: colorPrimary,
-    colorPrimary: '#ffffff',
-    colorBgAvatar: '#69b1ff',
-    colorTextSecondary: '#91caff'
-  }
-}
+const colorPrimary = '#144BB5'
 
 export default {
-  name: '蓝色',
+  name: '政务蓝',
   token: {
+    // 字号
+    fontSize: 14,
     // 主题色
     colorPrimary,
     motionBase: 0,

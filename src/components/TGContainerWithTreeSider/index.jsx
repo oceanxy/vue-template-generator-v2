@@ -421,25 +421,7 @@ export default {
                   fieldNames={props.fieldNames}
                 >
                   {{
-                    icon: ({ dataRef }) => {
-                      if (!dataRef.children?.length) {
-                        return (
-                          <svg
-                            viewBox="200 200 650 650"
-                            version="1.1"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="1em"
-                            height="1em"
-                            fill="currentColor"
-                          >
-                            <path d="M512 601.6a89.6 89.6 0 1 0-89.6-89.6 89.59 89.59 0 0 0 89.6 89.6z m0 0" />
-                          </svg>
-                        )
-                      }
-
-                      return null
-                    },
-                    switcherIcon: () => <CaretDownOutlined style={{ fontSize: '10px' }} />,
+                    switcherIcon: () => <CaretDownOutlined style={{ fontSize: '0.8em' }} />,
                     title: ({ name }) => {
                       if (searchValue.value && name.indexOf(searchValue.value) > -1) {
                         return (
