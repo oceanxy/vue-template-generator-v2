@@ -94,7 +94,7 @@ export default function useTGTable({
     selectedRows = computed(() => store.selectedRows)
     sortFieldList = computed(() => store.sortFieldList)
   } else {
-    /** 弹窗内表格等附表格逻辑 **/
+    /** 弹窗内表格等副表格逻辑 **/
     rowKey = computed(() => store[location].rowKey)
     pagination = computed(() => store[location]?.pagination)
     currentPageStartNumber = computed(() => {
@@ -113,9 +113,13 @@ export default function useTGTable({
       align: 'center',
       fixed: true,
       customRender: ({ record, index }) => {
-        record._sn = index + 1 + currentPageStartNumber.value
+        if (Object.prototype.toString.call(record) === '[object Object]') {
+          record._sn = index + 1 + currentPageStartNumber.value
 
-        return record._sn
+          return record._sn
+        } else {
+          return index + 1 + currentPageStartNumber.value
+        }
       }
     }
   ]
@@ -212,7 +216,12 @@ export default function useTGTable({
   watch(dataSource, async value => {
     const rowKey = location ? store[location].rowKey : store.rowKey
 
-    if (process.env.NODE_ENV === 'development' && value.length && !(rowKey in value[0])) {
+    if (
+      process.env.NODE_ENV === 'development' &&
+      value.length &&
+      Object.prototype.toString.call(value[0]) === '[object Object]' &&
+      !(rowKey in value[0])
+    ) {
       console.warn(`tgTable：未在表格数据中找到唯一标识符（${rowKey || 'id'}），这可能会导致异常的错误！` +
         `请检查表格数据中是否存在'id'字段，或者是否正确设置了\`store.state${location
           ? `.${location}`
