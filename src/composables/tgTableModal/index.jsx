@@ -48,6 +48,7 @@ export default function useTGTableModal({
   }
 
   const { TGModal, ...tgModal } = useTGModal({
+    location,
     modalStatusFieldName,
     modalProps,
     store: tgTable.store,
