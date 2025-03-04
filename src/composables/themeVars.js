@@ -98,6 +98,12 @@ export default function useThemeVars() {
     return [r * 255, g * 255, b * 255]
   }
 
+  /**
+   * 调整16进制颜色的透明度
+   * @param hex {string}
+   * @param [alpha=1] {number} - 取值范围 [0,1]
+   * @returns {string} rgba颜色
+   */
   function hexToRgba(hex, alpha = 1) {
     // 去掉#号
     hex = hex.replace('#', '')
@@ -194,7 +200,11 @@ export default function useThemeVars() {
       '--tg-theme-font-size-xl': token.value.fontSizeXL + 'px',
       '--tg-theme-border-radius': token.value.borderRadius + 'px',
       '--tg-theme-control-item-bg-active': token.value.controlItemBgActive,
-      '--tg-theme-control-item-bg-hover': token.value.controlItemBgHover
+      '--tg-theme-control-item-bg-hover': token.value.controlItemBgHover,
+      '--tg-theme-margin-sm': token.value.marginSM + 'px',
+      '--tg-theme-margin': token.value.margin + 'px',
+      '--tg-theme-margin-md': token.value.marginMD + 'px',
+      '--tg-theme-margin-lg': token.value.marginLG + 'px'
     }
   }
 
@@ -216,6 +226,7 @@ export default function useThemeVars() {
      */
     cssVars,
     increaseBrightness,
-    updateCssVars
+    updateCssVars,
+    hexToRgba
   }
 }

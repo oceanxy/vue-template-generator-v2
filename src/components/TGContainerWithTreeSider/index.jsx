@@ -421,7 +421,7 @@ export default {
                   fieldNames={props.fieldNames}
                 >
                   {{
-                    switcherIcon: () => <CaretDownOutlined style={{ fontSize: '0.8em' }} />,
+                    switcherIcon: ({ switcherCls }) => <CaretDownOutlined class={switcherCls} />,
                     title: ({ name }) => {
                       if (searchValue.value && name.indexOf(searchValue.value) > -1) {
                         return (

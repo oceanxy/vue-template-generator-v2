@@ -1,6 +1,6 @@
 import './assets/styles/index.scss'
 import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref } from 'vue'
-import { Avatar, Button, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
+import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
@@ -10,13 +10,12 @@ import dayjs from 'dayjs'
 import { dynamicCompMount } from '@/utils/dynamicCompMount'
 import './assets/images/svgComp/moon.svg'
 import './assets/images/svgComp/sun.svg'
-import './assets/images/svgComp/font-size.svg'
 import useThemeVars from '@/composables/themeVars'
 import { COMPONENT_SIZE } from '@/configs/enums'
 
 export default {
   name: 'TGLayoutHeader',
-  setup(props) {
+  setup() {
     let instance
     const { proxy } = getCurrentInstance()
     const appName = getFirstLetterOfEachWordOfAppName()
@@ -51,12 +50,12 @@ export default {
           fontSize: themeToken.value.fontSizeLG
         }
     })
-    const _fontSize = ref(commonStore.fontSize)
-    const currentThemeName = computed(() => {
-      return localStorage.getItem(`${appName}-theme`) ||
-        loginStore?.userInfo?.themeFileName ||
-        configs.header?.buttons?.theme.default
-    })
+    const fontSize = ref(commonStore.fontSize)
+    const currentThemeName = ref(
+      localStorage.getItem(`${appName}-theme`) ||
+      loginStore?.userInfo?.themeFileName ||
+      configs.header?.buttons?.theme.default
+    )
 
     onBeforeMount(async () => {
       await verifyUserInfo()
@@ -139,31 +138,47 @@ export default {
       }
     }
 
-    function resetFontSize() {
-      commonStore.componentSize = 'middle'
-      commonStore.fontSize = 14
+    async function updateAlgorithm(algorithm, isCompactAlgorithm) {
+      await updateThemeConfig({
+        algorithm,
+        isCompactAlgorithm: isCompactAlgorithm ? 1 : 0
+      })
+
+      commonStore.algorithm = algorithm
+      commonStore.isCompactAlgorithm = isCompactAlgorithm
     }
 
-    function updateFontSize(val) {
+    async function resetFontSize() {
+      await updateThemeConfig({
+        componentSize: 'middle',
+        fontSize: 14
+      })
+
+      commonStore.componentSize = 'middle'
+      commonStore.fontSize = 14
+      fontSize.value = 14
+    }
+
+    async function updateFontSize(val) {
+      await updateThemeConfig({ fontSize: val })
       commonStore.fontSize = val
     }
 
     async function switchThemes(themeFileName) {
-      // await this.$store.dispatch('custom', {
-      //   customApiName: 'setThemeFileName',
-      //   payload: { themeFileName }
-      // })
-      //
-      // this.$store.commit('setState', {
-      //   stateName: 'userInfo',
-      //   value: { themeFileName },
-      //   moduleName: 'login',
-      //   merge: true
-      // })
-      //
-      // localStorage.setItem(`${appName}-theme`, themeFileName)
-      //
-      // return Promise.resolve()
+      await updateThemeConfig({ themeFileName })
+
+      currentThemeName.value = themeFileName
+      localStorage.setItem(`${appName}-theme`, themeFileName)
+      loginStore.userInfo.themeFileName = themeFileName
+      commonStore.themeName = themeFileName
+    }
+
+    async function updateThemeConfig(config) {
+      await commonStore.fetch({
+        loading: false,
+        apiName: 'updateThemeConfig',
+        params: config
+      })
     }
 
     return () => (
@@ -245,75 +260,102 @@ export default {
               class={'tg-header-divider'}
               style={{ background: themeToken.value.colorSplit }}
             />
-            <Space class={'tg-header-functions'}>
-              <Popover placement="bottomRight">
-                {{
-                  default: () => (
-                    <Switch
-                      vModel:checked={commonStore.algorithm}
-                      checkedValue={'defaultAlgorithm'}
-                      unCheckedValue={'darkAlgorithm'}
-                      class={'tg-header-mode'}
-                    >
-                      {{
-                        checkedChildren: () => (
-                          <svg>
-                            <use xlinkHref={'#tg-icon-sun'} />
-                          </svg>
-                        ),
-                        unCheckedChildren: () => (
-                          <svg>
-                            <use xlinkHref={'#tg-icon-moon'} />
-                          </svg>
-                        )
-                      }}
-                    </Switch>
-                  ),
-                  content: () => `切换为${commonStore.algorithm === 'defaultAlgorithm' ? '暗色' : '亮色'}模式`
-                }}
-              </Popover>
-              <Popover placement="bottomRight">
-                {{
-                  default: () => (
-                    <svg>
-                      <use xlinkHref={'#tg-icon-font-size'} />
-                    </svg>
-                  ),
-                  content: () => (
-                    <Space direction={'vertical'}>
-                      <div>当前全局字号：{commonStore.fontSize}px</div>
-                      <Slider
-                        vModel:value={_fontSize.value}
-                        onAfterChange={updateFontSize}
-                        min={12}
-                        max={20}
-                      />
-                      <div>当前组件尺寸：{COMPONENT_SIZE[commonStore.componentSize]}</div>
-                      <RadioGroup
-                        vModel:value={commonStore.componentSize}
-                        class={'tg-header-component-size'}
-                        size={'default'}
-                      >
-                        <Radio value={'small'}>小</Radio>
-                        <Radio value={'middle'}>中</Radio>
-                        <Radio value={'large'}>大</Radio>
-                      </RadioGroup>
-                      {
-                        (commonStore.componentSize !== 'middle' || commonStore.fontSize !== 14) && (
-                          <div style={{ marginTop: '10px' }}>
-                            <Button
-                              type={'primary'}
-                              onClick={resetFontSize}
-                            >
-                              恢复默认值
-                            </Button>
+            <Space class={'tg-header-functions'} size={themeToken.value.fontSizeSM}>
+              {
+                configs.header?.buttons?.algorithm?.show && (
+                  <Popover
+                    style={{ width: '8ic' }}
+                    placement="bottomRight"
+                    title={'布局模式配置'}
+                  >
+                    {{
+                      default: () => (
+                        <Switch
+                          vModel:checked={commonStore.algorithm}
+                          checkedValue={'defaultAlgorithm'}
+                          unCheckedValue={'darkAlgorithm'}
+                          onChange={val => updateAlgorithm(val, commonStore.isCompactAlgorithm)}
+                        >
+                          {{
+                            checkedChildren: () => (
+                              <svg>
+                                <use xlinkHref={'#tg-icon-sun'} />
+                              </svg>
+                            ),
+                            unCheckedChildren: () => (
+                              <svg>
+                                <use xlinkHref={'#tg-icon-moon'} />
+                              </svg>
+                            )
+                          }}
+                        </Switch>
+                      ),
+                      content: () => (
+                        <Space direction={'vertical'}>
+                          <div>当前为{commonStore.algorithm === 'defaultAlgorithm' ? '亮色' : '暗色'}模式</div>
+                          <div>
+                            启用紧凑布局：
+                            <Checkbox
+                              vModel:checked={commonStore.isCompactAlgorithm}
+                              onChange={val => updateAlgorithm(commonStore.algorithm, val.target.checked)}
+                            />
                           </div>
-                        )
-                      }
-                    </Space>
-                  )
-                }}
-              </Popover>
+                        </Space>
+                      )
+                    }}
+                  </Popover>
+                )
+              }
+              {
+                configs.header?.buttons?.fontSize?.show && (
+                  <Popover
+                    placement="bottomRight"
+                    title={configs.header?.buttons?.fontSize.text}
+                  >
+                    {{
+                      default: () => (
+                        <IconFont
+                          type={'icon-global-font-size'}
+                          title={configs.header?.buttons?.fontSize?.text}
+                        />
+                      ),
+                      content: () => (
+                        <Space direction={'vertical'}>
+                          <div>当前全局字号：{commonStore.fontSize}px</div>
+                          <Slider
+                            vModel:value={fontSize.value}
+                            onAfterChange={updateFontSize}
+                            min={12}
+                            max={20}
+                          />
+                          <div>当前组件尺寸：{COMPONENT_SIZE[commonStore.componentSize]}</div>
+                          <RadioGroup
+                            vModel:value={commonStore.componentSize}
+                            class={'tg-header-component-size'}
+                            size={'default'}
+                          >
+                            <Radio value={'small'}>小</Radio>
+                            <Radio value={'middle'}>中</Radio>
+                            <Radio value={'large'}>大</Radio>
+                          </RadioGroup>
+                          {
+                            (commonStore.componentSize !== 'middle' || commonStore.fontSize !== 14) && (
+                              <div style={{ marginTop: '10px' }}>
+                                <Button
+                                  type={'primary'}
+                                  onClick={resetFontSize}
+                                >
+                                  恢复默认值
+                                </Button>
+                              </div>
+                            )
+                          }
+                        </Space>
+                      )
+                    }}
+                  </Popover>
+                )
+              }
               {
                 configs.header?.buttons?.theme?.show && (
                   <Dropdown placement="bottomRight" arrow>
@@ -321,10 +363,7 @@ export default {
                       default: () => (
                         <IconFont
                           type={'icon-global-hf'}
-                          style={{
-                            color: '#ffffff',
-                            fontSize: `${themeToken.value.fontSizeXL}px`
-                          }}
+                          title={configs.header?.buttons?.theme?.text}
                         />
                       ),
                       overlay: () => (

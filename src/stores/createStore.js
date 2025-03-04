@@ -584,13 +584,13 @@ export function createStore({
             if (this.$state[location] && this.$state[location][stateName] !== undefined) {
               setValue(this.$state[location], stateName, value)
             } else {
-              console.error(`store: ${MODULE_NAME}.state.${location}.${stateName} 不存在`)
+              console.error(`store: ${MODULE_NAME}.state.${location}.${stateName} 不存在。或者将该 action 的 loading 参数设置为 false。`)
             }
           } else {
             if (this.$state[stateName] !== undefined) {
               setValue(this.$state, stateName, value)
             } else {
-              console.error(`store: ${MODULE_NAME}.state.${stateName} 不存在`)
+              console.error(`store: ${MODULE_NAME}.state.${stateName} 不存在。或者将该 action 的 loading 参数设置为 false。`)
             }
           }
         } catch (error) {

@@ -90,7 +90,7 @@ module.exports = {
         // 按钮文本，默认“重置密码”
         text: '重置密码'
       },
-      // 消息
+      // 消息（暂未实现）
       news: {
         // 是否显示消息通知按钮，默认 false。
         show: false,
@@ -104,7 +104,7 @@ module.exports = {
         // 按钮文本，默认“注销”
         text: '注销'
       },
-      // 网站指引
+      // 网站指引（暂未实现）
       guide: {
         // 是否显示网站指引，默认 false。
         show: false,
@@ -123,6 +123,14 @@ module.exports = {
         availableThemes: [
           { name: '科技蓝', fileName: 'tech-blue' }
         ]
+      },
+      algorithm: {
+        show: true,
+
+      },
+      fontSize: {
+        show: true,
+        text: '全局文字配置'
       },
       /**
        * 自定义按钮对象

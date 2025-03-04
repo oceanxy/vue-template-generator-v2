@@ -95,10 +95,13 @@ export default createStore({
           localStorage.setItem(`${appName}-defaultRoute`, firstLetterToUppercase(defaultMenuUrl) || '')
           localStorage.setItem(`${appName}-menu`, JSON.stringify(menuList))
           localStorage.setItem(`${appName}-buttonPermissions`, JSON.stringify(null))
-          localStorage.setItem(`${appName}-theme`, userInfo.themeFileName || configs.header.buttons.theme.default)
           localStorage.setItem(`${appName}-lastLoginTime`, this.lastLoginTime)
 
           this.setParamsUseInHeader()
+
+          const commonStore = useStore('/common')
+
+          commonStore.setTheme(appName, userInfo)
         }
 
         this.loading = false
@@ -161,9 +164,11 @@ export default createStore({
           this.lastLoginTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
           this.lastLoginToken = payload.token
           this.setParamsUseInHeader()
-
           localStorage.setItem(`${appName}-lastLoginTime`, this.lastLoginTime)
-          localStorage.setItem(`${appName}-theme`, userInfo.themeFileName || configs.header.buttons.theme.default)
+
+          const commonStore = useStore('/common')
+
+          commonStore.setTheme(appName, userInfo)
         }
 
         this.loading = false
@@ -215,6 +220,8 @@ export default createStore({
         if (configs.enableTabPage) {
           commonStore.pageTabs = []
         }
+
+        commonStore.themeName = configs.header.buttons.theme.default
 
         if (configs.header?.params?.show) {
           localStorage.removeItem(`${appName}-headerId`)

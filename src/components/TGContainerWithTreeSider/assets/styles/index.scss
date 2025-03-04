@@ -55,10 +55,17 @@
 
         .ant-tree .ant-tree-list .ant-tree-treenode {
           & > .ant-tree-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             transition: all 0.2s var(--tg-theme-motion-ease-in-out),
             border 0s var(--tg-theme-motion-ease-in-out),
             line-height 0s var(--tg-theme-motion-ease-in-out),
             box-shadow 0s var(--tg-theme-motion-ease-in-out);
+          }
+
+          .ant-tree-switcher .ant-tree-switcher-icon {
+            font-size: var(--tg-theme-font-size-sm);
           }
 
           .ant-tree-switcher.ant-tree-switcher-noop {
@@ -67,8 +74,8 @@
             }
 
             .anticon {
-              width: 1em;
-              height: 1em;
+              width: var(--tg-theme-font-size-lg);
+              height: var(--tg-theme-font-size-lg);
               color: currentColor;
               background-image: tree-node-switcher-color();
             }

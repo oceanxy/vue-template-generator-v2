@@ -1,4 +1,5 @@
 import { createStore } from '@/stores/createStore'
+import configs from '@/configs'
 
 export default createStore({
   moduleName: 'common',
@@ -16,14 +17,33 @@ export default createStore({
       themeName: 'tech-blue',
       // 字号设置，默认14
       fontSize: 14,
-      // 默认算法 defaultAlgorithm 暗色算法 darkAlgorithm 紧凑算法 compactAlgorithm
+      // 默认算法 defaultAlgorithm 暗色算法 darkAlgorithm
       algorithm: 'defaultAlgorithm',
+      // 是否紧凑模式，默认 false。启用后，会在 antd 组件的布局算法中加入 'compactAlgorithm'。
+      isCompactAlgorithm: false,
       // 组件大小，默认 middle，可选 small | middle | large
       componentSize: 'middle'
     },
     actions: {
       setCollapsed() {
         this.collapsed = !this.collapsed
+      },
+      setTheme(appName, userInfo) {
+        const state = {
+          themeName: userInfo.themeFileName || this.themeName || configs.header.buttons.theme.default,
+          // collapsed: userInfo.collapsed || this.collapsed,
+          // treeCollapsed: userInfo.treeCollapsed || this.treeCollapsed,
+          fontSize: userInfo.fontSize || this.fontSize,
+          algorithm: userInfo.algorithm || this.algorithm,
+          isCompactAlgorithm: userInfo.isCompactAlgorithm
+            ? userInfo.isCompactAlgorithm === '1'
+            : this.isCompactAlgorithm,
+          componentSize: userInfo.componentSize || this.componentSize
+        }
+
+        localStorage.setItem(`${appName}-theme`, state.themeName)
+
+        this.$patch(state)
       }
     }
   },
