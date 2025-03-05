@@ -128,35 +128,36 @@ export default function useThemeVars() {
   }
 
   /**
-   * RGB颜色亮度调整
-   * @param rgbCode {string} - RGB颜色
-   * @param percent {number} - 百分数
-   * @returns {string}
+   * 调整十六进制颜色的明暗度
+   * @param {string} hex - 十六进制颜色（支持3/4/6/8位格式）
+   * @param {number} percent - 调整百分比（-100 到 100）
+   * @returns {string} 调整后的十六进制颜色
    */
-  function increaseBrightness(rgbCode, percent) {
-    const r = parseInt(rgbCode.slice(1, 3), 16)
-    const g = parseInt(rgbCode.slice(3, 5), 16)
-    const b = parseInt(rgbCode.slice(5, 7), 16)
-    const HSL = rgbToHsl(r, g, b)
-    const newBrightness = HSL[2] + HSL[2] * (percent / 100)
-    let RGB
+  function adjustHexBrightness(hex, percent) {
+    // 移除#号并统一为6位格式
+    hex = hex.replace(/^#/, '');
+    if (hex.length === 3) {
+      hex = hex.split('').map(c => c + c).join('');
+    }
 
-    RGB = hslToRgb(HSL[0], HSL[1], newBrightness)
+    // 解析RGB分量
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
 
-    rgbCode = '#'
-      + convertToTwoDigitHexCodeFromDecimal(RGB[0])
-      + convertToTwoDigitHexCodeFromDecimal(RGB[1])
-      + convertToTwoDigitHexCodeFromDecimal(RGB[2])
+    // 转换为HSL空间
+    const [h, s, l] = rgbToHsl(r, g, b);
 
-    return rgbCode
-  }
+    // 调整亮度（限制在0-1范围内）
+    const newLightness = Math.min(Math.max(l + (l * percent / 100), 0), 1);
 
-  function convertToTwoDigitHexCodeFromDecimal(decimal) {
-    let code = Math.round(decimal).toString(16);
+    // 转换回RGB
+    const [newR, newG, newB] = hslToRgb(h, s, newLightness);
 
-    (code.length > 1) || (code = '0' + code)
-
-    return code
+    // 返回十六进制格式
+    return '#' + [newR, newG, newB]
+      .map(v => Math.round(v).toString(16).padStart(2, '0'))
+      .join('');
   }
 
   async function updateCssVars(mode) {
@@ -225,7 +226,7 @@ export default function useThemeVars() {
      * 用于CSS变量
      */
     cssVars,
-    increaseBrightness,
+    adjustHexBrightness,
     updateCssVars,
     hexToRgba
   }

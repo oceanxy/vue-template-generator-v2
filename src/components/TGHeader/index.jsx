@@ -23,7 +23,7 @@ export default {
     const { push } = useRouter()
     const commonStore = useStore('/common')
     const loginStore = useStore('/login')
-    const { increaseBrightness } = useThemeVars()
+    const { adjustHexBrightness } = useThemeVars()
     const collapsed = computed(() => commonStore.collapsed)
     const lastLoginTime = computed(() => loginStore.lastLoginTime)
     const lastLoginToken = computed(() => loginStore.lastLoginToken)
@@ -40,12 +40,12 @@ export default {
     const headerTheme = computed(() => {
       return commonStore.algorithm === 'defaultAlgorithm'
         ? {
-          background: increaseBrightness(themeToken.value.colorPrimary, -10),
+          background: adjustHexBrightness(themeToken.value.colorPrimary, -10),
           color: themeToken.value.colorWhite,
           fontSize: themeToken.value.fontSizeLG
         }
         : {
-          background: increaseBrightness(themeToken.value.colorPrimary, -80),
+          background: adjustHexBrightness(themeToken.value.colorPrimary, -80),
           color: themeToken.value.colorWhite,
           fontSize: themeToken.value.fontSizeLG
         }
