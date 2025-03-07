@@ -8,7 +8,7 @@
 import { createRouter as _createRouter, createWebHashHistory, createWebHistory, useRouter } from 'vue-router'
 import configs from '@/configs'
 import { getCookie } from '@/utils/cookie'
-import { firstLetterToUppercase, getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
+import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import getBaseRoutes from '@/router/routes'
 import { message } from 'ant-design-vue'
 import { getEnvVar } from '@/utils/env'
@@ -18,6 +18,12 @@ import useStore from '@/composables/tgStore'
 const appName = getFirstLetterOfEachWordOfAppName()
 let abortController = createAbortController()
 let isAppStarted = false
+
+__TG_APP_ROUTES__.default?.forEach(route => {
+  if (route.path.startsWith('{appName}')) {
+    route.path = route.path.replace('{appName}', appName)
+  }
+})
 
 function createAbortController() {
   return new AbortController()
@@ -48,10 +54,14 @@ function initializeDynamicRoutes(menus, appRoutes, redirectCallback) {
     const { children, obj: { name } } = menu
 
     const appRoute = appRoutes.find(route => {
-      const url = menu.obj.menuUrl
-      const _url = `${!url.startsWith(`${appName}`) ? `${appName}/` : ''}${url}`
+      const { isShow, status } = menu.obj
+      let url = menu.obj.menuUrl || ''
 
-      return (!name || route.name === firstLetterToUppercase(name)) && (!url || route.path === _url)
+      if (url.startsWith('{appName}')) {
+        url = url.replace('{appName}', appName)
+      }
+
+      return (!name || route.name === name) && (!url || route.path === url) && isShow === 1 && status === 1
     })
 
     if (appRoute) {
@@ -140,6 +150,8 @@ function getRoutes() {
 
   const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
   const menu = JSON.parse(localStorage.getItem(`${appName}-menu`))
+
+  console.log(menu)
 
   if (menu && token) {
     // if (USER_INFO_MAPPINGS) {

@@ -11,7 +11,6 @@ import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
  * @returns {import ('vue-router').RouteRecord[]}
  */
 export default function getBaseRoutes(routes) {
-  // const _config = configs
   const appName = getFirstLetterOfEachWordOfAppName()
   let rootRoutes
   const homePermissions = typeof configs.homePermissions === 'boolean' ? configs.homePermissions : true
