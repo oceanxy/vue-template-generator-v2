@@ -11,28 +11,46 @@
 
   }
 
+  & > .ant-menu-item-active,
+  & > .ant-menu-submenu-active .ant-menu-submenu-title,
+  & > .ant-menu-submenu-open:hover {
+    .anticon {
+      color: var(--tg-theme-color-primary);
+    }
+  }
+
+  & > .ant-menu-item-selected,
+  & > .ant-menu-submenu-selected .ant-menu-submenu-title {
+    .anticon {
+      color: var(--tg-theme-color-text);
+    }
+  }
+
   // 折叠状态
   &.ant-menu-inline-collapsed {
-    $size: calc(var(--tg-theme-font-size-lg) + .4rem);
+    $size: calc(var(--tg-theme-font-size-icon) + 10px);
+
+    & > .ant-menu-item .anticon {
+      vertical-align: middle;
+    }
+
+    & > .ant-menu-submenu .ant-menu-submenu-title .anticon {
+      vertical-align: sub;
+    }
 
     & > .ant-menu-item,
     & > .ant-menu-submenu .ant-menu-submenu-title {
       // 8px 为为了抵消 margin-left 和 margin-right 的值
       padding-inline: calc((100% - $size - 8px) / 2);
+
+      .anticon {
+        font-size: $size;
+      }
     }
 
-    & > .ant-menu-item,
-    & > .ant-menu-submenu {
-      & > .ant-menu-title-content .ant-menu-item-title,
-      & > .ant-menu-submenu-title {
-        display: flex;
-        align-items: center;
-
-        .anticon {
-          min-width: $size;
-          font-size: $size;
-        }
-      }
+    & > .ant-menu-item.ant-menu-item-selected,
+    & > .ant-menu-submenu.ant-menu-submenu-selected .ant-menu-submenu-title {
+      //background: var(--tg-theme-color-primary-bg);
     }
   }
 }

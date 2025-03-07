@@ -5,18 +5,26 @@ import { Menu } from 'ant-design-vue'
 import configs from '@/configs'
 import router, { useRouter } from '@/router'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
+import useStore from '@/composables/tgStore'
 
 export default {
   name: 'TGMenu',
   setup() {
+    const commonStore = useStore('/common')
     const appName = getFirstLetterOfEachWordOfAppName()
     const openKeys = ref([])
     const selectedKeys = ref([])
     const menuRoutes = ref([])
     const menuScrollTop = ref(0)
-    const collapsed = ref(false)
     const menuDomRef = ref()
+    // 用于跟随主题色变化更新图标
+    const componentKey = ref(0)
     const { push } = useRouter()
+
+    watch(() => commonStore.themeName, () => {
+      // 主题色变化时更新图标
+      componentKey.value += 1
+    })
 
     watch(router.currentRoute, async route => {
       // 修复通过帐号密码登录，当token过期后重新登录无法跳转到首页的问题
@@ -144,17 +152,13 @@ export default {
     }
 
     function getIcon(route) {
-      return (
-        <IconFont
-          type={
-            route.meta.icon + (
-              selectedKeys.value.includes(route.key)
-                ? getActiveSuffixForMenuIcon()
-                : ''
-            )
-          }
-        />
-      )
+      let activeSuffix = ''
+
+      if (selectedKeys.value.includes(route.key)) {
+        activeSuffix = getActiveSuffixForMenuIcon()
+      }
+
+      return <IconFont key={componentKey.value} type={`${route.meta.icon}${activeSuffix}`} />
     }
 
     function getMenuItem(routes) {
@@ -175,36 +179,37 @@ export default {
           )
         }
 
+        let icon
+
+        if (route.meta.icon) {
+          if (typeof route.meta.icon === 'string') {
+            icon = getIcon(route)
+          } else {
+            icon = (
+              <Icon theme={'filled'}>
+                {{ component: () => <span>{route.meta.icon}</span> }}
+              </Icon>
+            )
+          }
+        }
+
         return (
           <Menu.Item
             key={route.key}
             style={route.meta.hide ? { display: 'none' } : ''}
           >
-            {getMenuItemTitle(route)}
+            {{
+              title: () => route.meta.title,
+              icon: () => (
+                <div class="ant-menu-item-title">
+                  {icon}
+                  <span>{route.meta && route.meta.title}</span>
+                </div>
+              )
+            }}
           </Menu.Item>
         )
       })
-    }
-
-    function getMenuItemTitle(route) {
-      return (
-        <div class="ant-menu-item-title">
-          {
-            route.meta.icon
-              ? (
-                typeof route.meta.icon !== 'string'
-                  ? (
-                    <Icon theme={'filled'}>
-                      {{ component: () => <span>{route.meta.icon}</span> }}
-                    </Icon>
-                  )
-                  : getIcon(route)
-              )
-              : null
-          }
-          <span>{route.meta && route.meta.title}</span>
-        </div>
-      )
     }
 
     onMounted(() => {
@@ -227,7 +232,6 @@ export default {
         class={['tg-menu-container', configs.menuStyle]}
         openKeys={openKeys.value}
         selectedKeys={selectedKeys.value}
-        inlineCollapsed={collapsed.value}
         onClick={onMenuClick}
       >
         {getMenuItem()}

@@ -14,20 +14,19 @@ export default {
   setup() {
     const store = useStore('/common')
     const showMenu = computed(() => store.showMenu)
-    const collapsed = computed(() => store.collapsed)
 
     return () => (
       <Layout id="tg-responsive-layout" class={'tg-layout'}>
         <TGHeader />
         <Layout>
           <Layout.Sider
+            vModel:collapsed={store.collapsed}
             theme={'light'}
             collapsible
-            collapsed={collapsed.value}
             trigger={null}
             class={`tg-responsive-layout-sider${
               showMenu.value
-                ? collapsed.value ? ' collapsed' : ' normal'
+                ? store.collapsed ? ' collapsed' : ' normal'
                 : ''
             }`}
           >

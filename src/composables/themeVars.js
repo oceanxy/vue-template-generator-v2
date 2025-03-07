@@ -199,6 +199,7 @@ export default function useThemeVars() {
       '--tg-theme-font-size-sm': token.value.fontSizeSM + 'px',
       '--tg-theme-font-size-lg': token.value.fontSizeLG + 'px',
       '--tg-theme-font-size-xl': token.value.fontSizeXL + 'px',
+      '--tg-theme-font-size-icon': token.value.fontSizeIcon + 'px',
       '--tg-theme-border-radius': token.value.borderRadius + 'px',
       '--tg-theme-control-item-bg-active': token.value.controlItemBgActive,
       '--tg-theme-control-item-bg-hover': token.value.controlItemBgHover,

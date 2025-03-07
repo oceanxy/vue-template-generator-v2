@@ -212,6 +212,18 @@ export default function useTGTable({
     })
   })
 
+  watch(
+    () => [
+      commonStore.componentSize,
+      commonStore.fontSize,
+      commonStore.isCompactAlgorithm
+    ],
+    async () => {
+      // 主题色变化时更新图标
+      await resize()
+    }
+  )
+
   // 为 list 创建动态侦听器
   watch(dataSource, async value => {
     const rowKey = location ? store[location].rowKey : store.rowKey
