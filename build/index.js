@@ -18,7 +18,7 @@ let appName = null
 const { NODE_ENV, BASE_ENV } = process.env
 const ENV_TEXT = NODE_ENV === 'development' ? '启动' : '编译'
 
-// 检测命令行是否传递了项目名称或项目简称，且是否存在。例如：--app=project-name
+// 检测命令行是否传递了项目名称或项目简称，且是否存在。例如：--app=project-name 或者 --app project-name
 if (args.app) {
   for (const _appName of appNames) {
     let abbreviation = null
@@ -82,10 +82,29 @@ function getConfig(appName) {
     config = require('./webpack.prod.conf')
   }
 
+  const ignoreApp = []
+
+  appNames.forEach(_appName => {
+    if (appName !== _appName) {
+      ignoreApp.push(_appName)
+    }
+  })
+
+  // 新增 IgnorePlugin，过滤掉`/apps`下其他子项目的文件
+  config.plugins.unshift(new webpack.IgnorePlugin({
+    checkResource(resource) {
+      // 排除其他子应用的资源（保留当前应用）
+      if (ignoreApp.some(app => resource.includes(app))) {
+        return true
+      }
+
+      // 排除子项目的 .md 和 .ico 资源
+      return /\.(md|ico)$/.test(resource)
+    }
+  }))
+
   // 调用注入 appName 的插件
   config.plugins.unshift(new AppNameInjectionPlugin({ appName }))
-
-  console.log(resolve(join(__dirname, `../src/apps/${appName}/public`)))
 
   // 复制 public 内静态文件
   config.plugins.push(new CopyWebpackPlugin({

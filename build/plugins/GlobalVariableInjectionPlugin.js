@@ -4,8 +4,6 @@ const { resolve, join } = require('path')
 const { accessSync, constants, readdirSync } = require('node:fs')
 
 class GlobalVariableInjectionPlugin {
-  function
-
   constructor() {}
 
   log(text) {
@@ -97,6 +95,23 @@ class GlobalVariableInjectionPlugin {
                         }
                       )
                     }
+                  )
+                }
+              )
+            }
+
+            // 预加载 IconFont 文件
+            if (!plugin.definitions.__TG_APP_ICON_FONT__) {
+              this.preloadResources(
+                `src/apps/${appName}/assets/iconfont.js`,
+                resource => {
+                  this.log(`图标文件（src/apps/${appName}/assets/iconfont.js）`)
+                  plugin.definitions.__TG_APP_ICON_FONT__ = resource
+                },
+                () => {
+                  this.preloadResources(
+                    'src/assets/iconfont.js',
+                    resource => plugin.definitions.__TG_APP_ICON_FONT__ = resource
                   )
                 }
               )
