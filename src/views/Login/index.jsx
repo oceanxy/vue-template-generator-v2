@@ -9,22 +9,10 @@ import configs from '@/configs'
 
 export default {
   name: 'Login',
-  props: {
-    isShowSiteName: {
-      type: Boolean,
-      default: true
-    }
-  },
-  data: () => ({ activeKey: 1 }),
-  methods: {
-    handleTabClick(key) {
-      this.activeKey = key
-    }
-  },
-  render() {
-    return (
+  setup() {
+    return () => (
       <div class={'tg-login'}>
-        <div class={'title'} />
+        <div class={'tg-login-title'} />
         <TGCard
           width={400}
           class={'tg-login-box'}
