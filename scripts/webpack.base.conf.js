@@ -7,6 +7,7 @@ const GlobalVariableInjectionPlugin = require('./plugins/GlobalVariableInjection
 const CopyPlugin = require('copy-webpack-plugin')
 
 const isDev = process.env.NODE_ENV === 'development' // 是否是开发模式
+const TG_APP_NAME = process.env.TG_APP_NAME
 
 /**
  * 获取符合前缀规则的环境变量对象
@@ -37,6 +38,7 @@ module.exports = {
     fallback: { 'process/browser': require.resolve('process/browser') },
     alias: {
       '@': path.join(__dirname, '../src'),
+      '@app': path.join(__dirname, `../src/apps/${TG_APP_NAME}`),
       'process': 'process/browser'
     },
     // 如果用的是 pnpm 就暂时不要配置这个，会有幽灵依赖的问题，访问不到很多模块。

@@ -11,10 +11,6 @@ class AppNameInjectionPlugin {
   apply(compiler) {
     compiler.hooks.afterEnvironment.tap('AppNameInjectionPlugin', compilation => {
       compiler.options.appName = this.appName
-      compiler.options.resolve.alias = {
-        ...compiler.options.resolve.alias,
-        '@app': path.join(__dirname, `../../src/apps/${this.appName}`)
-      }
     })
   }
 }
