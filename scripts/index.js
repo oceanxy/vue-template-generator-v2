@@ -3,7 +3,7 @@ const WebpackDevServer = require('webpack-dev-server')
 const inquirer = require('inquirer')
 const { readdirSync, statSync } = require('node:fs')
 const args = require('minimist')(process.argv.slice(2))
-const { resolve, join } = require('path')
+const { resolve, join } = require('node:path')
 const AppNameInjectionPlugin = require('./plugins/AppNameInjectionPlugin')
 const { merge } = require('lodash')
 const chalk = require('chalk')
@@ -91,15 +91,22 @@ function getConfig(appName) {
   })
 
   // 新增 IgnorePlugin，过滤掉`/apps`下其他子项目的文件
-  config.plugins.unshift(new webpack.IgnorePlugin({
-    checkResource(resource) {
-      // 排除其他子应用的资源（保留当前应用）
-      if (ignoreApp.some(app => resource.includes(app))) {
+  config.plugins.push(new webpack.IgnorePlugin({
+    checkResource(resource, context) {
+      if (
+        resource.includes('@app') &&
+        ignoreApp.some(app => context.match(new RegExp(`src[/\\\\]apps[/\\\\]${app}`)))
+      ) {
+        return true
+      }
+
+      if (ignoreApp.some(app => resource.match(new RegExp(`[/\\\\]${app}[/\\\\]`)))) {
         return true
       }
 
       // 排除子项目的 .md 和 .ico 资源
-      return /\.(md|ico)$/.test(resource)
+      // return /\.(md|ico)$/.test(resource)
+      return /\.md$/.test(resource)
     }
   }))
 
@@ -112,7 +119,7 @@ function getConfig(appName) {
       {
         force: true,
         from: resolve(join(__dirname, `../src/apps/${appName}/public`)),
-        to: resolve(join(__dirname, '../dist'))
+        to: resolve(join(__dirname, '../dist', appName))
       }
     ]
   }))

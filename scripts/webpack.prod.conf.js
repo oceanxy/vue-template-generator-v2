@@ -8,8 +8,11 @@ const { PurgeCSSPlugin } = require('purgecss-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const globAll = require('glob-all')
 
+const TG_APP_NAME = process.env.TG_APP_NAME
+
 module.exports = merge(baseConfig, {
   mode: 'production', // 生产模式，会开启tree-shaking和压缩代码，以及其他优化
+
   optimization: {
     minimizer: [
       // 抽离css插件
@@ -17,7 +20,12 @@ module.exports = merge(baseConfig, {
         filename: 'static/css/[name].[contenthash:8].css'
       }),
       // 压缩css
-      new CssMinimizerPlugin(),
+      new CssMinimizerPlugin({
+        parallel: true,      // 启用多进程
+        minimizerOptions: {
+          preset: ['default', { discardComments: { removeAll: true } }]
+        }
+      }),
       // 压缩js
       new TerserPlugin({
         parallel: true, // 开启多线程压缩
@@ -72,5 +80,17 @@ module.exports = merge(baseConfig, {
     new MiniCssExtractPlugin({
       filename: 'static/css/[name].css' // 抽离css的输出目录和名称
     })
-  ]
+  ],
+  cache: {
+    type: 'filesystem', // 使用文件缓存
+    name: `${TG_APP_NAME}-prod-cache`, // 缓存名称（按子项目）
+    cacheDirectory: path.resolve(__dirname, '../node_modules/.cache/webpack', TG_APP_NAME), // 自定义缓存路径
+    // 自动失效策略（关键配置）
+    buildDependencies: {
+      config: [__filename], // 当 webpack 配置文件变更时自动失效缓存
+      package: [path.resolve(__dirname, '../package.json')] // 当依赖变更时自动失效
+    },
+    // 缓存版本控制
+    version: require('../package.json').version // 当项目版本变更时自动失效
+  }
 })

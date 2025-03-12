@@ -5,7 +5,10 @@
     "dev": "cross-env NODE_ENV=development BASE_ENV=development node ./scripts",
     "build": "cross-env NODE_ENV=production BASE_ENV=production node ./scripts",
     "analy": "cross-env NODE_ENV=production BASE_ENV=analysis node ./scripts",
-    "lint": "eslint . --ext .vue,.js,.jsx --fix"
+    "lint": "eslint . --ext .vue,.js,.jsx --fix",
+    "clean:cache": "rm -rf .cache/webpack",
+    "clean:app-cache": "cross-env-shell rm -rf .cache/webpack/$APP",
+    "clean:app": "cross-env-shell npm run clean:app-cache && rm -rf dist/$APP"
   },
   "license": "ISC",
   "devDependencies": {
@@ -36,8 +39,10 @@
     "inquirer": "^8.0.0",
     "mini-css-extract-plugin": "^2.9.0",
     "minimist": "^1.2.8",
+    "mockjs": "^1.1.0",
     "postcss": "^8.4.40",
     "postcss-loader": "^8.1.1",
+    "postcss-preset-env": "^10.1.5",
     "prettier": "^3.3.3",
     "process": "^0.11.10",
     "purgecss-webpack-plugin": "^6.0.0",

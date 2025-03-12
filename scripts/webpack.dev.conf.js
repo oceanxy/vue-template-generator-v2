@@ -3,6 +3,8 @@ const { merge } = require('webpack-merge')
 const baseConfig = require('./webpack.base.conf.js')
 const ESLintPlugin = require('eslint-webpack-plugin')
 
+const TG_APP_NAME = process.env.TG_APP_NAME
+
 // 合并公共配置,并添加开发环境配置
 module.exports = merge(baseConfig, {
   mode: 'development', // 开发模式，打包更加快速，省了代码优化步骤
@@ -25,5 +27,21 @@ module.exports = merge(baseConfig, {
       cache: true, // 启用缓存，提高检查性能
       failOnError: true // 如果有错误则使构建失败
     })
-  ]
+  ],
+  cache: {
+    type: 'filesystem', // 使用文件缓存
+    name: `${TG_APP_NAME}-dev-cache`, // 缓存名称（按子项目）
+    cacheDirectory: path.resolve(__dirname, '../node_modules/.cache/webpack', TG_APP_NAME), // 自定义缓存路径
+    // 自动失效策略（关键配置）
+    buildDependencies: {
+      config: [__filename], // 当 webpack 配置文件变更时自动失效缓存
+      package: [path.resolve(__dirname, '../package.json')] // 当依赖变更时自动失效
+    },
+    // 缓存版本控制
+    version: require('../package.json').dependencies.webpack, // 当 webpack 版本变更时自动失效
+    // 允许垃圾回收
+    allowCollectingMemory: true,
+    // 空闲超时(ms)
+    idleTimeout: 10000
+  }
 })

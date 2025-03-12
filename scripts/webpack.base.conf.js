@@ -29,7 +29,7 @@ module.exports = {
   entry: path.join(__dirname, '../src/main.js'),
   output: {
     filename: 'static/js/[name].[chunkhash:8].js', // 每个输出js的名称
-    path: path.join(__dirname, '../dist'), // 打包结果输出路径
+    path: path.join(__dirname, '../dist', TG_APP_NAME), // 打包结果输出路径
     clean: true, // webpack4需要配置clean-webpack-plugin来删除dist文件,webpack5内置了
     publicPath: '/' // 打包后文件的公共前缀路径
   },
@@ -48,12 +48,36 @@ module.exports = {
     rules: [
       {
         test: /\.css$/, // 匹配 css 文件
-        include: [path.resolve(__dirname, '../node_modules/ant-design-vue/dist'), path.resolve(__dirname, '../src')],
+        include: [
+          path.resolve(__dirname, '../node_modules/ant-design-vue/dist'),
+          path.resolve(__dirname, '../src')
+        ],
         use: [
           // 开发环境使用style-loader，打包模式抽离css
           isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
-          'css-loader',
-          'postcss-loader'
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+              modules: {
+                auto: true,
+                localIdentName: '[path][name]__[local]--[hash:base64:5]'
+              }
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  require('postcss-preset-env')({
+                    stage: 3,
+                    features: { 'nesting-rules': true }
+                  })
+                ]
+              }
+            }
+          }
         ]
       },
       {
@@ -62,8 +86,29 @@ module.exports = {
         use: [
           // 开发环境使用style-loader，打包模式抽离css
           isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
-          'css-loader',
-          'postcss-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 2,
+              modules: {
+                auto: true,
+                localIdentName: '[path][name]__[local]--[hash:base64:5]'
+              }
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  require('postcss-preset-env')({
+                    stage: 3,
+                    features: { 'nesting-rules': true }
+                  })
+                ]
+              }
+            }
+          },
           'sass-loader'
         ]
       },
@@ -75,7 +120,17 @@ module.exports = {
       {
         test: /.js(x)$/,
         include: path.resolve(__dirname, '../src'), // 只对项目src文件的ts进行loader解析,
-        use: ['thread-loader', 'babel-loader']
+        use: [
+          'thread-loader',
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true, // 启用 Babel 缓存
+              cacheCompression: false, // 禁用压缩提升性能
+              cacheIdentifier: `app-${TG_APP_NAME}` // 按应用隔离缓存
+            }
+          }
+        ]
       },
       {
         test: /\.svg$/,
@@ -151,8 +206,5 @@ module.exports = {
     }),
     // 注意：根据 webpack 插件调用机制，此内部插件必须在 DefinePlugin 和 ProvidePlugin 插件之后调用
     new GlobalVariableInjectionPlugin()
-  ],
-  cache: {
-    type: 'filesystem' // 使用文件缓存
-  }
+  ]
 }
