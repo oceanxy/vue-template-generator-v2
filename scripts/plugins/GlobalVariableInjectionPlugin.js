@@ -1,7 +1,7 @@
 const { ProvidePlugin } = require('webpack')
 const chalk = require('chalk')
 const { resolve, join } = require('path')
-const { accessSync, constants, readdirSync } = require('node:fs')
+const { accessSync, constants } = require('node:fs')
 
 class GlobalVariableInjectionPlugin {
   constructor() {}
@@ -64,7 +64,7 @@ class GlobalVariableInjectionPlugin {
               )
             }
 
-            // 预加载路由文件
+            // 预加载登录组件
             if (!plugin.definitions.__TG_APP_LOGIN_COMPONENT__) {
               this.preloadResources(
                 `src/apps/${appName}/views/Login/index.jsx`,
@@ -90,6 +90,42 @@ class GlobalVariableInjectionPlugin {
                             `src/views/Login/index.vue`,
                             resource => {
                               plugin.definitions.__TG_APP_LOGIN_COMPONENT__ = resource
+                            }
+                          )
+                        }
+                      )
+                    }
+                  )
+                }
+              )
+            }
+
+            // 预加载 App 入口文件
+            if (!plugin.definitions.__TG_APP_COMPONENT__) {
+              this.preloadResources(
+                `src/apps/${appName}/App.jsx`,
+                resource => {
+                  this.log(`入口组件（src/apps/${appName}/App.jsx）`)
+                  plugin.definitions.__TG_APP_COMPONENT__ = resource
+                },
+                (e) => {
+                  this.preloadResources(
+                    `src/apps/${appName}/App.vue`,
+                    resource => {
+                      this.log(`入口组件（src/apps/${appName}/App.vue）`)
+                      plugin.definitions.__TG_APP_COMPONENT__ = resource
+                    },
+                    () => {
+                      this.preloadResources(
+                        'src/App.jsx',
+                        resource => {
+                          plugin.definitions.__TG_APP_COMPONENT__ = resource
+                        },
+                        () => {
+                          this.preloadResources(
+                            'src/App.vue',
+                            resource => {
+                              plugin.definitions.__TG_APP_COMPONENT__ = resource
                             }
                           )
                         }

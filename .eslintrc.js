@@ -7,6 +7,7 @@ module.exports = {
   'globals': {
     __TG_APP_CONFIG__: true,
     __TG_APP_ICON_FONT__: true,
+    __TG_APP_COMPONENT__: true,
     __TG_APP_ROUTES__: true,
     __TG_APP_LOGIN_COMPONENT__: true,
     __TG_APP_CUSTOMIZE_PROD_TINY_ECHARTS__: true
