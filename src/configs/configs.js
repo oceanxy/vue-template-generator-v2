@@ -25,8 +25,9 @@ module.exports = {
   homePermissions: true,
   // VUE 的 KeepAlive 组件最大缓存数量，当缓存的数量超过该值时，会优先清空最久未被激活的页面，默认值：3
   keepAliveMaxCount: 3,
-  // iconfont，为空时自动调用 src/assets/iconfont.js 或各子项目下的 assets/iconfont.js
-  iconFontSymbol: '//at.alicdn.com/t/c/font_4512342_quzlrwpnh8s.js',
+  // iconfont在线图标链接，请从 https://www.iconfont.cn/ 获取。
+  // 为空时将按照优先级从大到小自动调用本地文件：src/apps/{appName}/assets/iconfont.js 或 src/assets/iconfont.js
+  iconFontSymbol: '',
   /**
    * iconfont菜单图标在 active 状态下的后缀。该后缀会直接加到iconfont图标名称的最后，需在iconfont中预先定义好该图标；
    * - 如果留空则自动根据主题色填充该图标在active状态下的颜色；
