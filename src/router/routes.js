@@ -101,7 +101,7 @@ export default function getBaseRoutes(routes) {
     {
       path: '/login',
       name: 'Login',
-      component: () => Promise.resolve(__TG_APP_LOGIN_COMPONENT__),
+      component: () => Promise.resolve(__TG_APP_LOGIN_COMPONENT__.default),
       meta: {
         title: '登录',
         keep: false,

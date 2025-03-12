@@ -151,8 +151,6 @@ function getRoutes() {
   const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
   const menu = JSON.parse(localStorage.getItem(`${appName}-menu`))
 
-  console.log(menu)
-
   if (menu && token) {
     // if (USER_INFO_MAPPINGS) {
     //   return getBaseRoutes(selectDynamicRoutes(menu, __TG_APP_ROUTES__?.default || []))
