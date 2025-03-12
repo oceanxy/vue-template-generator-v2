@@ -1,9 +1,10 @@
 import { createApp } from 'vue'
+import configs from '@/configs'
 import pinia from '@/stores'
 import router from '@/router'
 import antDesignConfig from '@/configs/antDesignConfig'
 
-const app = createApp(App)
+const app = createApp(__TG_APP_COMPONENT__.default)
 
 app.use(router)
 app.use(pinia)
