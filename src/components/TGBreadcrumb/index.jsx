@@ -1,22 +1,18 @@
 import './index.scss'
 import configs from '@/configs'
-import { Breadcrumb, Button } from 'ant-design-vue'
-import { RouterLink } from 'vue-router'
+import { Breadcrumb } from 'ant-design-vue'
+import { RouterLink, useRoute } from 'vue-router'
+import { computed } from 'vue'
 
 export default {
   name: 'TGBreadcrumb',
-  props: {
-    mode: {
-      type: String,
-      // 'normal'：正常模式 'onlyLast'：只显示最后一级
-      default: 'normal'
-    }
-  },
-  computed: {
-    matchedRoutes() {
-      const matchedRoutes = [...this.$route.matched]
+  setup() {
+    const route = useRoute()
 
-      // 由于 '/' 路由的第一个子路由通常配置为首页的跳转路由，当进入首页时，$route.matched 会将路由为 '/' 和 其第一个子路由
+    const matchedRoutes = computed(() => {
+      const matchedRoutes = [...route.matched]
+
+      // 由于 '/' 路由的第一个子路由通常配置为首页的跳转路由，当进入首页时，route.matched 会将路由为 '/' 和 其第一个子路由
       // 同时返回，所以这里需要处理一下，以防面包屑显示为“首页 / 首页”的情况或类似情况。
       if (matchedRoutes.length === 2 && matchedRoutes[1].name === matchedRoutes[0].redirect.name) {
         matchedRoutes.shift()
@@ -32,59 +28,41 @@ export default {
 
       // 替换面包屑第一级的名称
       // if (matchedRoutes[0]?.path === '') {
-      //   matchedRoutes[0].meta.title = this.$router.resolve({ name: matchedRoutes[0].redirect.name }).route.meta.title
+      //   matchedRoutes[0].meta.title = router.resolve({ name: matchedRoutes[0].redirect.name }).route.meta.title
       // }
 
       return matchedRoutes
-    }
-  },
-  methods: {
-    handleBreadcrumbName(route) {
+    })
+
+    function handleBreadcrumbName(route) {
       return route?.meta?.title ?? route.name
-    },
-    itemRender({ route, routes }) {
+    }
+
+    function itemRender({ route, routes }) {
       // 最后一项
       if (routes.indexOf(route) === routes.length - 1) {
         return (
           <span class={'tg-breadcrumb-last-title'}>
-            {this.handleBreadcrumbName(route)}
+            {handleBreadcrumbName(route)}
           </span>
         )
       }
 
-      if (this.mode === 'normal') {
-        return (
-          <RouterLink to={route.path || '/'}>
-            {this.handleBreadcrumbName(route)}
-          </RouterLink>
-        )
-      }
-
-      return null
+      return (
+        <RouterLink to={route.key || '/'}>
+          {handleBreadcrumbName(route)}
+        </RouterLink>
+      )
     }
-  },
-  render() {
-    return (
+
+    return () => (
       <div class={'tg-breadcrumb'}>
         <IconFont type={'icon-global-home'} class={'tg-breadcrumb-btn-home'} />
         <Breadcrumb
-          routes={this.matchedRoutes}
+          routes={matchedRoutes.value}
           separator={configs.breadcrumbSeparator}
-          itemRender={this.itemRender}
+          itemRender={itemRender}
         />
-        {
-          this.$route.name === 'workbench'
-            ? (
-              <div class={'tg-breadcrumb-guide'}>
-                <IconFont type={'icon-global-help'} class={'tg-breadcrumb-btn-question'} />
-                <Button type={'link'} class={'tg-breadcrumb-btn'}>
-                  工作台操作指南
-                  <IconFont type={'icon-global-right'} class={'tg-breadcrumb-btn-right'} />
-                </Button>
-              </div>
-            )
-            : null
-        }
       </div>
     )
   }
