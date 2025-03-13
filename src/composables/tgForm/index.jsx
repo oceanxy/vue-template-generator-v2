@@ -2,6 +2,7 @@ import './assets/styles/index.scss'
 import useStore from '@/composables/tgStore'
 import { computed, inject, nextTick, onUnmounted, reactive, ref, toRaw, watch } from 'vue'
 import { Button, Form } from 'ant-design-vue'
+import { useRoute } from 'vue-router'
 
 /**
  * TGForm 组件
@@ -21,12 +22,13 @@ import { Button, Form } from 'ant-design-vue'
  * @param [getParams] {((currentItem:Object) => Object) | Object} - 自定义获取详情的参数，默认为`store.state.currentItem.id`。
  * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
  * 数据后的自定义数据处理逻辑，不为函数时默认与`store.state.currentItem`合并。
- * @param [formModelFormatter] {(currentItem: Object) => Object} - 初始化表单数据函数，
- * 参数为`currentItem`，返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
+ * @param [formModelFormatter] {(currentItem: Object, isNewModal?: boolean) => Object} - 初始化表单数据函数。
+ * - 参数为`currentItem`，返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
  * 一个数组，以供 Cascader 组件绑定使用。
- * @param [buttonDisabledFn] {()=>boolean} - 禁用查询和重置按钮的方法。
+ * - 参数`isNewModal`，值为 true 表示当前弹窗是新增弹窗，值为 false 表示当前弹窗是编辑弹窗。
+ * @param [buttonDisabledFn] {() => boolean} - 禁用查询和重置按钮的方法。
  * @param [rules={}] {Object} - 验证规则，参考 ant-design-vue 的 Form.Item。
- * @param [loaded] {(Object)=>void} - 所有 searchParamOptions 指定的接口和获取详情接口（如果有）全部加载完成后的回调。
+ * @param [loaded] {(Object) => void} - 所有 searchParamOptions 指定的接口和获取详情接口（如果有）全部加载完成后的回调。
  * @returns {Object}
  */
 export default function useTGForm({
@@ -70,6 +72,7 @@ export default function useTGForm({
   const formRules = reactive(rules)
   const initSearchParamResult = ref(searchParamOptions?.length <= 0)
   const hasRequiredEnum = searchParamOptions?.some(_enum => _enum.isRequired === true)
+  const route = useRoute()
 
   const {
     text,
@@ -99,7 +102,7 @@ export default function useTGForm({
 
   if (location) {
     if (location !== 'modalForEditing' && !modalStatusFieldName) {
-      throw new Error('tgForm：请传入 modalStatusFieldName')
+      throw new Error('TGForm：使用 useTGForm 时缺少参数（modalStatusFieldName）。')
     }
 
     if (modalStatusFieldName) {
@@ -111,22 +114,29 @@ export default function useTGForm({
           // 关闭弹窗，重置表单字段及表单验证信息
           resetFields()
           clearValidate()
+        } else {
+          const formModelLength = Object.keys(formModel).length
+          // 检测对应store[location].form是否预定义了与页面弹窗内表单对应的字段，将影响表单字段的收集
+          // formModel 字段数量，排除编辑模式下自动注入的 [rowKey]
+          if ((!isNewModal.value && formModelLength <= 1) || (isNewModal.value && !formModelLength)) {
+            console.warn(`TGForm：${route.name}.store.${location}.form 未预定义与页面弹窗内表单对应的字段，这会导致编辑表单时无法回填数据！`)
+          }
         }
       })
     }
 
     if (!isSearchForm) {
       // 作为数据表单使用时，将`store.currentItem`和`store[location].form`中的同名字段保持同步
-      watch(currentItem, async currentItem => {
+      watch(currentItem, async ci => {
         if (
           // 判断弹窗状态
           open.value &&
           // 判断弹窗主体与当前currentItem数据是否匹配
-          location === currentItem._location &&
+          location === ci._location &&
           // 判断当前操作是新增还是编辑
           (
             (
-              // 判断当前是编辑弹窗
+              // 判断当前是否是编辑弹窗
               !isNewModal.value &&
               // 判断currentItem更新次数，防止过度监听
               ((isGetDetails && count.value < 2) || (!isGetDetails && count.value < 1))
@@ -140,7 +150,7 @@ export default function useTGForm({
           const _formModel = {}
 
           // 预处理从`currentItem`中同步到`formModel`的数据
-          if (Object.keys(currentItem).length - 3 > 0) {
+          if (Object.keys(ci).length - 3 > 0) {
             // TODO [性能优化]
             //  当 isGetDetails 为 true 时，此处会执行两次。
             //  原因是首次打开弹窗时会为 currentItem 赋值，获取到详情数据后会再次覆盖 currentItem，
@@ -149,16 +159,16 @@ export default function useTGForm({
             //  2、考虑在 isGetDetails 为 true 时，首次监听不执行以下逻辑，在获取到详情数据时一并执行。
 
             for (const key in formModel) {
-              if (key in currentItem) {
+              if (key in ci) {
                 const formModelKey = formModel[key]
-                const currentItemKey = toRaw(currentItem[key])
+                const currentItemKey = toRaw(ci[key])
 
                 // 引用类型为假值时跳过
                 if (!currentItemKey && typeof formModelKey === 'object') {
                   continue
                 }
 
-                _formModel[key] = currentItem[key]
+                _formModel[key] = ci[key]
               }
             }
           }
@@ -168,7 +178,7 @@ export default function useTGForm({
             [location]: {
               form: {
                 ..._formModel,
-                ...formModelFormatter?.(currentItem)
+                ...formModelFormatter?.(ci)
               }
             }
           })

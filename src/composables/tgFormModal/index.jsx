@@ -18,9 +18,10 @@ import { set } from 'lodash/object'
  * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
  * 数据后的自定义数据处理逻辑，不为函数时默认与`store.state.currentItem`合并。
  * @param [searchParamOptions] {SearchParamOption[]} - 搜索参数配置。
- * @param [formModelFormatter] {(currentItem: Object) => Object} - 初始化表单数据函数，
- * 参数为`currentItem`，返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
+ * @param [formModelFormatter] {(currentItem: Object, isNewModal?: boolean) => Object} - 初始化表单数据函数。
+ * - 参数`currentItem`，返回值为处理后的表单数据，只需返回需要处理的字段即可。比如将接口中获取的省、市、区三个字段处理成
  * 一个数组，以供 Cascader 组件绑定使用。
+ * - 参数`isNewModal`，值为 true 表示当前弹窗是新增弹窗，值为 false 表示当前弹窗是编辑弹窗。
  * @returns {Object}
  */
 export default function useTGFormModal({
