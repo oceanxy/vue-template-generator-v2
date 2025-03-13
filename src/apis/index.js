@@ -17,6 +17,8 @@ const appApis = getApisFromFiles(dynamicModulesFiles)
  */
 const apis = {}
 
+const request = getService(configs, router)
+
 // 动态注入参数
 Object.entries({ ...commonApis, ...appApis }).forEach(([apiName, api]) => {
   apis[apiName] = (data, params) => {
@@ -27,7 +29,14 @@ Object.entries({ ...commonApis, ...appApis }).forEach(([apiName, api]) => {
       [data, params] = [params, undefined]
     }
 
-    return api(getService(configs, router), data, params)
+    const requestConfig = api(data, params)
+
+    if (configs.mock && requestConfig.mockUrl) {
+      requestConfig.url = requestConfig.mockUrl
+      delete requestConfig.mockUrl
+    }
+
+    return request(requestConfig)
   }
 })
 

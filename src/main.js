@@ -10,6 +10,11 @@ app.use(router)
 app.use(pinia)
 app.mount('#root')
 
+// 预载mock数据（开发环境下并启用mock时执行）
+if (process.env.NODE_ENV === 'development' && configs.mock) {
+  require('./mock/index.js')
+}
+
 antDesignConfig(app)
 
 app.config.errorHandler = err => {
