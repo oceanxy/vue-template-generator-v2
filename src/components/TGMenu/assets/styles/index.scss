@@ -21,8 +21,12 @@
 
   & > .ant-menu-item-selected,
   & > .ant-menu-submenu-selected .ant-menu-submenu-title {
-    .anticon {
+    .anticon:not(.no-active-status) {
       color: var(--tg-theme-color-text);
+    }
+
+    .ant-menu-title-content {
+      color: var(--tg-theme-color-primary);
     }
   }
 

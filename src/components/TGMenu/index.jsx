@@ -41,10 +41,14 @@ export default {
     }, { immediate: true })
 
     function getActiveSuffixForMenuIcon() {
-      return configs.activeSuffixForMenuIcon.replace(
-        '{themeName}',
-        `-${localStorage.getItem(`${appName}-theme`) || configs.header.buttons.theme.default}`
-      )
+      if (configs.activeSuffixForMenuIcon) {
+        return configs.activeSuffixForMenuIcon.replace(
+          '{themeName}',
+          `-${localStorage.getItem(`${appName}-theme`) || configs.header.buttons.theme.default}`
+        )
+      } else {
+        return ''
+      }
     }
 
     function getPopupSubMenuClassName() {
@@ -158,7 +162,22 @@ export default {
         activeSuffix = getActiveSuffixForMenuIcon()
       }
 
-      return <IconFont key={componentKey.value} type={`${route.meta.icon}${activeSuffix}`} />
+      if (activeSuffix) {
+        return (
+          <IconFont
+            key={componentKey.value}
+            type={`${route.meta.icon}${activeSuffix}`}
+          />
+        )
+      }
+
+      return (
+        <IconFont
+          key={componentKey.value}
+          type={`${route.meta.icon}`}
+          class={'no-active-status'}
+        />
+      )
     }
 
     function getMenuItem(routes) {
