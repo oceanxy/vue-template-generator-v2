@@ -10,6 +10,7 @@ const dynamicModulesFiles = require.context('../apps', true, /apis\/[a-zA-Z0-9-]
 
 const commonApis = getApisFromFiles(modulesFiles)
 const appApis = getApisFromFiles(dynamicModulesFiles)
+export const apiConfigs = { ...commonApis, ...appApis }
 
 /**
  * 注入axios后的api函数对象
@@ -20,7 +21,7 @@ const apis = {}
 const request = getService(configs, router)
 
 // 动态注入参数
-Object.entries({ ...commonApis, ...appApis }).forEach(([apiName, api]) => {
+Object.entries(apiConfigs).forEach(([apiName, api]) => {
   apis[apiName] = (data, params) => {
     if (
       Object.prototype.toString.call(data) === '[object Object]' && !Object.keys(data).length &&
