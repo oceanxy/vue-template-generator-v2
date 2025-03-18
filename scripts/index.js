@@ -105,8 +105,7 @@ function getConfig(appName) {
       }
 
       // 排除子项目的 .md 和 .ico 资源
-      // return /\.(md|ico)$/.test(resource)
-      return /\.md$/.test(resource)
+      return /\.(md|ico)$/.test(resource)
     }
   }))
 

@@ -34,6 +34,17 @@ module.exports = merge(baseConfig, {
             pure_funcs: [
               'console.log' // 删除console.log
             ]
+          },
+          // 保留注入的全局资源变量
+          mangle: {
+            reserved: [
+              '__TG_APP_CONFIG__',
+              '__TG_APP_ICON_FONT__',
+              '__TG_APP_COMPONENT__',
+              '__TG_APP_ROUTES__',
+              '__TG_APP_LOGIN_COMPONENT__',
+              '__TG_APP_CUSTOMIZE_PROD_TINY_ECHARTS__'
+            ]
           }
         }
       }),
@@ -42,11 +53,12 @@ module.exports = merge(baseConfig, {
         // 检测src下所有vue文件和public下index.html中使用的类名和id和标签名称
         // 只打包这些文件中用到的样式
         paths: globAll.sync([
+          `${path.join(__dirname, '../src')}/**/*.jsx`,
           `${path.join(__dirname, '../src')}/**/*.vue`,
           path.join(__dirname, '../public/index.html')
         ]),
         safelist: {
-          standard: [/^ant-/] // 过滤以ant-开头的类名，即使没用到也不删除
+          standard: [/^ant-/, 'anticon', /^tg-/] // 过滤以ant-或tg-开头的类名，即使没用到也不删除
         }
       }),
       new CompressionPlugin({
@@ -78,7 +90,8 @@ module.exports = merge(baseConfig, {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'static/css/[name].css' // 抽离css的输出目录和名称
+      ignoreOrder: true, // 忽略样式文件引入顺序校验
+      filename: 'static/css/[name].[contenthash:8].css' // 抽离css的输出目录和名称
     })
   ],
   cache: {
