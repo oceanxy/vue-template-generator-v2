@@ -7,7 +7,7 @@
 import { Button } from 'ant-design-vue'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import router from '@/router'
 
 const appName = getFirstLetterOfEachWordOfAppName()
@@ -41,6 +41,7 @@ export function getButtonPermission(moduleName, identification) {
 }
 
 export default {
+  name: 'TGPermissionsButton',
   props: {
     // 解构 ant-design-vue Button props
     ...Button.props,
