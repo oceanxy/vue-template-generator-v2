@@ -4,6 +4,7 @@ import { Breadcrumb } from 'ant-design-vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { computed } from 'vue'
 import router from '@/router'
+import { cloneDeep } from 'lodash'
 
 export default {
   name: 'TGBreadcrumb',
@@ -11,7 +12,7 @@ export default {
     const route = useRoute()
 
     const matchedRoutes = computed(() => {
-      const matchedRoutes = [...route.matched]
+      const matchedRoutes = cloneDeep(route.matched)
 
       // 处理面包屑出现最后两级重名的情况
       // 主要出现在父级菜单设置“hideChildren: true”（不在左侧菜单展示子级），同时子级路由的 path 字段为空字符串的情况

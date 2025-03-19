@@ -11,4 +11,10 @@
     font-size: var(--tg-theme-font-size);
     margin-right: 4px;
   }
+
+  .ant-breadcrumb {
+    .ant-breadcrumb-overlay-link > .anticon {
+      font-size: calc(var(--tg-theme-font-size-icon) - 2px);
+    }
+  }
 }
