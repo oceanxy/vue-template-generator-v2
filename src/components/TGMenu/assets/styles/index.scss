@@ -11,22 +11,29 @@
 
   }
 
-  & > .ant-menu-item-active,
-  & > .ant-menu-submenu-active .ant-menu-submenu-title,
-  & > .ant-menu-submenu-open:hover {
-    .anticon {
-      color: var(--tg-theme-color-primary);
-    }
-  }
+  &.ant-menu-root {
+    & > .ant-menu-submenu,
+    & > .ant-menu-item {
+      &.ant-menu-item-active > .ant-menu-item-title,
+      &.ant-menu-submenu-active > .ant-menu-submenu-title,
+      &.ant-menu-submenu-open:hover > .ant-menu-submenu-title {
+        & > .ant-menu-item-icon {
+          color: var(--tg-theme-color-primary);
+        }
+      }
 
-  & > .ant-menu-item-selected,
-  & > .ant-menu-submenu-selected .ant-menu-submenu-title {
-    .anticon:not(.no-active-status) {
-      color: var(--tg-theme-color-text);
-    }
+      &.ant-menu-item-selected,
+      &.ant-menu-submenu-selected {
+        & > .ant-menu-submenu-title {
+          & > .ant-menu-item-icon:not(.no-active-status) {
+            color: var(--tg-theme-color-text);
+          }
+        }
 
-    .ant-menu-title-content {
-      color: var(--tg-theme-color-primary);
+        .ant-menu-submenu-title:hover {
+          color: var(--tg-theme-color-primary);
+        }
+      }
     }
   }
 

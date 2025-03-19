@@ -69,11 +69,18 @@ export default {
 
     function getSelectedKeys(currentRoute) {
       const keyPath = []
+      const routesMatched = currentRoute.matched
 
       // 根据当前进入页面的路由设置菜单的 selectedKeys 和 openKeys 值
-      for (let i = 0; i < currentRoute.matched.length; i++) {
-        if (currentRoute.matched[i].path !== '') {
-          keyPath.push(currentRoute.matched[i].path)
+      for (let i = 0; i < routesMatched.length; i++) {
+        if (routesMatched[i].path !== '') {
+          // 修复菜单无法选中的问题
+          // #当路由中的path设置为空字符串时，该路由的在`route.matched`中的path与上级菜单的path相同，正确情况应该多一个`/`来区分上下级
+          if (routesMatched[i].path && routesMatched[i].path === routesMatched[i - 1]?.path) {
+            keyPath.push(`${routesMatched[i].path}/`)
+          } else {
+            keyPath.push(routesMatched[i].path)
+          }
         }
       }
 
@@ -81,11 +88,7 @@ export default {
     }
 
     async function onMenuClick({ key }) {
-      const toPath = key
-        // 替换path中所有 '//'
-        .replaceAll('//', '/')
-        // 替换以 '/' 结尾的 path
-        .replace(/(\S+)\/$/, '$1')
+      const toPath = key.replaceAll('//', '/')
 
       // 检测是否是跳转到本路由
       if (toPath !== router.currentRoute.value.path) {
@@ -93,7 +96,7 @@ export default {
         menuScrollTop.value = menuDomRef.value?.$el?.scrollTop ?? 0
 
         setTimeout(() => {
-          if (router.currentRoute.value.path !== key) {
+          if (router.currentRoute.value.path !== toPath) {
             selectedKeys.value = getSelectedKeys(router.currentRoute.value)
           }
 
@@ -156,6 +159,8 @@ export default {
     }
 
     function getIcon(route) {
+      if (!route.meta.icon) return null
+
       let activeSuffix = ''
 
       if (selectedKeys.value.includes(route.key)) {
