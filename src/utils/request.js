@@ -5,6 +5,7 @@ import configs from '@/configs'
 import { getEnvVar } from '@/utils/env'
 import useStore from '@/composables/tgStore'
 import { getAbortController } from '@/router'
+import qs from 'qs'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 
@@ -45,9 +46,9 @@ export default function getService(conf, router) {
         }
       }
 
-      // if (INTERFACE_MAPPINGS) {
-      //   config.data = INTERFACE_MAPPINGS?.request(config.data, qs)
-      // }
+      if (__TG_APP_INTERFACE_MAPPINGS__) {
+        config.data = __TG_APP_INTERFACE_MAPPINGS__?.request(config.data, qs)
+      }
 
       return config
     },
@@ -72,9 +73,9 @@ export default function getService(conf, router) {
     async response => {
       let res = response.data
 
-      // if (response.config.responseType !== 'blob' && INTERFACE_MAPPINGS) {
-      //   res = INTERFACE_MAPPINGS.response(response.data)
-      // }
+      if (response.config.responseType !== 'blob' && __TG_APP_INTERFACE_MAPPINGS__) {
+        res = __TG_APP_INTERFACE_MAPPINGS__.response(response.data)
+      }
 
       if (response.config.responseType === 'blob') {
         if (res instanceof Blob && res.type === 'application/json') {

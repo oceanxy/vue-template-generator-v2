@@ -53,6 +53,30 @@ class GlobalVariableInjectionPlugin {
               )
             }
 
+            // 预加载接口映射器
+            if (!plugin.definitions.__TG_APP_INTERFACE_MAPPINGS__) {
+              this.preloadResources(
+                `src/apps/${appName}/configs/interfaceMappings.js`,
+                resource => {
+                  this.log(`接口映射文件（src/apps/${appName}/configs/interfaceMappings.js）`)
+                  plugin.definitions.__TG_APP_INTERFACE_MAPPINGS__ = resource
+                },
+                () => plugin.definitions.__TG_APP_INTERFACE_MAPPINGS__ = undefined
+              )
+            }
+
+            // 预加载用户信息和菜单信息映射器
+            if (!plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__) {
+              this.preloadResources(
+                `src/apps/${appName}/configs/userInfoMappings.js`,
+                resource => {
+                  this.log(`动态菜单映射文件（src/apps/${appName}/configs/userInfoMappings.js）`)
+                  plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__ = resource
+                },
+                () => plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__ = undefined
+              )
+            }
+
             // 预加载路由文件
             if (!plugin.definitions.__TG_APP_ROUTES__) {
               this.preloadResources(

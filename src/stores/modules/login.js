@@ -141,23 +141,23 @@ export default createStore({
           let userInfo
           const appName = getFirstLetterOfEachWordOfAppName()
 
-          // if (USER_INFO_MAPPINGS) {
-          //   // 适配非蓝桥后端框架的用户信息返回体
-          //   const userInfoResponseData = USER_INFO_MAPPINGS.mapping(response.data)
-          //
-          //   userInfo = userInfoResponseData.userInfo
-          //   const menuList = userInfoResponseData.menuList
-          //   const defaultMenuUrl = userInfoResponseData.defaultMenuUrl
-          //   const buttonPermissions = userInfoResponseData.buttonPermissions
-          //
-          //   if (menuList) {
-          //     localStorage.setItem(`${appName}-defaultRoute`, defaultMenuUrl || '')
-          //     localStorage.setItem(`${appName}-menu`, JSON.stringify(menuList))
-          //     localStorage.setItem(`${appName}-buttonPermissions`, JSON.stringify(buttonPermissions))
-          //   }
-          // } else {
-          userInfo = response.data
-          // }
+          if (__TG_APP_USER_INFO_MAPPINGS__) {
+            // 适配非蓝桥后端框架的用户信息返回体
+            const userInfoResponseData = __TG_APP_USER_INFO_MAPPINGS__.mapping(response.data)
+
+            userInfo = userInfoResponseData.userInfo
+            const menuList = userInfoResponseData.menuList
+            const defaultMenuUrl = userInfoResponseData.defaultMenuUrl
+            const buttonPermissions = userInfoResponseData.buttonPermissions
+
+            if (menuList) {
+              localStorage.setItem(`${appName}-defaultRoute`, defaultMenuUrl || '')
+              localStorage.setItem(`${appName}-menu`, JSON.stringify(menuList))
+              localStorage.setItem(`${appName}-buttonPermissions`, JSON.stringify(buttonPermissions))
+            }
+          } else {
+            userInfo = response.data
+          }
 
           localStorage.setItem(`${appName}-${configs.tokenConfig.fieldName}`, payload.token)
 
