@@ -130,6 +130,7 @@ export default createStore({
         return Promise.resolve(response)
       },
       async getUserInfo(payload) {
+        console.log('getUserInfo', payload)
         this.loading = true
 
         const response = await apis.getUserInfo(payload)

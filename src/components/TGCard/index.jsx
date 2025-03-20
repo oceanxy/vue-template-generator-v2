@@ -37,13 +37,11 @@ const TGCard = (props, { slots, emits }) => {
     }
   })
   const className = computed(() => (props.contentClass ? `${props.contentClass} ` : '') + 'box-content')
-  const titleClassName = computed(() => `${
-    props.titleClass ? `${props.titleClass} ` : ''
-  }${
-    props.showTitleShape ? 'divider padding-left ' : ''
-  }${
-    props.showTitleLine ? 'line ' : ''
-  }box-title`)
+  const titleClassName = computed(() => `${props.titleClass ? `${props.titleClass} ` : ''
+    }${props.showTitleShape ? 'divider padding-left ' : ''
+    }${props.showTitleLine ? 'line ' : ''
+    }box-title`)
+
 
   return (
     <div
