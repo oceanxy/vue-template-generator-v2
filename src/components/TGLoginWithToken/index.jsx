@@ -11,7 +11,6 @@ export default defineComponent({
   name: 'TGLoginWithToken',
   setup(props, { emit }) {
     const loginStore = useStore('/login')
-    console.log('config', config)
 
     onMounted(async () => {
       const searchToken = new URL(window.location.href).searchParams.get(config.tokenConfig.fieldName)
@@ -39,7 +38,6 @@ export default defineComponent({
         localStorage.setItem(`${appName}-${config.tokenConfig.fieldName}`, token)
 
         const response = await loginStore.getUserInfo({ token })
-
 
         if (response.status) {
           await loginStore.jumpAfterLogin()

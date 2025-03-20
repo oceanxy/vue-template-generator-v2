@@ -1,5 +1,3 @@
-const path = require('path')
-
 class AppNameInjectionPlugin {
   constructor(options) {
     this.appName = options.appName
