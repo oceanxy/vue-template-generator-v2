@@ -1,4 +1,4 @@
-const { ProvidePlugin } = require('webpack')
+const { ProvidePlugin, DefinePlugin } = require('webpack')
 const chalk = require('chalk')
 const { resolve, join } = require('path')
 const { accessSync, constants } = require('node:fs')
@@ -31,6 +31,19 @@ class GlobalVariableInjectionPlugin {
     }
   }
 
+  // 查找所有DefinePlugin插件中，是否存在指定变量
+  checkDefinePlugin(compilation, key) {
+    const definePlugins = compilation.options.plugins?.filter(plugin => plugin instanceof DefinePlugin) ?? []
+
+    for (const plugin of definePlugins) {
+      if (key in plugin.definitions) {
+        return true
+      }
+    }
+
+    return false
+  }
+
   apply(compiler) {
     compiler.hooks.compilation.tap('GlobalVariableInjectionPlugin', compilation => {
       if (compilation.options.plugins) {
@@ -60,8 +73,15 @@ class GlobalVariableInjectionPlugin {
                 resource => {
                   this.log(`接口映射文件（src/apps/${appName}/configs/interfaceMappings.js）`)
                   plugin.definitions.__TG_APP_INTERFACE_MAPPINGS__ = resource
-                },
-                () => plugin.definitions.__TG_APP_INTERFACE_MAPPINGS__ = undefined
+                }, () => {
+                  if (!this.checkDefinePlugin(compilation, '__TG_APP_INTERFACE_MAPPINGS__')) {
+                    const _plugin = existingPlugins.find(plugin => plugin instanceof DefinePlugin)
+
+                    if (_plugin) {
+                      _plugin.definitions.__TG_APP_INTERFACE_MAPPINGS__ = undefined
+                    }
+                  }
+                }
               )
             }
 
@@ -72,8 +92,15 @@ class GlobalVariableInjectionPlugin {
                 resource => {
                   this.log(`动态菜单映射文件（src/apps/${appName}/configs/userInfoMappings.js）`)
                   plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__ = resource
-                },
-                () => plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__ = undefined
+                }, () => {
+                  if (!this.checkDefinePlugin(compilation, '__TG_APP_USER_INFO_MAPPINGS__')) {
+                    const _plugin = existingPlugins.find(plugin => plugin instanceof DefinePlugin)
+
+                    if (_plugin) {
+                      _plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__ = undefined
+                    }
+                  }
+                }
               )
             }
 
