@@ -130,7 +130,6 @@ export default createStore({
         return Promise.resolve(response)
       },
       async getUserInfo(payload) {
-        console.log('getUserInfo', payload)
         this.loading = true
 
         const response = await apis.getUserInfo(payload)
@@ -162,6 +161,7 @@ export default createStore({
           localStorage.setItem(`${appName}-${configs.tokenConfig.fieldName}`, payload.token)
 
           this.userInfo = userInfo
+
           this.lastLoginTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
           this.lastLoginToken = payload.token
           this.setParamsUseInHeader()
@@ -186,11 +186,9 @@ export default createStore({
           localStorage.setItem(`${appName}-headerId`, this.userInfo.organId || '')
           const commonStore = useStore('/common')
 
+
           commonStore.headerId = this.userInfo.organId
-          commonStore.organListForHeader = [
-            ...commonStore.organList.list,
-            ...this.userInfo.organList
-          ]
+          commonStore.organListForHeader.list = this.userInfo.organList
         }
       },
       /**

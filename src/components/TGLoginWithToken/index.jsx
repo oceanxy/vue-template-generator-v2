@@ -40,8 +40,8 @@ export default defineComponent({
         const response = await loginStore.getUserInfo({ token })
 
         if (response.status) {
-          await loginStore.jumpAfterLogin()
           emit('errorStateChange', { status: false, error: null })
+          await loginStore.jumpAfterLogin()
         } else {
           message.error(response.message || '获取用户信息失败', 0)
 

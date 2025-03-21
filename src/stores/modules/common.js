@@ -22,7 +22,14 @@ export default createStore({
       // 是否紧凑模式，默认 false。启用后，会在 antd 组件的布局算法中加入 'compactAlgorithm'。
       isCompactAlgorithm: false,
       // 组件大小，默认 middle，可选 small | middle | large
-      componentSize: 'middle'
+      componentSize: 'middle',
+      // header 内的当前选中站点
+      headerId: "",
+      // header 内的站点切换数据源
+      organListForHeader: {
+        loading: false,
+        list: []
+      },
     },
     actions: {
       setCollapsed() {
