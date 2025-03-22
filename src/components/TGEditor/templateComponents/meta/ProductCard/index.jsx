@@ -1,6 +1,7 @@
 import { Button, Input } from 'ant-design-vue'
 import { ShopOutlined } from '@ant-design/icons-vue'
 import { TG_COMPONENT_CATEGORY } from '@/components/TGEditor/templateComponents'
+import TGColorPicker from '@/components/TGColorPicker'
 
 /**
  * 模板组件元数据
@@ -14,24 +15,25 @@ export default {
   defaultProps: {  // 默认属性值（必填）
     title: '卡片标题'
   },
-  className: 'tg-editor-product-card',
   style: { // 默认样式
     // margin: '8px',
     // padding: '12px'
+    backgroundColor: '#ffffff'
   },
+  className: 'tg-editor-product-card',
   configForm: { // 右侧属性面板配置（必填）
     fields: [
       {
         type: 'input',
         label: '标题',
         prop: 'title',
-        component: Input // 对应的antd组件
+        component: () => Input // 对应的antd组件
       },
       {
         type: 'color-picker',
         label: '背景色',
-        prop: 'bgColor',
-        component: Input
+        prop: 'backgroundColor',
+        component: () => TGColorPicker
       }
     ]
   }

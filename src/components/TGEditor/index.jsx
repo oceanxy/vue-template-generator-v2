@@ -1,17 +1,35 @@
 import './assets/styles/index.scss'
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 import Canvas from './components/Canvas'
-import { useStore } from './stores/useStore'
-import { schema } from './schemas'
+import MaterialPanel from './components/MaterialPanel'
+import PropertyPanel from './components/PropertyPanel'
+import { useEditorStore } from './stores/useEditorStore'
+import { schema as schemaMeta } from './schemas'
 import { useDnD } from './utils/useDnD'
 import { Button, Layout, Space } from 'ant-design-vue'
+// import { SchemaService } from '@/components/TGEditor/schemas/persistence'
 
 export default {
   name: 'TGEditor',
   setup() {
-    const store = useStore()
-    const _schema = reactive(schema)
-    const { handleDragStart, handleDrop } = useDnD(_schema, store)
+    const store = useEditorStore()
+    const schema = reactive(schemaMeta)
+    const { handleDragStart, handleDrop } = useDnD(schema, store)
+
+    watch(schema, val => {
+      // debugger
+
+      console.log(val)
+
+      // 持久化schema
+      // SchemaService.save(store.name, val)
+    })
+
+    // 更新组件的 Schema
+    function updateComponentSchema(props) {
+      const componentSchema = schema.components.find(component => component.id === store.selectedComponent.id)
+      componentSchema.props = props
+    }
 
     return () => (
       <Layout class={'tg-editor-container'}>
@@ -25,34 +43,36 @@ export default {
           <Layout.Sider
             width={200}
             theme="light"
-            class={'tg-editor-component-container'}
+            class={'tg-editor-material-wrapper'}
           >
-            <div class={'tg-editor-base-component'}>
-              {
-                store.componentList.map(comp => (
-                  <div
-                    key={comp.type}
-                    class={'tg-editor-component-item'}
-                    draggable
-                    onDragstart={(e) => handleDragStart(e, comp)}
-                  >
-                    {comp.preview({ ...comp.defaultProps, style: comp.style })}
-                  </div>
-                ))
-              }
-            </div>
+            <MaterialPanel
+              store={store}
+              schema={schema}
+              handleDragStart={handleDragStart}
+            />
           </Layout.Sider>
 
-          {/* 画布区域 */}
+          {/* 画布 */}
           <Layout.Content class={'tg-editor-canvas-wrapper'}>
-            <div
-              class={'tg-editor-canvas-container'}
-              onDrop={handleDrop}
-              onDragover={e => e.preventDefault()}
-            >
-              <Canvas schema={schema} />
-            </div>
+            <Canvas
+              store={store}
+              schema={schema}
+              handleDrop={handleDrop}
+            />
           </Layout.Content>
+
+          {/* 属性面板 */}
+          <Layout.Sider
+            width={200}
+            theme="light"
+            class={'tg-editor-property-wrapper'}
+          >
+            <PropertyPanel
+              schema={schema}
+              selectedComponent={store.selectedComponent}
+              onUpdate={updateComponentSchema}
+            />
+          </Layout.Sider>
         </Layout>
       </Layout>
     )
