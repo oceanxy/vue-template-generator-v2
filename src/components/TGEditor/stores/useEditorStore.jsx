@@ -11,7 +11,7 @@ export const useEditorStore = defineStore('editor', {
      * 组件注册中心
      * @type {TGComponentMeta[]}
      */
-    baseComponentList: [
+    basicComponents: [
       {
         type: 'a-button',
         category: TG_COMPONENT_CATEGORY.base,
@@ -46,12 +46,34 @@ export const useEditorStore = defineStore('editor', {
             }
           ]
         }
+      },
+      {
+        type: 'a-input',
+        category: TG_COMPONENT_CATEGORY.base,
+        icon: '',
+        preview: props => <Input {...props} />,
+        defaultProps: {
+          placeholder: '请输入',
+          disabled: true
+        },
+        style: {},
+        className: 'tg-editor-base-component',
+        configForm: {
+          fields: [
+            {
+              type: 'input',
+              label: '占位符',
+              prop: 'placeholder',
+              component: () => Input
+            }
+          ]
+        }
       }
     ],
-    templateComponentList: [
+    templateComponents: [
       ProductCardMeta
     ],
-    layoutComponentList: []
+    layoutComponents: []
   }),
   actions: {
     /**
@@ -68,22 +90,22 @@ export const useEditorStore = defineStore('editor', {
      * @returns {TGComponentMeta} 组件元数据
      */
     getComponentByType(type, category) {
-      let componentList = []
+      let components = []
 
       switch (category) {
         case TG_COMPONENT_CATEGORY.template:
-          componentList = this.templateComponentList
+          components = this.templateComponents
           break
         case TG_COMPONENT_CATEGORY.base:
-          componentList = this.baseComponentList
+          components = this.basicComponents
           break
         case TG_COMPONENT_CATEGORY.layout:
         default:
-          componentList = this.layoutComponentList
+          components = this.layoutComponents
           break
       }
 
-      const component = componentList.find(component => component.type === type)
+      const component = components.find(component => component.type === type)
 
       return cloneDeep(component)
     }

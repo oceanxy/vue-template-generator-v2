@@ -6,8 +6,8 @@ import PropertyPanel from './components/PropertyPanel'
 import { useEditorStore } from './stores/useEditorStore'
 import { schema as schemaMeta } from './schemas'
 import { useDnD } from './utils/useDnD'
-import { Button, Layout, Space } from 'ant-design-vue'
-// import { SchemaService } from '@/components/TGEditor/schemas/persistence'
+import { Button, Layout, message, Space } from 'ant-design-vue'
+import { SchemaService } from './schemas/persistence'
 
 export default {
   name: 'TGEditor',
@@ -16,14 +16,19 @@ export default {
     const schema = reactive(schemaMeta)
     const { handleDragStart, handleDrop } = useDnD(schema, store)
 
-    watch(schema, val => {
-      // debugger
+    watch(
+      () => schema,
+      val => {
+        // 持久化schema
+        SchemaService.save('default', val)
+      },
+      { deep: true, immediate: true }
+    )
 
-      console.log(val)
-
-      // 持久化schema
-      // SchemaService.save(store.name, val)
-    })
+    const handleSchemaSave = () => {
+      SchemaService.save('default', schema)
+      message.success('保存成功')
+    }
 
     // 更新组件的 Schema
     function updateComponentSchema(props) {
@@ -35,7 +40,7 @@ export default {
       <Layout class={'tg-editor-container'}>
         <Layout class={'tg-editor-header'}>
           <Space class={'tg-editor-tools'}>
-            <Button>保存</Button>
+            <Button onClick={handleSchemaSave}>保存</Button>
           </Space>
         </Layout>
         <Layout>

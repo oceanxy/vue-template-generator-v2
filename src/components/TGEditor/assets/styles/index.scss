@@ -20,11 +20,15 @@
       user-select: none;
       overflow-y: auto;
 
-      .component-category-title {
-        font-weight: bolder;
-        border-bottom: 1px solid #e3e3e3;
+      .tg-editor-material-category {
+        margin-bottom: 20px;
 
-        & + .tg-editor-component-items {
+        .tg-editor-material-title {
+          font-weight: bolder;
+          border-bottom: 1px solid #e3e3e3;
+        }
+
+        .tg-editor-material-items {
           margin-bottom: 20px;
           border: 1px dashed #d9d9d9;
           padding: 8px;
@@ -34,6 +38,10 @@
           &:hover {
             border-color: #1890ff;
             background-color: #e6f7ff;
+          }
+
+          & > * {
+            width: 100%;
           }
         }
       }

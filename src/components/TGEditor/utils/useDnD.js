@@ -1,7 +1,10 @@
 import { getUUID } from '@/utils/utilityFunction'
+import { useDraggable } from '@vueuse/core'
 
 export const useDnD = (schema, store) => {
   const handleDragStart = (e, component) => {
+    const { x, y } = useDraggable(e.target)
+
     // 携带组件类型和初始props
     e.dataTransfer.setData('componentType', component.type)
     e.dataTransfer.setData('initialProps', JSON.stringify({

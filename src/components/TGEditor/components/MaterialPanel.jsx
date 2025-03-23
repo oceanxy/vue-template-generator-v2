@@ -1,29 +1,59 @@
+import { TG_COMPONENT_CATEGORY } from '@/components/TGEditor/templateComponents'
+
 export default {
   name: 'MaterialPanel',
   props: ['store', 'schema', 'handleDragStart'],
   setup(props) {
-    const componentRender = comp => (
-      <div
-        key={comp.type}
-        class={'tg-editor-component-items'}
-        draggable
-        onDragstart={(e) => props.handleDragStart(e, comp)}
-      >
-        {comp.preview({ ...comp.defaultProps, style: comp.style })}
-      </div>
-    )
+    const materials = [
+      {
+        category: TG_COMPONENT_CATEGORY.layout,
+        title: '布局组件',
+        components: props.store.layoutComponents
+      },
+      {
+        category: TG_COMPONENT_CATEGORY.base,
+        title: '基础组件',
+        components: props.store.basicComponents
+      },
+      {
+        category: TG_COMPONENT_CATEGORY.template,
+        title: '模板组件',
+        components: props.store.templateComponents
+      }
+    ]
 
     return () => {
-      return <div class={'tg-editor-material-container'}>
-        <h4 class="component-category-title">布局组件</h4>
-        <div class={'tg-editor-component-items'}>建设中</div>
-
-        <h4 class="component-category-title">基础组件</h4>
-        {props.store.baseComponentList.map(componentRender)}
-
-        <h4 class="component-category-title">模板组件</h4>
-        {props.store.templateComponentList.map(componentRender)}
-      </div>
+      return (
+        <div class={'tg-editor-material-container'}>
+          {
+            materials.map(material => (
+              <div
+                key={material.category} class={{
+                'tg-editor-material-category': true,
+                [material.category]: true
+              }}
+              >
+                <h4 class="tg-editor-material-title">{material.title}</h4>
+                {
+                  material.components?.length
+                    ? material.components.map(comp => (
+                      <div
+                        key={comp.type}
+                        class={'tg-editor-material-items'}
+                        draggable
+                        onDragstart={(e) => props.handleDragStart(e, comp)}
+                      >
+                        {/*{comp.icon}*/}
+                        {comp.preview({ ...comp.defaultProps, style: comp.style })}
+                      </div>
+                    ))
+                    : <div>暂无组件</div>
+                }
+              </div>
+            ))
+          }
+        </div>
+      )
     }
   }
 }
