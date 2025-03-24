@@ -13,29 +13,68 @@ export default {
   name: 'CanvasRenderer',
   props: ['schema', 'handleDrop'],
   setup(props) {
+    const canvasContainerRef = ref(null)
     const componentSchemas = ref(props.schema.components)
     const store = useEditorStore()
 
-    watch(componentSchemas, val => {
-      componentSchemas.value = val
-    }, { deep: true })
+    watch(
+      () => props.schema.components,
+      val => {
+        componentSchemas.value = [...val]
+      }, { deep: true, immediate: true }
+    )
 
     const _updateComponent = componentDef => {
       store.updateComponent(componentDef)
+    }
+
+    const handleDragStart = (e, componentSchema) => {
+      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData('text/plain', componentSchema.id)
+      e.currentTarget.classList.add('dragging')
+
+      if (canvasContainerRef.value) {
+        canvasContainerRef.value.classList.add('global-dragging-state')
+      }
+
+      store.setDraggingState(true)
+    }
+
+    const handleDragEnd = e => {
+      e.currentTarget.classList.remove('dragging')
+
+      // 确保容器状态类被清除
+      if (canvasContainerRef.value) {
+        canvasContainerRef.value.classList.remove('global-dragging-state')
+      }
+
+      store.setDraggingState(false)
     }
 
     const handleDragOver = e => {
       e.preventDefault()
 
       const elements = document.elementsFromPoint(e.clientX, e.clientY)
-      const components = elements.filter(el => el.classList.contains('tg-editor-canvas-component'))
+      const components = elements.filter(el =>
+        el.classList.contains('tg-editor-canvas-component') &&
+        !el.classList.contains('dragging') // 排除拖动元素自身
+      )
 
-      if (components.length > 0) {
-        const currentElement = components[0]
-        const rect = currentElement.getBoundingClientRect()
-        const mouseY = e.clientY
-        const isTopHalf = mouseY < rect.top + rect.height / 2
+      if (components.length === 0) {
+        store.clearIndicator()
+        return
+      }
 
+      const currentElement = components[0]
+      const rect = currentElement.getBoundingClientRect()
+      const mouseY = e.clientY
+      const isTopHalf = mouseY < rect.top + rect.height * 0.4 // 调整敏感区域
+
+      // 仅当目标变化时更新
+      if (
+        store.nearestElement !== currentElement ||
+        store.lastDirection !== (isTopHalf ? 'top' : 'bottom')
+      ) {
         store.clearIndicator()
 
         currentElement.classList.add(isTopHalf ? 'nearby-top' : 'nearby-bottom')
@@ -70,7 +109,13 @@ export default {
             ...componentDef.style,
             ...componentSchema.props.style
           }}
+          draggable
           onClick={() => _updateComponent(componentDef)}
+          onDragstart={e => {
+            handleDragStart(e, componentSchema)
+            e.stopPropagation()
+          }}
+          onDragend={handleDragEnd}
         >
           {componentDef.preview({ ...componentDef.defaultProps, ...componentSchema.props })}
         </div>
@@ -79,6 +124,7 @@ export default {
 
     return () => (
       <div
+        ref={canvasContainerRef}
         class={'tg-editor-canvas-container'}
         style={{ width: props.schema.canvas.width }}
         onDrop={handleDrop}

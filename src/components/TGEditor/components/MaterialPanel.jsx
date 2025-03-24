@@ -24,6 +24,13 @@ export default {
       }
     ]
 
+    const handleMaterialDragStart = (e, component) => {
+      e.dataTransfer.setData('componentType', component.type)
+      e.dataTransfer.effectAllowed = 'copy' // 区别于内部的 'move'
+
+      props.handleDragStart(e, component)
+    }
+
     return () => {
       return (
         <div class={'tg-editor-material-container'}>
@@ -43,7 +50,7 @@ export default {
                         key={comp.type}
                         class={'tg-editor-material-items'}
                         draggable
-                        onDragstart={(e) => props.handleDragStart(e, comp)}
+                        onDragstart={(e) => handleMaterialDragStart(e, comp)}
                       >
                         {/*{comp.icon}*/}
                         {comp.preview({ ...comp.defaultProps, style: comp.style })}

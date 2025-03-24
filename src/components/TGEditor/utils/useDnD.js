@@ -1,5 +1,6 @@
 import { getUUID } from '@/utils/utilityFunction'
-import { useDraggable } from '@vueuse/core'
+import { toRaw } from 'vue'
+import { message } from 'ant-design-vue'
 
 export const useDnD = (schema, store) => {
   const createComponent = e => {
@@ -15,9 +16,16 @@ export const useDnD = (schema, store) => {
     }
   }
 
-  const handleDragStart = (e, component) => {
-    const { x, y } = useDraggable(e.target)
+  const validateComponentPosition = (oldIndex, targetIndex, listLength) => {
+    return (
+      oldIndex >= 0 &&
+      targetIndex >= 0 &&
+      oldIndex < listLength &&
+      targetIndex < listLength
+    )
+  }
 
+  const handleDragStart = (e, component) => {
     // 携带组件类型和初始props
     e.dataTransfer.setData('componentType', component.type)
     e.dataTransfer.setData('initialProps', JSON.stringify({
@@ -28,36 +36,85 @@ export const useDnD = (schema, store) => {
   }
 
   const handleDrop = e => {
-    // 生成画布组件Schema数据
-    const newComponent = createComponent(e)
+    e.preventDefault()
+    e.stopPropagation()
 
-    // 在插入逻辑前添加边界判断
-    if (!store.nearestElement || !store.lastDirection) {
-      schema.components.push(newComponent)
-      return
+    const handleNewComponent = (e, schema) => {
+      const newComponent = createComponent(e)
+      const { nearestElement, lastDirection } = store
+
+      // 无目标位置时追加
+      if (!nearestElement || !lastDirection) {
+        schema.components.push(newComponent)
+        return true
+      }
+
+      // 查找目标位置
+      const targetId = nearestElement.dataset.id
+      const targetIndex = schema.components.findIndex(c => c.id === targetId)
+      if (targetIndex === -1) return false
+
+      // 计算插入位置
+      const insertIndex = lastDirection === 'top'
+        ? targetIndex
+        : targetIndex + 1
+
+      schema.components.splice(insertIndex, 0, newComponent)
+      store.updateComponent(newComponent)
+      return true
     }
 
-    const targetId = store.nearestElement.dataset.id
-    const targetIndex = schema.components.findIndex(c => c.id === targetId)
+    const handleSortComponent = (draggedId, schema) => {
+      const { nearestElement, lastDirection } = store
+      if (!nearestElement || !lastDirection) return false
 
-    if (targetIndex === -1) {
-      schema.components.push(newComponent)
-      return
+      // 获取原始数据
+      const rawComponents = toRaw(schema.components)
+      const targetId = nearestElement.dataset.id
+
+      // 查找索引
+      const oldIndex = rawComponents.findIndex(c => c.id === draggedId)
+      const targetIndex = rawComponents.findIndex(c => c.id === targetId)
+
+      // 边界校验
+      if (
+        oldIndex === -1 ||
+        targetIndex === -1 ||
+        oldIndex === targetIndex
+      ) {
+        return false
+      }
+
+      // 计算修正后的新索引
+      let newIndex = lastDirection === 'top' ? targetIndex : targetIndex + 1
+      newIndex = newIndex > oldIndex ? newIndex - 1 : newIndex
+
+      // 创建新数组（触发响应式更新）
+      const newComponents = [...rawComponents]
+      const [movedItem] = newComponents.splice(oldIndex, 1)
+      newComponents.splice(newIndex, 0, movedItem)
+
+      // 批量更新（减少响应式触发次数）
+      schema.components.splice(0, schema.components.length, ...newComponents)
+      return true
     }
 
-    // 修正插入位置计算
-    const insertIndex = store.lastDirection === 'top'
-      // 插入到当前组件前面
-      ? targetIndex
-      // 插入到当前组件后面
-      : targetIndex + 1
+    try {
+      const draggedId = e.dataTransfer.getData('text/plain')
+      const isExisting = schema.components.some(c => c.id === draggedId)
 
-    schema.components.splice(insertIndex, 0, newComponent)
+      // 分流处理逻辑
+      const success = isExisting
+        ? handleSortComponent(draggedId, schema)
+        : handleNewComponent(e, schema)
 
-    // 清除指示线
-    store.clearIndicator()
-    // 更新当前选中组件
-    store.updateComponent(newComponent)
+      // 统一状态清理
+      store.clearIndicator()
+      if (!success) message.warning('组件位置未发生变化')
+    } catch (error) {
+      console.error('拖放处理失败:', error)
+      message.error('组件操作失败，请检查控制台')
+    }
   }
 
   return { handleDragStart, handleDrop }

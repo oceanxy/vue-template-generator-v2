@@ -9,6 +9,7 @@ export const useEditorStore = defineStore('editor', {
     selectedComponent: null,
     nearestElement: null,
     lastDirection: '',
+    isDragging: false,
     /**
      * 组件注册中心
      * @type {TGComponentMeta[]}
@@ -56,7 +57,7 @@ export const useEditorStore = defineStore('editor', {
         preview: props => <Input {...props} />,
         defaultProps: {
           placeholder: '请输入',
-          disabled: true
+          readOnly: true
         },
         style: {},
         className: 'tg-editor-base-component',
@@ -134,6 +135,9 @@ export const useEditorStore = defineStore('editor', {
       }
 
       this.lastDirection = ''
+    },
+    setDraggingState(state) {
+      this.isDragging = state
     }
   }
 })
