@@ -1,24 +1,26 @@
 import { TG_COMPONENT_CATEGORY } from '@/components/TGEditor/templateComponents'
+import { useEditorStore } from '../stores/useEditorStore'
 
 export default {
   name: 'MaterialPanel',
-  props: ['store', 'schema', 'handleDragStart'],
+  props: ['schema', 'handleDragStart'],
   setup(props) {
+    const store = useEditorStore()
     const materials = [
       {
         category: TG_COMPONENT_CATEGORY.layout,
         title: '布局组件',
-        components: props.store.layoutComponents
+        components: store.layoutComponents
       },
       {
         category: TG_COMPONENT_CATEGORY.base,
         title: '基础组件',
-        components: props.store.basicComponents
+        components: store.basicComponents
       },
       {
         category: TG_COMPONENT_CATEGORY.template,
         title: '模板组件',
-        components: props.store.templateComponents
+        components: store.templateComponents
       }
     ]
 

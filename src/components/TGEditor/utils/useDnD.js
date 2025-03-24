@@ -14,24 +14,28 @@ export const useDnD = (schema, store) => {
     }))
   }
 
-  const handleDrop = (e) => {
-    const type = e.dataTransfer.getData('componentType')
+  const createComponent = e => {
+    const componentType = e.dataTransfer.getData('componentType')
     const initialProps = JSON.parse(e.dataTransfer.getData('initialProps'))
     const { category, ...restInitialProps } = initialProps
 
-    // 生成画布组件Schema数据
-    const componentSchema = {
+    return {
       id: getUUID(),
-      type,
+      type: componentType,
       category,
       props: restInitialProps
     }
+  }
 
-    schema.components.push(componentSchema)
+  const handleDrop = (e) => {
+    // 生成画布组件Schema数据
+    const newComponent = createComponent(e)
 
-    const componentDef = store.getComponentByType(componentSchema.type, componentSchema.category)
+    schema.components.push(newComponent)
 
-    componentDef.id = componentSchema.id
+    const componentDef = store.getComponentByType(newComponent.type, newComponent.category)
+
+    componentDef.id = newComponent.id
 
     // 更新当前选中组件
     store.updateComponent(componentDef)
