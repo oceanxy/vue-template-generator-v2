@@ -51,7 +51,6 @@ export default {
             class={'tg-editor-material-wrapper'}
           >
             <MaterialPanel
-              store={store}
               schema={schema}
               handleDragStart={handleDragStart}
             />
@@ -60,7 +59,6 @@ export default {
           {/* 画布 */}
           <Layout.Content class={'tg-editor-canvas-wrapper'}>
             <Canvas
-              store={store}
               schema={schema}
               handleDrop={handleDrop}
             />

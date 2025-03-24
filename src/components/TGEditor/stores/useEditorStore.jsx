@@ -7,6 +7,8 @@ import { cloneDeep } from 'lodash'
 export const useEditorStore = defineStore('editor', {
   state: () => ({
     selectedComponent: null,
+    nearestElement: null,
+    lastDirection: '',
     /**
      * 组件注册中心
      * @type {TGComponentMeta[]}
@@ -78,16 +80,25 @@ export const useEditorStore = defineStore('editor', {
   actions: {
     /**
      * 更新选中的组件元数据
-     * @param component {TGComponentMeta} - 需要选中的组件元数据
+     * @param newComponent {TGComponentMeta} - 需要选中的组件元数据
+     * @returns {TGComponentMeta|null}
      */
-    updateComponent(component) {
-      this.selectedComponent = component
+    updateComponent(newComponent) {
+      const componentDef = this.getComponentByType(newComponent.type, newComponent.category)
+
+      if (componentDef) {
+        componentDef.id = newComponent.id
+      }
+
+      this.selectedComponent = componentDef
+
+      return componentDef
     },
     /**
      * 根据组件类型获取组件元数据
      * @param type {string} - 组件类型
      * @param category {TG_COMPONENT_CATEGORY} - 组件类别
-     * @returns {TGComponentMeta} 组件元数据
+     * @returns {TGComponentMeta|null} 组件元数据
      */
     getComponentByType(type, category) {
       let components = []
@@ -107,7 +118,22 @@ export const useEditorStore = defineStore('editor', {
 
       const component = components.find(component => component.type === type)
 
-      return cloneDeep(component)
+      if (component) {
+        return cloneDeep(component)
+      } else {
+        return null
+      }
+    },
+    /**
+     * 清除指示线
+     */
+    clearIndicator() {
+      if (this.nearestElement) {
+        this.nearestElement.classList.remove('nearby-top', 'nearby-bottom')
+        this.nearestElement = null
+      }
+
+      this.lastDirection = ''
     }
   }
 })

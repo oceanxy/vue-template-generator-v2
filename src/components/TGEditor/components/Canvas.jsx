@@ -24,16 +24,48 @@ export default {
       store.updateComponent(componentDef)
     }
 
-    const renderCanvasFromSchemas = componentSchema => {
-      const componentDef = store.getComponentByType(componentSchema.type, componentSchema.category)
-      if (!componentDef) return null
+    const handleDragOver = e => {
+      e.preventDefault()
 
-      componentDef.id = componentSchema.id
+      const elements = document.elementsFromPoint(e.clientX, e.clientY)
+      const components = elements.filter(el => el.classList.contains('tg-editor-canvas-component'))
+
+      if (components.length > 0) {
+        const currentElement = components[0]
+        const rect = currentElement.getBoundingClientRect()
+        const mouseY = e.clientY
+        const isTopHalf = mouseY < rect.top + rect.height / 2
+
+        store.clearIndicator()
+
+        currentElement.classList.add(isTopHalf ? 'nearby-top' : 'nearby-bottom')
+        store.nearestElement = currentElement
+        store.lastDirection = isTopHalf ? 'top' : 'bottom'
+      }
+    }
+
+    const handleDragLeave = () => {
+      store.clearIndicator()
+    }
+
+    const handleDrop = e => {
+      props.handleDrop(e)
+      // 确保先处理 drop 再清除状态
+      handleDragLeave()
+    }
+
+    const renderCanvasFromSchemas = componentSchema => {
+      const componentDef = store.updateComponent(componentSchema)
+      if (!componentDef) return null
 
       return (
         <div
           key={componentSchema.id}
-          class={componentDef.className}
+          data-id={componentSchema.id}
+          class={{
+            [componentDef.className]: true,
+            'tg-editor-canvas-component': true
+          }}
           style={{
             ...componentDef.style,
             ...componentSchema.props.style
@@ -49,8 +81,9 @@ export default {
       <div
         class={'tg-editor-canvas-container'}
         style={{ width: props.schema.canvas.width }}
-        onDrop={props.handleDrop}
-        onDragover={e => e.preventDefault()}
+        onDrop={handleDrop}
+        onDragover={handleDragOver}
+        onDragleave={handleDragLeave}
       >
         {componentSchemas.value.map(renderCanvasFromSchemas)}
       </div>

@@ -16,6 +16,7 @@ export const TG_COMPONENT_CATEGORY = {
  * 模板组件元数据定义
  * @global
  * @typedef TGComponentMeta
+ * @property {string} [id] - 组件在 Schema 中的唯一标识
  * @property {string} type - 模板组件类型标识
  * @property {TG_COMPONENT_CATEGORY} category - 模板组件分类
  * @property {string} [icon] - 模板组件图标
