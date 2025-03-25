@@ -6,7 +6,7 @@
  * @property {string} layoutType - 布局类型，flex | grid
  * @property {{[key in keyof CSSStyleDeclaration]?: string}} style - 布局样式
  */
-import { ref, watch } from 'vue'
+import { ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 
 export default {
@@ -24,7 +24,7 @@ export default {
       }, { deep: true, immediate: true }
     )
 
-    const _updateComponent = componentDef => {
+    const updateComponent = componentDef => {
       store.updateComponent(componentDef)
     }
 
@@ -94,7 +94,7 @@ export default {
     }
 
     const renderCanvasFromSchemas = componentSchema => {
-      const componentDef = store.updateComponent(componentSchema)
+      const componentDef = store.getComponentByType(componentSchema.type, componentSchema.category)
       if (!componentDef) return null
 
       return (
@@ -110,7 +110,7 @@ export default {
             ...componentSchema.props.style
           }}
           draggable
-          onClick={() => _updateComponent(componentDef)}
+          onClick={() => updateComponent(toRaw(componentSchema))}
           onDragstart={e => {
             handleDragStart(e, componentSchema)
             e.stopPropagation()

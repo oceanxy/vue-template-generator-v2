@@ -16,15 +16,6 @@ export const useDnD = (schema, store) => {
     }
   }
 
-  const validateComponentPosition = (oldIndex, targetIndex, listLength) => {
-    return (
-      oldIndex >= 0 &&
-      targetIndex >= 0 &&
-      oldIndex < listLength &&
-      targetIndex < listLength
-    )
-  }
-
   const handleDragStart = (e, component) => {
     // 携带组件类型和初始props
     e.dataTransfer.setData('componentType', component.type)
@@ -40,12 +31,13 @@ export const useDnD = (schema, store) => {
     e.stopPropagation()
 
     const handleNewComponent = (e, schema) => {
-      const newComponent = createComponent(e)
+      const newComponentSchema = createComponent(e)
       const { nearestElement, lastDirection } = store
 
       // 无目标位置时追加
       if (!nearestElement || !lastDirection) {
-        schema.components.push(newComponent)
+        schema.components.push(newComponentSchema)
+        store.updateComponent(newComponentSchema)
         return true
       }
 
@@ -59,8 +51,8 @@ export const useDnD = (schema, store) => {
         ? targetIndex
         : targetIndex + 1
 
-      schema.components.splice(insertIndex, 0, newComponent)
-      store.updateComponent(newComponent)
+      schema.components.splice(insertIndex, 0, newComponentSchema)
+      store.updateComponent(newComponentSchema)
       return true
     }
 
