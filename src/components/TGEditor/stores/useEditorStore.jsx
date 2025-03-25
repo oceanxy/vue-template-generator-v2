@@ -17,7 +17,7 @@ export const useEditorStore = defineStore('editor', {
     basicComponents: [
       {
         type: 'a-button',
-        category: TG_COMPONENT_CATEGORY.base,
+        category: TG_COMPONENT_CATEGORY.BASIC,
         icon: '',
         preview: props => <Button {...props}>{props.slot}</Button>,
         defaultProps: {
@@ -52,7 +52,7 @@ export const useEditorStore = defineStore('editor', {
       },
       {
         type: 'a-input',
-        category: TG_COMPONENT_CATEGORY.base,
+        category: TG_COMPONENT_CATEGORY.BASIC,
         icon: '',
         preview: props => <Input {...props} />,
         defaultProps: {
@@ -105,13 +105,13 @@ export const useEditorStore = defineStore('editor', {
       let components = []
 
       switch (category) {
-        case TG_COMPONENT_CATEGORY.template:
+        case TG_COMPONENT_CATEGORY.TEMPLATE:
           components = this.templateComponents
           break
-        case TG_COMPONENT_CATEGORY.base:
+        case TG_COMPONENT_CATEGORY.BASIC:
           components = this.basicComponents
           break
-        case TG_COMPONENT_CATEGORY.layout:
+        case TG_COMPONENT_CATEGORY.LAYOUT:
         default:
           components = this.layoutComponents
           break

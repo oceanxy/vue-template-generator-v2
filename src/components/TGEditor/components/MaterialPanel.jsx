@@ -8,17 +8,17 @@ export default {
     const store = useEditorStore()
     const materials = [
       {
-        category: TG_COMPONENT_CATEGORY.layout,
+        category: TG_COMPONENT_CATEGORY.LAYOUT,
         title: '布局组件',
         components: store.layoutComponents
       },
       {
-        category: TG_COMPONENT_CATEGORY.base,
+        category: TG_COMPONENT_CATEGORY.BASIC,
         title: '基础组件',
         components: store.basicComponents
       },
       {
-        category: TG_COMPONENT_CATEGORY.template,
+        category: TG_COMPONENT_CATEGORY.TEMPLATE,
         title: '模板组件',
         components: store.templateComponents
       }

@@ -7,9 +7,9 @@
  * @property {string} layout - 布局组件
  */
 export const TG_COMPONENT_CATEGORY = {
-  template: 'template',
-  base: 'base',
-  layout: 'layout'
+  TEMPLATE: 'template',
+  BASIC: 'basic',
+  LAYOUT: 'layout'
 }
 
 /**
