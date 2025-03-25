@@ -1,5 +1,5 @@
 import './assets/styles/index.scss'
-import { reactive, watch } from 'vue'
+import { reactive, toRaw, watchEffect } from 'vue'
 import Canvas from './components/Canvas'
 import MaterialPanel from './components/MaterialPanel'
 import PropertyPanel from './components/PropertyPanel'
@@ -8,26 +8,30 @@ import { schema as schemaMeta } from './schemas'
 import { useDnD } from './utils/useDnD'
 import { Button, Layout, message, Space } from 'ant-design-vue'
 import { SchemaService } from './schemas/persistence'
+import { cloneDeep, debounce } from 'lodash'
 
 export default {
   name: 'TGEditor',
   setup() {
     const store = useEditorStore()
-    const schema = reactive(schemaMeta)
+    const schema = reactive(cloneDeep(schemaMeta))
     const { handleDragStart, handleDrop } = useDnD(schema, store)
 
-    watch(
-      () => schema,
-      val => {
-        // 持久化schema
-        SchemaService.save('default', val)
-      },
-      { deep: true, immediate: true }
-    )
+    const autoSave = debounce(async schema => {
+      try {
+        await SchemaService.save('default', toRaw(schema))
+        // message.success('自动保存成功', 1)
+      } catch (e) {
+        // message.error(`自动保存失败：${e.message}`)
+      }
+    }, 500)
+
+    watchEffect(() => {
+      autoSave(schema)
+    })
 
     const handleSchemaSave = () => {
-      SchemaService.save('default', schema)
-      message.success('保存成功')
+      // todo 向服务端保存
     }
 
     // 更新组件的 Schema
