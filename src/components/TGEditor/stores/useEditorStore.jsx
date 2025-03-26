@@ -9,7 +9,6 @@ export const useEditorStore = defineStore('editor', {
     selectedComponent: null,
     nearestElement: null,
     lastDirection: '',
-    isDragging: false,
     /**
      * 组件注册中心
      * @type {TGComponentMeta[]}
@@ -79,6 +78,14 @@ export const useEditorStore = defineStore('editor', {
     layoutComponents: []
   }),
   actions: {
+    createComponent(template, position) {
+      return {
+        id: `comp_${Date.now()}`,
+        type: template.type,
+        category: template.category,
+        props: { ...template.defaultProps, style: { ...position } }
+      }
+    },
     /**
      * 更新选中的组件元数据
      * @param newComponent {TGComponentMeta} - 需要选中的组件元数据
@@ -125,19 +132,8 @@ export const useEditorStore = defineStore('editor', {
         return null
       }
     },
-    /**
-     * 清除指示线
-     */
-    clearIndicator() {
-      if (this.nearestElement) {
-        this.nearestElement.classList.remove('nearby-top', 'nearby-bottom')
-        this.nearestElement = null
-      }
-
-      this.lastDirection = ''
-    },
-    setDraggingState(state) {
-      this.isDragging = state
+    setDraggingComponent(component) {
+      this.selectedComponent = component
     }
   }
 })

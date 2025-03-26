@@ -1,5 +1,5 @@
 import './assets/styles/index.scss'
-import { reactive, toRaw, watchEffect } from 'vue'
+import { reactive, ref, toRaw, watch, watchEffect } from 'vue'
 import Canvas from './components/Canvas'
 import MaterialPanel from './components/MaterialPanel'
 import PropertyPanel from './components/PropertyPanel'
@@ -7,27 +7,46 @@ import { useEditorStore } from './stores/useEditorStore'
 import { schema as schemaMeta } from './schemas'
 import { useDnD } from './utils/useDnD'
 import { Button, Layout, message, Space } from 'ant-design-vue'
-import { SchemaService } from './schemas/persistence'
 import { cloneDeep, debounce } from 'lodash'
+import { SchemaService } from '@/components/TGEditor/schemas/persistence'
 
 export default {
   name: 'TGEditor',
   setup() {
+    const isSaving = ref(false)
     const store = useEditorStore()
     const schema = reactive(cloneDeep(schemaMeta))
     const { handleDragStart, handleDrop } = useDnD(schema, store)
 
-    const autoSave = debounce(async schema => {
-      try {
-        await SchemaService.save('default', toRaw(schema))
-        // message.success('自动保存成功', 1)
-      } catch (e) {
-        // message.error(`自动保存失败：${e.message}`)
+    const autoSave = debounce(
+      async () => {
+        try {
+          isSaving.value = true
+          await SchemaService.save('default', toRaw(schema))
+        } catch (e) {
+          message.error('保存失败')
+        } finally {
+          isSaving.value = false
+        }
+      },
+      1500, // 自动保存时间间隔
+      {
+        leading: false,   // 不立即执行首次
+        trailing: true    // 保证最后一次触发会执行
       }
-    }, 500)
+    )
+
+    // 关键操作立即保存（如组件删除/顺序变更）
+    watch(() => schema.components.length, autoSave) // 组件数量变化立即触发
+    watch(() => schema.canvas, autoSave, { deep: true }) // 画布设置变更立即触发
+
+    // 在页面卸载前强制保存
+    window.addEventListener('beforeunload', () => {
+      autoSave.flush()
+    })
 
     watchEffect(() => {
-      autoSave(schema)
+      autoSave()
     })
 
     const handleSchemaSave = () => {
@@ -44,7 +63,19 @@ export default {
       <Layout class={'tg-editor-container'}>
         <Layout class={'tg-editor-header'}>
           <Space class={'tg-editor-tools'}>
-            <Button onClick={handleSchemaSave}>保存</Button>
+            <Button
+              onClick={handleSchemaSave}
+              data-saving={isSaving.value ? 'true' : null}
+            >
+              保存
+            </Button>
+            {
+              isSaving.value && (
+                <div class="save-status-bar">
+                  <div class="save-progress" />
+                </div>
+              )
+            }
           </Space>
         </Layout>
         <Layout>

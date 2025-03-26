@@ -2,6 +2,7 @@
   height: 100%;
 
   .tg-editor-header {
+    position: relative;
     height: 48px;
     flex: none;
     padding: 8px 16px;
@@ -9,7 +10,37 @@
     border-bottom: 1px solid var(--tg-theme-color-border);
 
     .tg-editor-tools {
+      .save-status-bar {
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(24, 144, 255, 0.1);
 
+        .save-progress {
+          width: 0;
+          height: 100%;
+          background: #1890ff;
+          transition: width 1s ease;
+          animation: savingProgress 1.5s infinite;
+        }
+      }
+
+      @keyframes savingProgress {
+        0% {
+          width: 0;
+          opacity: 1;
+        }
+        50% {
+          width: 80%;
+          opacity: 0.8;
+        }
+        100% {
+          width: 100%;
+          opacity: 0;
+        }
+      }
     }
   }
 
@@ -59,22 +90,39 @@
   .tg-editor-canvas-wrapper {
     padding: 12px;
     background: #f5f5f5;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 
     .tg-editor-canvas-container {
       position: relative;
       background: #ffffff;
-      min-height: 100vh;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
       padding: 15px;
       user-select: none;
       overflow-y: auto;
-      z-index: 1; // 确保层级高于其他元素
+      z-index: 1;
+      height: 100%;
 
-      // 修复Ant Design的布局干扰
-      .ant-layout-content > & {
-        pointer-events: auto !important;
+      .tg-editor-drag-placeholder {
+        display: none;
+        position: absolute;
+        left: 15px !important; // 匹配容器padding
+        right: 15px !important;
+        width: calc(100% - 30px) !important; // 补偿容器padding
+        height: 2px;
+        background: #1890ff;
+        box-shadow: 0 2px 6px rgba(24, 144, 255, 0.4);
+        z-index: 9999;
+        pointer-events: none;
+        transition: top 0.05s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &[data-active='true'] {
+          display: block;
+        }
       }
 
       &::before,
@@ -135,56 +183,18 @@
           z-index: 999;
         }
 
-        &.dragging-over {
-          &::after {
-            opacity: 0.3;
-          }
-        }
-
-        &.nearby-top::before {
-          top: -2px;
-          opacity: 1;
-          background: #1890ff;
-          box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
-        }
-
-        &.nearby-bottom::before {
-          bottom: -2px;
-          opacity: 1;
-          background: #1890ff;
-          box-shadow: 0 -2px 8px rgba(24, 144, 255, 0.3);
-        }
-
-        &.nearby-top::before,
-        &.nearby-bottom::before {
-          animation: pulse 1s infinite; // 添加呼吸动画
-        }
-
         &.dragging {
-          position: relative;
-          z-index: 9999 !important;
-          opacity: 0.5;
-          transform: scale(0.95);
-          transition: all 0.2s;
-
-          &:hover {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        &.drag-overlay {
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-      }
-
-      // 呼吸动画
-      @keyframes pulse {
-        0%, 100% {
-          opacity: 1;
-        }
-        50% {
           opacity: 0.6;
+          transform: scale(0.98);
+          transition: all 0.2s ease-out;
+          z-index: 9999;
+
+          &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 2px dashed #1890ff;
+          }
         }
       }
     }
