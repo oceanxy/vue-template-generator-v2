@@ -1,0 +1,96 @@
+.tg-universal-box {
+  overflow: hidden;
+  width: var(--box-width);
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+
+  &.show-shadow {
+    box-shadow: 0 10px 32px 0 rgba(0, 62, 163, 0.1);
+  }
+
+  & > .box-title {
+    position: relative;
+    padding: 16px;
+    min-height: 40px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    font-size: var(--tg-theme-font-size-lg);
+    font-weight: bolder;
+    color: var(--tg-theme-color-text);
+    flex: none;
+    white-space: nowrap;
+    gap: 0.5ic;
+
+    & > .box-title-label {
+      white-space: nowrap;
+    }
+
+    & > *:not(.box-title, .anticon, .ant-tag) {
+      display: flex;
+      flex: auto;
+      align-items: center;
+      gap: .5ic;
+    }
+
+    & > .right-icon {
+      flex: none;
+      display: flex;
+      align-items: center;
+      transition: opacity .2s var(--tg-theme-motion-ease-in-out);
+      cursor: pointer;
+      opacity: 0.6;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    &.padding-left {
+      padding-left: 20px;
+    }
+
+    &.divider:before {
+      position: absolute;
+      content: '';
+      left: 0;
+      width: 2px;
+      height: 1.6vh;
+      background: #007aff;
+      border-radius: 0 var(--tg-theme-border-radius) var(--tg-theme-border-radius) 0;
+    }
+
+    .ant-btn:not(.custom-button) {
+      margin-left: auto;
+      border: none;
+      background: none;
+    }
+
+    &.line {
+      border-bottom: 1px solid var(--tg-theme-color-primary-border);
+    }
+  }
+
+  & > .box-content {
+    background: var(--tg-theme-color-bg-container);
+    flex: auto;
+    padding: 20px;
+    overflow: auto;
+    height: 100%;
+    border-radius: var(--tg-theme-border-radius);
+
+    &.flex {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2vh;
+    }
+  }
+
+  &:has(.box-title.line) {
+    gap: 1rem;
+  }
+}
