@@ -58,74 +58,93 @@ export default {
       }
     }
 
+    /**
+     * @typedef {Object} PositionInfo
+     * @property {number} mouseY - 相对于容器顶部的Y坐标
+     * @property {HTMLElement[]} children - 可见子元素集合
+     * @property {number[]} midPoints - 子元素中点Y坐标集合
+     */
+
     const updateIndicatorPosition = e => {
       const { container, indicator, children } = getSafeRef()
       if (!container || !indicator) return
 
-      // 获取精确容器坐标系（包含滚动偏移）
-      const containerRect = container.getBoundingClientRect()
-      const scrollTop = container.scrollTop // 新增滚动偏移量
+      // 新增距离阈值常量，像素单位
+      const DISTANCE_THRESHOLD = 50
 
-      // 计算相对于容器内容区域顶部的Y坐标（包含滚动位置）
-      const mouseY = e.clientY - containerRect.top + scrollTop
+      // 提取坐标系计算逻辑
+      const getMousePosition = () => {
+        const containerRect = container.getBoundingClientRect()
+        return e.clientY - containerRect.top + container.scrollTop
+      }
 
+      // 提取子元素中间点计算
+      const calculateChildMidPoints = (containerRect, children) => {
+        return children.map(child => {
+          const rect = child.getBoundingClientRect()
+          const topRelative = rect.top - containerRect.top + container.scrollTop
+          return topRelative + child.offsetHeight / 2
+        })
+      }
+
+      // 边界处理逻辑封装
+      const determineInsertIndex = (mouseY, midPoints) => {
+        const index = midPoints.findIndex(midY => mouseY < midY)
+        return index === -1 ? midPoints.length : index
+      }
+
+      // 目标位置计算器
+      const calculateTargetPosition = (insertIndex, children, midPoints) => {
+        const EDGE_THRESHOLD = 20
+        const [firstChild, lastChild] = [children[0], children[children.length - 1]]
+
+        if (children.length === 0) return 15
+        if (insertIndex === 0 && mouseY < midPoints[0] - EDGE_THRESHOLD) {
+          return firstChild.offsetTop - 2
+        }
+        if (insertIndex === children.length) {
+          return lastChild.offsetTop + lastChild.offsetHeight + 2
+        }
+
+        return children[insertIndex].offsetTop - 2
+      }
+
+      const updateContainerHighlight = () => {
+        // 清除旧高亮
+        container.querySelectorAll('.tg-editor-insert-target')
+          .forEach(el => el.classList.remove('tg-editor-insert-target'))
+
+        // 获取插入位置父容器（当前为画布容器）
+        const targetContainer = container // 根据后续嵌套需求可调整
+        targetContainer.classList.add('tg-editor-insert-target')
+      }
+
+      const mouseY = getMousePosition()
       const freshChildren = children()
+
       if (freshChildren.length === 0) {
         indicator.style.display = 'none'
         return
       }
 
-      // 获取所有子元素的中间点Y坐标（相对容器）
-      const childMidPoints = freshChildren.map(child => {
-        const rect = child.getBoundingClientRect()
-        const topRelative = rect.top - containerRect.top + scrollTop
-        return topRelative + child.offsetHeight / 2
-      })
+      const containerRect = container.getBoundingClientRect()
+      const childMidPoints = calculateChildMidPoints(containerRect, freshChildren)
+      const insertIndex = determineInsertIndex(mouseY, childMidPoints)
+      const targetPos = calculateTargetPosition(insertIndex, freshChildren, childMidPoints)
 
-      // 寻找第一个中间点大于鼠标位置的索引
-      let insertIndex = childMidPoints.findIndex(midY => mouseY < midY)
-      insertIndex = insertIndex === -1 ? freshChildren.length : insertIndex
-
-      // 边界处理逻辑
-      const edgeThreshold = 20 // 边界检测阈值
-      let targetPos = 0
-
-      if (freshChildren.length === 0) {
-        targetPos = 15 // 对应容器的padding-top
-      } else if (insertIndex === 0 && mouseY < childMidPoints[0] - edgeThreshold) {
-        // 顶部边界情况
-        targetPos = freshChildren[0].offsetTop - 2
-      } else if (insertIndex === freshChildren.length) {
-        // 底部边界情况
-        const lastChild = freshChildren[freshChildren.length - 1]
-        targetPos = lastChild.offsetTop + lastChild.offsetHeight + 2
-      } else {
-        // 常规中间位置
-        targetPos = freshChildren[insertIndex].offsetTop - 2
-      }
-
-      // 位置更新逻辑
       if (insertIndex !== lastValidIndex.value) {
+        // 更新容器高亮
+        updateContainerHighlight()
+
         indicator.style.display = 'block'
-        indicator.style.top = `${targetPos}px` // 使用新计算的位置
+        indicator.style.top = `${targetPos}px`
         lastValidIndex.value = insertIndex
       }
     }
 
-    const getComponentRects = () => {
-      return Array.from(canvasContainerRef.value?.querySelectorAll('.tg-editor-canvas-component') || [])
-        .filter(el => !el.classList.contains('dragging'))
-        .map(el => el.getBoundingClientRect())
-    }
-
-    const findInsertPosition = (clientY) => {
-      const rects = getComponentRects()
-      if (rects.length === 0) return -1
-
-      return rects.findIndex(rect => {
-        const midY = rect.top + rect.height / 2
-        return clientY < midY
-      })
+    const resetInsertState = () => {
+      const containers = document.querySelectorAll('.tg-editor-insert-target')
+      containers.forEach(el => el.classList.remove('tg-editor-insert-target'))
     }
 
     const updateComponent = componentDef => {
@@ -152,15 +171,19 @@ export default {
       // 强制重置所有状态
       indicatorRef.value.style.display = 'none'
       lastValidIndex.value = -1
+
       if (rafId.value) {
         cancelAnimationFrame(rafId.value)
         rafId.value = null
       }
 
-      // 必须重置拖拽元素状态
-      document.querySelectorAll('.dragging').forEach(el => {
-        el.classList.remove('dragging')
-      })
+      // 重置拖拽元素状态
+      document.querySelectorAll('.tg-editor-canvas-container .dragging')
+        .forEach(el => {
+          el.classList.remove('dragging')
+        })
+
+      resetInsertState()
     }
 
     const handleDragOver = e => {
@@ -175,17 +198,29 @@ export default {
       })
     }
 
-    const handleDragLeave = e => {
-      if (!e.currentTarget.contains(e.relatedTarget)) {
-        indicatorRef.value.style.display = 'none'
+    const handleDrop = e => {
+      if (rafId.value) {
+        cancelAnimationFrame(rafId.value)
+        rafId.value = null
       }
+
+      const insertIndex = lastValidIndex.value
+
+      props.handleDrop(e, insertIndex)
+      indicatorRef.value.style.display = 'none'
+
+      resetInsertState()
     }
 
-    const handleDrop = e => {
-      cancelAnimationFrame(rafId.value)
-      const insertIndex = lastValidIndex.value
-      props.handleDrop(e, insertIndex) // 需要调整父组件传递的handleDrop参数
-      indicatorRef.value.style.display = 'none'
+    const handleDragLeave = e => {
+      if (!e.currentTarget.contains(e.relatedTarget)) {
+        // 清理逻辑
+        if (rafId.value) {
+          cancelAnimationFrame(rafId.value)
+          rafId.value = null
+        }
+        indicatorRef.value.style.display = 'none'
+      }
     }
 
     const renderCanvasFromSchemas = (componentSchema, index) => {
@@ -225,6 +260,7 @@ export default {
         onDrop={handleDrop}
         onDragover={handleDragOver}
         onDragend={handleDragEnd}
+        onDragleave={handleDragLeave}
       >
         {componentSchemas.value.map(renderCanvasFromSchemas)}
         <div

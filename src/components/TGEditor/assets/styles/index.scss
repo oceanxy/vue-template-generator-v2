@@ -104,26 +104,9 @@
       padding: 15px;
       user-select: none;
       overflow-y: auto;
+      overflow-x: hidden;
       z-index: 1;
       height: 100%;
-
-      .tg-editor-drag-placeholder {
-        display: none;
-        position: absolute;
-        left: 15px !important; // 匹配容器padding
-        right: 15px !important;
-        width: calc(100% - 30px) !important; // 补偿容器padding
-        height: 2px;
-        background: #1890ff;
-        box-shadow: 0 2px 6px rgba(24, 144, 255, 0.4);
-        z-index: 9999;
-        pointer-events: none;
-        transition: top 0.05s cubic-bezier(0.4, 0, 0.2, 1);
-
-        &[data-active='true'] {
-          display: block;
-        }
-      }
 
       &::before,
       &::after {
@@ -135,6 +118,106 @@
         right: 0;
         z-index: 1000;
         pointer-events: none;
+      }
+
+      //&.tg-editor-insert-target {
+      //  $outline-color: var(--tg-theme-color-primary, #1890ff);
+      //
+      //  outline: 2px dashed $outline-color;
+      //  outline-offset: 4px; // 控制边框与元素间距
+      //  transition: outline 0.1s ease;
+      //  position: relative;
+      //  z-index: 99999 !important;
+      //  will-change: outline;
+      //
+      //  // 添加呼吸动画效果
+      //  animation: pulseOutline 1.5s ease-in-out infinite;
+      //
+      //  // 为未来嵌套容器预留样式
+      //  [data-nested-level="1"] .tg-editor-insert-target {
+      //    outline-offset: 8px;
+      //  }
+      //  [data-nested-level="2"] .tg-editor-insert-target {
+      //    outline-offset: 12px;
+      //  }
+      //
+      //  @keyframes pulseOutline {
+      //    0%, 100% {
+      //      outline-width: 2px;
+      //    }
+      //    50% {
+      //      outline-width: 3px;
+      //    }
+      //  }
+      //}
+
+      .tg-editor-drag-placeholder {
+        $indicator-color: var(--tg-theme-color-primary, #1890ff); // 使用主题色
+        $dash-width: 10px; // 虚线单段长度
+        $gap-width: 5px; // 虚线间隔
+
+        display: none;
+        position: absolute;
+        left: 15px !important;
+        right: 15px !important;
+        height: 2px; // 保持原有高度
+        background: repeating-linear-gradient(
+            90deg,
+            $indicator-color 0 $dash-width,
+            transparent $dash-width ($dash-width + $gap-width)
+        );
+        border-radius: 2px;
+        z-index: 100001;
+        pointer-events: none;
+        animation: flowLine 5s linear infinite;
+        background-size: ($dash-width + $gap-width) 100%; // 背景尺寸需要等于单周期长度
+        background-position-x: 0;
+
+        &[data-active='true'] {
+          display: block;
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+              90deg,
+              rgba($indicator-color, 0) 0%,
+              rgba($indicator-color, 0.5) 50%,
+              rgba($indicator-color, 0) 100%
+          );
+          animation: glowFlow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          filter: blur(2px);
+          will-change: filter, opacity;
+          mix-blend-mode: screen; // 混合模式增强光晕
+        }
+
+        // 定义流动动画
+        @keyframes flowLine {
+          0% {
+            background-position-x: 0;
+          }
+          100% {
+            background-position-x: -($dash-width + $gap-width); // 负数实现无缝滚动
+          }
+        }
+
+        // 光晕动画
+        @keyframes glowFlow {
+          0% {
+            opacity: 0;
+            transform: translateX(-150%) skewX(-20deg); // 增加倾斜角度
+          }
+          50% {
+            opacity: 0.6;
+            filter: blur(4px); // 动态模糊变化
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(150%) skewX(20deg);
+          }
+        }
       }
 
       .tg-editor-canvas-component {
@@ -184,7 +267,7 @@
         }
 
         &.dragging {
-          opacity: 0.6;
+          opacity: 0.4;
           transform: scale(0.98);
           transition: all 0.2s ease-out;
           z-index: 9999;
