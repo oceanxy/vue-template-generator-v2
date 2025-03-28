@@ -1,6 +1,6 @@
 import './assets/styles/index.scss'
-import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref } from 'vue'
-import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
+import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref, watch } from 'vue'
+import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme, Select } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
@@ -35,6 +35,7 @@ export default {
 
       return name ? name.at(-1).toUpperCase() : ''
     })
+
     const { useToken } = theme
     const { token: themeToken } = useToken()
     const headerTheme = computed(() => {
@@ -56,6 +57,14 @@ export default {
       loginStore?.userInfo?.themeFileName ||
       configs.header?.buttons?.theme.default
     )
+
+    watch(() => commonStore.headerId, value => {
+      // if (document.querySelector('#tg-responsive-layout')) {
+      //   document.querySelector('#tg-responsive-layout').style.display = 'none'
+      // }
+
+      // window.location.reload()
+    })
 
     onBeforeMount(async () => {
       await verifyUserInfo()
@@ -181,6 +190,8 @@ export default {
       })
     }
 
+
+
     return () => (
       <Layout.Header class={'tg-layout-header'} style={headerTheme.value}>
         <TGLogo style={`font-size: ${themeToken.value.fontSizeLG}px`} />
@@ -201,6 +212,31 @@ export default {
           {/*  </Input>*/}
           {/*</div>*/}
           <div class={'tg-header-info'}>
+            <div class="tg-header-user-content">
+              <Spin
+                spinning={loading.value}
+                wrapperClassName={`tg-header-user-spin-content${loading.value ? ' blur' : ''}`}>
+                {
+                  configs.header?.params?.show
+                    ? [
+                      <Select
+                        vModel:value={commonStore.headerId}
+                        placeholder={configs.header?.params?.placeholder ?? '请选择'}
+                        class={'tg-header-params'}
+                        suffixIcon={<IconFont type={'icon-global-down'} />}
+                      >
+                        {
+                          commonStore.organListForHeader.list.map(item => (
+                            <Select.Option value={item.orgId}>{item.orgName || '暂无组织名称'}</Select.Option>
+                          ))
+                        }
+                      </Select>,
+                      <Divider type={'vertical'} class={'tg-header-divider'} />
+                    ]
+                    : null
+                }
+              </Spin>
+            </div>
             <Dropdown
               overlayClassName={'tg-header-user-overlay'}
               arrow={{ pointAtCenter: true }}

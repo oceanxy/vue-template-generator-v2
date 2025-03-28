@@ -106,6 +106,24 @@
         justify-content: center;
         align-items: center;
 
+        .tg-header-params{
+          .ant-select-selector{
+            background: none;
+            border: none;
+            font-size: var(--tg-theme-font-size-lg);
+            font-weight: 400;
+            line-height: var(--tg-theme-font-size);
+            color: var(--tg-theme-color-white) !important;
+            .ant-select-selection-placeholder{
+              color: var(--tg-theme-color-white) !important;
+            }
+          }
+          .ant-select-arrow{
+            font-size: var(--tg-theme-font-size);
+            color: var(--tg-theme-color-white) !important;
+          }
+        }
+
         .tg-header-user-content {
           .tg-header-user-spin-content.blur .ant-spin-container {
             filter: blur(2px);
