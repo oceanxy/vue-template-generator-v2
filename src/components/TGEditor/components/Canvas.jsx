@@ -20,6 +20,7 @@ export default {
     const lastValidIndex = ref(-1)
     const rafId = ref(null)
     const childRectsCache = new WeakMap()
+    const indicatorType = ref('none') // 'none' | 'placeholder' | 'container'
 
     watch(
       () => props.schema.components,
@@ -69,9 +70,6 @@ export default {
       const { container, indicator, children } = getSafeRef()
       if (!container || !indicator) return
 
-      // 新增距离阈值常量，像素单位
-      const DISTANCE_THRESHOLD = 50
-
       // 提取坐标系计算逻辑
       const getMousePosition = () => {
         const containerRect = container.getBoundingClientRect()
@@ -109,42 +107,53 @@ export default {
         return children[insertIndex].offsetTop - 2
       }
 
-      const updateContainerHighlight = () => {
-        // 清除旧高亮
-        container.querySelectorAll('.tg-editor-insert-target')
-          .forEach(el => el.classList.remove('tg-editor-insert-target'))
-
-        // 获取插入位置父容器（当前为画布容器）
-        const targetContainer = container // 根据后续嵌套需求可调整
-        targetContainer.classList.add('tg-editor-insert-target')
-      }
-
-      const mouseY = getMousePosition()
+      // 新增容器尺寸计算
+      const containerRect = container.getBoundingClientRect()
+      const mouseY = e.clientY - containerRect.top + container.scrollTop
       const freshChildren = children()
 
+      // 空画布处理逻辑
       if (freshChildren.length === 0) {
-        indicator.style.display = 'none'
+        indicatorType.value = 'container'
+        indicator.style.display = 'block'
+        indicator.style.top = '15px' // 默认顶部位置
         return
       }
 
-      const containerRect = container.getBoundingClientRect()
-      const childMidPoints = calculateChildMidPoints(containerRect, freshChildren)
-      const insertIndex = determineInsertIndex(mouseY, childMidPoints)
-      const targetPos = calculateTargetPosition(insertIndex, freshChildren, childMidPoints)
+      // 计算最近组件距离
+      const distances = freshChildren.map(child => {
+        const rect = child.getBoundingClientRect()
+        const centerY = rect.top + rect.height / 2 - containerRect.top
+        return Math.abs(mouseY - centerY)
+      })
+      const minDistance = Math.min(...distances)
+      const DISTANCE_THRESHOLD = 50 // 距离阈值
 
-      if (insertIndex !== lastValidIndex.value) {
-        // 更新容器高亮
-        updateContainerHighlight()
+      // 判断显示类型
+      if (minDistance > DISTANCE_THRESHOLD) {
+        indicatorType.value = 'container'
+        indicator.style.top = mouseY < containerRect.height / 2
+          ? '15px'
+          : `${container.scrollHeight - 15}px`
+      } else {
+        // 原有占位线计算逻辑
+        const childMidPoints = calculateChildMidPoints(containerRect, freshChildren)
+        const insertIndex = determineInsertIndex(mouseY, childMidPoints)
+        const targetPos = calculateTargetPosition(insertIndex, freshChildren, childMidPoints)
 
-        indicator.style.display = 'block'
+        indicatorType.value = 'placeholder'
         indicator.style.top = `${targetPos}px`
-        lastValidIndex.value = insertIndex
       }
+
+      // 更新显示状态
+      indicator.style.display = 'block'
     }
 
-    const resetInsertState = () => {
-      const containers = document.querySelectorAll('.tg-editor-insert-target')
-      containers.forEach(el => el.classList.remove('tg-editor-insert-target'))
+    // 强制重置所有状态
+    const resetIndicator = () => {
+      indicatorType.value = 'none'
+      indicatorRef.value.style.display = 'none'
+      lastValidIndex.value = -1
     }
 
     const updateComponent = componentDef => {
@@ -168,9 +177,7 @@ export default {
       e.stopPropagation()
       e.currentTarget.classList.remove('dragging')
 
-      // 强制重置所有状态
-      indicatorRef.value.style.display = 'none'
-      lastValidIndex.value = -1
+      resetIndicator()
 
       if (rafId.value) {
         cancelAnimationFrame(rafId.value)
@@ -178,12 +185,9 @@ export default {
       }
 
       // 重置拖拽元素状态
-      document.querySelectorAll('.tg-editor-canvas-container .dragging')
-        .forEach(el => {
-          el.classList.remove('dragging')
-        })
-
-      resetInsertState()
+      document.querySelectorAll('.tg-editor-canvas-container .dragging').forEach(el => {
+        el.classList.remove('dragging')
+      })
     }
 
     const handleDragOver = e => {
@@ -199,17 +203,19 @@ export default {
     }
 
     const handleDrop = e => {
+      let insertIndex = lastValidIndex.value
+
+      if (indicatorType.value === 'container') {
+        insertIndex = componentSchemas.value.length
+      }
+
       if (rafId.value) {
         cancelAnimationFrame(rafId.value)
         rafId.value = null
       }
 
-      const insertIndex = lastValidIndex.value
-
       props.handleDrop(e, insertIndex)
-      indicatorRef.value.style.display = 'none'
-
-      resetInsertState()
+      resetIndicator()
     }
 
     const handleDragLeave = e => {
@@ -219,7 +225,8 @@ export default {
           cancelAnimationFrame(rafId.value)
           rafId.value = null
         }
-        indicatorRef.value.style.display = 'none'
+
+        resetIndicator()
       }
     }
 
@@ -266,6 +273,7 @@ export default {
         <div
           ref={indicatorRef}
           class="tg-editor-drag-placeholder"
+          data-type={indicatorType.value !== 'none' ? indicatorType.value : null}
         />
       </div>
     )
