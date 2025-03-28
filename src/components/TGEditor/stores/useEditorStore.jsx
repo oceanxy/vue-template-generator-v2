@@ -1,14 +1,43 @@
 import { defineStore } from 'pinia'
-import { Button, Input, Select } from 'ant-design-vue'
+import { Button, Input, InputNumber, Select } from 'ant-design-vue'
 import { TG_COMPONENT_CATEGORY } from '../templateComponents'
 import ProductCardMeta from '../templateComponents/meta/ProductCard'
 import { cloneDeep } from 'lodash'
+import TGColorPicker from '@/components/TGColorPicker'
+
+/**
+ * @type TGComponentMeta[]
+ */
+const canvasConfigForm = {
+  fields: [
+    {
+      type: 'number',
+      label: '画布宽度',
+      title: '画布宽度（width）',
+      prop: 'width',
+      component: () => InputNumber
+    },
+    {
+      type: 'number',
+      label: '边距大小',
+      title: '内边距大小（padding）',
+      prop: 'padding',
+      component: () => InputNumber
+    },
+    {
+      type: 'color',
+      label: '背景颜色',
+      title: '背景颜色（backgroundColor）',
+      prop: 'backgroundColor',
+      component: () => TGColorPicker
+    }
+  ]
+}
 
 export const useEditorStore = defineStore('editor', {
   state: () => ({
     selectedComponent: null,
-    nearestElement: null,
-    lastDirection: '',
+    canvasConfigForm: canvasConfigForm,
     /**
      * 组件注册中心
      * @type {TGComponentMeta[]}
@@ -24,7 +53,7 @@ export const useEditorStore = defineStore('editor', {
           slot: '按钮'
         },
         style: {},
-        className: 'tg-editor-base-component',
+        class: 'tg-editor-base-component',
         configForm: {
           fields: [
             {
@@ -59,7 +88,7 @@ export const useEditorStore = defineStore('editor', {
           readOnly: true
         },
         style: {},
-        className: 'tg-editor-base-component',
+        class: 'tg-editor-base-component',
         configForm: {
           fields: [
             {
@@ -92,15 +121,19 @@ export const useEditorStore = defineStore('editor', {
      * @returns {TGComponentMeta|null}
      */
     updateComponent(newComponent) {
-      const componentDef = this.getComponentByType(newComponent.type, newComponent.category)
+      if (newComponent.type === 'canvas') {
+        this.selectedComponent = newComponent
+      } else {
+        const componentDef = this.getComponentByType(newComponent.type, newComponent.category)
 
-      if (componentDef) {
-        componentDef.id = newComponent.id
+        if (componentDef) {
+          componentDef.id = newComponent.id
+        }
+
+        this.selectedComponent = componentDef
+
+        return componentDef
       }
-
-      this.selectedComponent = componentDef
-
-      return componentDef
     },
     /**
      * 根据组件类型获取组件元数据

@@ -1,17 +1,25 @@
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { debounce } from 'lodash'
+import { useEditorStore } from '../stores/useEditorStore'
 
 export default {
   name: 'PropertyPanel',
   props: ['selectedComponent', 'onUpdate', 'schema'],
   setup(props, { emit }) {
+    const store = useEditorStore()
     const componentProps = computed(() => {
-      const defaultProps = props.selectedComponent?.defaultProps ?? {}
-      const defaultStyle = props.selectedComponent?.style ?? {}
-      const schemaProps = props.schema.components.find(c => c.id === props.selectedComponent.id)?.props ?? {}
-      const { style, ...restProps } = schemaProps
+      if (!store.selectedComponent?.type) return {}
 
-      return { ...defaultProps, ...restProps, style: { ...defaultStyle, ...style } }
+      if (store.selectedComponent.type === 'canvas') {
+        return props.schema.canvas
+      } else {
+        const schemaProps = props.schema.components.find(c => c.id === props.selectedComponent.id)?.props ?? {}
+        const defaultProps = props.selectedComponent?.defaultProps ?? {}
+        const defaultStyle = props.selectedComponent?.style ?? {}
+        const { style, ...restProps } = schemaProps
+
+        return { ...defaultProps, ...restProps, style: { ...defaultStyle, ...style } }
+      }
     })
 
     const handlePropertyChange = (prop) => {
@@ -40,7 +48,7 @@ export default {
 
               return (
                 <div key={field.prop} class="tg-editor-form-item">
-                  <label>{field.label}</label>
+                  <label title={field.title}>{field.label}</label>
                   <PropertyProp
                     {...field.props}
                     value={value}

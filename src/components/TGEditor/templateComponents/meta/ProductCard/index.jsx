@@ -20,7 +20,7 @@ export default {
     // padding: '12px'
     backgroundColor: '#ffffff'
   },
-  className: 'tg-editor-product-card',
+  class: 'tg-editor-product-card',
   configForm: { // 右侧属性面板配置（必填）
     fields: [
       {

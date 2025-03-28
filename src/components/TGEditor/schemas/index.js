@@ -12,11 +12,11 @@
 export const schema = {
   version: '1.0',
   canvas: {
-    width: 1200,
-    backgroundColor: '#ffffff',
+    class: '',
     style: {
-      gap: '8px',
-      padding: '20px'
+      width: 1200,
+      backgroundColor: '#ffffff',
+      padding: 20
     }
   },
   components: []

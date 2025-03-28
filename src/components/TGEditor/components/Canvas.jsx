@@ -8,6 +8,8 @@
  */
 import { ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
+import { omit } from 'lodash'
+import { styleWithUnits } from '@/components/TGEditor/utils/style'
 
 export default {
   name: 'CanvasRenderer',
@@ -230,6 +232,17 @@ export default {
       }
     }
 
+    const handleCanvasClick = e => {
+      // 确保点击的是容器本身而非子元素
+      if (e.target === e.currentTarget) {
+        store.updateComponent({
+          type: 'canvas',
+          id: 'canvas-root',
+          configForm: store.canvasConfigForm
+        })
+      }
+    }
+
     const renderCanvasFromSchemas = (componentSchema, index) => {
       const componentDef = store.getComponentByType(componentSchema.type, componentSchema.category)
       if (!componentDef) return null
@@ -240,7 +253,7 @@ export default {
           data-id={componentSchema.id}
           data-index={index}
           class={{
-            [componentDef.className]: true,
+            [componentDef.class]: true,
             'tg-editor-canvas-component': true
           }}
           style={{
@@ -262,8 +275,11 @@ export default {
     return () => (
       <div
         ref={canvasContainerRef}
-        class={'tg-editor-canvas-container'}
-        style={{ width: props.schema.canvas.width }}
+        {...omit(props.schema.canvas, ['class', 'style'])}
+        class={['tg-editor-canvas-container', { [props.schema.canvas.class]: true }]}
+        data-selected={store.selectedComponent?.type === 'canvas'}
+        style={styleWithUnits(props.schema.canvas.style)}
+        onClick={handleCanvasClick}
         onDrop={handleDrop}
         onDragover={handleDragOver}
         onDragend={handleDragEnd}

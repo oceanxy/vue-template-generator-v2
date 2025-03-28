@@ -13,6 +13,16 @@ export const TG_COMPONENT_CATEGORY = {
 }
 
 /**
+ * @global
+ * @typedef TGPropertyField
+ * @property {string} type - 属性类型标识
+ * @property {string} label - CSS属性名
+ * @property {string} title - 鼠标移上显示的完整信息
+ * @property {string} prop - 属性标识，指示当前属性控件应该对应组件元数据props中的哪个字段
+ * @property {any} [component] - 操作属性的组件
+ */
+
+/**
  * 模板组件元数据定义
  * @global
  * @typedef TGComponentMeta
@@ -23,6 +33,6 @@ export const TG_COMPONENT_CATEGORY = {
  * @property {function(Object): Element|JSX.Element} preview - 拖拽时的预览组件
  * @property {Object} [defaultProps] - 默认属性值
  * @property {{[key in keyof CSSStyleDeclaration]?: string}} [style] - 组件样式
- * @property {string} [className] - 组件样式表名称
- * @property {{ fields: {type: string,label: string, prop: string, component: any}[] }} configForm - 右侧属性面板配置
+ * @property {string} [class] - 组件样式表名称
+ * @property {{ fields: TGPropertyField[] }} configForm - 右侧属性面板配置
  */

@@ -55,8 +55,14 @@ export default {
 
     // 更新组件的 Schema
     function updateComponentSchema(props) {
-      const componentSchema = schema.components.find(component => component.id === store.selectedComponent.id)
-      componentSchema.props = props
+      if (store.selectedComponent?.type === 'canvas') {
+        // 更新画布属性
+        Object.assign(schema.canvas, props)
+      } else {
+        // 原有组件更新逻辑
+        const componentSchema = schema.components.find(c => c.id === store.selectedComponent?.id)
+        if (componentSchema) componentSchema.props = props
+      }
     }
 
     return () => (
