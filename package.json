@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "@ckpack/vue-color": "^1.6.0",
-    "@vueuse/core": "^12.5.0",
+    "@vueuse/core": "^13.0.0",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.7.7",
     "dayjs": "^1.11.13",
