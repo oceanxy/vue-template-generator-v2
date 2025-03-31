@@ -5,8 +5,6 @@ export const useDnD = (schema, store) => {
       type: component.id ? 'MOVE' : 'ADD',
       data: component
     }))
-
-    store.setDraggingComponent(component)
   }
 
   const handleDrop = (e, insertIndex) => {
@@ -27,15 +25,22 @@ export const useDnD = (schema, store) => {
     const safeIndex = Math.max(0, Math.min(insertIndex, schema.components.length))
 
     if (type === 'ADD') {
-      schema.components.splice(safeIndex, 0, store.createComponent(data))
+      const componentSchema = store.createComponent(data)
+      schema.components.splice(safeIndex, 0, componentSchema)
+
+      return componentSchema
     } else if (type === 'MOVE') {
       const currentIndex = schema.components.findIndex(c => c.id === data.id)
 
       if (currentIndex !== -1) {
         const [moved] = schema.components.splice(currentIndex, 1)
         schema.components.splice(safeIndex, 0, moved)
+
+        return moved
       }
     }
+
+    return null
   }
 
   return { handleDragStart, handleDrop }

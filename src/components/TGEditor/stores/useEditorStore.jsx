@@ -124,6 +124,8 @@ export const useEditorStore = defineStore('editor', {
      * @returns {TGComponentMeta|null}
      */
     updateComponent(newComponent) {
+      if (!newComponent) return null
+
       if (newComponent.type === 'canvas') {
         this.selectedComponent = newComponent
       } else {
@@ -167,9 +169,6 @@ export const useEditorStore = defineStore('editor', {
       } else {
         return null
       }
-    },
-    setDraggingComponent(component) {
-      this.selectedComponent = component
     }
   }
 })

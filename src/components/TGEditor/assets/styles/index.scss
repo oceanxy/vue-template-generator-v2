@@ -21,7 +21,7 @@
         .save-progress {
           width: 0;
           height: 100%;
-          background: #1890ff;
+          background: var(--tg-theme-color-primary);
           transition: width 1s ease;
           animation: savingProgress 1.5s infinite;
         }
@@ -79,7 +79,7 @@
           }
 
           &:hover {
-            border-color: #1890ff;
+            border-color: var(--tg-theme-color-primary);
             background-color: #e6f7ff;
           }
         }
@@ -113,7 +113,7 @@
 
       &[data-selected='true'] {
         outline: 2px dashed var(--tg-theme-color-primary);
-        outline-offset: 2px;
+        outline-offset: 1px;
       }
 
       &::before,
@@ -129,7 +129,7 @@
       }
 
       .tg-editor-drag-placeholder {
-        $indicator-color: var(--tg-theme-color-primary, #1890ff); // 使用主题色
+        $indicator-color: var(--tg-theme-color-primary, var(--tg-theme-color-primary)); // 使用主题色
         $dash-width: 10px; // 虚线单段长度
         $gap-width: 5px; // 虚线间隔
 
@@ -202,7 +202,7 @@
         }
 
         &:hover {
-          outline-color: #1890ff;
+          outline-color: var(--tg-theme-color-primary);
         }
 
         &::before {
@@ -211,7 +211,7 @@
           left: 0;
           right: 0;
           height: 4px;
-          background: #1890ff;
+          background: var(--tg-theme-color-primary);
           opacity: 0;
           transition: opacity 0.1s linear;
           will-change: opacity; // 启用硬件加速
@@ -226,7 +226,7 @@
           bottom: 0;
           height: 4px;
           pointer-events: none;
-          border: 2px dashed #1890ff;
+          border: 2px dashed var(--tg-theme-color-primary);
           opacity: 0;
           transition: opacity 0.2s;
           z-index: 999;
@@ -242,8 +242,14 @@
             content: '';
             position: absolute;
             inset: 0;
-            border: 2px dashed #1890ff;
+            border: 2px dashed var(--tg-theme-color-primary);
           }
+        }
+
+        &[data-selected='true'] {
+          outline: 2px dashed var(--tg-theme-color-primary);
+          outline-offset: 1px;
+          z-index: 999;
         }
       }
     }

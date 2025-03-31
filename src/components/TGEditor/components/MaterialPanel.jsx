@@ -25,6 +25,8 @@ export default {
     ]
 
     const handleMaterialDragStart = (e, component) => {
+      store.selectedComponent = null
+
       e.dataTransfer.setData('componentType', component.type)
       e.dataTransfer.effectAllowed = 'copy' // 区别于内部的 'move'
 

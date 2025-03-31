@@ -6,7 +6,7 @@
  * @property {string} layoutType - 布局类型，flex | grid
  * @property {{[key in keyof CSSStyleDeclaration]?: string}} style - 布局样式
  */
-import { ref, toRaw, watch } from 'vue'
+import { computed, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
 import { styleWithUnits } from '@/components/TGEditor/utils/style'
@@ -23,6 +23,7 @@ export default {
     const rafId = ref(null)
     const childRectsCache = new WeakMap()
     const indicatorType = ref('none') // 'none' | 'placeholder' | 'container'
+    const selectedComponent = computed(() => store.selectedComponent)
 
     watch(
       () => props.schema.components,
@@ -178,11 +179,14 @@ export default {
       lastValidIndex.value = -1
     }
 
-    const updateComponent = componentDef => {
+    const updateComponent = (e, componentDef) => {
+      e.stopPropagation()
       store.updateComponent(componentDef)
     }
 
     const handleDragStart = (e, componentSchema) => {
+      store.selectedComponent = null
+
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.setData('text/plain', componentSchema.id)
 
@@ -239,8 +243,10 @@ export default {
       // 边界检查
       insertIndex = Math.max(0, Math.min(insertIndex, componentSchemas.value.length))
 
-      props.handleDrop(e, insertIndex)
+      const componentSchema = props.handleDrop(e, insertIndex)
       resetIndicator()
+
+      store.updateComponent(componentSchema)
     }
 
     const handleDragLeave = e => {
@@ -275,6 +281,7 @@ export default {
           key={componentSchema.id}
           data-id={componentSchema.id}
           data-index={index}
+          data-selected={selectedComponent.value?.id === componentSchema.id}
           class={{
             [componentDef.class]: true,
             'tg-editor-canvas-component': true
@@ -284,7 +291,7 @@ export default {
             ...componentSchema.props.style
           }}
           draggable
-          onClick={() => updateComponent(toRaw(componentSchema))}
+          onClick={e => updateComponent(e, toRaw(componentSchema))}
           onDragstart={e => {
             handleDragStart(e, componentSchema)
             e.stopPropagation()
@@ -303,7 +310,7 @@ export default {
           ref={canvasContainerRef}
           {...omit(props.schema.canvas, ['class', 'style'])}
           class={['tg-editor-canvas-container', { [props.schema.canvas.class]: true }]}
-          data-selected={store.selectedComponent?.type === 'canvas'}
+          data-selected={selectedComponent.value?.type === 'canvas'}
           style={{
             ...canvasStyle,
             '--canvas-padding': canvasStyle?.padding || '15px'
