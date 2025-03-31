@@ -65,6 +65,62 @@ export default {
       }
     }
 
+    const handleAction = debounce((action) => {
+      /**
+       * @type {TGComponentMeta}
+       */
+      const component = store.selectedComponent
+      const currentIndex = schema.components.findIndex(c => c.id === component.id)
+      let newComponentSchema = null
+
+      if (currentIndex === -1) return
+
+      if (action === 'copy') {
+        newComponentSchema = store.createComponentSchema(component, schema.components[currentIndex])
+      }
+
+      switch (action) {
+        case 'delete':
+          schema.components = schema.components.filter(c => c.id !== component.id)
+          store.selectedComponent = null
+          break
+        case 'copy':
+          schema.components.splice(currentIndex + 1, 0, newComponentSchema)
+          store.updateComponent({
+            id: newComponentSchema.id,
+            type: component.type,
+            category: component.category
+          })
+          break
+        case 'up':
+          if (currentIndex > 0) {
+            [schema.components[currentIndex], schema.components[currentIndex - 1]] =
+              [schema.components[currentIndex - 1], schema.components[currentIndex]]
+
+            store.updateComponent({
+              id: component.id,
+              type: component.type,
+              category: component.category
+            })
+          }
+          break
+        case 'down':
+          if (currentIndex < schema.components.length - 1) {
+            [schema.components[currentIndex], schema.components[currentIndex + 1]] =
+              [schema.components[currentIndex + 1], schema.components[currentIndex]]
+
+            store.updateComponent({
+              id: component.id,
+              type: component.type,
+              category: component.category
+            })
+          }
+          break
+        default:
+          break
+      }
+    }, 50)
+
     return () => (
       <Layout class={'tg-editor-container'}>
         <Layout class={'tg-editor-header'}>
@@ -102,6 +158,7 @@ export default {
             <Canvas
               schema={schema}
               handleDrop={handleDrop}
+              onActionTrigger={handleAction}
             />
           </Layout.Content>
 

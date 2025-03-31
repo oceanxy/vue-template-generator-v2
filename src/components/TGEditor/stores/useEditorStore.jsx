@@ -110,17 +110,33 @@ export const useEditorStore = defineStore('editor', {
     layoutComponents: []
   }),
   actions: {
-    createComponent(template, position) {
+    /**
+     * 创建组件schema
+     * @param componentMeta {TGComponentMeta} - 用来复制props的组件元数据
+     * @param [formSchema] {TGComponentSchema} - 用来复制props的schema
+     * @returns {TGComponentSchema}
+     */
+    createComponentSchema(componentMeta, formSchema) {
+      let props = {}
+
+      if (formSchema) {
+        props = cloneDeep(formSchema.props)
+      }
+
       return {
         id: `comp_${Date.now()}`,
-        type: template.type,
-        category: template.category,
-        props: { ...template.defaultProps, style: { ...position } }
+        type: componentMeta.type,
+        category: componentMeta.category,
+        props: { ...componentMeta.defaultProps, ...props }
       }
     },
     /**
      * 更新选中的组件元数据
-     * @param newComponent {TGComponentMeta} - 需要选中的组件元数据
+     * @param newComponent {{
+     *  id: string,
+     *  type: string,
+     *  category: TG_COMPONENT_CATEGORY
+     * }} - 组件类型和物料类型（用来筛选组件元数据）
      * @returns {TGComponentMeta|null}
      */
     updateComponent(newComponent) {
@@ -143,7 +159,7 @@ export const useEditorStore = defineStore('editor', {
     /**
      * 根据组件类型获取组件元数据
      * @param type {string} - 组件类型
-     * @param category {TG_COMPONENT_CATEGORY} - 组件类别
+     * @param category {TG_COMPONENT_CATEGORY} - 物料类型
      * @returns {TGComponentMeta|null} 组件元数据
      */
     getComponentByType(type, category) {

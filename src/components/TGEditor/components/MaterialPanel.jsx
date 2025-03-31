@@ -39,10 +39,11 @@ export default {
           {
             materials.map(material => (
               <div
-                key={material.category} class={{
-                'tg-editor-material-category': true,
-                [material.category]: true
-              }}
+                key={material.category}
+                class={{
+                  'tg-editor-material-category': true,
+                  [material.category]: true
+                }}
               >
                 <h4 class="tg-editor-material-title">{material.title}</h4>
                 {

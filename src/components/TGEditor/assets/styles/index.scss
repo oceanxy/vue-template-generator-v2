@@ -252,6 +252,28 @@
           z-index: 999;
         }
       }
+
+      .tg-editor-component-actions-bar {
+        position: fixed;
+        z-index: 10001;
+        background: var(--tg-theme-color-primary);
+        border-radius: 0 0 var(--tg-theme-border-radius) var(--tg-theme-border-radius);
+        transition: opacity 0.2s;
+        box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
+
+        button {
+          width: 32px;
+          height: 32px;
+          background: none;
+          border: none;
+          color: #ffffff;
+          transition: transform 0.2s;
+
+          &:hover {
+            transform: scale(1.1);
+          }
+        }
+      }
     }
   }
 

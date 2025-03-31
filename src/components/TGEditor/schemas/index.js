@@ -2,7 +2,15 @@
  * @typedef {Object} TGSchema
  * @property {string} version - 版本号
  * @property {TGCanvas} canvas - 画布配置
- * @property {TGComponentMeta[]} components - 组件集合
+ * @property {TGComponentSchema[]} components - 组件集合
+ */
+
+/**
+ * @typedef {Object} TGComponentSchema
+ * @property {string} id - 组件唯一标识符
+ * @property {string} type - 组件类型
+ * @property {TG_COMPONENT_CATEGORY} category - 物料类型
+ * @property {Object} props - 组件props
  */
 
 /**

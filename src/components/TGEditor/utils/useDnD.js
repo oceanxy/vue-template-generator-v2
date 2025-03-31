@@ -25,7 +25,7 @@ export const useDnD = (schema, store) => {
     const safeIndex = Math.max(0, Math.min(insertIndex, schema.components.length))
 
     if (type === 'ADD') {
-      const componentSchema = store.createComponent(data)
+      const componentSchema = store.createComponentSchema(data)
       schema.components.splice(safeIndex, 0, componentSchema)
 
       return componentSchema

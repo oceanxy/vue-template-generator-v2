@@ -9,7 +9,7 @@ import TGColorPicker from '@/components/TGColorPicker'
  */
 export default {
   type: 'tg-product-card', // 唯一类型标识（必填）
-  category: TG_COMPONENT_CATEGORY.TEMPLATE, // 组件分类：TEMPLATE/BASIC/LAYOUT
+  category: TG_COMPONENT_CATEGORY.TEMPLATE, // 物料类型
   icon: <ShopOutlined />, // 组件区显示的图标
   preview: props => <ProductCardPreview {...props} />, // 拖拽时的预览组件
   defaultProps: {  // 默认属性值（必填）

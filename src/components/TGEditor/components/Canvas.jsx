@@ -6,15 +6,16 @@
  * @property {string} layoutType - 布局类型，flex | grid
  * @property {{[key in keyof CSSStyleDeclaration]?: string}} style - 布局样式
  */
-import { computed, ref, toRaw, watch } from 'vue'
+import { computed, nextTick, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
-import { styleWithUnits } from '@/components/TGEditor/utils/style'
+import { styleWithUnits } from '../utils/style'
+import ComponentsActionBar from './ComponentsActionBar'
 
 export default {
   name: 'CanvasRenderer',
   props: ['schema', 'handleDrop'],
-  setup(props) {
+  setup(props, { emit }) {
     const canvasContainerRef = ref(null)
     const componentSchemas = ref(props.schema.components)
     const store = useEditorStore()
@@ -24,6 +25,9 @@ export default {
     const childRectsCache = new WeakMap()
     const indicatorType = ref('none') // 'none' | 'placeholder' | 'container'
     const selectedComponent = computed(() => store.selectedComponent)
+    const compActionBarRef = ref(null)
+    const actionBarVisible = ref(false)
+    const actionBarPosition = ref({ x: 0, y: 0 })
 
     watch(
       () => props.schema.components,
@@ -34,13 +38,45 @@ export default {
 
     watch(
       () => canvasContainerRef.value?.scrollTop,
-      () => {
+      async () => {
         if (rafId.value) {
           cancelAnimationFrame(rafId.value)
           rafId.value = null
         }
+
+        await updateActionBarPosition()
       }
     )
+
+    watch(selectedComponent, async val => {
+      if (val?.type && val.type !== 'canvas') {
+        await updateActionBarPosition()
+        actionBarVisible.value = true
+      } else {
+        actionBarVisible.value = false
+      }
+    })
+
+    const updateActionBarPosition = async () => {
+      await nextTick()
+
+      const selectedEl = canvasContainerRef.value?.querySelector('[data-selected="true"]')
+
+      if (selectedEl) {
+        const rect = selectedEl.getBoundingClientRect()
+
+        setTimeout(() => {
+          actionBarPosition.value = {
+            x: rect.right + 3 - compActionBarRef.value.$el.getBoundingClientRect().width,
+            y: rect.bottom + 1
+          }
+        }, 0)
+      }
+    }
+
+    const handleAction = (action, index) => {
+      emit('actionTrigger', action, index)
+    }
 
     const getSafeRef = () => {
       return {
@@ -322,6 +358,15 @@ export default {
           onDragleave={handleDragLeave}
         >
           {componentSchemas.value.map(renderCanvasFromSchemas)}
+          <ComponentsActionBar
+            ref={compActionBarRef}
+            position={actionBarPosition.value}
+            visible={actionBarVisible.value}
+            onDelete={() => handleAction('delete')}
+            onUp={() => handleAction('up')}
+            onDown={() => handleAction('down')}
+            onCopy={() => handleAction('copy')}
+          />
           <div
             ref={indicatorRef}
             class="tg-editor-drag-placeholder"
