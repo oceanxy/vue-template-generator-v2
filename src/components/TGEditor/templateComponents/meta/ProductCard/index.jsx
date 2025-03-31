@@ -25,12 +25,14 @@ export default {
     fields: [
       {
         type: 'input',
+        title: '标题',
         label: '标题',
         prop: 'title',
         component: () => Input // 对应的antd组件
       },
       {
         type: 'color-picker',
+        title: '背景色',
         label: '背景色',
         prop: 'backgroundColor',
         component: () => TGColorPicker

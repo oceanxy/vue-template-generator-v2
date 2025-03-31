@@ -12,22 +12,22 @@ const canvasConfigForm = {
   fields: [
     {
       type: 'number',
-      label: '画布宽度',
+      label: '宽度',
       title: '画布宽度（width）',
       prop: 'width',
       component: () => InputNumber
     },
     {
       type: 'number',
-      label: '边距大小',
-      title: '内边距大小（padding）',
+      label: '边距',
+      title: '内边距（padding）',
       prop: 'padding',
       component: () => InputNumber
     },
     {
       type: 'color',
       label: '背景颜色',
-      title: '背景颜色（backgroundColor）',
+      title: '画布背景颜色（backgroundColor）',
       prop: 'backgroundColor',
       component: () => TGColorPicker
     }
@@ -58,12 +58,14 @@ export const useEditorStore = defineStore('editor', {
           fields: [
             {
               type: 'input',
+              title: '按钮文本',
               label: '按钮文本',
               prop: 'slot',
               component: () => Input
             },
             {
               type: 'select',
+              title: '按钮类型',
               label: '按钮类型',
               prop: 'type',
               component: () => Select,
@@ -93,6 +95,7 @@ export const useEditorStore = defineStore('editor', {
           fields: [
             {
               type: 'input',
+              title: '文本框占位符',
               label: '占位符',
               prop: 'placeholder',
               component: () => Input
