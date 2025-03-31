@@ -72,12 +72,6 @@ export default {
       const { container, indicator, children } = getSafeRef()
       if (!container || !indicator) return
 
-      // 提取坐标系计算逻辑
-      const getMousePosition = () => {
-        const containerRect = container.getBoundingClientRect()
-        return e.clientY - containerRect.top + container.scrollTop
-      }
-
       // 提取子元素中间点计算
       const calculateChildMidPoints = (containerRect, children) => {
         return children.map(child => {
@@ -134,6 +128,7 @@ export default {
       // 判断显示类型
       if (minDistance > DISTANCE_THRESHOLD) {
         indicatorType.value = 'container'
+        lastValidIndex.value = -1
         indicator.style.top = mouseY < containerRect.height / 2
           ? '15px'
           : `${container.scrollHeight - 15}px`
@@ -144,6 +139,7 @@ export default {
         const targetPos = calculateTargetPosition(insertIndex, freshChildren, childMidPoints)
 
         indicatorType.value = 'placeholder'
+        lastValidIndex.value = insertIndex
         indicator.style.top = `${targetPos}px`
       }
 
@@ -215,6 +211,9 @@ export default {
         cancelAnimationFrame(rafId.value)
         rafId.value = null
       }
+
+      // 边界检查
+      insertIndex = Math.max(0, Math.min(insertIndex, componentSchemas.value.length))
 
       props.handleDrop(e, insertIndex)
       resetIndicator()

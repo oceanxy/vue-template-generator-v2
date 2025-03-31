@@ -13,6 +13,11 @@ export const useDnD = (schema, store) => {
     e.preventDefault()
     e.stopPropagation()
 
+    // 索引有效性验证
+    if (insertIndex === -1) {
+      insertIndex = schema.components.length
+    }
+
     const raw = e.dataTransfer.getData('application/json')
     if (!raw) return
 
