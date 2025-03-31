@@ -109,6 +109,7 @@
       height: 100%;
       cursor: pointer;
       transition: outline 0.2s;
+      padding: var(--canvas-padding);
 
       &[data-selected='true'] {
         outline: 2px dashed var(--tg-theme-color-primary);
@@ -139,8 +140,8 @@
         &[data-type='placeholder'] {
           // 原有占位线样式
           height: 2px; // 保持原有高度
-          left: 15px !important;
-          right: 15px !important;
+          left: var(--canvas-padding) !important;
+          right: var(--canvas-padding) !important;
           border-radius: 2px;
           pointer-events: none;
           background: repeating-linear-gradient(
@@ -165,9 +166,9 @@
 
         &[data-type='container'] {
           background: none;
-          inset: 15px !important; // 匹配容器padding
-          width: calc(100% - 30px) !important; // 补偿左右padding
-          height: calc(100% - 30px) !important;
+          inset: var(--canvas-padding) !important; // 匹配容器padding
+          width: calc(100% - var(--canvas-padding) * 2) !important; // 补偿左右padding
+          height: calc(100% - var(--canvas-padding) * 2) !important;
           border: 2px dashed var(--tg-theme-color-primary);
           border-radius: 4px;
           box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);

@@ -61,6 +61,13 @@ export default {
       }
     }
 
+    const parseStyleValue = (value, defaultValue = 0) => {
+      if (typeof value === 'number') return value
+      if (!value) return defaultValue
+      const match = value.match(/^([\d.]+)(px|%)$/)
+      return match ? parseFloat(match[1]) : defaultValue
+    }
+
     /**
      * @typedef {Object} PositionInfo
      * @property {number} mouseY - 相对于容器顶部的Y坐标
@@ -90,14 +97,24 @@ export default {
       // 目标位置计算器
       const calculateTargetPosition = (insertIndex, children, midPoints) => {
         const EDGE_THRESHOLD = 20
-        const [firstChild, lastChild] = [children[0], children[children.length - 1]]
+        const paddingTop = parseStyleValue(
+          props.schema.canvas.style?.paddingTop || props.schema.canvas.style?.padding,
+          15
+        )
+        const paddingBottom = parseStyleValue(props.schema.canvas.style?.paddingBottom ||
+          props.schema.canvas.style?.padding, 15)
 
-        if (children.length === 0) return 15
+        if (children.length === 0) return paddingTop
+
+        // 顶部边界
         if (insertIndex === 0 && mouseY < midPoints[0] - EDGE_THRESHOLD) {
-          return firstChild.offsetTop - 2
+          return children[0].offsetTop - 2
         }
+
+        // 底部边界
         if (insertIndex === children.length) {
-          return lastChild.offsetTop + lastChild.offsetHeight + 2
+          const lastChild = children[children.length - 1]
+          return lastChild.offsetTop + lastChild.offsetHeight
         }
 
         return children[insertIndex].offsetTop - 2
@@ -107,12 +124,18 @@ export default {
       const containerRect = container.getBoundingClientRect()
       const mouseY = e.clientY - containerRect.top + container.scrollTop
       const freshChildren = children()
+      // 动态获取画布样式
+      const canvasStyle = props.schema.canvas.style || {}
+      // 转换padding值为像素（示例：处理"20px"格式）
+      const parsePadding = (value) => parseInt(value) || 0
+      const containerPaddingTop = parsePadding(canvasStyle.paddingTop || canvasStyle.padding || '15px')
+      const containerPaddingBottom = parsePadding(canvasStyle.paddingBottom || canvasStyle.padding || '15px')
 
       // 空画布处理逻辑
       if (freshChildren.length === 0) {
         indicatorType.value = 'container'
         indicator.style.display = 'block'
-        indicator.style.top = '15px' // 默认顶部位置
+        indicator.style.top = `${containerPaddingTop}px` // 默认顶部位置
         return
       }
 
@@ -129,9 +152,10 @@ export default {
       if (minDistance > DISTANCE_THRESHOLD) {
         indicatorType.value = 'container'
         lastValidIndex.value = -1
-        indicator.style.top = mouseY < containerRect.height / 2
-          ? '15px'
-          : `${container.scrollHeight - 15}px`
+        const isTop = mouseY < containerRect.height / 2
+        indicator.style.top = isTop
+          ? `${containerPaddingTop}px`
+          : `${container.scrollHeight - containerPaddingBottom}px`
       } else {
         // 原有占位线计算逻辑
         const childMidPoints = calculateChildMidPoints(containerRect, freshChildren)
@@ -271,26 +295,33 @@ export default {
       )
     }
 
-    return () => (
-      <div
-        ref={canvasContainerRef}
-        {...omit(props.schema.canvas, ['class', 'style'])}
-        class={['tg-editor-canvas-container', { [props.schema.canvas.class]: true }]}
-        data-selected={store.selectedComponent?.type === 'canvas'}
-        style={styleWithUnits(props.schema.canvas.style)}
-        onClick={handleCanvasClick}
-        onDrop={handleDrop}
-        onDragover={handleDragOver}
-        onDragend={handleDragEnd}
-        onDragleave={handleDragLeave}
-      >
-        {componentSchemas.value.map(renderCanvasFromSchemas)}
+    return () => {
+      const canvasStyle = styleWithUnits(props.schema.canvas.style)
+
+      return (
         <div
-          ref={indicatorRef}
-          class="tg-editor-drag-placeholder"
-          data-type={indicatorType.value !== 'none' ? indicatorType.value : null}
-        />
-      </div>
-    )
+          ref={canvasContainerRef}
+          {...omit(props.schema.canvas, ['class', 'style'])}
+          class={['tg-editor-canvas-container', { [props.schema.canvas.class]: true }]}
+          data-selected={store.selectedComponent?.type === 'canvas'}
+          style={{
+            ...canvasStyle,
+            '--canvas-padding': canvasStyle?.padding || '15px'
+          }}
+          onClick={handleCanvasClick}
+          onDrop={handleDrop}
+          onDragover={handleDragOver}
+          onDragend={handleDragEnd}
+          onDragleave={handleDragLeave}
+        >
+          {componentSchemas.value.map(renderCanvasFromSchemas)}
+          <div
+            ref={indicatorRef}
+            class="tg-editor-drag-placeholder"
+            data-type={indicatorType.value !== 'none' ? indicatorType.value : null}
+          />
+        </div>
+      )
+    }
   }
 }

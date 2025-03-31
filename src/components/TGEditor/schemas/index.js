@@ -16,7 +16,7 @@ export const schema = {
     style: {
       width: 1200,
       backgroundColor: '#ffffff',
-      padding: 20
+      padding: 15
     }
   },
   components: []
