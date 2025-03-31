@@ -1,7 +1,7 @@
 import './index.scss'
 import { Sketch } from '@ckpack/vue-color'
 import { Popover } from 'ant-design-vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export default {
   name: 'TGColorPicker',
@@ -14,6 +14,8 @@ export default {
   setup(props, { attrs }) {
     const visible = ref(false)
     const colorValue = ref(props.value)
+
+    watch(() => props.value, val => colorValue.value = val)
 
     const handleColorChange = (color) => {
       colorValue.value = color.hex
