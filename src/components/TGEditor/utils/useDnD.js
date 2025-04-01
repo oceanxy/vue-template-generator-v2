@@ -33,8 +33,15 @@ export const useDnD = (schema, store) => {
       const currentIndex = schema.components.findIndex(c => c.id === data.id)
 
       if (currentIndex !== -1) {
+        let adjustedIndex = insertIndex
+
+        // 当元素从前往后移动时，需要减1补偿索引
+        if (currentIndex < adjustedIndex) {
+          adjustedIndex--
+        }
+
         const [moved] = schema.components.splice(currentIndex, 1)
-        schema.components.splice(safeIndex, 0, moved)
+        schema.components.splice(adjustedIndex, 0, moved)
 
         return moved
       }

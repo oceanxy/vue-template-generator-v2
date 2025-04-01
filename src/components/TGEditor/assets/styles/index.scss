@@ -134,6 +134,7 @@
         $gap-width: 5px; // 虚线间隔
 
         display: none;
+        transition: top 0.15s ease-out;
         position: absolute;
         z-index: 999;
 
@@ -162,6 +163,12 @@
               background-position-x: -($dash-width + $gap-width); // 负数实现无缝滚动
             }
           }
+        }
+
+        // 吸附时高亮样式
+        &[data-snap='true'] {
+          background: var(--tg-theme-color-primary);
+          animation: none !important;
         }
 
         &[data-type='container'] {
@@ -258,7 +265,6 @@
         z-index: 10001;
         background: var(--tg-theme-color-primary);
         border-radius: 0 0 var(--tg-theme-border-radius) var(--tg-theme-border-radius);
-        transition: opacity 0.2s;
         box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
 
         button {

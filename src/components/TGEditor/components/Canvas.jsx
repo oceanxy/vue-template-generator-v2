@@ -6,11 +6,16 @@
  * @property {string} layoutType - 布局类型，flex | grid
  * @property {{[key in keyof CSSStyleDeclaration]?: string}} style - 布局样式
  */
-import { computed, nextTick, ref, toRaw, watch } from 'vue'
+import { computed, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
 import { styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
+
+const THRESHOLD_CONFIG = {
+  COMPONENT_AREA: 0,    // 只要在组件区域内就显示
+  CONTAINER: 50         // 空白区域阈值
+}
 
 export default {
   name: 'CanvasRenderer',
@@ -49,29 +54,33 @@ export default {
     )
 
     watch(selectedComponent, async val => {
+      actionBarVisible.value = false
+
       if (val?.type && val.type !== 'canvas') {
         await updateActionBarPosition()
         actionBarVisible.value = true
-      } else {
-        actionBarVisible.value = false
       }
     })
 
     const updateActionBarPosition = async () => {
-      await nextTick()
-
-      const selectedEl = canvasContainerRef.value?.querySelector('[data-selected="true"]')
-
-      if (selectedEl) {
-        const rect = selectedEl.getBoundingClientRect()
-
+      return new Promise(resolve => {
         setTimeout(() => {
-          actionBarPosition.value = {
-            x: rect.right + 3 - compActionBarRef.value.$el.getBoundingClientRect().width,
-            y: rect.bottom + 1
+          const selectedEl = canvasContainerRef.value?.querySelector('[data-selected="true"]')
+
+          if (selectedEl) {
+            const rect = selectedEl.getBoundingClientRect()
+
+            setTimeout(() => {
+              actionBarPosition.value = {
+                x: rect.right + 3 - compActionBarRef.value.$el.getBoundingClientRect().width,
+                y: rect.bottom + 1
+              }
+            }, 0)
+
+            resolve()
           }
-        }, 0)
-      }
+        }, 200)
+      })
     }
 
     const handleAction = (action, index) => {
@@ -120,20 +129,32 @@ export default {
       const calculateChildMidPoints = (containerRect, children) => {
         return children.map(child => {
           const rect = child.getBoundingClientRect()
-          const topRelative = rect.top - containerRect.top + container.scrollTop
-          return topRelative + child.offsetHeight / 2
+          return (rect.top + rect.bottom) / 2 - containerRect.top + container.scrollTop
         })
       }
 
-      // 边界处理逻辑封装
+      // 边界处理逻辑（插入位置计算算法）
       const determineInsertIndex = (mouseY, midPoints) => {
-        const index = midPoints.findIndex(midY => mouseY < midY)
-        return index === -1 ? midPoints.length : index
+        // 二分查找提高性能
+        let low = 0
+        let high = midPoints.length - 1
+
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2)
+          if (mouseY < midPoints[mid]) {
+            high = mid - 1
+          } else {
+            low = mid + 1
+          }
+        }
+        return low
       }
 
       // 目标位置计算器
       const calculateTargetPosition = (insertIndex, children, midPoints) => {
         const EDGE_THRESHOLD = 20
+        const EDGE_OFFSET = 2 // 视觉偏移量
+        const containerHeight = container.scrollHeight
         const paddingTop = parseStyleValue(
           props.schema.canvas.style?.paddingTop || props.schema.canvas.style?.padding,
           15
@@ -148,13 +169,24 @@ export default {
           return children[0].offsetTop - 2
         }
 
+        // 处理首尾边界
+        if (insertIndex === 0) {
+          return Math.max(EDGE_OFFSET, children[0].offsetTop - EDGE_OFFSET)
+        }
+
         // 底部边界
         if (insertIndex === children.length) {
           const lastChild = children[children.length - 1]
-          return lastChild.offsetTop + lastChild.offsetHeight
+          return Math.min(
+            containerHeight - EDGE_OFFSET,
+            lastChild.offsetTop + lastChild.offsetHeight + EDGE_OFFSET
+          )
         }
 
-        return children[insertIndex].offsetTop - 2
+        // 常规位置
+        const prevChild = children[insertIndex - 1]
+        const nextChild = children[insertIndex]
+        return (prevChild.offsetTop + prevChild.offsetHeight + nextChild.offsetTop) / 2
       }
 
       // 新增容器尺寸计算
@@ -176,17 +208,85 @@ export default {
         return
       }
 
+      // 检测鼠标是否在任何组件区域内
+      const isInsideComponent = freshChildren.some(child => {
+        const rect = child.getBoundingClientRect()
+        const top = rect.top - containerRect.top + container.scrollTop
+        const bottom = top + child.offsetHeight
+        return mouseY >= top && mouseY <= bottom
+      })
+
+      // 优先处理组件内部情况
+      if (isInsideComponent) {
+        const childMidPoints = calculateChildMidPoints(containerRect, freshChildren)
+        const insertIndex = determineInsertIndex(mouseY, childMidPoints)
+        const targetPos = calculateTargetPosition(insertIndex, freshChildren, childMidPoints)
+
+        indicatorType.value = 'placeholder'
+        lastValidIndex.value = insertIndex
+        indicator.style.top = `${targetPos}px`
+        indicator.style.display = 'block'
+        return
+      }
+
+      // 动态阈值边缘吸附逻辑
+      const EDGE_SNAP_RANGE = 5
+      let hasSnapped = false
+
+      // 边缘吸附检查（新增）
+      const checkSnap = (edgePos) => Math.abs(edgePos - mouseY) < EDGE_SNAP_RANGE
+
+      // 遍历组件检查吸附
+      freshChildren.some(child => {
+        const childTop = child.offsetTop
+        const childBottom = childTop + child.offsetHeight
+
+        if (checkSnap(childTop)) {
+          indicatorType.value = 'placeholder'
+          indicator.style.top = `${childTop}px`
+          hasSnapped = true
+          return true
+        }
+
+        if (checkSnap(childBottom)) {
+          indicatorType.value = 'placeholder'
+          indicator.style.top = `${childBottom}px`
+          hasSnapped = true
+          return true
+        }
+        return false
+      })
+
+      if (hasSnapped) {
+        indicator.style.display = 'block'
+        return
+      }
+
       // 计算最近组件距离
       const distances = freshChildren.map(child => {
         const rect = child.getBoundingClientRect()
-        const centerY = rect.top + rect.height / 2 - containerRect.top
-        return Math.abs(mouseY - centerY)
+        const topEdge = rect.top - containerRect.top + container.scrollTop
+        const bottomEdge = topEdge + child.offsetHeight
+
+        // 动态阈值计算（组件高度的20%或50px取较小值）
+        const dynamicThreshold = Math.min(
+          THRESHOLD_CONFIG.CONTAINER,
+          child.offsetHeight * 0.2
+        )
+
+        // 计算到上下边缘的距离
+        const toTop = Math.abs(mouseY - topEdge)
+        const toBottom = Math.abs(mouseY - bottomEdge)
+
+        return Math.min(toTop, toBottom) - dynamicThreshold
       })
+
       const minDistance = Math.min(...distances)
-      const DISTANCE_THRESHOLD = 50 // 距离阈值
+      const shouldShowContainerLine = minDistance > 0
 
       // 判断显示类型
-      if (minDistance > DISTANCE_THRESHOLD) {
+      if (shouldShowContainerLine) {
+        // 容器指示线逻辑
         indicatorType.value = 'container'
         lastValidIndex.value = -1
         const isTop = mouseY < containerRect.height / 2
@@ -194,7 +294,7 @@ export default {
           ? `${containerPaddingTop}px`
           : `${container.scrollHeight - containerPaddingBottom}px`
       } else {
-        // 原有占位线计算逻辑
+        // 占位指示线逻辑
         const childMidPoints = calculateChildMidPoints(containerRect, freshChildren)
         const insertIndex = determineInsertIndex(mouseY, childMidPoints)
         const targetPos = calculateTargetPosition(insertIndex, freshChildren, childMidPoints)
