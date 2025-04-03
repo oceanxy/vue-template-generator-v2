@@ -10,9 +10,15 @@
     border-bottom: 1px solid var(--tg-theme-color-border);
 
     .tg-editor-tools {
+      position: relative;
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+
       .save-status-bar {
         position: absolute;
-        bottom: -2px;
+        bottom: 0;
         left: 0;
         right: 0;
         height: 2px;
@@ -129,17 +135,17 @@
       }
 
       .tg-editor-drag-placeholder {
-        $indicator-color: var(--tg-theme-color-primary, var(--tg-theme-color-primary)); // 使用主题色
+        $indicator-color: var(--tg-theme-color-primary);
         $dash-width: 10px; // 虚线单段长度
         $gap-width: 5px; // 虚线间隔
 
         display: none;
-        transition: top 0.15s ease-out;
+        transition: top 0.07s ease-out, opacity 0.1s linear;
         position: absolute;
         z-index: 999;
 
         &[data-type='placeholder'] {
-          // 原有占位线样式
+          display: inherit;
           height: 2px; // 保持原有高度
           left: var(--canvas-padding) !important;
           right: var(--canvas-padding) !important;
@@ -172,22 +178,29 @@
         }
 
         &[data-type='container'] {
+          display: inherit;
           background: none;
           inset: var(--canvas-padding) !important; // 匹配容器padding
-          width: calc(100% - var(--canvas-padding) * 2) !important; // 补偿左右padding
-          height: calc(100% - var(--canvas-padding) * 2) !important;
+          width: calc(100% - var(--canvas-padding) * 2); // 补偿左右padding
+          height: calc(100% - var(--canvas-padding) * 2); // 补偿上下padding
           border: 2px dashed var(--tg-theme-color-primary);
           border-radius: 4px;
           box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
           box-sizing: border-box;
-          animation: pulseContainer 5s linear infinite;
+          overflow: hidden;
+          transform: translateZ(0);
+          animation: pulseContainer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
           @keyframes pulseContainer {
             0%, 100% {
               opacity: 0.6;
+              top: 0;
+              transform: translateZ(0) scale(1);
             }
             50% {
               opacity: 1;
+              top: 0;
+              transform: translateZ(0) scale(1.002); // 用微缩放代替尺寸变化
             }
           }
         }

@@ -1,21 +1,23 @@
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '../stores/useEditorStore'
+import { Empty } from 'ant-design-vue'
 
 export default {
   name: 'PropertyPanel',
-  props: ['selectedComponent', 'onUpdate', 'schema'],
-  setup(props, { emit }) {
+  setup() {
     const store = useEditorStore()
+    const schema = computed(() => store.schema)
+    const selectedComponent = computed(() => store.selectedComponent)
     const componentProps = computed(() => {
-      if (!store.selectedComponent?.type) return {}
+      if (!store.selectedComponent) return {}
 
       if (store.selectedComponent.type === 'canvas') {
-        return props.schema.canvas
+        return schema.value.canvas
       } else {
-        const schemaProps = props.schema.components.find(c => c.id === props.selectedComponent.id)?.props ?? {}
-        const defaultProps = props.selectedComponent?.defaultProps ?? {}
-        const defaultStyle = props.selectedComponent?.style ?? {}
+        const schemaProps = schema.value.components.find(c => c.id === selectedComponent.value.id)?.props ?? {}
+        const defaultProps = selectedComponent.value?.defaultProps ?? {}
+        const defaultStyle = selectedComponent.value?.style ?? {}
         const { style, ...restProps } = schemaProps
 
         return { ...defaultProps, ...restProps, style: { ...defaultStyle, ...style } }
@@ -30,17 +32,31 @@ export default {
           componentProps.value.style[prop] = e.target?.value ?? e
         }
 
-        emit('update', componentProps.value)
+        // 更新组件的 Schema
+        if (store.selectedComponent?.type === 'canvas') {
+          // 更新画布属性
+          store.schema.canvas = schema.value.canvas
+        } else {
+          // 原有组件更新逻辑
+          const componentSchema = store.schema.components.find(c => c.id === store.selectedComponent?.id)
+          if (componentSchema) componentSchema.props = componentProps.value
+        }
       }, 200)
     }
 
     return () => {
-      if (!props.selectedComponent?.configForm?.fields) return null
+      if (!selectedComponent.value?.configForm?.fields) {
+        return (
+          <div class="tg-editor-property-container">
+            <Empty description="未选中任何组件" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          </div>
+        )
+      }
 
       return (
         <div class="tg-editor-property-container">
           {
-            props.selectedComponent?.configForm?.fields.map(field => {
+            selectedComponent.value?.configForm?.fields.map(field => {
               const PropertyProp = field.component()
               const value = field.prop in componentProps.value
                 ? componentProps.value[field.prop]
