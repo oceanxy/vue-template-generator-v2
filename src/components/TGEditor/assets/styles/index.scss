@@ -10,9 +10,15 @@
     border-bottom: 1px solid var(--tg-theme-color-border);
 
     .tg-editor-tools {
+      position: relative;
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+
       .save-status-bar {
         position: absolute;
-        bottom: -2px;
+        bottom: 0;
         left: 0;
         right: 0;
         height: 2px;
@@ -21,7 +27,7 @@
         .save-progress {
           width: 0;
           height: 100%;
-          background: #1890ff;
+          background: var(--tg-theme-color-primary);
           transition: width 1s ease;
           animation: savingProgress 1.5s infinite;
         }
@@ -79,7 +85,7 @@
           }
 
           &:hover {
-            border-color: #1890ff;
+            border-color: var(--tg-theme-color-primary);
             background-color: #e6f7ff;
           }
         }
@@ -109,10 +115,11 @@
       height: 100%;
       cursor: pointer;
       transition: outline 0.2s;
+      padding: var(--canvas-padding);
 
       &[data-selected='true'] {
         outline: 2px dashed var(--tg-theme-color-primary);
-        outline-offset: 2px;
+        outline-offset: 1px;
       }
 
       &::before,
@@ -128,19 +135,20 @@
       }
 
       .tg-editor-drag-placeholder {
-        $indicator-color: var(--tg-theme-color-primary, #1890ff); // 使用主题色
+        $indicator-color: var(--tg-theme-color-primary);
         $dash-width: 10px; // 虚线单段长度
         $gap-width: 5px; // 虚线间隔
 
         display: none;
+        transition: top 0.07s ease-out, opacity 0.1s linear;
         position: absolute;
         z-index: 999;
 
         &[data-type='placeholder'] {
-          // 原有占位线样式
+          display: inherit;
           height: 2px; // 保持原有高度
-          left: 15px !important;
-          right: 15px !important;
+          left: var(--canvas-padding) !important;
+          right: var(--canvas-padding) !important;
           border-radius: 2px;
           pointer-events: none;
           background: repeating-linear-gradient(
@@ -163,23 +171,36 @@
           }
         }
 
+        // 吸附时高亮样式
+        &[data-snap='true'] {
+          background: var(--tg-theme-color-primary);
+          animation: none !important;
+        }
+
         &[data-type='container'] {
+          display: inherit;
           background: none;
-          inset: 15px !important; // 匹配容器padding
-          width: calc(100% - 30px) !important; // 补偿左右padding
-          height: calc(100% - 30px) !important;
+          inset: var(--canvas-padding) !important; // 匹配容器padding
+          width: calc(100% - var(--canvas-padding) * 2); // 补偿左右padding
+          height: calc(100% - var(--canvas-padding) * 2); // 补偿上下padding
           border: 2px dashed var(--tg-theme-color-primary);
           border-radius: 4px;
           box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
           box-sizing: border-box;
-          animation: pulseContainer 5s linear infinite;
+          overflow: hidden;
+          transform: translateZ(0);
+          animation: pulseContainer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
           @keyframes pulseContainer {
             0%, 100% {
               opacity: 0.6;
+              top: 0;
+              transform: translateZ(0) scale(1);
             }
             50% {
               opacity: 1;
+              top: 0;
+              transform: translateZ(0) scale(1.002); // 用微缩放代替尺寸变化
             }
           }
         }
@@ -201,7 +222,7 @@
         }
 
         &:hover {
-          outline-color: #1890ff;
+          outline-color: var(--tg-theme-color-primary);
         }
 
         &::before {
@@ -210,7 +231,7 @@
           left: 0;
           right: 0;
           height: 4px;
-          background: #1890ff;
+          background: var(--tg-theme-color-primary);
           opacity: 0;
           transition: opacity 0.1s linear;
           will-change: opacity; // 启用硬件加速
@@ -225,7 +246,7 @@
           bottom: 0;
           height: 4px;
           pointer-events: none;
-          border: 2px dashed #1890ff;
+          border: 2px dashed var(--tg-theme-color-primary);
           opacity: 0;
           transition: opacity 0.2s;
           z-index: 999;
@@ -241,7 +262,34 @@
             content: '';
             position: absolute;
             inset: 0;
-            border: 2px dashed #1890ff;
+            border: 2px dashed var(--tg-theme-color-primary);
+          }
+        }
+
+        &[data-selected='true'] {
+          outline: 2px dashed var(--tg-theme-color-primary);
+          outline-offset: 1px;
+          z-index: 999;
+        }
+      }
+
+      .tg-editor-component-actions-bar {
+        position: fixed;
+        z-index: 10001;
+        background: var(--tg-theme-color-primary);
+        border-radius: 0 0 var(--tg-theme-border-radius) var(--tg-theme-border-radius);
+        box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
+
+        button {
+          width: 32px;
+          height: 32px;
+          background: none;
+          border: none;
+          color: #ffffff;
+          transition: transform 0.2s;
+
+          &:hover {
+            transform: scale(1.1);
           }
         }
       }

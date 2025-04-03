@@ -4,6 +4,7 @@ import { TG_COMPONENT_CATEGORY } from '../templateComponents'
 import ProductCardMeta from '../templateComponents/meta/ProductCard'
 import { cloneDeep } from 'lodash'
 import TGColorPicker from '@/components/TGColorPicker'
+import { schema } from '../schemas'
 
 /**
  * @type TGComponentMeta[]
@@ -12,22 +13,22 @@ const canvasConfigForm = {
   fields: [
     {
       type: 'number',
-      label: '画布宽度',
+      label: '宽度',
       title: '画布宽度（width）',
       prop: 'width',
       component: () => InputNumber
     },
     {
       type: 'number',
-      label: '边距大小',
-      title: '内边距大小（padding）',
+      label: '边距',
+      title: '内边距（padding）',
       prop: 'padding',
       component: () => InputNumber
     },
     {
       type: 'color',
       label: '背景颜色',
-      title: '背景颜色（backgroundColor）',
+      title: '画布背景颜色（backgroundColor）',
       prop: 'backgroundColor',
       component: () => TGColorPicker
     }
@@ -36,91 +37,126 @@ const canvasConfigForm = {
 
 export const useEditorStore = defineStore('editor', {
   state: () => ({
+    isSaving: false,
     selectedComponent: null,
     canvasConfigForm: canvasConfigForm,
+    schema: cloneDeep(schema),
+    indicator: {
+      type: 'none', // 'none' | 'placeholder' | 'container'
+      display: 'none', // 显示状态
+      top: '0px', // 位置
+      lastValidIndex: -1
+    },
+    actionBar: {
+      visible: false,
+      position: { x: 0, y: 0 }
+    },
     /**
      * 组件注册中心
-     * @type {TGComponentMeta[]}
+     * @type {{ [key in keyof TG_COMPONENT_CATEGORY]: TGComponentMeta[] }}
      */
-    basicComponents: [
-      {
-        type: 'a-button',
-        category: TG_COMPONENT_CATEGORY.BASIC,
-        icon: '',
-        preview: props => <Button {...props}>{props.slot}</Button>,
-        defaultProps: {
-          type: 'primary',
-          slot: '按钮'
-        },
-        style: {},
-        class: 'tg-editor-base-component',
-        configForm: {
-          fields: [
-            {
-              type: 'input',
-              label: '按钮文本',
-              prop: 'slot',
-              component: () => Input
-            },
-            {
-              type: 'select',
-              label: '按钮类型',
-              prop: 'type',
-              component: () => Select,
-              props: {
-                options: [
-                  { label: '主要按钮', value: 'primary' },
-                  { label: '次级按钮', value: 'default' },
-                  { label: '虚线按钮', value: 'dashed' }
-                ]
+    components: {
+      basic: [
+        {
+          type: 'a-button',
+          category: TG_COMPONENT_CATEGORY.BASIC,
+          icon: '',
+          preview: props => <Button {...props}>{props.slot}</Button>,
+          defaultProps: {
+            type: 'primary',
+            slot: '按钮'
+          },
+          style: {},
+          class: 'tg-editor-base-component',
+          configForm: {
+            fields: [
+              {
+                type: 'input',
+                title: '按钮文本',
+                label: '按钮文本',
+                prop: 'slot',
+                component: () => Input
+              },
+              {
+                type: 'select',
+                title: '按钮类型',
+                label: '按钮类型',
+                prop: 'type',
+                component: () => Select,
+                props: {
+                  options: [
+                    { label: '主要按钮', value: 'primary' },
+                    { label: '次级按钮', value: 'default' },
+                    { label: '虚线按钮', value: 'dashed' }
+                  ]
+                }
               }
-            }
-          ]
-        }
-      },
-      {
-        type: 'a-input',
-        category: TG_COMPONENT_CATEGORY.BASIC,
-        icon: '',
-        preview: props => <Input {...props} />,
-        defaultProps: {
-          placeholder: '请输入',
-          readOnly: true
+            ]
+          }
         },
-        style: {},
-        class: 'tg-editor-base-component',
-        configForm: {
-          fields: [
-            {
-              type: 'input',
-              label: '占位符',
-              prop: 'placeholder',
-              component: () => Input
-            }
-          ]
+        {
+          type: 'a-input',
+          category: TG_COMPONENT_CATEGORY.BASIC,
+          icon: '',
+          preview: props => <Input {...props} />,
+          defaultProps: {
+            placeholder: '请输入',
+            readOnly: true
+          },
+          style: {},
+          class: 'tg-editor-base-component',
+          configForm: {
+            fields: [
+              {
+                type: 'input',
+                title: '文本框占位符',
+                label: '占位符',
+                prop: 'placeholder',
+                component: () => Input
+              }
+            ]
+          }
         }
-      }
-    ],
-    templateComponents: [
-      ProductCardMeta
-    ],
-    layoutComponents: []
+      ],
+      template: [
+        ProductCardMeta
+      ],
+      layout: []
+    }
   }),
   actions: {
-    createComponent(template, position) {
+    /**
+     * 创建组件schema
+     * @param componentMeta {TGComponentMeta} - 用来复制props的组件元数据
+     * @param [formSchema] {TGComponentSchema} - 用来复制props的schema
+     * @returns {TGComponentSchema}
+     */
+    createComponentSchema(componentMeta, formSchema) {
+      let props = {}
+
+      if (formSchema) {
+        props = cloneDeep(formSchema.props)
+      }
+
       return {
         id: `comp_${Date.now()}`,
-        type: template.type,
-        category: template.category,
-        props: { ...template.defaultProps, style: { ...position } }
+        type: componentMeta.type,
+        category: componentMeta.category,
+        props: { ...componentMeta.defaultProps, ...props }
       }
     },
     /**
      * 更新选中的组件元数据
-     * @param newComponent {TGComponentMeta} - 需要选中的组件元数据
+     * @param newComponent {{
+     *  id: string,
+     *  type: string,
+     *  category: TG_COMPONENT_CATEGORY
+     * }} - 组件类型和物料类型（用来筛选组件元数据）
      * @returns {TGComponentMeta|null}
      */
     updateComponent(newComponent) {
+      if (!newComponent) return null
+
       if (newComponent.type === 'canvas') {
         this.selectedComponent = newComponent
       } else {
@@ -138,35 +174,17 @@ export const useEditorStore = defineStore('editor', {
     /**
      * 根据组件类型获取组件元数据
      * @param type {string} - 组件类型
-     * @param category {TG_COMPONENT_CATEGORY} - 组件类别
+     * @param category {TG_COMPONENT_CATEGORY} - 物料类型
      * @returns {TGComponentMeta|null} 组件元数据
      */
     getComponentByType(type, category) {
-      let components = []
-
-      switch (category) {
-        case TG_COMPONENT_CATEGORY.TEMPLATE:
-          components = this.templateComponents
-          break
-        case TG_COMPONENT_CATEGORY.BASIC:
-          components = this.basicComponents
-          break
-        case TG_COMPONENT_CATEGORY.LAYOUT:
-        default:
-          components = this.layoutComponents
-          break
-      }
-
-      const component = components.find(component => component.type === type)
+      const component = this.components[category].find(component => component.type === type)
 
       if (component) {
         return cloneDeep(component)
       } else {
         return null
       }
-    },
-    setDraggingComponent(component) {
-      this.selectedComponent = component
     }
   }
 })

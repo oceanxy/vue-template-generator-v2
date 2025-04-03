@@ -1,5 +1,5 @@
 /**
- * 组件类型枚举
+ * 物料类型枚举
  * @readonly
  * @enum {string}
  * @property {string} template - 模板组件
@@ -28,7 +28,7 @@ export const TG_COMPONENT_CATEGORY = {
  * @typedef TGComponentMeta
  * @property {string} [id] - 组件在 Schema 中的唯一标识
  * @property {string} type - 模板组件类型标识
- * @property {TG_COMPONENT_CATEGORY} category - 模板组件分类
+ * @property {TG_COMPONENT_CATEGORY} category - 物料类型
  * @property {string} [icon] - 模板组件图标
  * @property {function(Object): Element|JSX.Element} preview - 拖拽时的预览组件
  * @property {Object} [defaultProps] - 默认属性值
