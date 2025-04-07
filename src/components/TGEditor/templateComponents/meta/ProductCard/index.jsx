@@ -28,6 +28,7 @@ export default {
         title: '标题',
         label: '标题',
         prop: 'title',
+        modelProp: 'value',
         component: () => Input // 对应的antd组件
       },
       {
@@ -35,6 +36,7 @@ export default {
         title: '背景色',
         label: '背景色',
         prop: 'backgroundColor',
+        modelProp: 'value',
         component: () => TGColorPicker
       }
     ]

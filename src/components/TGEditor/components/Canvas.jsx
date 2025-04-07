@@ -4,6 +4,7 @@ import { omit } from 'lodash'
 import { styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
 import useDragDrop from '../hooks/useDragDrop'
+import { TG_COMPONENT_CATEGORY } from '@/components/TGEditor/templateComponents'
 
 /**
  * @global
@@ -52,21 +53,35 @@ export default {
 
       if (!componentDef) return null
 
+      // 初始化组件props
+      const component = {
+        ...componentDef.defaultProps,
+        ...componentSchema.props
+      }
+
+      // 添加布局组件的嵌套支持
+      if (componentSchema.category === TG_COMPONENT_CATEGORY.LAYOUT) {
+        component.children = componentSchema.children?.map(childSchema =>
+          renderCanvasFromSchemas(childSchema)
+        )
+      }
+
       return (
         <div
           key={componentSchema.id}
           data-id={componentSchema.id}
           data-index={index}
           data-selected={selectedComponent.value?.id === componentSchema.id}
+          draggable
           class={{
             [componentDef.class]: true,
-            'tg-editor-canvas-component': true
+            'tg-editor-canvas-component': true,
+            'tg-editor-layout-container': componentDef.category === TG_COMPONENT_CATEGORY.LAYOUT
           }}
           style={{
             ...componentDef.style,
             ...componentSchema.props.style
           }}
-          draggable
           onClick={(e) => {
             e.stopPropagation()
             store.updateComponent({
@@ -79,10 +94,7 @@ export default {
             e.stopPropagation()
           }}
         >
-          {componentDef.preview({
-            ...componentDef.defaultProps,
-            ...componentSchema.props
-          })}
+          {componentDef.preview(component)}
         </div>
       )
     }
@@ -94,11 +106,11 @@ export default {
         <div
           ref={containerRef}
           {...omit(schema.value.canvas, ['class', 'style'])}
+          data-selected={selectedComponent.value?.type === 'canvas'}
           class={[
             'tg-editor-canvas-container',
             { [schema.value.canvas.class]: true }
           ]}
-          data-selected={selectedComponent.value?.type === 'canvas'}
           style={{
             ...canvasStyle,
             '--canvas-padding': canvasStyle?.padding || '15px'

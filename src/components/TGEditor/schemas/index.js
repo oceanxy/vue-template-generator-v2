@@ -11,6 +11,7 @@
  * @property {string} type - 组件类型
  * @property {TG_COMPONENT_CATEGORY} category - 物料类型
  * @property {Object} props - 组件props
+ * @property {TGComponentSchema[]} [children] - 子组件集合（仅布局组件需要）
  */
 
 /**

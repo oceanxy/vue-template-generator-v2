@@ -57,17 +57,21 @@ export default {
         <div class="tg-editor-property-container">
           {
             selectedComponent.value?.configForm?.fields.map(field => {
-              const PropertyProp = field.component()
+              const CanvasProperty = field.component()
               const value = field.prop in componentProps.value
                 ? componentProps.value[field.prop]
                 : componentProps.value.style[field.prop]
+              const propertyProps = { ...field.props }
+
+              if (field.modelProp) {
+                propertyProps[field.modelProp] = value
+              }
 
               return (
                 <div key={field.prop} class="tg-editor-form-item">
                   <label title={field.title}>{field.label}</label>
-                  <PropertyProp
-                    {...field.props}
-                    value={value}
+                  <CanvasProperty
+                    {...propertyProps}
                     onChange={handlePropertyChange(field.prop)}
                   />
                 </div>

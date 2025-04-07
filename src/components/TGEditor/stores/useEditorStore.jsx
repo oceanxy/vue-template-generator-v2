@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { Button, Input, InputNumber, Select } from 'ant-design-vue'
+import { Button, Col, Flex, Input, InputNumber, Row, Select, Switch } from 'ant-design-vue'
 import { TG_COMPONENT_CATEGORY } from '../templateComponents'
 import ProductCardMeta from '../templateComponents/meta/ProductCard'
 import { cloneDeep } from 'lodash'
@@ -75,6 +75,7 @@ export const useEditorStore = defineStore('editor', {
                 title: '按钮文本',
                 label: '按钮文本',
                 prop: 'slot',
+                modelProp: 'value',
                 component: () => Input
               },
               {
@@ -82,6 +83,7 @@ export const useEditorStore = defineStore('editor', {
                 title: '按钮类型',
                 label: '按钮类型',
                 prop: 'type',
+                modelProp: 'value',
                 component: () => Select,
                 props: {
                   options: [
@@ -112,6 +114,7 @@ export const useEditorStore = defineStore('editor', {
                 title: '文本框占位符',
                 label: '占位符',
                 prop: 'placeholder',
+                modelProp: 'value',
                 component: () => Input
               }
             ]
@@ -121,7 +124,186 @@ export const useEditorStore = defineStore('editor', {
       template: [
         ProductCardMeta
       ],
-      layout: []
+      layout: [
+        {
+          type: 'a-flex-container',
+          category: TG_COMPONENT_CATEGORY.LAYOUT,
+          icon: '',
+          preview: props => (
+            <Flex
+              gap={props.gap}
+              vertical={props.vertical}
+              style={{
+                padding: '8px',
+                background: '#f0f2f5',
+                minHeight: '80px',
+                border: '1px dashed #d9d9d9'
+              }}
+            >
+              <div style={{ flex: 1, background: '#d9d9d9', height: '20px' }} />
+              <div style={{ flex: 1, background: '#bfbfbf', height: '20px' }} />
+            </Flex>
+          ),
+          defaultProps: {
+            gap: 'middle',
+            vertical: false,
+            wrap: false
+          },
+          configForm: {
+            fields: [
+              {
+                type: 'select',
+                title: '排列方向',
+                label: '方向',
+                prop: 'vertical',
+                modelProp: 'checked',
+                component: () => Switch,
+                props: {
+                  checkedValue: true,
+                  unCheckedValue: false
+                }
+              },
+              {
+                type: 'select',
+                title: '间距大小',
+                label: '间距',
+                prop: 'gap',
+                modelProp: 'value',
+                component: () => Select,
+                props: {
+                  options: [
+                    { label: '小', value: 'small' },
+                    { label: '中', value: 'middle' },
+                    { label: '大', value: 'large' }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          type: 'a-grid-container',
+          category: TG_COMPONENT_CATEGORY.LAYOUT,
+          preview: props => (
+            <Row
+              gutter={[props.gutterX || 16, props.gutterY || 16]}
+              style={{
+                minHeight: '80px',
+                background: '#f0f2f5',
+                padding: '8px'
+              }}
+            >
+              <Col span={12}>
+                <div style={{ background: '#d9d9d9', height: '100%' }} />
+              </Col>
+              <Col span={12}>
+                <div style={{ background: '#bfbfbf', height: '100%' }} />
+              </Col>
+            </Row>
+          ),
+          defaultProps: {
+            gutterX: 16,
+            gutterY: 16
+          },
+          configForm: {
+            fields: [
+              {
+                type: 'number',
+                title: '水平间距',
+                label: '列间距',
+                prop: 'gutterX',
+                modelProp: 'value',
+                component: () => InputNumber
+              },
+              {
+                type: 'number',
+                title: '垂直间距',
+                label: '行间距',
+                prop: 'gutterY',
+                modelProp: 'value',
+                component: () => InputNumber
+              }
+            ]
+          }
+        },
+        {
+          type: 'a-grid-row',
+          category: TG_COMPONENT_CATEGORY.LAYOUT,
+          preview: props => (
+            <Row
+              gutter={[16, 16]}
+              style={{
+                minHeight: '60px',
+                background: '#f0f2f5',
+                padding: '8px'
+              }}
+            >
+              <Col span={12}>
+                <div style={{ background: '#d9d9d9', height: '100%' }} />
+              </Col>
+              <Col span={12}>
+                <div style={{ background: '#bfbfbf', height: '100%' }} />
+              </Col>
+            </Row>
+          ),
+          defaultProps: {
+            gutter: [16, 16]
+          },
+          configForm: {
+            fields: [
+              {
+                type: 'number',
+                title: '列间距',
+                label: '水平间距',
+                prop: 'gutter.0',
+                modelProp: 'value',
+                component: () => InputNumber
+              },
+              {
+                type: 'number',
+                title: '行间距',
+                label: '垂直间距',
+                prop: 'gutter.1',
+                modelProp: 'value',
+                component: () => InputNumber
+              }
+            ]
+          }
+        },
+        {
+          type: 'a-grid-col',
+          category: TG_COMPONENT_CATEGORY.LAYOUT,
+          preview: (props) => (
+            <Col
+              span={props.span}
+              style={{
+                background: '#f0f2f5',
+                border: '2px dashed #d9d9d9',
+                minHeight: '40px'
+              }}
+            />
+          ),
+          defaultProps: {
+            span: 12
+          },
+          configForm: {
+            fields: [
+              {
+                type: 'number',
+                title: '栅格占位',
+                label: '占位列数',
+                prop: 'span',
+                modelProp: 'value',
+                component: () => InputNumber,
+                props: {
+                  min: 1,
+                  max: 24
+                }
+              }
+            ]
+          }
+        }
+      ]
     }
   }),
   actions: {
