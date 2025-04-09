@@ -39,15 +39,6 @@ export const Geometry = {
     return low
   },
 
-  calculateValidPosition(mouseY, containerHeight) {
-    const safeZone = containerHeight * 0.1 // 上下10%区域为容器指示区
-    return mouseY < safeZone || mouseY > containerHeight - safeZone
-  },
-
-  isNearContainerEdge(mouseY, containerHeight, threshold) {
-    return mouseY < threshold || mouseY > (containerHeight - threshold)
-  },
-
   /**
    * 检查是否在组件区域内
    * @param {number} mouseY
@@ -70,11 +61,41 @@ export const Geometry = {
     })
   },
 
-  isInsideComponent(mouseY, element, container) {
-    const rect = element.getBoundingClientRect()
-    const containerRect = container.getBoundingClientRect()
+  /**
+   * 查找最近的布局容器
+   * @param {DragEvent} e
+   * @param {Array} components
+   * @returns {Object|null} { containerEl, parentSchema }
+   */
+  findDropContainer(e, components) {
+    const path = e.composedPath()
+    const containerEl = path.find(el =>
+      el.classList?.contains('tg-editor-layout-container') &&
+      el !== e.currentTarget // 排除画布容器自身
+    )
 
-    return mouseY >= rect.top - containerRect.top &&
-      mouseY <= rect.bottom - containerRect.top
+    if (!containerEl) return null
+
+    // 深度优先搜索查找嵌套schema
+    const findNestedSchema = (arr, targetId) => {
+      for (const comp of arr) {
+        if (comp.id === targetId) {
+          // 确保容器组件有children属性
+          if (!comp.children) comp.children = []
+          return comp.children
+        }
+
+        if (comp.children) {
+          const found = findNestedSchema(comp.children, targetId)
+          if (found) return found
+        }
+      }
+      return null
+    }
+
+    return {
+      containerEl,
+      parentSchema: findNestedSchema(components, containerEl.dataset.id)
+    }
   }
 }

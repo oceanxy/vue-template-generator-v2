@@ -32,12 +32,21 @@ export default function useIndicator() {
    * @param {DragEvent} e
    * @param containerRef
    * @param indicatorRef
+   * @param componentSchemas
    */
-  const updateIndicator = (e, containerRef, indicatorRef) => {
-    if (!containerRef.value || !indicatorRef.value) return
+  const updateIndicator = (e, containerRef, indicatorRef, componentSchemas) => {
+    if (!containerRef.value) return
 
-    const containerRect = containerRef.value.getBoundingClientRect()
-    const mouseY = e.clientY - containerRect.top + containerRef.value.scrollTop
+    const dropTarget = Geometry.findDropContainer(e, componentSchemas.value) || {
+      containerEl: containerRef.value,
+      parentSchema: componentSchemas.value
+    }
+
+    const isNested = dropTarget.containerEl !== containerRef.value
+    indicatorRef.value?.setAttribute('data-nested', isNested)
+
+    const containerRect = dropTarget.containerEl.getBoundingClientRect()
+    const mouseY = e.clientY - containerRect.top + dropTarget.containerEl.scrollTop
     const children = getVisibleChildren(containerRef)
 
     // 空画布处理

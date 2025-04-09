@@ -1,15 +1,15 @@
 import { Button, Input } from 'ant-design-vue'
 import { ShopOutlined } from '@ant-design/icons-vue'
-import { TG_COMPONENT_CATEGORY } from '@/components/TGEditor/templateComponents'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
 import TGColorPicker from '@/components/TGColorPicker'
 
 /**
- * 模板组件元数据
+ * 组件元数据
  * @type TGComponentMeta
  */
 export default {
   type: 'tg-product-card', // 唯一类型标识（必填）
-  category: TG_COMPONENT_CATEGORY.TEMPLATE, // 物料类型
+  category: TG_MATERIAL_CATEGORY.TEMPLATE, // 物料类型
   icon: <ShopOutlined />, // 组件区显示的图标
   preview: props => <ProductCardPreview {...props} />, // 拖拽时的预览组件
   defaultProps: {  // 默认属性值（必填）

@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import useIndicator from '../hooks/useIndicator'
+import { Geometry } from '@/components/TGEditor/utils/geometry'
 
 /**
  * 拖拽处理逻辑 Hook
@@ -67,14 +68,15 @@ export default function useDragDrop() {
    * @param {DragEvent} e
    * @param containerRef
    * @param indicatorRef
+   * @param componentSchemas
    */
-  const handleDragOver = (e, containerRef, indicatorRef) => {
+  const handleDragOver = (e, containerRef, indicatorRef, componentSchemas) => {
     e.preventDefault()
 
     if (rafId.value) return
 
     rafId.value = requestAnimationFrame(() => {
-      updateIndicator(e, containerRef, indicatorRef)
+      updateIndicator(e, containerRef, indicatorRef, componentSchemas)
       rafId.value = null
     })
   }
@@ -82,59 +84,88 @@ export default function useDragDrop() {
   /**
    * 处理放置事件
    * @param {DragEvent} e
+   * @param containerRef
    */
-  const handleDrop = (e) => {
+  const handleDrop = (e, containerRef) => {
+    e.preventDefault()
     let insertIndex = indicator.value.lastValidIndex
 
-    if (indicator.value.type === 'container') {
-      insertIndex = componentSchemas.value.length
+    // 1. 获取有效的父级容器信息
+    const dropResult = Geometry.findDropContainer(e, componentSchemas.value) || {
+      parentSchema: componentSchemas.value, // 默认使用根schema
+      containerEl: containerRef.value
     }
+    const { parentSchema, containerEl } = dropResult
 
-    insertIndex = Math.max(0, Math.min(insertIndex, componentSchemas.value.length))
+    // 2. 计算相对于容器的位置
+    const containerRect = containerEl.getBoundingClientRect()
+    const mouseY = e.clientY - containerRect.top + containerEl.scrollTop
 
-    let componentSchema = null
+    // 3. 获取容器内可见子元素
+    const children = Array.from(containerEl.children)
+      .filter(el => el.classList.contains('tg-editor-canvas-component'))
+      .filter(el => !el.classList.contains('dragging')) // 排除正在拖动的元素
 
-    // 索引有效性验证
-    if (insertIndex === -1) {
-      insertIndex = componentSchemas.value.length
-    }
+    // 4. 计算中间点（基于实际容器）
+    const midPoints = Geometry.calculateMidPoints(
+      containerEl,
+      children,
+      containerEl.scrollTop
+    )
 
+    // 5. 确定插入位置（相对当前容器）
+    insertIndex = Geometry.determineInsertIndex(mouseY, midPoints)
+    insertIndex = Math.max(0, Math.min(insertIndex, parentSchema.length))
+
+    // 6. 处理数据转换
     const raw = e.dataTransfer.getData('application/json')
     if (!raw) return
-
     const { type, data } = JSON.parse(raw)
 
-    // 修复插入位置判断
-    const safeIndex = Math.max(0, Math.min(insertIndex, componentSchemas.value.length))
+    // 7. 执行插入/移动操作
+    let componentSchema = null
+    const safeIndex = Math.max(0, Math.min(insertIndex, parentSchema.length))
 
     if (type === 'ADD') {
       componentSchema = store.createComponentSchema(data)
-      store.schema.components.splice(safeIndex, 0, componentSchema)
+      parentSchema.splice(safeIndex, 0, componentSchema) // 插入到父级schema
     } else if (type === 'MOVE') {
-      const currentIndex = componentSchemas.value.findIndex(c => c.id === data.id)
-
-      if (currentIndex !== -1) {
-        let adjustedIndex = insertIndex
-
-        // 当元素从前往后移动时，需要减1补偿索引
-        if (currentIndex < adjustedIndex) {
-          adjustedIndex--
+      // 查找原始位置（支持跨容器移动）
+      const findInSchema = (schemaArray, id) => {
+        for (let i = 0; i < schemaArray.length; i++) {
+          if (schemaArray[i].id === id) return { parent: schemaArray, index: i }
+          if (schemaArray[i].children) {
+            const found = findInSchema(schemaArray[i].children, id)
+            if (found) return found
+          }
         }
-
-        const [moved] = store.schema.components.splice(currentIndex, 1)
-        store.schema.components.splice(adjustedIndex, 0, moved)
-
-        componentSchema = moved
+        return null
       }
+
+      const origin = findInSchema(componentSchemas.value, data.id)
+      if (!origin) return
+
+      // 执行移动
+      const [moved] = origin.parent.splice(origin.index, 1)
+
+      // 调整插入位置（当向前移动时补偿索引）
+      let adjustedIndex = safeIndex
+      if (origin.parent === parentSchema && origin.index < adjustedIndex) {
+        adjustedIndex--
+      }
+
+      parentSchema.splice(adjustedIndex, 0, moved)
+      componentSchema = moved
     }
 
+    // 8. 清理状态
     if (rafId.value) {
       cancelAnimationFrame(rafId.value)
       rafId.value = null
     }
-
     resetIndicator()
 
+    // 9. 更新选中状态
     if (componentSchema) {
       store.updateComponent(componentSchema)
     }

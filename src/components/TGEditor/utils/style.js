@@ -1,5 +1,5 @@
 const UNIT_PROPS = [
-  'width', 'height', 'top', 'left', 'right', 'bottom',
+  'width', 'height', 'minHeight', 'minWidth', 'top', 'left', 'right', 'bottom',
   'margin', 'marginTop', 'marginLeft', 'marginRight', 'marginBottom',
   'padding', 'paddingTop', 'paddingLeft', 'paddingRight', 'paddingBottom',
   'fontSize', 'borderRadius'

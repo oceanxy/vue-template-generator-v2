@@ -17,7 +17,10 @@ export default {
       } else {
         const schemaProps = schema.value.components.find(c => c.id === selectedComponent.value.id)?.props ?? {}
         const defaultProps = selectedComponent.value?.defaultProps ?? {}
-        const defaultStyle = selectedComponent.value?.style ?? {}
+        const defaultStyle = {
+          ...selectedComponent.value?.defaultProps.style,
+          ...selectedComponent.value?.style
+        }
         const { style, ...restProps } = schemaProps
 
         return { ...defaultProps, ...restProps, style: { ...defaultStyle, ...style } }

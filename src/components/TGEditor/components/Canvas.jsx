@@ -3,8 +3,9 @@ import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
 import { styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
+import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
-import { TG_COMPONENT_CATEGORY } from '@/components/TGEditor/templateComponents'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
 
 /**
  * @global
@@ -45,7 +46,7 @@ export default {
       }
     }
 
-    const renderCanvasFromSchemas = (componentSchema, index) => {
+    const renderCanvasFromSchemas = (componentSchema, parentId = null) => {
       const componentDef = store.getComponentByType(
         componentSchema.type,
         componentSchema.category
@@ -55,32 +56,32 @@ export default {
 
       // 初始化组件props
       const component = {
-        ...componentDef.defaultProps,
-        ...componentSchema.props
+        ...componentSchema.props,
+        style: styleWithUnits(componentSchema.props?.style ?? {}),
+        previewType: 'canvas'
       }
 
+      const isLayoutContainer = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
+
       // 添加布局组件的嵌套支持
-      if (componentSchema.category === TG_COMPONENT_CATEGORY.LAYOUT) {
+      if (isLayoutContainer) {
         component.children = componentSchema.children?.map(childSchema =>
           renderCanvasFromSchemas(childSchema)
-        )
+        ) ?? []
       }
 
       return (
         <div
           key={componentSchema.id}
           data-id={componentSchema.id}
-          data-index={index}
+          data-parent-id={parentId}
           data-selected={selectedComponent.value?.id === componentSchema.id}
           draggable
           class={{
             [componentDef.class]: true,
             'tg-editor-canvas-component': true,
-            'tg-editor-layout-container': componentDef.category === TG_COMPONENT_CATEGORY.LAYOUT
-          }}
-          style={{
-            ...componentDef.style,
-            ...componentSchema.props.style
+            'tg-editor-layout-container': isLayoutContainer, // 容器样式标识
+            'dragging': componentSchema.__dragging // 拖动状态样式
           }}
           onClick={(e) => {
             e.stopPropagation()
@@ -90,9 +91,21 @@ export default {
             })
           }}
           onDragstart={(e) => {
+            componentSchema.__dragging = true // 标记拖动状态
             dragHandlers.handleDragStart(e, componentSchema)
             e.stopPropagation()
           }}
+          onDragend={(e) => {
+            componentSchema.__dragging = false
+            dragHandlers.handleDragEnd(e)
+          }}
+          // onDragover={e => {
+          //   // 拖拽事件透传
+          //   if (isLayoutContainer) {
+          //     e.preventDefault()
+          //     e.stopPropagation()
+          //   }
+          // }}
         >
           {componentDef.preview(component)}
         </div>
@@ -103,36 +116,29 @@ export default {
       const canvasStyle = styleWithUnits(schema.value.canvas.style)
 
       return (
-        <div
-          ref={containerRef}
-          {...omit(schema.value.canvas, ['class', 'style'])}
-          data-selected={selectedComponent.value?.type === 'canvas'}
-          class={[
-            'tg-editor-canvas-container',
-            { [schema.value.canvas.class]: true }
-          ]}
-          style={{
-            ...canvasStyle,
-            '--canvas-padding': canvasStyle?.padding || '15px'
-          }}
-          onClick={handleCanvasClick}
-          onDrop={dragHandlers.handleDrop}
-          onDragover={e => dragHandlers.handleDragOver(e, containerRef, indicatorRef)}
-          onDragend={dragHandlers.handleDragEnd}
-          onDragleave={dragHandlers.handleDragLeave}
-        >
-          {componentSchemas.value.map(renderCanvasFromSchemas)}
-          <ComponentsActionBar containerRef={containerRef} />
+        <div class={'tg-editor-canvas-layout'}>
           <div
-            ref={indicatorRef}
-            class="tg-editor-drag-placeholder"
-            style={{ top: indicator.value.top }}
-            data-type={
-              indicator.value.type !== 'none'
-                ? indicator.value.type
-                : null
-            }
-          />
+            ref={containerRef}
+            {...omit(schema.value.canvas, ['class', 'style'])}
+            data-selected={selectedComponent.value?.type === 'canvas'}
+            class={[
+              'tg-editor-canvas-container',
+              { [schema.value.canvas.class]: true }
+            ]}
+            style={{
+              ...canvasStyle,
+              '--canvas-padding': canvasStyle?.padding || '15px'
+            }}
+            onClick={handleCanvasClick}
+            onDrop={e => dragHandlers.handleDrop(e, containerRef)}
+            onDragover={e => dragHandlers.handleDragOver(e, containerRef, indicatorRef, componentSchemas)}
+            onDragend={dragHandlers.handleDragEnd}
+            onDragleave={dragHandlers.handleDragLeave}
+          >
+            {componentSchemas.value.map(renderCanvasFromSchemas)}
+            <ComponentsActionBar containerRef={containerRef} />
+            <DragPlaceholder ref={el => indicatorRef.value = el.$el} />
+          </div>
         </div>
       )
     }

@@ -1,4 +1,4 @@
-import { TG_COMPONENT_CATEGORY } from '@/components/TGEditor/templateComponents'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
 import { useEditorStore } from '../stores/useEditorStore'
 import useDragDrop from '@/components/TGEditor/hooks/useDragDrop'
 
@@ -9,19 +9,19 @@ export default {
     const { handleDragStart } = useDragDrop()
     const materials = [
       {
-        category: TG_COMPONENT_CATEGORY.LAYOUT,
+        category: TG_MATERIAL_CATEGORY.LAYOUT,
         title: '布局组件',
-        components: store.components[TG_COMPONENT_CATEGORY.LAYOUT]
+        components: store.components[TG_MATERIAL_CATEGORY.LAYOUT]
       },
       {
-        category: TG_COMPONENT_CATEGORY.BASIC,
+        category: TG_MATERIAL_CATEGORY.BASIC,
         title: '基础组件',
-        components: store.components[TG_COMPONENT_CATEGORY.BASIC]
+        components: store.components[TG_MATERIAL_CATEGORY.BASIC]
       },
       {
-        category: TG_COMPONENT_CATEGORY.TEMPLATE,
+        category: TG_MATERIAL_CATEGORY.TEMPLATE,
         title: '模板组件',
-        components: store.components[TG_COMPONENT_CATEGORY.TEMPLATE]
+        components: store.components[TG_MATERIAL_CATEGORY.TEMPLATE]
       }
     ]
 
@@ -48,7 +48,16 @@ export default {
                         onDragstart={(e) => handleDragStart(e, comp)}
                       >
                         {/*{comp.icon}*/}
-                        {comp.preview({ ...comp.defaultProps, style: comp.style })}
+                        {
+                          comp.preview({
+                            ...comp.defaultProps,
+                            style: {
+                              ...comp.defaultProps.style,
+                              ...comp.style
+                            },
+                            previewType: 'material'
+                          })
+                        }
                       </div>
                     ))
                     : <div>暂无组件</div>
