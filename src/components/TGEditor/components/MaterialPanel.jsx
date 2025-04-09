@@ -1,6 +1,7 @@
 import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
 import { useEditorStore } from '../stores/useEditorStore'
 import useDragDrop from '@/components/TGEditor/hooks/useDragDrop'
+import { styleWithUnits } from '@/components/TGEditor/utils/style'
 
 export default {
   name: 'TGEditorMaterialPanel',
@@ -52,8 +53,8 @@ export default {
                           comp.preview({
                             ...comp.defaultProps,
                             style: {
-                              ...comp.defaultProps.style,
-                              ...comp.style
+                              ...styleWithUnits(comp.defaultProps?.style ?? {}),
+                              ...styleWithUnits(comp.style || {})
                             },
                             previewType: 'material'
                           })
