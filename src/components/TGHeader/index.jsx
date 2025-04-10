@@ -226,7 +226,7 @@ export default {
                         suffixIcon={<IconFont type={'icon-global-down'} />}
                       >
                         {
-                          commonStore.organListForHeader.list.map(item => (
+                          commonStore.organListForHeader.list?.map(item => (
                             <Select.Option value={item.orgId}>{item.orgName || '暂无组织名称'}</Select.Option>
                           ))
                         }
