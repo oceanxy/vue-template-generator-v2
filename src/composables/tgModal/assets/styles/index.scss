@@ -8,7 +8,7 @@
         background: linear-gradient(to bottom, var(--tg-theme-color-primary-bg), var(--tg-theme-color-bg-elevated));
 
         .ant-modal-title > div {
-          padding: 20px 24px;
+          padding: 20px 24px 10px 24px;
         }
       }
 
@@ -23,10 +23,10 @@
       }
 
       .ant-modal-footer {
-        background: var(--tg-theme-color-primary-bg);
+        // background: var(--tg-theme-color-primary-bg);
         margin: 0;
-        text-align: center;
-        padding: 20px;
+        // text-align: center;
+        padding: 10px 24px 20px 24px;
       }
     }
   }
