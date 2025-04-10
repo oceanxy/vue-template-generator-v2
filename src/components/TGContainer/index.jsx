@@ -35,6 +35,14 @@ export default {
       type: Boolean,
       default: true
     },
+    /**
+     * 获取表格数据配置
+     * @type {{location:string,apiName:string}}
+     */
+    optionsOfGetList: {
+      type: Object,
+      default: () => ({})
+    },
     ...TGContainerWithTreeSider.props,
     injectSearchParamsOfTable: {
       type: Function,
@@ -63,6 +71,7 @@ export default {
     provide('initSearchParameters', initSearchParameters)
     // 提供给所有子级或插槽，以判断本页面是否存在列表组件
     provide('isInitTable', _isInitTable.value)
+    provide('optionsOfGetList', props.optionsOfGetList)
 
     onMounted(async () => {
       if (!_isInitTable.value) {
@@ -137,7 +146,7 @@ export default {
             // 请求页面主数据
             const notRequiredResponses = await Promise.all([
               // 执行搜索
-              saveParamsAndExecSearch(payload),
+              saveParamsAndExecSearch({ ...payload }),
               // 首次初始化时可将非必需的枚举初始化流程延迟到此时执行
               ...taskQueues.value.notRequired.map(cb => cb())
             ])

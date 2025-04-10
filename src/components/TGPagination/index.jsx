@@ -32,10 +32,6 @@ const TGPagination = {
   },
   setup() {
     const appName = process.env.TG_APP_NAME
-    const moduleName = inject('moduleName')
-    const submoduleName = inject('submoduleName')
-
-    const a = import(`@/apps/${appName}/stores/${moduleName}/`)
 
     const paginationProps = ref({
       showSizeChanger: true,

@@ -422,17 +422,17 @@ export default {
                 >
                   {{
                     switcherIcon: ({ switcherCls }) => <CaretDownOutlined class={switcherCls} />,
-                    title: ({ name }) => {
-                      if (searchValue.value && name.indexOf(searchValue.value) > -1) {
+                    title: (node) => {
+                      if (searchValue.value && node[props.fieldNames.title].indexOf(searchValue.value) > -1) {
                         return (
                           <span>
-                            {name.substring(0, name.indexOf(searchValue.value))}
+                            {node[props.fieldNames.title].substring(0, node[props.fieldNames.title].indexOf(searchValue.value))}
                             <span style={{ color: 'var(--tg-theme-color-primary)' }}>{searchValue.value}</span>
-                            {name.substring(name.indexOf(searchValue.value) + searchValue.value.length)}
+                            {node[props.fieldNames.title].substring(node[props.fieldNames.title].indexOf(searchValue.value) + searchValue.value.length)}
                           </span>
                         )
                       } else {
-                        return name
+                        return node[props.fieldNames.title]
                       }
                     }
                   }}
