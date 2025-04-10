@@ -158,6 +158,7 @@
               transparent
           );
           height: 4px;
+          pointer-events: none;
 
           &[data-type='placeholder'] {
             display: inherit;
@@ -308,7 +309,7 @@
             z-index: 999;
           }
 
-          &.tg-editor-layout-container {
+          .tg-editor-layout-container {
             .tg-editor-drag-placeholder-within-layout {
               position: relative;
               padding: 15px 20px;

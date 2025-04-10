@@ -131,7 +131,11 @@ export function FlexLayoutPreview(props) {
 
   if (previewType === 'canvas') {
     return (
-      <Flex vertical style={restProps.style}>
+      <Flex
+        class={'tg-editor-layout-container'}
+        vertical
+        style={restProps.style}
+      >
         {
           <Flex
             {...omit(restProps, 'style')}

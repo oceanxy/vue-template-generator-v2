@@ -98,6 +98,7 @@ export function GridLayoutPreview(props) {
       align="center"
       gap={props.gutterY}
       style={styleWithUnits(props.style)}
+      class={'tg-editor-layout-container'}
     >
       {
         range(0, props.rowCount, 1).map(() => (

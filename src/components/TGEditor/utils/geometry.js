@@ -69,14 +69,16 @@ export const Geometry = {
    */
   findDropContainer(e, components) {
     const path = e.composedPath()
-    const containerEl = path.find(el =>
-      el.classList?.contains('tg-editor-layout-container') &&
-      el !== e.currentTarget // 排除画布容器自身
-    )
+    const containerEl = path.find(el => el.classList?.contains('tg-editor-layout-component'))
 
     if (!containerEl) return null
 
-    // 深度优先搜索查找嵌套schema
+    /**
+     * 深度优先搜索查找嵌套schema
+     * @param arr
+     * @param targetId
+     * @returns {[]|*|null}
+     */
     const findNestedSchema = (arr, targetId) => {
       for (const comp of arr) {
         if (comp.id === targetId) {
@@ -90,7 +92,8 @@ export const Geometry = {
           if (found) return found
         }
       }
-      return null
+
+      return []
     }
 
     return {

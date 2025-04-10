@@ -77,9 +77,9 @@ export default {
           data-selected={selectedComponent.value?.id === componentSchema.id}
           draggable
           class={{
-            [componentDef.class]: true,
+            [componentDef.class]: !!componentDef.class,
             'tg-editor-canvas-component': true,
-            'tg-editor-layout-container': isLayoutContainer, // 容器样式标识
+            'tg-editor-layout-component': isLayoutContainer, // 容器样式标识
             'dragging': componentSchema.__dragging // 拖动状态样式
           }}
           onClick={(e) => {
