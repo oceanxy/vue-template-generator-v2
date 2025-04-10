@@ -1,3 +1,4 @@
+import { message } from 'ant-design-vue'
 /**
  * 连字符转小驼峰
  * @example `my-profile` => `myProfile` 或者 `my_profile` => `myProfile`
@@ -73,7 +74,7 @@ export function downloadFile(blobOrUrl, fileName) {
     tmp.click() // 模拟点击实现下载
     body.removeChild(tmp)
 
-    setTimeout(function() {
+    setTimeout(function () {
       // 延时释放
       URL.revokeObjectURL(urlObj)
     }, 1000)
@@ -262,3 +263,33 @@ export function getArrayFromEnum(enumeration, options = {}) {
 
   return array
 }
+
+/**
+ * 文本复制
+ * @param {string} text - 需要复制的文本
+ */
+
+export const copyText = async (text) => {
+  if (!navigator.clipboard) {
+    const input = document.createElement("input");
+    input.setAttribute("value", text);
+    document.body.appendChild(input);
+    input.select();
+
+    if (document.execCommand("copy")) {
+      document.execCommand("copy");
+      message.success('复制成功。')
+    }
+
+    document.body.removeChild(input);
+    return;
+  }
+
+  try {
+    navigator.clipboard.writeText(text);
+    message.success('复制成功。')
+  } catch (err) {
+    console.error("复制失败:", err);
+  }
+};
+
