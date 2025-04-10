@@ -14,6 +14,7 @@ export default function useIndicator() {
   const store = useEditorStore()
   const indicator = computed(() => store.indicator)
   const schema = computed(() => store.schema)
+  const componentSchemas = computed(() => schema.value.components)
 
   // 配置常量
   const CONFIG = {
@@ -32,9 +33,8 @@ export default function useIndicator() {
    * @param {DragEvent} e
    * @param containerRef
    * @param indicatorRef
-   * @param componentSchemas
    */
-  const updateIndicator = (e, containerRef, indicatorRef, componentSchemas) => {
+  const updateIndicator = (e, containerRef, indicatorRef) => {
     if (!containerRef.value) return
 
     const dropTarget = Geometry.findDropContainer(e, componentSchemas.value) || {

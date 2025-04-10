@@ -68,15 +68,14 @@ export default function useDragDrop() {
    * @param {DragEvent} e
    * @param containerRef
    * @param indicatorRef
-   * @param componentSchemas
    */
-  const handleDragOver = (e, containerRef, indicatorRef, componentSchemas) => {
+  const handleDragOver = (e, containerRef, indicatorRef) => {
     e.preventDefault()
 
     if (rafId.value) return
 
     rafId.value = requestAnimationFrame(() => {
-      updateIndicator(e, containerRef, indicatorRef, componentSchemas)
+      updateIndicator(e, containerRef, indicatorRef)
       rafId.value = null
     })
   }

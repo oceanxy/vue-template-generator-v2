@@ -20,7 +20,6 @@ export default {
   name: 'CanvasRenderer',
   setup() {
     const store = useEditorStore()
-    const indicator = computed(() => store.indicator)
     const schema = computed(() => store.schema)
     const componentSchemas = computed(() => schema.value.components)
     const containerRef = ref(null)
@@ -131,7 +130,7 @@ export default {
             }}
             onClick={handleCanvasClick}
             onDrop={e => dragHandlers.handleDrop(e, containerRef)}
-            onDragover={e => dragHandlers.handleDragOver(e, containerRef, indicatorRef, componentSchemas)}
+            onDragover={e => dragHandlers.handleDragOver(e, containerRef, indicatorRef)}
             onDragend={dragHandlers.handleDragEnd}
             onDragleave={dragHandlers.handleDragLeave}
           >
