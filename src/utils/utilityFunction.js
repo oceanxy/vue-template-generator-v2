@@ -276,20 +276,27 @@ export const copyText = async (text) => {
     document.body.appendChild(input);
     input.select();
 
-    if (document.execCommand("copy")) {
-      document.execCommand("copy");
-      message.success('复制成功。')
+    try {
+      if (document.execCommand("copy")) {
+        message.success('复制成功。');
+      } else {
+        message.error('复制失败。');
+      }
+    } catch (err) {
+      console.error("复制失败:", err);
+      message.error('复制失败。');
+    } finally {
+      document.body.removeChild(input);
     }
-
-    document.body.removeChild(input);
     return;
   }
 
   try {
-    navigator.clipboard.writeText(text);
-    message.success('复制成功。')
+    await navigator.clipboard.writeText(text);
+    message.success('复制成功。');
   } catch (err) {
     console.error("复制失败:", err);
+    message.error('复制失败。');
   }
 };
 

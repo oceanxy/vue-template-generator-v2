@@ -260,8 +260,9 @@ export function createStore({
         isRequired,
         raw,
         merge,
-        done
+        done,
       } = {}) {
+
         let store
 
         if (storeName && storeName !== moduleName) {
@@ -549,9 +550,8 @@ export function createStore({
           }
 
           if (merge && typeof targetState !== 'object') {
-            console.warn(`[store.setState] ${moduleName}.state${
-              location ? `.${location}` : ''
-            }.${stateName}不是数组或对象，只能赋值，不能合并！`)
+            console.warn(`[store.setState] ${moduleName}.state${location ? `.${location}` : ''
+              }.${stateName}不是数组或对象，只能赋值，不能合并！`)
           }
         }
       },
@@ -813,7 +813,8 @@ export function createStore({
         isMergeParam,
         isRefreshTable,
         isClearSelectedRows,
-        modalStatusFieldName
+        modalStatusFieldName,
+        optionsOfGetList
       }) {
         let res = { status: false }
 
@@ -860,6 +861,7 @@ export function createStore({
 
           if (isRefreshTable) {
             await this.getList({
+              ...optionsOfGetList,
               isPagination: true
             })
           }

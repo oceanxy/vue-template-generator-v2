@@ -35,7 +35,7 @@ export default function useTGFormModal({
   getParams,
   setDetails,
   searchParamOptions,
-  formModelFormatter
+  formModelFormatter,
 }) {
   provide('inModal', true)
 

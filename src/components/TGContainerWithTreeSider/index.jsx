@@ -423,7 +423,7 @@ export default {
                   {{
                     switcherIcon: ({ switcherCls }) => <CaretDownOutlined class={switcherCls} />,
                     title: (node) => {
-                      if (searchValue.value && node[props.fieldNames].title.indexOf(searchValue.value) > -1) {
+                      if (searchValue.value && node[props.fieldNames.title].indexOf(searchValue.value) > -1) {
                         return (
                           <span>
                             {node[props.fieldNames.title].substring(0, node[props.fieldNames.title].indexOf(searchValue.value))}

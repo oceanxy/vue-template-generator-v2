@@ -57,14 +57,29 @@ export default function useInquiryForm({
   formattingParameters
 } = {}) {
   const isInitTable = inject('isInitTable', true)
+  const optionsOfGetList = inject('optionsOfGetList', {})
   const store = useStore()
   const commonStore = useStore('/common')
   const searchParamNameRequired = inject('searchParamNameRequired', [])
 
   const treeCollapsed = computed(() => commonStore.treeCollapsed)
   const inquiryFormCollapsed = computed(() => commonStore.inquiryFormCollapsed)
-  const loading = computed(() => store.dataSource.loading)
-  const search = computed(() => store.search)
+  // const loading = computed(() => store.dataSource.loading)
+  // const search = computed(() => store.search)
+  const loading = computed(() => {
+    if (Object.keys(optionsOfGetList).length) {
+      return store[optionsOfGetList?.location].dataSource.loading
+    } else {
+      return store.dataSource.loading
+    }
+  })
+  const search = computed(() => {
+    if (Object.keys(optionsOfGetList).length) {
+      return store[optionsOfGetList?.location].form
+    } else {
+      return store.search
+    }
+  })
 
   const formModel = reactive(search.value)
   const formRules = reactive(rules)
@@ -89,6 +104,7 @@ export default function useInquiryForm({
 
     if (!resetParams.value && !buttonDisabled.value) {
       await handleFinish()
+
     }
 
     resetParams.value = true
@@ -101,7 +117,8 @@ export default function useInquiryForm({
           resetParams.value = false
           await store.saveParamsAndExecSearch({
             paramsForGetList: formattingParameters,
-            isMergeParam: true
+            isMergeParam: true,
+            ...(optionsOfGetList ?? {})
           })
         })
         .finally(() => resolve())
@@ -300,10 +317,8 @@ export default function useInquiryForm({
       return () => (
         <Form
           class={
-            `tg-inquiry-form${
-              props.fixedColumns ? ' fixed' : ''
-            }${
-              treeCollapsed.value ? ' tg-inquiry-side-toggle-reverse' : ''
+            `tg-inquiry-form${props.fixedColumns ? ' fixed' : ''
+            }${treeCollapsed.value ? ' tg-inquiry-side-toggle-reverse' : ''
             }`
           }
           layout={'inline'}

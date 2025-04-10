@@ -55,6 +55,7 @@ export default function useTGForm({
 
   const hasTree = inject('hasTree', false)
   const refreshTree = inject('refreshTree', undefined)
+  const optionsOfGetList = inject('optionsOfGetList', null)
 
   const store = useStore(storeName)
   const commonStore = useStore('./common')
@@ -238,7 +239,6 @@ export default function useTGForm({
         } else {
           params = typeof params === 'function' ? params() : params
           const currentItemCache = toRaw(currentItem.value)
-
           const res = await store.fetch({
             action,
             apiName,
@@ -246,7 +246,8 @@ export default function useTGForm({
             params,
             isMergeParam,
             isRefreshTable,
-            modalStatusFieldName
+            modalStatusFieldName,
+            optionsOfGetList
           })
 
           resolve(res)
