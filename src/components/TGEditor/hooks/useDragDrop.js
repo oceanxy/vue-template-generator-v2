@@ -87,7 +87,6 @@ export default function useDragDrop() {
    */
   const handleDrop = (e, containerRef) => {
     e.preventDefault()
-    let insertIndex = indicator.value.lastValidIndex
 
     // 1. 获取有效的父级容器信息
     const dropResult = Geometry.findDropContainer(e, componentSchemas.value) || {
@@ -113,7 +112,7 @@ export default function useDragDrop() {
     )
 
     // 5. 确定插入位置（相对当前容器）
-    insertIndex = Geometry.determineInsertIndex(mouseY, midPoints)
+    let insertIndex = Geometry.determineInsertIndex(mouseY, midPoints)
     insertIndex = Math.max(0, Math.min(insertIndex, parentSchema.length))
 
     // 6. 处理数据转换
