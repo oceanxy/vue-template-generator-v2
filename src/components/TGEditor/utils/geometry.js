@@ -26,8 +26,11 @@ export const Geometry = {
    * @returns {number}
    */
   determineInsertIndex(target, sortedArray) {
+    if (sortedArray.length === 0) return 0
+
     let low = 0
     let high = sortedArray.length - 1
+
     while (low <= high) {
       const mid = (low + high) >>> 1
       if (target < sortedArray[mid]) {
@@ -36,6 +39,7 @@ export const Geometry = {
         low = mid + 1
       }
     }
+
     return low
   },
 

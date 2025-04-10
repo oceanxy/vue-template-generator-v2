@@ -129,7 +129,12 @@ export default function useDragDrop() {
       componentSchema = store.createComponentSchema(data)
       parentSchema.splice(safeIndex, 0, componentSchema) // 插入到父级schema
     } else if (type === 'MOVE') {
-      // 查找原始位置（支持跨容器移动）
+      /**
+       * 查找原始位置（支持跨容器移动）
+       * @param schemaArray
+       * @param id
+       * @returns {{parent, index: number}|*|null}
+       */
       const findInSchema = (schemaArray, id) => {
         for (let i = 0; i < schemaArray.length; i++) {
           if (schemaArray[i].id === id) return { parent: schemaArray, index: i }
@@ -149,9 +154,16 @@ export default function useDragDrop() {
 
       // 调整插入位置（当向前移动时补偿索引）
       let adjustedIndex = safeIndex
-      if (origin.parent === parentSchema && origin.index < adjustedIndex) {
-        adjustedIndex--
+      // 仅当在同一个父容器内移动时才需要补偿
+      if (origin.parent === parentSchema) {
+        // 当拖动元素在插入位置之后时才需要补偿
+        if (origin.index < adjustedIndex) {
+          adjustedIndex = adjustedIndex--
+        }
       }
+
+      // 双端约束防止越界
+      adjustedIndex = Math.max(0, Math.min(adjustedIndex, parentSchema.length))
 
       parentSchema.splice(adjustedIndex, 0, moved)
       componentSchema = moved
