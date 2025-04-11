@@ -20,6 +20,7 @@
  */
 export const schema = {
   version: '1.0',
+  components: [],
   canvas: {
     class: '',
     style: {
@@ -27,6 +28,5 @@ export const schema = {
       backgroundColor: '#ffffff',
       padding: 15
     }
-  },
-  components: []
+  }
 }

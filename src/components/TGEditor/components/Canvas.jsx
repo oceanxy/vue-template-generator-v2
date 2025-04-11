@@ -60,10 +60,10 @@ export default {
         previewType: 'canvas'
       }
 
-      const isLayoutContainer = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
+      const canvasCompCategoryClassName = `tg-editor-${componentSchema.category}-component`
 
       // 添加布局组件的嵌套支持
-      if (isLayoutContainer) {
+      if (componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT) {
         component.children = componentSchema.children?.map(childSchema =>
           renderCanvasFromSchemas(childSchema)
         ) ?? []
@@ -77,9 +77,8 @@ export default {
           data-selected={selectedComponent.value?.id === componentSchema.id}
           draggable
           class={{
-            [componentDef.class]: !!componentDef.class,
-            'tg-editor-canvas-component': true,
-            'tg-editor-layout-component': isLayoutContainer, // 容器样式标识
+            [canvasCompCategoryClassName]: true,
+            'tg-editor-drag-component': true,
             'dragging': componentSchema.__dragging // 拖动状态样式
           }}
           onClick={(e) => {
@@ -98,13 +97,6 @@ export default {
             componentSchema.__dragging = false
             dragHandlers.handleDragEnd(e)
           }}
-          // onDragover={e => {
-          //   // 拖拽事件透传
-          //   if (isLayoutContainer) {
-          //     e.preventDefault()
-          //     e.stopPropagation()
-          //   }
-          // }}
         >
           {componentDef.preview(component)}
         </div>

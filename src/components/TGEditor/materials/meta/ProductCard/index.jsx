@@ -49,6 +49,10 @@ export const ProductCardPreview = {
   setup(props) {
     return () => (
       <div
+        class={{
+          'tg-editor-template-container': true,
+          [props.class]: true
+      }}
         style={{
           border: '1px solid #ddd',
           borderRadius: '4px',

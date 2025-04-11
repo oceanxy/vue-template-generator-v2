@@ -22,8 +22,8 @@ export default {
       border: '1px dashed #d9d9d9',
       padding: 8
     },
-    rowCount: 3,
-    columnCount: 3
+    rowCount: 1,
+    columnCount: 2
   },
   children: [],
   configForm: {
@@ -85,9 +85,16 @@ export function GridLayoutPreview(props) {
   }
 
   const colStyle = {}
+  let rowCount = props.rowCount
+  let columnCount = props.columnCount
 
   if (isInCanvas) {
     colStyle.background = '#d5d5d5'
+  }
+
+  if (props.previewType === 'material') {
+    rowCount = 3
+    columnCount = 3
   }
 
   return (
@@ -101,11 +108,11 @@ export function GridLayoutPreview(props) {
       class={'tg-editor-layout-container'}
     >
       {
-        range(0, props.rowCount, 1).map(() => (
+        range(0, rowCount, 1).map(() => (
           <Row {...rowProps}>
             {
-              range(0, props.columnCount, 1).map(() => (
-                <Col span={24 / props.columnCount}>
+              range(0, columnCount, 1).map(() => (
+                <Col span={24 / columnCount}>
                   {
                     isInCanvas
                       ? <div style={colStyle} class={'tg-editor-drag-placeholder-within-layout'} />

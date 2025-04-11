@@ -50,8 +50,13 @@ export const useEditorStore = defineStore('editor', {
       parentId: null,
       type: 'none', // 'none' | 'placeholder' | 'container'
       display: 'none', // 显示状态
-      top: '0px', // 位置
-      lastValidIndex: -1
+      top: '0px', // 垂直布局定位
+      left: '0px', // 水平布局定位
+      lastValidIndex: -1,
+      layoutDirection: null, // 'horizontal' | 'vertical'
+      containerType: 'canvas', // 'canvas' | 'layout'
+      nestedLevel: 0, // 新增嵌套层级
+      validArea: 'default' // 'default' | 'layout-container'
     },
     actionBar: {
       visible: false,
@@ -73,7 +78,7 @@ export const useEditorStore = defineStore('editor', {
             slot: '按钮'
           },
           style: {},
-          class: 'tg-editor-base-component',
+          class: '',
           configForm: {
             fields: [
               {
@@ -112,7 +117,7 @@ export const useEditorStore = defineStore('editor', {
             readOnly: true
           },
           style: {},
-          class: 'tg-editor-base-component',
+          class: '',
           configForm: {
             fields: [
               {
@@ -154,11 +159,14 @@ export const useEditorStore = defineStore('editor', {
         props: {
           ...componentMeta.defaultProps,
           ...props,
+          class: `${componentMeta.class}${props.class ? ` ${props.class}` : ''}`,
           style: {
             ...componentMeta.defaultProps.style,
-            ...componentMeta.style
+            ...componentMeta.style,
+            ...(formSchema?.props?.style || {})
           }
-        }
+        },
+        children: componentMeta.category === TG_MATERIAL_CATEGORY.LAYOUT ? [] : undefined
       }
     },
     /**

@@ -207,6 +207,33 @@
             transform: translateZ(0);
             animation: pulseContainer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
+            // 布局组件的容器指示线
+            &[data-container-type='layout'] {
+              z-index: 1000;
+
+              &[data-nested-level='1'] {
+                border-color: #ff7a45;
+
+                &::after {
+                  background: #ff7a45;
+                }
+              }
+
+              &[data-nested-level='2'] {
+                border-color: #73d13d;
+
+                &::after {
+                  background: #73d13d;
+                }
+              }
+            }
+
+            // 画布容器指示线
+            &[data-container-type='canvas'] {
+              border-width: 2px;
+              z-index: 999;
+            }
+
             @keyframes pulseContainer {
               0%, 100% {
                 opacity: 0.6;
@@ -243,7 +270,7 @@
           }
         }
 
-        .tg-editor-canvas-component {
+        .tg-editor-drag-component {
           position: relative;
           transition: all 0.2s;
           transform: translateZ(0); // 强制开启GPU加速

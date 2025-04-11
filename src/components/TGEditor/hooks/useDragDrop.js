@@ -17,7 +17,6 @@ export default function useDragDrop() {
   const store = useEditorStore()
   const schema = computed(() => store.schema)
   const componentSchemas = computed(() => schema.value.components)
-  const indicator = computed(() => store.indicator)
   const rafId = ref(null)
   const { resetIndicator, updateIndicator } = useIndicator()
 
@@ -88,45 +87,52 @@ export default function useDragDrop() {
   const handleDrop = (e, containerRef) => {
     e.preventDefault()
 
-    // 1. 获取有效的父级容器信息
-    const dropResult = Geometry.findDropContainer(e, componentSchemas.value) || {
+    // 处理数据转换
+    const raw = e.dataTransfer.getData('application/json')
+    if (!raw) return
+
+    const { type, data } = JSON.parse(raw)
+
+    // 获取有效的父级容器信息
+    const { parentSchema, containerEl } = Geometry.findDropContainer(e, componentSchemas.value) || {
       parentSchema: componentSchemas.value, // 默认使用根schema
       containerEl: containerRef.value
     }
-    const { parentSchema, containerEl } = dropResult
 
-    // 2. 计算相对于容器的位置
+    // 计算相对于容器的位置
     const containerRect = containerEl.getBoundingClientRect()
     const mouseY = e.clientY - containerRect.top + containerEl.scrollTop
 
-    // 3. 获取容器内可见子元素
-    const children = Array.from(containerEl.children)
-      .filter(el => el.classList.contains('tg-editor-canvas-component'))
-      .filter(el => !el.classList.contains('dragging')) // 排除正在拖动的元素
+    // 获取容器内可见子元素
+    const validChildren = containerEl.classList.contains('tg-editor-drag-component')
+      ? containerEl.querySelector('.tg-editor-drag-placeholder-within-layout').children
+      : containerEl.children
+    const children = Array.from(validChildren)
+      .filter(el => el.classList.contains('tg-editor-drag-component'))
+      // 排除正在拖动的元素
+      .filter(el => !el.classList.contains('dragging'))
 
-    // 4. 计算中间点（基于实际容器）
+    // 计算中间点（基于实际容器）
     const midPoints = Geometry.calculateMidPoints(
       containerEl,
       children,
       containerEl.scrollTop
     )
 
-    // 5. 确定插入位置（相对当前容器）
-    let insertIndex = Geometry.determineInsertIndex(mouseY, midPoints)
-    insertIndex = Math.max(0, Math.min(insertIndex, parentSchema.length))
+    // 确定插入位置（相对当前容器）
+    const insertIndex = Math.max(
+      0, Math.min(
+        Geometry.determineInsertIndex(mouseY, midPoints),
+        parentSchema.length
+      )
+    )
 
-    // 6. 处理数据转换
-    const raw = e.dataTransfer.getData('application/json')
-    if (!raw) return
-    const { type, data } = JSON.parse(raw)
-
-    // 7. 执行插入/移动操作
+    // 执行插入/移动操作
     let componentSchema = null
-    const safeIndex = Math.max(0, Math.min(insertIndex, parentSchema.length))
 
     if (type === 'ADD') {
       componentSchema = store.createComponentSchema(data)
-      parentSchema.splice(safeIndex, 0, componentSchema) // 插入到父级schema
+      parentSchema.splice(insertIndex, 0, componentSchema) // 插入到父级schema
     } else if (type === 'MOVE') {
       /**
        * 查找原始位置（支持跨容器移动）
@@ -142,6 +148,7 @@ export default function useDragDrop() {
             if (found) return found
           }
         }
+
         return null
       }
 
@@ -152,7 +159,7 @@ export default function useDragDrop() {
       const [moved] = origin.parent.splice(origin.index, 1)
 
       // 调整插入位置（当向前移动时补偿索引）
-      let adjustedIndex = safeIndex
+      let adjustedIndex = insertIndex
       // 仅当在同一个父容器内移动时才需要补偿
       if (origin.parent === parentSchema) {
         // 当拖动元素在插入位置之后时才需要补偿
@@ -168,14 +175,14 @@ export default function useDragDrop() {
       componentSchema = moved
     }
 
-    // 8. 清理状态
+    // 清理状态
     if (rafId.value) {
       cancelAnimationFrame(rafId.value)
       rafId.value = null
     }
     resetIndicator()
 
-    // 9. 更新选中状态
+    // 更新选中状态
     if (componentSchema) {
       store.updateComponent(componentSchema)
     }
