@@ -38,20 +38,16 @@ export default function useIndicator() {
 
     // 确定拖拽容器类型
     const dropResult = Geometry.findDropContainer(e, componentSchemas.value) || {
+      inValidLayoutArea: false,
       containerEl: containerRef.value,
       parentSchema: componentSchemas.value
     }
-
-    // 判断是否在布局容器有效区域
-    const inLayoutContainer = e.composedPath().some(el =>
-      el.classList?.contains('tg-editor-drag-placeholder-within-layout')
-    )
 
     // 更新validArea状态
     store.$patch({
       indicator: {
         ...store.indicator,
-        validArea: inLayoutContainer ? 'layout-container' : 'default'
+        validArea: dropResult.inValidLayoutArea ? 'layout-container' : 'default'
       }
     })
 

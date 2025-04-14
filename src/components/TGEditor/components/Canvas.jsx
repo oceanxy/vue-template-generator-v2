@@ -122,7 +122,7 @@ export default {
             }}
             onClick={handleCanvasClick}
             onDrop={e => dragHandlers.handleDrop(e, containerRef)}
-            onDragover={e => dragHandlers.handleDragOver(e, containerRef, indicatorRef)}
+            onDragover={e => dragHandlers.handleDragOver(e, containerRef)}
             onDragend={dragHandlers.handleDragEnd}
             onDragleave={dragHandlers.handleDragLeave}
           >

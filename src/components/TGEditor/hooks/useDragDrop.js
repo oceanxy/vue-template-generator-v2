@@ -66,15 +66,14 @@ export default function useDragDrop() {
    * 节流处理的拖拽悬停事件
    * @param {DragEvent} e
    * @param containerRef
-   * @param indicatorRef
    */
-  const handleDragOver = (e, containerRef, indicatorRef) => {
+  const handleDragOver = (e, containerRef) => {
     e.preventDefault()
 
     if (rafId.value) return
 
     rafId.value = requestAnimationFrame(() => {
-      updateIndicator(e, containerRef, indicatorRef)
+      updateIndicator(e, containerRef)
       rafId.value = null
     })
   }

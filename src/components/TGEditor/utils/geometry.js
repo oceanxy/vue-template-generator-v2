@@ -67,12 +67,18 @@ export const Geometry = {
 
   /**
    * 查找最近的布局容器
-   * @param {DragEvent} e
-   * @param {TGComponentSchema[]} componentSchemas
-   * @returns {{containerEl: *, parentSchema: ([]|*|null)}|null}
+   * @param e
+   * @param componentSchemas
+   * @returns {{inValidLayoutArea: boolean, containerEl: *, parentSchema: ([]|*|null)}|null}
    */
   findDropContainer(e, componentSchemas) {
-    const path = e.composedPath()
+    // ========================== 注意此处有坑，浏览器兼容性问题 =============================
+    // 在某些浏览器环境下（特别是使用Vue的合成事件系统时），`e.composedPath()`可能无法正确获取事件路径。
+    let path = e.composedPath()
+
+    if (!path?.length) {
+      path = this.getEventPath(e)
+    }
 
     /**
      * 判断释放鼠标时的位置是否处于布局组件的容器区域
@@ -120,8 +126,30 @@ export const Geometry = {
     }
 
     return {
+      inValidLayoutArea,
       containerEl: closestLayoutComponent,
       parentSchema: findNestedSchema(componentSchemas, closestLayoutComponent.dataset.id)
     }
+  },
+
+  /**
+   * 获取事件路径
+   * @param e
+   * @returns {*|*[]}
+   */
+  getEventPath(e) {
+    // Chrome/Safari直接使用e.path
+    if (e.path) return e.path
+
+    // 兼容Firefox等其他浏览器
+    const path = []
+    let target = e.target
+
+    while (target && target !== document.documentElement) {
+      path.push(target)
+      target = target.parentElement
+    }
+
+    return path
   }
 }
