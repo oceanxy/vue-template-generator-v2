@@ -19,6 +19,7 @@ export default {
     align: 'normal',
     justify: 'normal'
   },
+  class: '',
   style: {
     padding: 8,
     backgroundColor: '#f0f2f5',
@@ -132,8 +133,8 @@ export function FlexLayoutPreview(props) {
   if (previewType === 'canvas') {
     return (
       <Flex
-        class={'tg-editor-layout-container'}
         vertical
+        class={'tg-editor-layout-container'}
         style={restProps.style}
       >
         {

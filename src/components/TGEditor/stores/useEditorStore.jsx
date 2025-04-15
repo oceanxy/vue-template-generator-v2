@@ -47,16 +47,17 @@ export const useEditorStore = defineStore('editor', {
     canvasConfigForm: canvasConfigForm,
     schema: cloneDeep(schema),
     indicator: {
-      parentId: null,
       type: 'none', // 'none' | 'placeholder' | 'container'
-      display: 'none', // 显示状态
-      top: '0px', // 垂直布局定位
-      left: '0px', // 水平布局定位
-      lastValidIndex: -1,
-      layoutDirection: null, // 'horizontal' | 'vertical'
       containerType: 'canvas', // 'canvas' | 'layout'
+      layoutDirection: null, // 'horizontal' | 'vertical'
       nestedLevel: 0, // 新增嵌套层级
-      validArea: 'default' // 'default' | 'layout-container'
+      display: 'none', // 显示状态
+      top: 0, // 垂直布局定位
+      left: 0, // 水平布局定位
+      width: 0,
+      height: 0,
+      lastValidIndex: -1,
+      parentId: null
     },
     actionBar: {
       visible: false,

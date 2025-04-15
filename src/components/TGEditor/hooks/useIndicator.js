@@ -38,33 +38,35 @@ export default function useIndicator() {
 
     // 确定拖拽容器类型
     const dropResult = Geometry.findDropContainer(e, componentSchemas.value) || {
-      inValidLayoutArea: false,
+      isInsideLayoutContainer: false,
       containerEl: containerRef.value,
       parentSchema: componentSchemas.value
     }
 
-    // 更新validArea状态
+    // 更新 containerType 状态
     store.$patch({
       indicator: {
-        ...store.indicator,
-        validArea: dropResult.inValidLayoutArea ? 'layout-container' : 'default'
+        containerType: dropResult.isInsideLayoutContainer ? 'layout' : 'canvas'
       }
     })
 
-    // 根据validArea选择目标容器
+    // 根据 containerType 选择目标容器（这里的父容器指div.tg-editor-layout-component的直接父级）
     const currentContainer = (() => {
-      if (store.indicator.validArea === 'layout-container') {
+      if (store.indicator.containerType === 'layout') {
         return dropResult.containerEl.querySelector('.tg-editor-drag-placeholder-within-layout') ||
           dropResult.containerEl
       }
 
-      // 查找最近的合法父容器
+      // 查找最近的合法父容器（这里的父容器指子组件的直接父容器）
       let parentContainer = dropResult.containerEl
+
       while (parentContainer &&
-      !parentContainer.classList.contains('tg-editor-canvas-container') &&
-      !parentContainer.classList.contains('tg-editor-layout-component')) {
+        !parentContainer.classList.contains('tg-editor-canvas-container') &&
+        !parentContainer.classList.contains('tg-editor-layout-component')
+        ) {
         parentContainer = parentContainer.parentElement
       }
+
       return parentContainer || containerRef.value
     })()
 
@@ -74,37 +76,24 @@ export default function useIndicator() {
     let mouseY = e.clientY - containerRect.top + scrollTop
 
     // 容器边界处理
-    if (store.indicator.validArea === 'default') {
-      const parentContainer = currentContainer.closest('.tg-editor-drag-placeholder-within-layout')
-
-      if (parentContainer) {
-        const parentRect = parentContainer.getBoundingClientRect()
-
-        mouseY = Math.max(
-          parentRect.top - containerRect.top,
-          Math.min(
-            mouseY,
-            parentRect.bottom - containerRect.top
-          )
-        )
-      }
-    }
+    // if (store.indicator.containerType === 'layout') {
+    //   mouseY = Math.max(
+    //     currentContainer.top - containerRect.top,
+    //     Math.min(
+    //       mouseY,
+    //       currentContainer.bottom - containerRect.top
+    //     )
+    //   )
+    // }
 
     // 获取可见子元素
-    const children = (() => {
-      if (store.indicator.validArea === 'layout-container') {
-        return Array.from(currentContainer.children)
-          .filter(el => el.classList.contains('tg-editor-drag-component'))
-      }
-
-      return Array.from(currentContainer.children)
-        .filter(el => el.classList.contains('tg-editor-drag-component'))
-        .filter(el => !el.classList.contains('dragging'))
-    })()
+    const children = Array.from(currentContainer.children)
+      .filter(el => el.classList.contains('tg-editor-drag-component'))
+      .filter(el => !el.classList.contains('dragging'))
 
     // 空容器处理
     if (children.length === 0) {
-      return handleEmptyCanvas(currentContainer)
+      return handleEmptyCanvas(currentContainer, dropResult.isInsideLayoutContainer)
     }
 
     if (Geometry.isInsideAnyComponent(mouseY, children, currentContainer)) {
@@ -134,18 +123,41 @@ export default function useIndicator() {
   /**
    * 处理空画布状态
    */
-  const handleEmptyCanvas = container => {
-    const isLayoutContainer = container.classList.contains('tg-editor-layout-component')
+  const handleEmptyCanvas = (container, isInsideLayoutContainer) => {
+    // 获取实际容器元素（保持原有逻辑）
+    const targetContainer = isInsideLayoutContainer ?
+      container :
+      container.querySelector('.tg-editor-drag-placeholder-within-layout') || container
+
+    // 使用offset相关属性
+    let relativePosition
+
+    if (isInsideLayoutContainer) {
+      // 应获取实际布局容器(tg-editor-drag-placeholder-within-layout)的位置
+      const containerRect = targetContainer.getBoundingClientRect()
+      const canvasContainer = container.closest('.tg-editor-canvas-container')
+      const canvasRect = canvasContainer.getBoundingClientRect()
+
+      relativePosition = {
+        // 转换为相对于canvas容器的坐标
+        top: containerRect.top - canvasRect.top + canvasContainer.scrollTop,
+        left: containerRect.left - canvasRect.left + canvasContainer.scrollLeft,
+        width: containerRect.width,
+        height: containerRect.height
+      }
+    } else {
+      relativePosition = {
+        top: targetContainer.offsetTop,
+        left: targetContainer.offsetLeft
+      }
+    }
 
     store.$patch({
       indicator: {
+        ...indicator.value,
+        ...relativePosition,
         type: 'container',
-        display: 'block',
-        top: '50%',
-        left: '50%',
-        layoutDirection: null,
-        containerType: isLayoutContainer ? 'layout' : 'canvas',
-        validArea: 'default'
+        display: 'block'
       }
     })
   }
@@ -223,7 +235,7 @@ export default function useIndicator() {
       store.$patch({
         indicator: {
           type: 'placeholder',
-          top: `${snappedPos}px`,
+          top: snappedPos,
           display: 'block',
           layoutDirection: isLayoutContainer ? getLayoutDirection(container) : null
         }
@@ -283,8 +295,10 @@ export default function useIndicator() {
   }
 
   function getLayoutDirection(container) {
-    const style = window.getComputedStyle(container)
-    return style.flexDirection === 'column' ? 'vertical' : 'horizontal'
+    // 查找实际的布局容器
+    const layoutContainer = container.querySelector('.tg-editor-drag-placeholder-within-layout') || container
+    const style = window.getComputedStyle(layoutContainer)
+    return style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
   }
 
   /**
@@ -389,7 +403,6 @@ export default function useIndicator() {
    * @param mouseY
    */
   const handleContainerIndicator = (container, mouseY) => {
-    const isLayoutContainer = container.classList?.contains('tg-editor-layout-component')
     const paddingTop = parseStyleValue(
       schema.value.canvas.style?.paddingTop || '15px'
     )
@@ -407,11 +420,10 @@ export default function useIndicator() {
         ...indicator.value,
         type: 'container',
         lastValidIndex: -1,
-        top: `${position}px`,
-        left: '0px',
+        top: position,
+        left: 0,
         display: 'block',
-        layoutDirection: null,
-        containerType: isLayoutContainer ? 'layout' : 'canvas'
+        layoutDirection: null
       }
     })
   }
@@ -450,8 +462,8 @@ export default function useIndicator() {
         ...indicator.value,
         type: 'placeholder',
         lastValidIndex: insertIndex,
-        top: `${targetPos}px`,
-        left: '0px',
+        top: targetPos,
+        left: 0,
         display: 'block',
         layoutDirection: orientation,
         containerType: isNested ? 'layout' : 'canvas'
@@ -468,8 +480,8 @@ export default function useIndicator() {
         type: 'none',
         display: 'none',
         lastValidIndex: -1,
-        top: '0px',
-        left: '0px',
+        top: 0,
+        left: 0,
         layoutDirection: null,
         containerType: 'canvas'
       }

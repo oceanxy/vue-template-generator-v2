@@ -69,7 +69,7 @@ export const Geometry = {
    * 查找最近的布局容器
    * @param e
    * @param componentSchemas
-   * @returns {{inValidLayoutArea: boolean, containerEl: *, parentSchema: ([]|*|null)}|null}
+   * @returns {{isInsideLayoutContainer: boolean, containerEl: *, parentSchema: ([]|*|null)}|null}
    */
   findDropContainer(e, componentSchemas) {
     // ========================== 注意此处有坑，浏览器兼容性问题 =============================
@@ -91,7 +91,7 @@ export const Geometry = {
      * 布局组件存放子组件的容器区域：div.tg-editor-drag-placeholder-within-layout
      * @type {boolean}
      */
-    const inValidLayoutArea = path.some(el =>
+    const isInsideLayoutContainer = path.some(el =>
       el.classList?.contains('tg-editor-drag-placeholder-within-layout')
     )
 
@@ -99,7 +99,7 @@ export const Geometry = {
     // 容器查找，主要为了区分鼠标是否处于布局组件的子组件容器区域内
     const closestLayoutComponent = path.find(el => {
       const isLayoutComponent = el.classList?.contains('tg-editor-layout-component')
-      return isLayoutComponent && inValidLayoutArea
+      return isLayoutComponent && isInsideLayoutContainer
     }) || path.find(el => el.classList?.contains('tg-editor-canvas-container'))
 
     if (!closestLayoutComponent) return null
@@ -126,7 +126,7 @@ export const Geometry = {
     }
 
     return {
-      inValidLayoutArea,
+      isInsideLayoutContainer,
       containerEl: closestLayoutComponent,
       parentSchema: findNestedSchema(componentSchemas, closestLayoutComponent.dataset.id)
     }

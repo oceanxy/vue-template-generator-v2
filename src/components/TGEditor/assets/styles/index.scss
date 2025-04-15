@@ -196,9 +196,6 @@
           &[data-type='container'] {
             display: inherit;
             background: none;
-            inset: var(--canvas-padding) !important; // 匹配容器padding
-            width: calc(100% - var(--canvas-padding) * 2); // 补偿左右padding
-            height: calc(100% - var(--canvas-padding) * 2); // 补偿上下padding
             border: 2px dashed var(--tg-theme-color-primary);
             border-radius: 4px;
             box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
@@ -230,6 +227,9 @@
 
             // 画布容器指示线
             &[data-container-type='canvas'] {
+              inset: var(--canvas-padding) !important; // 匹配容器padding
+              width: calc(100% - var(--canvas-padding) * 2); // 补偿左右padding
+              height: calc(100% - var(--canvas-padding) * 2); // 补偿上下padding
               border-width: 2px;
               z-index: 999;
             }
@@ -237,12 +237,10 @@
             @keyframes pulseContainer {
               0%, 100% {
                 opacity: 0.6;
-                top: 0;
                 transform: translateZ(0) scale(1);
               }
               50% {
                 opacity: 1;
-                top: 0;
                 transform: translateZ(0) scale(1.002); // 用微缩放代替尺寸变化
               }
             }
@@ -337,9 +335,11 @@
           }
 
           .tg-editor-layout-container {
+            position: relative; // 新增定位基准
+
             .tg-editor-drag-placeholder-within-layout {
               position: relative;
-              padding: 15px 20px;
+              padding: var(--canvas-padding);
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
