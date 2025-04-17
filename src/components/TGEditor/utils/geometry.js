@@ -4,19 +4,32 @@
 
 export const Geometry = {
   /**
-   * 计算子元素中点坐标（相对于容器顶部）
-   * @param {HTMLElement} container
+   * 计算子元素中点坐标（相对于直接容器左侧或顶部）
+   * @param containerRect
    * @param {HTMLElement[]} elements
+   * @param direction
    * @param scrollTop
    * @returns {number[]}
    */
-  calculateMidPoints(container, elements, scrollTop = 0) {
-    return elements.map(el => {
+  calculateCompMidPoints(containerRect, elements, direction, scrollTop = 0) {
+    const points = elements.map(el => {
       const rect = el.getBoundingClientRect()
-      const containerRect = container.getBoundingClientRect()
+      // 添加可视化位置排序（解决 flex 反向布局问题）
+      const visualPos = direction === 'horizontal'
+        ? rect.left + rect.width / 2
+        : rect.top + rect.height / 2
 
-      return (rect.top + rect.bottom) / 2 - containerRect.top + scrollTop
+      return visualPos - (direction === 'horizontal'
+        ? containerRect.left
+        : containerRect.top) + (direction === 'vertical' ? scrollTop : 0)
     })
+
+    // 确保水平布局按视觉顺序排序
+    if (direction === 'horizontal') {
+      points.sort((a, b) => a - b)
+    }
+
+    return points
   },
 
   /**
@@ -33,6 +46,7 @@ export const Geometry = {
 
     while (low <= high) {
       const mid = (low + high) >>> 1
+
       if (target < sortedArray[mid]) {
         high = mid - 1
       } else {
@@ -47,16 +61,14 @@ export const Geometry = {
    * 检查是否在组件区域内
    * @param {number} mouseY
    * @param {HTMLElement[]} children
-   * @param container
+   * @param containerRect
+   * @param scrollTop
    * @returns {boolean}
    */
-  isInsideAnyComponent(mouseY, children, container) {
-    const containerRect = container.getBoundingClientRect()
-    const scrollTop = container.scrollTop
-
+  isInsideAnyComponent(mouseY, children, containerRect, scrollTop) {
     return children.some(child => {
       const childRect = child.getBoundingClientRect()
-      // 增加2px的缓冲区（修改计算方式）
+      // 增加2px的缓冲区
       const topThreshold = Math.max(2, childRect.height * 0.1)
       const adjustedTop = childRect.top - containerRect.top + scrollTop + topThreshold
       const adjustedBottom = childRect.bottom - containerRect.top + scrollTop - topThreshold
@@ -104,31 +116,10 @@ export const Geometry = {
 
     if (!closestLayoutComponent) return null
 
-    /**
-     * 深度优先搜索查找嵌套schema
-     * @param schemas
-     * @param [targetId]
-     * @returns {[]|*|null}
-     */
-    const findNestedSchema = (schemas, targetId) => {
-      if (targetId) {
-        for (const comp of schemas) {
-          if (comp.id === targetId) return comp?.children ?? []
-
-          if (comp.children) {
-            const found = findNestedSchema(comp.children, targetId)
-            if (found) return found
-          }
-        }
-      }
-
-      return schemas
-    }
-
     return {
       isInsideLayoutContainer,
       containerEl: closestLayoutComponent,
-      parentSchema: findNestedSchema(componentSchemas, closestLayoutComponent.dataset.id)
+      parentSchema: this.findNestedSchema(componentSchemas, closestLayoutComponent.dataset.id)
     }
   },
 
@@ -151,5 +142,186 @@ export const Geometry = {
     }
 
     return path
+  },
+
+  /**
+   * 深度优先搜索查找嵌套schema
+   * @param schemas
+   * @param [targetId]
+   * @returns {[]|*|null}
+   */
+  findNestedSchema(schemas, targetId) {
+    if (targetId) {
+      for (const comp of schemas) {
+        if (comp.id === targetId) return comp?.children ?? []
+
+        if (comp.children) {
+          const found = this.findNestedSchema(comp.children, targetId)
+          if (found) return found
+        }
+      }
+    }
+
+    return schemas
+  },
+
+  calculateNestedLevel(element) {
+    if (!element) return 0
+
+    return element.closest('.tg-editor-layout-component') ?
+      element.closest('.tg-editor-layout-component').querySelectorAll('.tg-editor-layout-component').length : 0
+  },
+
+  /**
+   * 计算组件间插入位置
+   * @param {number} insertIndex
+   * @param {HTMLElement[]} children
+   * @param mouseY
+   * @param {number[]} midPoints
+   * @param config
+   * @returns {number}
+   */
+  calculateComponentPosition(insertIndex, children, mouseY, midPoints, config) {
+    if (config.direction === 'horizontal') {
+      if (insertIndex === 0) {
+        return Math.max(config.EDGE.OFFSET, children[0].offsetLeft - config.EDGE.OFFSET)
+      }
+
+      if (insertIndex === children.length) {
+        const lastChild = children[children.length - 1]
+
+        return lastChild.offsetLeft + lastChild.offsetWidth + config.EDGE.OFFSET
+      }
+
+      const prevChild = children[insertIndex - 1]
+      const nextChild = children[insertIndex]
+
+      return (prevChild.offsetLeft + prevChild.offsetWidth + nextChild.offsetLeft) / 2
+    } else {
+      // 顶部边界处理
+      if (insertIndex === 0 && midPoints.length > 0 && mouseY < midPoints[0] - config.THRESHOLD.CONTAINER) {
+        return children[0].offsetTop - config.EDGE.OFFSET
+      }
+
+      // 常规位置计算
+      if (insertIndex === 0) {
+        return Math.max(config.EDGE.OFFSET, children[0].offsetTop - config.EDGE.OFFSET)
+      }
+
+      if (insertIndex === children.length) {
+        const lastChild = children[children.length - 1]
+        return lastChild.offsetTop + lastChild.offsetHeight + config.EDGE.OFFSET
+      }
+
+      const prevChild = children[insertIndex - 1]
+      const nextChild = children[insertIndex]
+
+      return (prevChild.offsetTop + prevChild.offsetHeight + nextChild.offsetTop) / 2
+    }
+  },
+
+  /**
+   * 计算最小距离
+   * @param {number} mouseY
+   * @param {HTMLElement[]} children
+   * @param container
+   * @returns {number}
+   */
+  calculateMinDistance(mouseY, children, container) {
+    if (children.length === 0) return Infinity
+
+    const containerRect = container.getBoundingClientRect()
+    const scrollTop = container.scrollTop
+
+    return Math.min(...children.map(child => {
+      const childRect = child.getBoundingClientRect()
+      const topEdge = childRect.top - containerRect.top + scrollTop
+      const bottomEdge = childRect.bottom - containerRect.top + scrollTop
+
+      return Math.min(
+        Math.abs(mouseY - topEdge),
+        Math.abs(mouseY - bottomEdge)
+      )
+    }))
+  },
+
+  /**
+   * 检查拖拽边缘阈值（根据布局方向动态调整）
+   * @param containerRect - 当前容器元素
+   * @param scrollTop
+   * @param layoutDirection
+   * @param {number} mousePosition - 根据布局方向可能是 Y 或 X 坐标
+   * @param {HTMLElement[]} children - 子元素集合
+   * @param {Object} config - 配置常量
+   * @param isLayoutContainer
+   * @returns {boolean} 是否触发容器指示线
+   */
+  checkDragEdgeThreshold(
+    containerRect,
+    scrollTop,
+    layoutDirection,
+    mousePosition,
+    children,
+    config,
+    isLayoutContainer
+  ) {
+    if (children.length === 0) return false
+
+    // 获取布局方向
+    const isHorizontal = layoutDirection === 'horizontal'
+
+    // 获取首个子元素的位置信息
+    const lastChild = children.at(-1)
+    const lastChildRect = lastChild.getBoundingClientRect()
+
+    // 根据布局方向计算阈值位置
+    const thresholdPosition = isHorizontal
+      ? lastChildRect.right - containerRect.left
+      : lastChildRect.bottom - containerRect.top + scrollTop
+
+    const threshold = isLayoutContainer
+      ? config.THRESHOLD.COMPONENT_AREA
+      : config.THRESHOLD.CONTAINER
+
+    // 计算实际阈值（增加方向感知）
+    const dynamicThreshold = isHorizontal
+      ? Math.min(threshold, lastChildRect.width * 0.3) // 水平布局取宽度30%
+      : threshold
+
+    // 返回边界检测结果
+    return mousePosition < thresholdPosition + dynamicThreshold
+  },
+
+  getAdjustedPosition(e, container, containerRect, direction) {
+    return direction === 'horizontal'
+      ? e.clientX - containerRect.left
+      : e.clientY - containerRect.top + container.scrollTop
+  },
+
+  getValidChildren(children) {
+    return Array.from(children)
+      .filter(el => el.classList.contains('tg-editor-drag-component'))
+      // 排除正在拖动的元素
+      .filter(el => !el.classList.contains('dragging'))
+  },
+
+  /**
+   * 获取元素相对于指定容器的位置
+   * @param {HTMLElement} element
+   * @param {HTMLElement} container
+   * @returns {DOMRect}
+   */
+  getRelativeRect(element, container) {
+    const elementRect = element.getBoundingClientRect()
+    const containerRect = container.getBoundingClientRect()
+
+    return {
+      left: elementRect.left - containerRect.left,
+      top: elementRect.top - containerRect.top,
+      right: elementRect.right - containerRect.left,
+      bottom: elementRect.bottom - containerRect.top,
+      width: elementRect.width,
+      height: elementRect.height
+    }
   }
 }

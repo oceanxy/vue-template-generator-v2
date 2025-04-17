@@ -16,6 +16,7 @@ import { Geometry } from '@/components/TGEditor/utils/geometry'
 export default function useDragDrop() {
   const store = useEditorStore()
   const schema = computed(() => store.schema)
+  const indicator = computed(() => store.indicator)
   const componentSchemas = computed(() => schema.value.components)
   const rafId = ref(null)
   const { resetIndicator, updateIndicator } = useIndicator()
@@ -100,31 +101,40 @@ export default function useDragDrop() {
 
     // 计算相对于容器的位置
     const containerRect = containerEl.getBoundingClientRect()
-    const mouseY = e.clientY - containerRect.top + containerEl.scrollTop
+    const direction = indicator.value.layoutDirection
+    const mousePosition = direction === 'horizontal'
+      ? e.clientX - containerRect.left
+      : e.clientY - containerRect.top + containerEl.scrollTop
 
     // 获取容器内可见子元素
     const validChildren = containerEl.classList.contains('tg-editor-drag-component')
       ? containerEl.querySelector('.tg-editor-drag-placeholder-within-layout').children
       : containerEl.children
-    const children = Array.from(validChildren)
-      .filter(el => el.classList.contains('tg-editor-drag-component'))
-      // 排除正在拖动的元素
-      .filter(el => !el.classList.contains('dragging'))
+    const children = Geometry.getValidChildren(validChildren)
 
     // 计算中间点（基于实际容器）
-    const midPoints = Geometry.calculateMidPoints(
-      containerEl,
+    const midPoints = Geometry.calculateCompMidPoints(
+      containerRect,
       children,
+      indicator.value.layoutDirection,
       containerEl.scrollTop
     )
 
     // 确定插入位置（相对当前容器）
-    const insertIndex = Math.max(
-      0, Math.min(
-        Geometry.determineInsertIndex(mouseY, midPoints),
-        parentSchema.length
+    let insertIndex
+    if (store.indicator.type === 'container') {
+      // 当显示容器指示线时，强制插入到末尾
+      insertIndex = parentSchema.length
+    } else {
+      // 原有计算逻辑
+      insertIndex = Math.max(
+        0,
+        Math.min(
+          Geometry.determineInsertIndex(mousePosition, midPoints),
+          parentSchema.length
+        )
       )
-    )
+    }
 
     // 执行插入/移动操作
     let componentSchema = null

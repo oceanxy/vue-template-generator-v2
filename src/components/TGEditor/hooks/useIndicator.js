@@ -1,7 +1,6 @@
 import { Geometry } from '../utils/geometry'
 import { useEditorStore } from '../stores/useEditorStore'
 import { computed } from 'vue'
-import { parseStyleValue } from '../utils/style'
 
 /**
  * 指示器逻辑 Hook
@@ -19,12 +18,13 @@ export default function useIndicator() {
   // 配置常量
   const CONFIG = {
     THRESHOLD: {
-      COMPONENT_AREA: 0,
+      COMPONENT_AREA: 30,
       CONTAINER: 30
     },
     EDGE: {
       SNAP_RANGE: 5,
-      OFFSET: 2
+      OFFSET: 2,
+      MIN_GAP: 8 // 最小间距配置
     }
   }
 
@@ -43,98 +43,138 @@ export default function useIndicator() {
       parentSchema: componentSchemas.value
     }
 
-    // 更新 containerType 状态
-    store.$patch({
-      indicator: {
-        containerType: dropResult.isInsideLayoutContainer ? 'layout' : 'canvas'
-      }
-    })
+    const containerType = dropResult.isInsideLayoutContainer ? 'layout' : 'canvas'
+    const layoutDirection = containerType === 'layout'
+      ? getLayoutDirection(dropResult.containerEl).direction
+      : 'vertical'
 
-    // 根据 containerType 选择目标容器（这里的父容器指div.tg-editor-layout-component的直接父级）
-    const currentContainer = (() => {
+    // 查找最近的合法父容器
+    // 这里的父容器指子组件的直接父容器
+    // 布局组件中为 .tg-editor-drag-placeholder-within-layout
+    // 画布中为 .tg-editor-canvas-container
+    const currentParentContainer = (() => {
+      // 根据 containerType 选择布局容器
       if (store.indicator.containerType === 'layout') {
         return dropResult.containerEl.querySelector('.tg-editor-drag-placeholder-within-layout') ||
           dropResult.containerEl
       }
 
-      // 查找最近的合法父容器（这里的父容器指子组件的直接父容器）
-      let parentContainer = dropResult.containerEl
-
-      while (parentContainer &&
-        !parentContainer.classList.contains('tg-editor-canvas-container') &&
-        !parentContainer.classList.contains('tg-editor-layout-component')
-        ) {
-        parentContainer = parentContainer.parentElement
-      }
-
-      return parentContainer || containerRef.value
+      return dropResult.containerEl || containerRef.value
     })()
 
-    // 计算相对位置
-    const containerRect = currentContainer.getBoundingClientRect()
-    const scrollTop = currentContainer.scrollTop
-    let mouseY = e.clientY - containerRect.top + scrollTop
-
-    // 容器边界处理
-    // if (store.indicator.containerType === 'layout') {
-    //   mouseY = Math.max(
-    //     currentContainer.top - containerRect.top,
-    //     Math.min(
-    //       mouseY,
-    //       currentContainer.bottom - containerRect.top
-    //     )
-    //   )
-    // }
+    // 更新可以确定的指示线信息
+    store.$patch({
+      indicator: {
+        type: 'none', // 现在还不能确定该属性，为了避免以前的值影响目前的状态显示，必须强制清空
+        containerType,
+        layoutDirection,
+        nestedLevel: Geometry.calculateNestedLevel(currentParentContainer)
+      }
+    })
 
     // 获取可见子元素
-    const children = Array.from(currentContainer.children)
-      .filter(el => el.classList.contains('tg-editor-drag-component'))
-      .filter(el => !el.classList.contains('dragging'))
+    const children = Geometry.getValidChildren(currentParentContainer.children)
 
     // 空容器处理
     if (children.length === 0) {
-      return handleEmptyCanvas(currentContainer, dropResult.isInsideLayoutContainer)
-    }
-
-    if (Geometry.isInsideAnyComponent(mouseY, children, currentContainer)) {
-      // 处理组件内部拖拽
-      handleComponentDrag(currentContainer, mouseY, children)
+      handleContainerIndicator(currentParentContainer, dropResult.isInsideLayoutContainer)
     } else {
-      // 处理容器边缘拖拽
-      handleContainerDrag(currentContainer, mouseY, children)
-    }
+      // 计算相对位置
+      const containerRect = currentParentContainer.getBoundingClientRect()
+      const scrollTop = currentParentContainer.scrollTop
+      let mouseY = e.clientY - containerRect.top + scrollTop
 
-    // 更新容器层级信息
-    store.$patch({
-      indicator: {
-        ...store.indicator,
-        nestedLevel: calculateNestedLevel(currentContainer)
+      if (Geometry.isInsideAnyComponent(mouseY, children, containerRect, scrollTop)) {
+        // 处理组件内部拖拽
+        handleComponentDrag(e, currentParentContainer, children, containerRect)
+      } else {
+        // 处理容器拖拽
+        handleContainerDrag(e, currentParentContainer, children, containerRect, layoutDirection)
       }
-    })
-  }
-
-  const calculateNestedLevel = (element) => {
-    if (!element) return 0
-
-    return element.closest('.tg-editor-layout-component') ?
-      element.closest('.tg-editor-layout-component').querySelectorAll('.tg-editor-layout-component').length : 0
+    }
   }
 
   /**
-   * 处理空画布状态
+   * 处理组件内部拖拽
+   * @param e
+   * @param container
+   * @param {HTMLElement[]} children
+   * @param containerRect
    */
-  const handleEmptyCanvas = (container, isInsideLayoutContainer) => {
-    // 获取实际容器元素（保持原有逻辑）
-    const targetContainer = isInsideLayoutContainer ?
-      container :
-      container.querySelector('.tg-editor-drag-placeholder-within-layout') || container
+  const handleComponentDrag = (e, container, children, containerRect) => {
+    // 检查是否是布局组件的布局容器内部
+    if (indicator.value.containerType === 'layout') {
+      const { direction, deepestContainer } = getLayoutDirection(container)
+      children = Geometry.getValidChildren(deepestContainer.children)
 
+      // 处理布局组件中空的布局容器，直接显示容器指示线
+      // if (!children?.length) {
+      //   handleContainerIndicator(deepestContainer, true)
+      // } else {
+      containerRect = deepestContainer.getBoundingClientRect()
+      handleContainerDrag(e, deepestContainer, children, containerRect, direction)
+      // }
+    } else {
+      handlePlaceholderIndicator(e, container, containerRect, children)
+    }
+  }
+
+  /**
+   * 处理容器边缘拖拽
+   * @param e
+   * @param container
+   * @param {HTMLElement[]} children
+   * @param containerRect
+   * @param direction
+   */
+  const handleContainerDrag = (e, container, children, containerRect, direction) => {
+    const adjustedPosition = Geometry.getAdjustedPosition(e, container, containerRect, direction)
+    const isInsideLayoutContainer = indicator.value.containerType === 'layout'
+    const isEdgeTriggered = Geometry.checkDragEdgeThreshold(
+      containerRect,
+      container.scrollTop,
+      direction,
+      adjustedPosition,
+      children,
+      CONFIG,
+      isInsideLayoutContainer
+    )
+
+    // 容器边界检测（当前容器内鼠标离最近的组件是否超过阈值）
+    // 超过阈值则显示布局容器的容器指示线，否则显示容器的占位指示线
+    if (isEdgeTriggered) {
+      handlePlaceholderIndicator(e, container, containerRect, children, direction)
+    } else {
+      handleContainerIndicator(container, isInsideLayoutContainer)
+    }
+  }
+
+  function getLayoutDirection(container) {
+    // 对于多层嵌套的布局组件，需要确保始终获取当前最内层容器的方向
+    const nestedContainers = container?.querySelectorAll?.('.tg-editor-drag-placeholder-within-layout') || []
+    const deepestContainer = nestedContainers[nestedContainers.length - 1] || container
+    if (!deepestContainer) return 'vertical'
+
+    const style = window.getComputedStyle(deepestContainer)
+    const direction = style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
+
+    return {
+      direction,
+      deepestContainer
+    }
+  }
+
+  /**
+   * 处理容器指示器
+   * @param container
+   * @param isInsideLayoutContainer
+   */
+  const handleContainerIndicator = (container, isInsideLayoutContainer) => {
     // 使用offset相关属性
     let relativePosition
+    const containerRect = container.getBoundingClientRect()
 
     if (isInsideLayoutContainer) {
-      // 应获取实际布局容器(tg-editor-drag-placeholder-within-layout)的位置
-      const containerRect = targetContainer.getBoundingClientRect()
       const canvasContainer = container.closest('.tg-editor-canvas-container')
       const canvasRect = canvasContainer.getBoundingClientRect()
 
@@ -146,282 +186,27 @@ export default function useIndicator() {
         height: containerRect.height
       }
     } else {
+      const containerStyle = window.getComputedStyle(container)
+      const padding = {
+        top: parseFloat(containerStyle.paddingTop),
+        right: parseFloat(containerStyle.paddingRight),
+        bottom: parseFloat(containerStyle.paddingBottom),
+        left: parseFloat(containerStyle.paddingLeft)
+      }
+
       relativePosition = {
-        top: targetContainer.offsetTop,
-        left: targetContainer.offsetLeft
+        top: container.offsetTop,
+        left: container.offsetLeft,
+        width: containerRect.width - padding.left - padding.right,
+        height: containerRect.height - padding.top - padding.bottom
       }
     }
 
     store.$patch({
       indicator: {
-        ...indicator.value,
         ...relativePosition,
         type: 'container',
-        display: 'block'
-      }
-    })
-  }
-
-  /**
-   * 处理组件内部拖拽
-   * @param container
-   * @param {number} mouseY
-   * @param {HTMLElement[]} children
-   */
-  const handleComponentDrag = (container, mouseY, children) => {
-    if (Geometry.isInsideAnyComponent(mouseY, children, container)) {
-      handlePlaceholderIndicator(container, mouseY, children)
-      return
-    }
-
-    // 滚动偏移补偿
-    const scrollTop = container.scrollTop
-    const adjustedMouseY = mouseY
-
-    const midPoints = Geometry.calculateMidPoints(container, children, scrollTop)
-    const insertIndex = Geometry.determineInsertIndex(adjustedMouseY, midPoints)
-
-    // 容器边界检测
-    if (insertIndex === 0 && adjustedMouseY < children[0].offsetTop - CONFIG.THRESHOLD.CONTAINER) {
-      return handleContainerIndicator(container, adjustedMouseY)
-    }
-  }
-
-  /**
-   * 计算组件间插入位置
-   * @param {number} insertIndex
-   * @param {HTMLElement[]} children
-   * @param mouseY
-   * @param {number[]} midPoints
-   * @returns {number}
-   */
-  const calculateComponentPosition = (insertIndex, children, mouseY, midPoints) => {
-    // 顶部边界处理
-    if (insertIndex === 0 && midPoints.length > 0 && mouseY < midPoints[0] - CONFIG.THRESHOLD.CONTAINER) {
-      return children[0].offsetTop - CONFIG.EDGE.OFFSET
-    }
-
-    // 常规位置计算
-    if (insertIndex === 0) {
-      return Math.max(CONFIG.EDGE.OFFSET, children[0].offsetTop - CONFIG.EDGE.OFFSET)
-    }
-
-    if (insertIndex === children.length) {
-      const lastChild = children[children.length - 1]
-      return lastChild.offsetTop + lastChild.offsetHeight + CONFIG.EDGE.OFFSET
-    }
-
-    const prevChild = children[insertIndex - 1]
-    const nextChild = children[insertIndex]
-    return (prevChild.offsetTop + prevChild.offsetHeight + nextChild.offsetTop) / 2
-  }
-
-  /**
-   * 处理容器边缘拖拽
-   * @param container
-   * @param {number} mouseY
-   * @param {HTMLElement[]} children
-   */
-  const handleContainerDrag = (container, mouseY, children) => {
-    // 判断当前容器是否为布局组件
-    const isLayoutContainer = container.classList?.contains('tg-editor-layout-component')
-
-    // 边缘吸附检查
-    const containerRect = container.getBoundingClientRect()
-    const scrollTop = container.scrollTop
-    const snappedPos = checkEdgeSnap(containerRect, scrollTop, mouseY, children, isLayoutContainer)
-
-    if (snappedPos !== null) {
-      store.$patch({
-        indicator: {
-          type: 'placeholder',
-          top: snappedPos,
-          display: 'block',
-          layoutDirection: isLayoutContainer ? getLayoutDirection(container) : null
-        }
-      })
-
-      return
-    }
-
-    // 优先检查组件区域
-    const isInsideComponent = Geometry.isInsideAnyComponent(
-      mouseY,
-      children,
-      container
-    )
-
-    if (isInsideComponent) {
-      return handleComponentDrag(container, mouseY, children)
-    }
-
-    // 动态阈值计算
-    const dynamicThreshold = container.clientHeight * (isLayoutContainer
-        ? 0.2 // 布局组件使用更大阈值
-        : 0.15 // 画布内组件调整为容器高度的15%
-    )
-
-    // 处理布局组件内部指示线
-    if (isLayoutContainer) {
-      const cssSelector = '.tg-editor-drag-placeholder-within-layout'
-      const layoutChildren = Array.from(container.querySelector(cssSelector)?.children || [])
-      const layoutMidPoints = Geometry.calculateMidPoints(
-        container,
-        layoutChildren,
-        container.scrollTop
-      )
-
-      if (layoutChildren.length > 0) {
-        const insertIndex = Geometry.determineInsertIndex(mouseY, layoutMidPoints)
-        const minDistance = Math.min(
-          Math.abs(mouseY - (layoutMidPoints[insertIndex - 1] || 0)),
-          Math.abs(mouseY - (layoutMidPoints[insertIndex] || 0))
-        )
-
-        if (minDistance < dynamicThreshold) {
-          return handlePlaceholderIndicator(container, mouseY, layoutChildren, true)
-        }
-      }
-    }
-
-    const minDistance = calculateMinDistance(mouseY, children, container)
-
-    // 调整判断条件
-    if (minDistance > dynamicThreshold) {
-      handleContainerIndicator(container, mouseY)
-    } else {
-      handlePlaceholderIndicator(container, mouseY, children)
-    }
-  }
-
-  function getLayoutDirection(container) {
-    // 查找实际的布局容器
-    const layoutContainer = container.querySelector('.tg-editor-drag-placeholder-within-layout') || container
-    const style = window.getComputedStyle(layoutContainer)
-    return style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
-  }
-
-  /**
-   * 边缘吸附检查
-   * @param containerRect
-   * @param scrollTop
-   * @param {number} mouseY
-   * @param {HTMLElement[]} children
-   * @param [isLayoutContainer] {boolean}
-   * @returns {number|null}
-   */
-  const checkEdgeSnap = (containerRect, scrollTop, mouseY, children, isLayoutContainer = false) => {
-    // 新增布局方向判断
-    const layoutDirection = isLayoutContainer ?
-      getLayoutDirection(containerRect.element) :
-      'vertical'
-
-    // 修改：同时检查水平和垂直方向
-    for (const child of children) {
-      const childRect = child.getBoundingClientRect()
-      let actualEdges = {}
-
-      // 判断是否是嵌套布局的容器元素
-      const isNestedContainer = child.classList.contains('tg-editor-drag-placeholder-within-layout')
-
-      if (isLayoutContainer && isNestedContainer) {
-        // 处理嵌套布局容器的坐标转换
-        const layoutContainerRect = child.getBoundingClientRect()
-        actualEdges = {
-          start: layoutContainerRect.left - containerRect.left + scrollTop,
-          end: layoutContainerRect.right - containerRect.left + scrollTop
-        }
-      } else {
-        // 根据布局方向计算实际边缘位置
-        actualEdges = layoutDirection === 'horizontal' ? {
-          start: childRect.left - containerRect.left + scrollTop,
-          end: childRect.right - containerRect.left + scrollTop
-        } : {
-          start: childRect.top - containerRect.top + scrollTop,
-          end: childRect.bottom - containerRect.top + scrollTop
-        }
-      }
-
-      // 检查起始边缘吸附（左/上边缘）
-      if (Math.abs(actualEdges.start - mouseY) < CONFIG.EDGE.SNAP_RANGE) {
-        return actualEdges.start
-      }
-
-      // 检查结束边缘吸附（右/下边缘）
-      if (Math.abs(actualEdges.end - mouseY) < CONFIG.EDGE.SNAP_RANGE) {
-        return actualEdges.end
-      }
-
-      // 检查布局容器内部空白区域
-      if (isLayoutContainer && child.children.length === 0) {
-        const centerPos = (actualEdges.start + actualEdges.end) / 2
-        if (Math.abs(centerPos - mouseY) < CONFIG.EDGE.SNAP_RANGE * 2) {
-          return centerPos
-        }
-      }
-    }
-
-    // 检查容器自身边缘（仅限布局容器）
-    if (isLayoutContainer) {
-      const containerCenterY = containerRect.height / 2
-      if (Math.abs(containerCenterY - mouseY) < CONFIG.EDGE.SNAP_RANGE * 2) {
-        return containerCenterY
-      }
-    }
-
-    return null
-  }
-
-  /**
-   * 计算最小距离
-   * @param {number} mouseY
-   * @param {HTMLElement[]} children
-   * @param container
-   * @returns {number}
-   */
-  const calculateMinDistance = (mouseY, children, container) => {
-    if (children.length === 0) return Infinity
-
-    const containerRect = container.getBoundingClientRect()
-    const scrollTop = container.scrollTop
-
-    return Math.min(...children.map(child => {
-      const childRect = child.getBoundingClientRect()
-      const topEdge = childRect.top - containerRect.top + scrollTop
-      const bottomEdge = childRect.bottom - containerRect.top + scrollTop
-
-      return Math.min(
-        Math.abs(mouseY - topEdge),
-        Math.abs(mouseY - bottomEdge)
-      )
-    }))
-  }
-
-  /**
-   * 处理容器指示器
-   * @param container
-   * @param mouseY
-   */
-  const handleContainerIndicator = (container, mouseY) => {
-    const paddingTop = parseStyleValue(
-      schema.value.canvas.style?.paddingTop || '15px'
-    )
-    const paddingBottom = parseStyleValue(
-      schema.value.canvas.style?.paddingBottom || '15px'
-    )
-
-    const isTop = mouseY < container.scrollHeight / 2
-    const position = isTop
-      ? paddingTop
-      : container.scrollHeight - paddingBottom
-
-    store.$patch({
-      indicator: {
-        ...indicator.value,
-        type: 'container',
         lastValidIndex: -1,
-        top: position,
-        left: 0,
         display: 'block',
         layoutDirection: null
       }
@@ -430,43 +215,94 @@ export default function useIndicator() {
 
   /**
    * 处理占位符指示器
-   * @param container
-   * @param {number} mouseY
-   * @param {HTMLElement[]} children
-   * @param [isNested]
+   * @param e {MouseEvent}
+   * @param container {HTMLElement} - 当前直接父容器（可能是画布容器或布局容器）
+   * @param containerRect {Object} - 布局容器的矩形信息
+   * @param {HTMLElement[]} children - 当前容器中的可见子元素
+   * @param [direction='vertical'] {string} - 当前容器的布局方向
    */
-  const handlePlaceholderIndicator = (container, mouseY, children, isNested = false) => {
-    // 处理嵌套容器的方向
-    const layoutDirection = isNested ?
-      getLayoutDirection(container.closest('.tg-editor-layout-container')) :
-      null
+  const handlePlaceholderIndicator = (e, container, containerRect, children, direction = 'vertical') => {
+    // 获取画布容器作为坐标基准
+    const canvasContainer = container.closest('.tg-editor-canvas-container')
+    const canvasRect = canvasContainer.getBoundingClientRect()
 
-    const midPoints = Geometry.calculateMidPoints(container, children, container.scrollTop)
-    const insertIndex = Geometry.determineInsertIndex(mouseY, midPoints)
+    // 计算容器相对画布的精确偏移量（包含滚动）
+    const containerCanvasRect = container.getBoundingClientRect()
+    const containerOffset = {
+      left: containerCanvasRect.left - canvasRect.left + canvasContainer.scrollLeft,
+      top: containerCanvasRect.top - canvasRect.top + canvasContainer.scrollTop
+    }
 
-    // 根据布局方向调整位置计算
-    let targetPos
-    let orientation
-    if (layoutDirection === 'vertical') {
-      const child = children[insertIndex]
-      targetPos = child ? child.offsetTop : 0
-      orientation = 'horizontal'
+    // 获取容器内边距
+    const containerStyle = window.getComputedStyle(container)
+    const padding = {
+      top: parseFloat(containerStyle.paddingTop),
+      right: parseFloat(containerStyle.paddingRight),
+      bottom: parseFloat(containerStyle.paddingBottom),
+      left: parseFloat(containerStyle.paddingLeft)
+    }
+
+    // 计算调整后的鼠标位置（基于当前容器坐标系）
+    const adjustedPosition = Geometry.getAdjustedPosition(e, container, containerRect, direction)
+    // 计算中间点并确定插入位置
+    const midPoints = Geometry.calculateCompMidPoints(containerRect, children, direction, container.scrollTop)
+    const insertIndex = Geometry.determineInsertIndex(adjustedPosition, midPoints)
+
+    // 根据布局方向计算指示线参数
+    let top = 0
+    let left = 0
+    let width = 0
+    let height = 0
+
+    if (direction === 'horizontal') {
+      // 水平布局：计算横向位置
+      const prevChild = children[insertIndex - 1]
+      const nextChild = children[insertIndex]
+
+      if (prevChild && nextChild) {
+        left = (prevChild.offsetLeft + prevChild.offsetWidth + nextChild.offsetLeft) / 2
+      } else if (nextChild) {
+        left = nextChild.offsetLeft - CONFIG.EDGE.OFFSET
+      } else if (prevChild) {
+        left = prevChild.offsetLeft + prevChild.offsetWidth + CONFIG.EDGE.OFFSET
+      } else {
+        left = CONFIG.EDGE.OFFSET
+      }
+
+      // 转换为画布坐标系
+      left += containerOffset.left
+      top += containerOffset.top + padding.top
+      width = '2px'
+      height = containerRect.height - padding.top - padding.bottom
     } else {
-      // 原有水平布局计算逻辑
-      targetPos = calculateComponentPosition(insertIndex, children, mouseY, midPoints)
-      orientation = 'vertical'
+      // 垂直布局：使用容器内相对坐标
+      top = Geometry.calculateComponentPosition(
+        insertIndex,
+        children,
+        adjustedPosition,
+        midPoints,
+        {
+          ...CONFIG,
+          direction
+        }
+      )
+
+      // 转换为画布绝对坐标（需包含容器偏移）
+      top += containerOffset.top
+      left = containerOffset.left + padding.left
+      width = containerRect.width - padding.left - padding.right
+      height = '2px'
     }
 
     store.$patch({
       indicator: {
-        ...indicator.value,
         type: 'placeholder',
-        lastValidIndex: insertIndex,
-        top: targetPos,
-        left: 0,
         display: 'block',
-        layoutDirection: orientation,
-        containerType: isNested ? 'layout' : 'canvas'
+        lastValidIndex: insertIndex,
+        top,
+        left,
+        width,
+        height
       }
     })
   }

@@ -65,7 +65,7 @@ export default {
       // 添加布局组件的嵌套支持
       if (componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT) {
         component.children = componentSchema.children?.map(childSchema =>
-          renderCanvasFromSchemas(childSchema)
+          renderCanvasFromSchemas(childSchema, componentSchema.id)
         ) ?? []
       }
 
@@ -118,7 +118,8 @@ export default {
             ]}
             style={{
               ...canvasStyle,
-              '--canvas-padding': canvasStyle?.padding || '15px'
+              '--canvas-padding': canvasStyle?.padding || '15px',
+              overflowY: store.indicator.type === 'container' ? 'hidden' : 'auto'
             }}
             onClick={handleCanvasClick}
             onDrop={e => dragHandlers.handleDrop(e, containerRef)}

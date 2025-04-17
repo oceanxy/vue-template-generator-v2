@@ -149,6 +149,7 @@
           $gap-width: 5px; // 虚线间隔
 
           display: none;
+          will-change: top, opacity;
           transition: top 0.07s ease-out, opacity 0.1s linear;
           position: absolute;
           z-index: 999;
@@ -157,14 +158,11 @@
               var(--tg-theme-color-primary),
               transparent
           );
-          height: 4px;
+          height: 2px;
           pointer-events: none;
 
           &[data-type='placeholder'] {
-            display: inherit;
-            height: 2px; // 保持原有高度
-            left: var(--canvas-padding) !important;
-            right: var(--canvas-padding) !important;
+            display: none;
             border-radius: 2px;
             pointer-events: none;
             background: repeating-linear-gradient(
@@ -173,8 +171,28 @@
                 transparent $dash-width ($dash-width + $gap-width)
             );
             background-size: ($dash-width + $gap-width) 100%; // 背景尺寸需要等于单周期长度
-            background-position-x: 0;
+            will-change: opacity;
+            transition: opacity 0.1s linear;
             animation: flowLine 5s linear infinite;
+
+            // 根据布局方向动态设置尺寸和背景方向
+            &[data-layout-direction='vertical'] {
+              width: 2px;
+              background: repeating-linear-gradient(
+                  90deg, // 水平方向渐变
+                  $indicator-color 0 $dash-width,
+                  transparent $dash-width ($dash-width + $gap-width)
+              );
+            }
+
+            &[data-layout-direction='horizontal'] {
+              height: 2px;
+              background: repeating-linear-gradient(
+                  180deg, // 垂直方向渐变
+                  $indicator-color 0 $dash-width,
+                  transparent $dash-width ($dash-width + $gap-width)
+              );
+            }
 
             // 定义流动动画
             @keyframes flowLine {
@@ -187,14 +205,8 @@
             }
           }
 
-          // 吸附时高亮样式
-          &[data-snap='true'] {
-            background: var(--tg-theme-color-primary);
-            animation: none !important;
-          }
-
           &[data-type='container'] {
-            display: inherit;
+            display: none;
             background: none;
             border: 2px dashed var(--tg-theme-color-primary);
             border-radius: 4px;
@@ -203,33 +215,20 @@
             overflow: hidden;
             transform: translateZ(0);
             animation: pulseContainer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            will-change: top, opacity;
+            transition: top 0.07s ease-out, opacity 0.1s linear;
+            transform-origin: center;
 
             // 布局组件的容器指示线
             &[data-container-type='layout'] {
+              display: none;
               z-index: 1000;
-
-              &[data-nested-level='1'] {
-                border-color: #ff7a45;
-
-                &::after {
-                  background: #ff7a45;
-                }
-              }
-
-              &[data-nested-level='2'] {
-                border-color: #73d13d;
-
-                &::after {
-                  background: #73d13d;
-                }
-              }
             }
 
             // 画布容器指示线
             &[data-container-type='canvas'] {
+              display: none;
               inset: var(--canvas-padding) !important; // 匹配容器padding
-              width: calc(100% - var(--canvas-padding) * 2); // 补偿左右padding
-              height: calc(100% - var(--canvas-padding) * 2); // 补偿上下padding
               border-width: 2px;
               z-index: 999;
             }
@@ -237,11 +236,9 @@
             @keyframes pulseContainer {
               0%, 100% {
                 opacity: 0.6;
-                transform: translateZ(0) scale(1);
               }
               50% {
                 opacity: 1;
-                transform: translateZ(0) scale(1.002); // 用微缩放代替尺寸变化
               }
             }
           }
