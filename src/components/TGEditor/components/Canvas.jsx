@@ -61,6 +61,9 @@ export default {
         previewType: 'canvas'
       }
 
+      component.style.width = component.style.width || '100%'
+      component.style.height = component.style.height || 'auto'
+
       const canvasCompCategoryClassName = `tg-editor-${componentSchema.category}-component`
 
       // 添加布局组件的嵌套支持
@@ -83,6 +86,9 @@ export default {
             'tg-editor-drag-component': true,
             'dragging': componentSchema.__dragging // 拖动状态样式
           }}
+          {...(componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT && {
+            style: component.style // 布局组件要应用容器样式到拖拽容器上
+          })}
           onClick={(e) => {
             e.stopPropagation()
             store.updateComponent({

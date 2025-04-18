@@ -3,7 +3,6 @@ import { Button, Input, InputNumber, Select } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY } from '../materials'
 import ProductCardMeta from '../materials/meta/ProductCard'
 import FlexLayoutMeta from '../materials/meta/FlexLayout'
-import GridLayoutMeta from '../materials/meta/GridLayout'
 import { cloneDeep } from 'lodash'
 import TGColorPicker from '@/components/TGColorPicker'
 import { schema } from '../schemas'
@@ -135,7 +134,7 @@ export const useEditorStore = defineStore('editor', {
       template: [
         ProductCardMeta
       ],
-      layout: [FlexLayoutMeta, GridLayoutMeta]
+      layout: [FlexLayoutMeta]
     }
   }),
   actions: {
