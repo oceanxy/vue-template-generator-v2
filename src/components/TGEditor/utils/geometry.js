@@ -154,18 +154,19 @@ export const Geometry = {
 
   /**
    * 深度优先搜索查找嵌套schema
-   * @param schemas
-   * @param [targetId]
-   * @returns {[]|*|null}
+   * @param schemas {TGComponentSchema[]} - schema
+   * @param [targetId] {string} - 要查找的schema的id
+   * @param [returnChildren=true] {boolean} - 返回查找到的schema还是其children
+   * @returns {TGComponentSchema[]|null}
    */
-  findNestedSchema(schemas, targetId) {
+  findNestedSchema(schemas, targetId, returnChildren = true) {
     if (targetId) {
       let i = 0
       for (const comp of schemas) {
-        if (comp.id === targetId) return comp?.children ?? []
+        if (comp.id === targetId) return returnChildren ? comp?.children ?? [] : comp
 
         if (comp.children?.length) {
-          const found = this.findNestedSchema(comp.children, targetId)
+          const found = this.findNestedSchema(comp.children, targetId, returnChildren)
           if (found) return found
         }
 
