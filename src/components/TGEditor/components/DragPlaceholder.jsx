@@ -1,4 +1,4 @@
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { styleWithUnits } from '@/components/TGEditor/utils/style'
 

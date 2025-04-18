@@ -3,7 +3,6 @@ import { Button, Input, InputNumber, Select } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY } from '../materials'
 import ProductCardMeta from '../materials/meta/ProductCard'
 import FlexLayoutMeta from '../materials/meta/FlexLayout'
-import GridLayoutMeta from '../materials/meta/GridLayout'
 import { cloneDeep } from 'lodash'
 import TGColorPicker from '@/components/TGColorPicker'
 import { schema } from '../schemas'
@@ -49,7 +48,7 @@ export const useEditorStore = defineStore('editor', {
     indicator: {
       containerType: 'canvas', // 'canvas' | 'layout'
       layoutDirection: 'vertical', // 'horizontal' | 'vertical'
-      nestedLevel: 0, // 新增嵌套层级
+      nestedLevel: 0, // 嵌套层级
       type: 'none', // 'none' | 'placeholder' | 'container'
       display: 'none', // 显示状态
       lastValidIndex: -1,
@@ -135,7 +134,7 @@ export const useEditorStore = defineStore('editor', {
       template: [
         ProductCardMeta
       ],
-      layout: [FlexLayoutMeta, GridLayoutMeta]
+      layout: [FlexLayoutMeta]
     }
   }),
   actions: {

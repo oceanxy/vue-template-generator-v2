@@ -1,4 +1,4 @@
-import { Flex, InputNumber, RadioGroup, Select, Switch } from 'ant-design-vue'
+import { Flex, Input, InputNumber, RadioGroup, Select, Switch } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
 import { omit, range } from 'lodash'
 import TGColorPicker from '@/components/TGColorPicker'
@@ -17,7 +17,11 @@ export default {
     vertical: false,
     wrap: 'nowrap',
     align: 'normal',
-    justify: 'normal'
+    justify: 'normal',
+    style: {
+      width: '',
+      height: ''
+    }
   },
   class: '',
   style: {
@@ -28,6 +32,22 @@ export default {
   children: [],
   configForm: {
     fields: [
+      {
+        type: 'string',
+        label: '宽度',
+        title: '容器宽度（支持百分比和像素单位）',
+        prop: 'width',
+        modelProp: 'value',
+        component: () => <Input placeholder={'自适应'} />
+      },
+      {
+        type: 'string',
+        label: '高度',
+        title: '容器高度（支持像素单位，默认自适应）',
+        prop: 'height',
+        modelProp: 'value',
+        component: () => <Input placeholder={'自适应'} />
+      },
       {
         type: 'select',
         title: '排列方向',
@@ -135,7 +155,6 @@ export function FlexLayoutPreview(props) {
       <Flex
         vertical
         class={'tg-editor-layout-container'}
-        style={restProps.style}
       >
         {
           <Flex

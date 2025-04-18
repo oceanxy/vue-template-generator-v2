@@ -6,6 +6,7 @@ import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
+import { Geometry } from '@/components/TGEditor/utils/geometry'
 
 /**
  * @global
@@ -60,6 +61,13 @@ export default {
         previewType: 'canvas'
       }
 
+      const isLayoutComp = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
+
+      if (isLayoutComp) {
+        component.style.width = component.style.width || '100%'
+        component.style.height = component.style.height || 'auto'
+      }
+
       const canvasCompCategoryClassName = `tg-editor-${componentSchema.category}-component`
 
       // 添加布局组件的嵌套支持
@@ -75,12 +83,17 @@ export default {
           data-id={componentSchema.id}
           data-parent-id={parentId}
           data-selected={selectedComponent.value?.id === componentSchema.id}
+          data-nested-level={Geometry.calculateNestedLevelById(componentSchema.id, componentSchemas.value)} // 新增此行
           draggable
           class={{
             [canvasCompCategoryClassName]: true,
             'tg-editor-drag-component': true,
             'dragging': componentSchema.__dragging // 拖动状态样式
           }}
+          {
+            // 布局组件要应用容器样式到拖拽容器上
+            ...(isLayoutComp && { style: component.style })
+          }
           onClick={(e) => {
             e.stopPropagation()
             store.updateComponent({

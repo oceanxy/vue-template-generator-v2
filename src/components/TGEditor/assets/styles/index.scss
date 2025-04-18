@@ -333,12 +333,16 @@
 
           .tg-editor-layout-container {
             position: relative; // 新增定位基准
+            width: 100%;
+            height: 100%;
 
             .tg-editor-drag-placeholder-within-layout {
               position: relative;
               padding: var(--canvas-padding);
               white-space: nowrap;
               overflow: hidden;
+              width: 100%;
+              height: 100%;
               text-overflow: ellipsis;
 
               &::before {

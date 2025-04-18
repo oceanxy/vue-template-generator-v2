@@ -37,30 +37,15 @@ export default function useIndicator() {
     if (!containerRef.value) return
 
     // 确定拖拽容器类型
-    const dropResult = Geometry.findDropContainer(e, componentSchemas.value) || {
+    const { dropContainer, isInsideLayoutContainer } = Geometry.findDropContainer(e, componentSchemas.value) || {
       isInsideLayoutContainer: false,
-      containerEl: containerRef.value,
-      parentSchema: componentSchemas.value
+      dropContainer: containerRef.value
     }
 
-    const containerType = dropResult.isInsideLayoutContainer ? 'layout' : 'canvas'
+    const containerType = isInsideLayoutContainer ? 'layout' : 'canvas'
     const layoutDirection = containerType === 'layout'
-      ? getLayoutDirection(dropResult.containerEl).direction
+      ? getLayoutDirection(dropContainer)
       : 'vertical'
-
-    // 查找最近的合法父容器
-    // 这里的父容器指子组件的直接父容器
-    // 布局组件中为 .tg-editor-drag-placeholder-within-layout
-    // 画布中为 .tg-editor-canvas-container
-    const currentParentContainer = (() => {
-      // 根据 containerType 选择布局容器
-      if (store.indicator.containerType === 'layout') {
-        return dropResult.containerEl.querySelector('.tg-editor-drag-placeholder-within-layout') ||
-          dropResult.containerEl
-      }
-
-      return dropResult.containerEl || containerRef.value
-    })()
 
     // 更新可以确定的指示线信息
     store.$patch({
@@ -68,28 +53,28 @@ export default function useIndicator() {
         type: 'none', // 现在还不能确定该属性，为了避免以前的值影响目前的状态显示，必须强制清空
         containerType,
         layoutDirection,
-        nestedLevel: Geometry.calculateNestedLevel(currentParentContainer)
+        nestedLevel: parseInt(Geometry.calculateNestedLevel(dropContainer))
       }
     })
 
     // 获取可见子元素
-    const children = Geometry.getValidChildren(currentParentContainer.children)
+    const children = Geometry.getValidChildren(dropContainer.children)
 
     // 空容器处理
-    if (children.length === 0) {
-      handleContainerIndicator(currentParentContainer, dropResult.isInsideLayoutContainer)
+    if (!children.length) {
+      handleContainerIndicator(dropContainer, isInsideLayoutContainer)
     } else {
       // 计算相对位置
-      const containerRect = currentParentContainer.getBoundingClientRect()
-      const scrollTop = currentParentContainer.scrollTop
+      const containerRect = dropContainer.getBoundingClientRect()
+      const scrollTop = dropContainer.scrollTop
       let mouseY = e.clientY - containerRect.top + scrollTop
 
       if (Geometry.isInsideAnyComponent(mouseY, children, containerRect, scrollTop)) {
         // 处理组件内部拖拽
-        handleComponentDrag(e, currentParentContainer, children, containerRect)
+        handleComponentDrag(e, dropContainer, children, containerRect)
       } else {
         // 处理容器拖拽
-        handleContainerDrag(e, currentParentContainer, children, containerRect, layoutDirection)
+        handleContainerDrag(e, dropContainer, children, containerRect, layoutDirection)
       }
     }
   }
@@ -104,15 +89,15 @@ export default function useIndicator() {
   const handleComponentDrag = (e, container, children, containerRect) => {
     // 检查是否是布局组件的布局容器内部
     if (indicator.value.containerType === 'layout') {
-      const { direction, deepestContainer } = getLayoutDirection(container)
-      children = Geometry.getValidChildren(deepestContainer.children)
+      const direction = getLayoutDirection(container)
+      children = Geometry.getValidChildren(container.children)
 
       // 处理布局组件中空的布局容器，直接显示容器指示线
       // if (!children?.length) {
       //   handleContainerIndicator(deepestContainer, true)
       // } else {
-      containerRect = deepestContainer.getBoundingClientRect()
-      handleContainerDrag(e, deepestContainer, children, containerRect, direction)
+      containerRect = container.getBoundingClientRect()
+      handleContainerDrag(e, container, children, containerRect, direction)
       // }
     } else {
       handlePlaceholderIndicator(e, container, containerRect, children)
@@ -149,19 +134,16 @@ export default function useIndicator() {
     }
   }
 
+  /**
+   * 获取布局组件当前布局容器的布局方向
+   * @param container {HTMLElement}
+   * @returns {'horizontal' | 'vertical'}
+   */
   function getLayoutDirection(container) {
-    // 对于多层嵌套的布局组件，需要确保始终获取当前最内层容器的方向
-    const nestedContainers = container?.querySelectorAll?.('.tg-editor-drag-placeholder-within-layout') || []
-    const deepestContainer = nestedContainers[nestedContainers.length - 1] || container
-    if (!deepestContainer) return 'vertical'
+    if (!container.classList.contains('tg-editor-drag-placeholder-within-layout')) return 'vertical'
 
-    const style = window.getComputedStyle(deepestContainer)
-    const direction = style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
-
-    return {
-      direction,
-      deepestContainer
-    }
+    const style = window.getComputedStyle(container)
+    return style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
   }
 
   /**
@@ -170,6 +152,12 @@ export default function useIndicator() {
    * @param isInsideLayoutContainer
    */
   const handleContainerIndicator = (container, isInsideLayoutContainer) => {
+    // 新增层级有效性检查
+    const currentLevel = container.closest('.tg-editor-layout-component')?.dataset.nestedLevel || 1
+    const draggingLevel = indicator.value?.nestedLevel || 1
+
+    if (currentLevel > draggingLevel) return // 不显示深层容器指示线
+
     // 使用offset相关属性
     let relativePosition
     const containerRect = container.getBoundingClientRect()
@@ -208,7 +196,7 @@ export default function useIndicator() {
         type: 'container',
         lastValidIndex: -1,
         display: 'block',
-        layoutDirection: null
+        layoutDirection: 'vertical'
       }
     })
   }
@@ -318,7 +306,7 @@ export default function useIndicator() {
         lastValidIndex: -1,
         top: 0,
         left: 0,
-        layoutDirection: null,
+        layoutDirection: 'vertical',
         containerType: 'canvas'
       }
     })

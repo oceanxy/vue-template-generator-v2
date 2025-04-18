@@ -94,31 +94,10 @@ export default function useDragDrop() {
     const { type, data } = JSON.parse(raw)
 
     // 获取有效的父级容器信息
-    const { parentSchema, containerEl } = Geometry.findDropContainer(e, componentSchemas.value) || {
+    const { dropContainer, parentSchema } = Geometry.findDropContainer(e, componentSchemas.value) || {
       parentSchema: componentSchemas.value, // 默认使用根schema
-      containerEl: containerRef.value
+      dropContainer: containerRef.value
     }
-
-    // 计算相对于容器的位置
-    const containerRect = containerEl.getBoundingClientRect()
-    const direction = indicator.value.layoutDirection
-    const mousePosition = direction === 'horizontal'
-      ? e.clientX - containerRect.left
-      : e.clientY - containerRect.top + containerEl.scrollTop
-
-    // 获取容器内可见子元素
-    const validChildren = containerEl.classList.contains('tg-editor-drag-component')
-      ? containerEl.querySelector('.tg-editor-drag-placeholder-within-layout').children
-      : containerEl.children
-    const children = Geometry.getValidChildren(validChildren)
-
-    // 计算中间点（基于实际容器）
-    const midPoints = Geometry.calculateCompMidPoints(
-      containerRect,
-      children,
-      indicator.value.layoutDirection,
-      containerEl.scrollTop
-    )
 
     // 确定插入位置（相对当前容器）
     let insertIndex
@@ -126,6 +105,21 @@ export default function useDragDrop() {
       // 当显示容器指示线时，强制插入到末尾
       insertIndex = parentSchema.length
     } else {
+      // 计算相对于容器的位置
+      const containerRect = dropContainer.getBoundingClientRect()
+      const direction = indicator.value.layoutDirection
+      const mousePosition = direction === 'horizontal'
+        ? e.clientX - containerRect.left
+        : e.clientY - containerRect.top + dropContainer.scrollTop
+      // 获取容器内可见子元素
+      const children = Geometry.getValidChildren(dropContainer.children)
+      // 计算中间点（基于实际容器）
+      const midPoints = Geometry.calculateCompMidPoints(
+        containerRect,
+        children,
+        indicator.value.layoutDirection,
+        dropContainer.scrollTop
+      )
       // 原有计算逻辑
       insertIndex = Math.max(
         0,

@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '../stores/useEditorStore'
 import { Empty } from 'ant-design-vue'
+import { Geometry } from '@/components/TGEditor/utils/geometry'
 
 export default {
   name: 'PropertyPanel',
@@ -9,19 +10,22 @@ export default {
     const store = useEditorStore()
     const schema = computed(() => store.schema)
     const selectedComponent = computed(() => store.selectedComponent)
+    const componentSchema = computed(() => {
+      return Geometry.findNestedSchema(schema.value.components, selectedComponent.value.id, false)
+    })
     const componentProps = computed(() => {
       if (!store.selectedComponent) return {}
 
       if (store.selectedComponent.type === 'canvas') {
         return schema.value.canvas
       } else {
-        const schemaProps = schema.value.components.find(c => c.id === selectedComponent.value.id)?.props ?? {}
+        const componentSchemaProps = componentSchema.value?.props ?? {}
         const defaultProps = selectedComponent.value?.defaultProps ?? {}
         const defaultStyle = {
           ...selectedComponent.value?.defaultProps.style,
           ...selectedComponent.value?.style
         }
-        const { style, ...restProps } = schemaProps
+        const { style, ...restProps } = componentSchemaProps
 
         return { ...defaultProps, ...restProps, style: { ...defaultStyle, ...style } }
       }
@@ -40,9 +44,7 @@ export default {
           // 更新画布属性
           store.schema.canvas = schema.value.canvas
         } else {
-          // 原有组件更新逻辑
-          const componentSchema = store.schema.components.find(c => c.id === store.selectedComponent?.id)
-          if (componentSchema) componentSchema.props = componentProps.value
+          componentSchema.value.props = componentProps.value
         }
       }, 200)
     }
