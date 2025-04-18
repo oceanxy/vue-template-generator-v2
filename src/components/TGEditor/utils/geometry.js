@@ -160,12 +160,19 @@ export const Geometry = {
    */
   findNestedSchema(schemas, targetId) {
     if (targetId) {
+      let i = 0
       for (const comp of schemas) {
         if (comp.id === targetId) return comp?.children ?? []
 
-        if (comp.children) {
+        if (comp.children?.length) {
           const found = this.findNestedSchema(comp.children, targetId)
           if (found) return found
+        }
+
+        if (i >= schemas.length - 1) {
+          return undefined
+        } else {
+          i++
         }
       }
     }

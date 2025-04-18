@@ -57,8 +57,6 @@ export default function useIndicator() {
       }
     })
 
-    console.log(Geometry.calculateNestedLevel(dropContainer))
-
     // 获取可见子元素
     const children = Geometry.getValidChildren(dropContainer.children)
 
