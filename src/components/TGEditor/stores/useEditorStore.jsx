@@ -49,7 +49,7 @@ export const useEditorStore = defineStore('editor', {
     indicator: {
       containerType: 'canvas', // 'canvas' | 'layout'
       layoutDirection: 'vertical', // 'horizontal' | 'vertical'
-      nestedLevel: 0, // 新增嵌套层级
+      nestedLevel: 0, // 嵌套层级
       type: 'none', // 'none' | 'placeholder' | 'container'
       display: 'none', // 显示状态
       lastValidIndex: -1,

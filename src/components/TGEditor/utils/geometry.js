@@ -78,19 +78,24 @@ export const Geometry = {
   },
 
   /**
-   * 查找最近的布局容器
+   * 查找最近的布局组件的布局容器（查找最近的合法父容器）
+   * 这里的父容器指子组件的直接父容器
+   * 布局组件中为 .tg-editor-drag-placeholder-within-layout
+   * 画布中为 .tg-editor-canvas-container
    * @param e
    * @param componentSchemas
-   * @returns {{isInsideLayoutContainer: boolean, containerEl: *, parentSchema: ([]|*|null)}|null}
+   * @returns {{
+   *  isInsideLayoutContainer: boolean,
+   *  dropContainer: HTMLElement,
+   *  parentSchema: ([]|*|null)
+   * } | null}
    */
   findDropContainer(e, componentSchemas) {
     // ========================== 注意此处有坑，浏览器兼容性问题 =============================
     // 在某些浏览器环境下（特别是使用Vue的合成事件系统时），`e.composedPath()`可能无法正确获取事件路径。
     let path = e.composedPath()
 
-    if (!path?.length) {
-      path = this.getEventPath(e)
-    }
+    if (!path?.length) path = this.getEventPath(e)
 
     /**
      * 判断释放鼠标时的位置是否处于布局组件的容器区域
@@ -103,23 +108,26 @@ export const Geometry = {
      * 布局组件存放子组件的容器区域：div.tg-editor-drag-placeholder-within-layout
      * @type {boolean}
      */
-    const isInsideLayoutContainer = path.some(el =>
-      el.classList?.contains('tg-editor-drag-placeholder-within-layout')
-    )
+    let isInsideLayoutContainer = true
+    let layoutCompId = undefined
 
     // 查找最近的布局组件（拖拽的组件将保存到该组件的children中）
     // 容器查找，主要为了区分鼠标是否处于布局组件的子组件容器区域内
-    const closestLayoutComponent = path.find(el => {
-      const isLayoutComponent = el.classList?.contains('tg-editor-layout-component')
-      return isLayoutComponent && isInsideLayoutContainer
-    }) || path.find(el => el.classList?.contains('tg-editor-canvas-container'))
+    let closestLayoutComponent = path.find(el => el.classList?.contains('tg-editor-drag-placeholder-within-layout'))
+
+    if (!closestLayoutComponent) {
+      isInsideLayoutContainer = false
+      closestLayoutComponent = path.find(el => el.classList?.contains('tg-editor-canvas-container'))
+    } else {
+      layoutCompId = closestLayoutComponent.closest('.tg-editor-layout-component').dataset.id
+    }
 
     if (!closestLayoutComponent) return null
 
     return {
       isInsideLayoutContainer,
-      containerEl: closestLayoutComponent,
-      parentSchema: this.findNestedSchema(componentSchemas, closestLayoutComponent.dataset.id)
+      dropContainer: closestLayoutComponent,
+      parentSchema: this.findNestedSchema(componentSchemas, layoutCompId)
     }
   },
 
@@ -166,10 +174,32 @@ export const Geometry = {
   },
 
   calculateNestedLevel(element) {
-    if (!element) return 0
+    return element?.closest('.tg-editor-layout-component')?.dataset?.nestedLevel || 0
+  },
 
-    return element.closest('.tg-editor-layout-component') ?
-      element.closest('.tg-editor-layout-component').querySelectorAll('.tg-editor-layout-component').length : 0
+  /**
+   * 计算组件的嵌套层级
+   * @param {string} componentId
+   * @param schemas
+   * @returns {number}
+   */
+  calculateNestedLevelById(componentId, schemas) {
+    let maxLevel = 0
+
+    const traverse = (items, currentLevel) => {
+      items.forEach(item => {
+        if (item.id === componentId) {
+          maxLevel = currentLevel
+          return
+        }
+        if (item.children) {
+          traverse(item.children, currentLevel + 1)
+        }
+      })
+    }
+
+    traverse(schemas, 1) // 根层级从1开始
+    return maxLevel
   },
 
   /**

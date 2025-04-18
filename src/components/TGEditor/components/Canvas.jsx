@@ -6,6 +6,7 @@ import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
+import { Geometry } from '@/components/TGEditor/utils/geometry'
 
 /**
  * @global
@@ -75,6 +76,7 @@ export default {
           data-id={componentSchema.id}
           data-parent-id={parentId}
           data-selected={selectedComponent.value?.id === componentSchema.id}
+          data-nested-level={Geometry.calculateNestedLevelById(componentSchema.id, componentSchemas.value)} // 新增此行
           draggable
           class={{
             [canvasCompCategoryClassName]: true,
