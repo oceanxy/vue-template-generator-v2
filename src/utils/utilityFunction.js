@@ -278,13 +278,12 @@ export const copyText = async (text) => {
 
     try {
       if (document.execCommand("copy")) {
-        message.success('复制成功。');
+        message.success('复制成功');
       } else {
-        message.error('复制失败。');
+        message.error('复制失败');
       }
     } catch (err) {
-      console.error("复制失败:", err);
-      message.error('复制失败。');
+      message.error('复制失败');
     } finally {
       document.body.removeChild(input);
     }
@@ -293,10 +292,9 @@ export const copyText = async (text) => {
 
   try {
     await navigator.clipboard.writeText(text);
-    message.success('复制成功。');
+    message.success('复制成功');
   } catch (err) {
-    console.error("复制失败:", err);
-    message.error('复制失败。');
+    message.error('复制失败');
   }
 };
 

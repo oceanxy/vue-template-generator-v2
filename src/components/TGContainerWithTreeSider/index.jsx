@@ -100,7 +100,14 @@ export default {
         title: 'name',
         key: 'id'
       })
-    }
+    },
+    /**
+     * 异步加载数据
+     */
+    loadData: {
+      type: Function,
+      default: undefined
+    },
   },
   setup(props, { slots }) {
     const initSearchParameters = inject('initSearchParameters')
@@ -418,6 +425,7 @@ export default {
                   expandedKeys={expandedKeys.value}
                   onExpand={onExpand}
                   treeData={_dataSource.value.length ? _dataSource.value : dataSource.value}
+                  loadData={props.loadData}
                   fieldNames={props.fieldNames}
                 >
                   {{
