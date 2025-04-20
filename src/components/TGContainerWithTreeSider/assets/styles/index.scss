@@ -32,7 +32,8 @@
 
   & > .tg-container-with-sider--sider.tg-container-with-tree-sider--sider {
     flex: none;
-    width: 220px;
+    // min-width: 220px;
+    width: 310px;
     background: var(--tg-theme-color-bg-container);
     border-radius: var(--tg-theme-border-radius);
 

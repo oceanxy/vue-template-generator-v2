@@ -11,7 +11,7 @@
     row-gap: 10px;
     column-gap: 10px;
     background: var(--tg-theme-color-bg-container);
-    padding: 12px 20px;
+    padding: 20px;
     overflow: auto;
     border-radius: var(--tg-theme-border-radius);
 
@@ -110,9 +110,9 @@
 
         .tg-inquiry-row-for-buttons {
           flex-wrap: nowrap;
-          margin-left: auto;
+          // margin-left: auto;
           padding: 0;
-          justify-content: flex-end;
+          // justify-content: flex-end;
         }
 
         & > .ant-form-item {
