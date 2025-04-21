@@ -134,7 +134,7 @@ export const Geometry = {
     return {
       isInsideLayoutContainer,
       dropContainer: closestLayoutComponent,
-      parentSchema: this.findNestedSchema(componentSchemas, layoutCompId)
+      parentSchema: this.findNestedSchema(componentSchemas, layoutCompId, 'children')
     }
   },
 
@@ -163,17 +163,31 @@ export const Geometry = {
    * 深度优先搜索查找嵌套schema
    * @param schemas {TGComponentSchema[]} - schema
    * @param [targetId] {string} - 要查找的schema的id
-   * @param [returnChildren=true] {boolean} - 返回查找到的schema还是其children
-   * @returns {TGComponentSchema[]|null}
+   * @param [returnType='self'] {'parent'|'self'|'children'} - 返回查找到的schema的类型。
+   * - 'parent'：返回父级schema；
+   * - 'self'：返回自身schema；
+   * - 'children'：返回子级schema。
+   * @param [parent=null] {TGComponentSchema | null} - 父级schema
+   * @returns {TGComponentSchema|TGComponentSchema[]|null}
    */
-  findNestedSchema(schemas, targetId, returnChildren = true) {
+  findNestedSchema(schemas, targetId, returnType = 'self', parent = null) {
     if (targetId) {
       let i = 0
       for (const comp of schemas) {
-        if (comp.id === targetId) return returnChildren ? comp?.children ?? [] : comp
+        if (comp.id === targetId) {
+          switch (returnType) {
+            case 'parent':
+              return parent?.children ?? null
+            case 'self':
+              return comp
+            case 'children':
+            default:
+              return comp.children
+          }
+        }
 
         if (comp.children?.length) {
-          const found = this.findNestedSchema(comp.children, targetId, returnChildren)
+          const found = this.findNestedSchema(comp.children, targetId, returnType, comp)
           if (found) return found
         }
 

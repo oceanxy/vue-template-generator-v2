@@ -4,6 +4,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '@/components/TGEditor/stores/useEditorStore'
 import useActionBar from '@/components/TGEditor/hooks/useActionBar'
+import { Geometry } from '@/components/TGEditor/utils/geometry'
 
 export default {
   name: 'ComponentsActionBar',
@@ -12,6 +13,7 @@ export default {
     const store = useEditorStore()
     const compActionBarRef = ref(null)
     const schema = computed(() => store.schema)
+    const componentSchemas = computed(() => store.schema.components)
     const selectedComponent = computed(() => store.selectedComponent)
     const actionBar = computed(() => store.actionBar)
     const { updatePosition } = useActionBar()
@@ -46,23 +48,30 @@ export default {
     )
 
     const handleAction = debounce((action) => {
-      const currentIndex = schema.value.components.findIndex(c => c.id === selectedComponent.value.id)
+      let targetSchema = Geometry.findNestedSchema(
+        componentSchemas.value,
+        selectedComponent.value.id,
+        'parent'
+      )
 
-      if (currentIndex === -1) return
+      if (!targetSchema) targetSchema = componentSchemas.value
+
+      const index = targetSchema.findIndex(c => c.id === selectedComponent.value.id)
+      if (index === -1) return
 
       let newComponentSchema = null
 
       if (action === 'copy') {
-        newComponentSchema = store.createComponentSchema(selectedComponent.value, schema.value.components[currentIndex])
+        newComponentSchema = store.createComponentSchema(selectedComponent.value, targetSchema[index])
       }
 
       switch (action) {
         case 'delete':
-          store.schema.components = schema.value.components.filter(c => c.id !== selectedComponent.value.id)
+          targetSchema.splice(index, 1)
           store.selectedComponent = null
           break
         case 'copy':
-          store.schema.components.splice(currentIndex + 1, 0, newComponentSchema)
+          targetSchema.splice(index + 1, 0, newComponentSchema)
           store.updateComponent({
             id: newComponentSchema.id,
             type: selectedComponent.value.type,
@@ -70,9 +79,8 @@ export default {
           })
           break
         case 'up':
-          if (currentIndex > 0) {
-            [store.schema.components[currentIndex], store.schema.components[currentIndex - 1]] =
-              [store.schema.components[currentIndex - 1], store.schema.components[currentIndex]]
+          if (index > 0) {
+            [targetSchema[index], targetSchema[index - 1]] = [targetSchema[index - 1], targetSchema[index]]
 
             store.updateComponent({
               id: selectedComponent.value.id,
@@ -82,9 +90,8 @@ export default {
           }
           break
         case 'down':
-          if (currentIndex < schema.value.components.length - 1) {
-            [store.schema.components[currentIndex], store.schema.components[currentIndex + 1]] =
-              [store.schema.components[currentIndex + 1], store.schema.components[currentIndex]]
+          if (index < schema.value.components.length - 1) {
+            [targetSchema[index], targetSchema[index + 1]] = [targetSchema[index + 1], targetSchema[index]]
 
             store.updateComponent({
               id: selectedComponent.value.id,

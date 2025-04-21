@@ -11,7 +11,7 @@ export default {
     const schema = computed(() => store.schema)
     const selectedComponent = computed(() => store.selectedComponent)
     const componentSchema = computed(() => {
-      return Geometry.findNestedSchema(schema.value.components, selectedComponent.value.id, false)
+      return Geometry.findNestedSchema(schema.value.components, selectedComponent.value.id, 'self')
     })
     const componentProps = computed(() => {
       if (!store.selectedComponent) return {}
