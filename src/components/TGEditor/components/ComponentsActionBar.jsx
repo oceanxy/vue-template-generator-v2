@@ -1,5 +1,5 @@
 import { Button } from 'ant-design-vue'
-import { CopyOutlined, DeleteOutlined, DownOutlined, UpOutlined } from '@ant-design/icons-vue'
+import { CopyOutlined, DeleteOutlined, DownOutlined, LeftOutlined, RightOutlined, UpOutlined } from '@ant-design/icons-vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '@/components/TGEditor/stores/useEditorStore'
@@ -9,7 +9,8 @@ import { Geometry } from '@/components/TGEditor/utils/geometry'
 export default {
   name: 'ComponentsActionBar',
   props: ['containerRef'],
-  setup(props, { emit }) {
+  setup(props) {
+    const layoutDirection = ref('vertical')
     const store = useEditorStore()
     const compActionBarRef = ref(null)
     const schema = computed(() => store.schema)
@@ -17,12 +18,24 @@ export default {
     const selectedComponent = computed(() => store.selectedComponent)
     const actionBar = computed(() => store.actionBar)
     const { updatePosition } = useActionBar()
-    const actions = [
-      { icon: <DeleteOutlined />, action: 'delete', title: '删除' },
-      { icon: <UpOutlined />, action: 'up', title: '上移' },
-      { icon: <DownOutlined />, action: 'down', title: '下移' },
-      { icon: <CopyOutlined />, action: 'copy', title: '复制' }
-    ]
+    const actions = computed(() => {
+      const isHorizontal = layoutDirection.value === 'horizontal'
+
+      return [
+        { icon: <DeleteOutlined />, action: 'delete', title: '删除' },
+        {
+          icon: isHorizontal ? <LeftOutlined /> : <UpOutlined />,
+          action: 'up',
+          title: isHorizontal ? '前移' : '上移'
+        },
+        {
+          icon: isHorizontal ? <RightOutlined /> : <DownOutlined />,
+          action: 'down',
+          title: isHorizontal ? '后移' : '下移'
+        },
+        { icon: <CopyOutlined />, action: 'copy', title: '复制' }
+      ]
+    })
 
     // 监听选中组件变化
     watch(selectedComponent, async (val) => {
@@ -35,6 +48,9 @@ export default {
         await nextTick()
         // 再执行位置计算，避免组件功能条位置计算错误
         await updatePosition(props.containerRef, compActionBarRef)
+
+        // 新增：更新布局方向
+        layoutDirection.value = Geometry.getLayoutDirectionById(val.id)
       }
     })
 
@@ -90,7 +106,7 @@ export default {
           }
           break
         case 'down':
-          if (index < schema.value.components.length - 1) {
+          if (index < targetSchema.length - 1) {
             [targetSchema[index], targetSchema[index + 1]] = [targetSchema[index + 1], targetSchema[index]]
 
             store.updateComponent({
@@ -116,7 +132,7 @@ export default {
         }}
       >
         {
-          actions.map(({ icon, action, title }) => (
+          actions.value.map(({ icon, action, title }) => (
             <Button
               shape="circle"
               size="small"

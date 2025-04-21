@@ -389,5 +389,22 @@ export const Geometry = {
       width: elementRect.width,
       height: elementRect.height
     }
+  },
+
+  /**
+   * 计算布局方向
+   * @param componentId
+   * @returns {string|string|string}
+   */
+  getLayoutDirectionById(componentId) {
+    const element = document.querySelector(`[data-id="${componentId}"]`)
+    // 查找最近的布局组件
+    const layoutComponent = element?.closest('.tg-editor-layout-component')
+
+    if (!element || !layoutComponent) return 'vertical'
+
+    const style = window.getComputedStyle(layoutComponent)
+
+    return style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
   }
 }
