@@ -330,7 +330,7 @@ export const Geometry = {
 
     // 计算实际阈值（增加方向感知）
     const dynamicThreshold = isHorizontal
-      ? Math.min(threshold, lastChildRect.width * 0.3) // 水平布局取宽度30%
+      ? lastChildRect.width // 水平布局取宽度30%
       : threshold
 
     // 返回边界检测结果
