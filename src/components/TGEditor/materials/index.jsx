@@ -24,7 +24,7 @@ export const TG_MATERIAL_CATEGORY = {
  */
 
 /**
- * 模板组件元数据定义
+ * 组件元数据定义
  * @global
  * @typedef TGComponentMeta
  * @property {string} [id] - 组件在 Schema 中的唯一标识

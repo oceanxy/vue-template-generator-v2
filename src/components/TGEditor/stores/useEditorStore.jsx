@@ -6,6 +6,7 @@ import FlexLayoutMeta from '../materials/meta/FlexLayout'
 import { cloneDeep } from 'lodash'
 import TGColorPicker from '@/components/TGColorPicker'
 import { schema } from '../schemas'
+import { getUUID } from '@/utils/utilityFunction'
 
 /**
  * @type TGComponentMeta[]
@@ -139,34 +140,50 @@ export const useEditorStore = defineStore('editor', {
   }),
   actions: {
     /**
-     * 创建组件schema
+     * 创建schema
      * @param componentMeta {TGComponentMeta} - 用来复制props的组件元数据
-     * @param [formSchema] {TGComponentSchema} - 用来复制props的schema
+     * @param parentId {string} - 父组件ID
      * @returns {TGComponentSchema}
      */
-    createComponentSchema(componentMeta, formSchema) {
-      let props = {}
-
-      if (formSchema) {
-        props = cloneDeep(formSchema.props)
-      }
-
+    createComponentSchema(componentMeta, parentId) {
       return {
-        id: `comp_${Date.now()}`,
+        id: `comp_${Date.now()}_${getUUID()}`,
+        parentId,
         type: componentMeta.type,
         category: componentMeta.category,
         props: {
           ...componentMeta.defaultProps,
-          ...props,
-          class: `${componentMeta.class}${props.class ? ` ${props.class}` : ''}`,
           style: {
             ...componentMeta.defaultProps.style,
-            ...componentMeta.style,
-            ...(formSchema?.props?.style || {})
+            ...componentMeta.style
           }
         },
         children: componentMeta.category === TG_MATERIAL_CATEGORY.LAYOUT ? [] : undefined
       }
+    },
+    /**
+     * 复制schema
+     * @param [fromSchema] {TGComponentSchema} - 用来复制props的schema
+     * @returns {TGComponentSchema}
+     */
+    copyLayoutComponentSchema(fromSchema) {
+      const newSchema = cloneDeep(fromSchema)
+      newSchema.id = `comp_${Date.now()}_${getUUID()}`
+
+      const copy = schema => {
+        if (schema.children?.length) {
+          for (const child of schema.children) {
+            child.id = `comp_${Date.now()}_${getUUID()}`
+            child.parentId = schema.id
+
+            copy(child, child.id)
+          }
+        }
+      }
+
+      copy(newSchema, newSchema.id)
+
+      return newSchema
     },
     /**
      * 更新选中的组件元数据

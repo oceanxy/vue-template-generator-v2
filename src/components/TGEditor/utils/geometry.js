@@ -87,7 +87,8 @@ export const Geometry = {
    * @returns {{
    *  isInsideLayoutContainer: boolean,
    *  dropContainer: HTMLElement,
-   *  parentSchema: ([]|*|null)
+   *  schema: ([]|*|null),
+   *  parentId: string
    * } | null}
    */
   findDropContainer(e, componentSchemas) {
@@ -131,10 +132,13 @@ export const Geometry = {
 
     if (!closestLayoutComponent) return null
 
+    const nestedSchema = this.findNestedSchema(componentSchemas, layoutCompId, 'children', componentSchemas)
+
     return {
       isInsideLayoutContainer,
       dropContainer: closestLayoutComponent,
-      parentSchema: this.findNestedSchema(componentSchemas, layoutCompId, 'children')
+      schema: nestedSchema.schema,
+      parentId: nestedSchema.parentId
     }
   },
 
@@ -161,28 +165,28 @@ export const Geometry = {
 
   /**
    * 深度优先搜索查找嵌套schema
-   * @param schemas {TGComponentSchema[]} - schema
+   * @param schema {TGComponentSchema[]} - schema
    * @param [targetId] {string} - 要查找的schema的id
    * @param [returnType='self'] {'parent'|'self'|'children'} - 返回查找到的schema的类型。
    * - 'parent'：返回父级schema；
    * - 'self'：返回自身schema；
    * - 'children'：返回子级schema。
    * @param [parent=null] {TGComponentSchema | null} - 父级schema
-   * @returns {TGComponentSchema|TGComponentSchema[]|null}
+   * @returns {{schema: TGComponentSchema|TGComponentSchema[]|null, parentId: string}
    */
-  findNestedSchema(schemas, targetId, returnType = 'self', parent = null) {
+  findNestedSchema(schema, targetId, returnType = 'self', parent = null) {
     if (targetId) {
       let i = 0
-      for (const comp of schemas) {
+      for (const comp of schema) {
         if (comp.id === targetId) {
           switch (returnType) {
             case 'parent':
-              return parent?.children ?? null
+              return { schema: parent?.children ?? null, parentId: parent?.id }
             case 'self':
-              return comp
+              return { schema: comp, parentId: parent?.id }
             case 'children':
             default:
-              return comp.children
+              return { schema: comp.children, parentId: comp.id }
           }
         }
 
@@ -191,7 +195,7 @@ export const Geometry = {
           if (found) return found
         }
 
-        if (i >= schemas.length - 1) {
+        if (i >= schema.length - 1) {
           return undefined
         } else {
           i++
@@ -199,7 +203,10 @@ export const Geometry = {
       }
     }
 
-    return schemas
+    return {
+      schema,
+      parentId: ''
+    }
   },
 
   calculateNestedLevel(element) {

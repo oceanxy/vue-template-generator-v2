@@ -52,7 +52,7 @@ export default {
         componentSchemas.value,
         selectedComponent.value.id,
         'parent'
-      )
+      ).schema
 
       if (!targetSchema) targetSchema = componentSchemas.value
 
@@ -62,7 +62,7 @@ export default {
       let newComponentSchema = null
 
       if (action === 'copy') {
-        newComponentSchema = store.createComponentSchema(selectedComponent.value, targetSchema[index])
+        newComponentSchema = store.copyLayoutComponentSchema(targetSchema[index])
       }
 
       switch (action) {

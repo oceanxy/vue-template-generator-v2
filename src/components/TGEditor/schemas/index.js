@@ -8,6 +8,7 @@
 /**
  * @typedef {Object} TGComponentSchema
  * @property {string} id - 组件唯一标识符
+ * @property {string} [parentId] - 父级组件ID，目前只有布局组件中的子组件需要用到
  * @property {string} type - 组件类型
  * @property {TG_MATERIAL_CATEGORY} category - 物料类型
  * @property {Object} props - 组件props

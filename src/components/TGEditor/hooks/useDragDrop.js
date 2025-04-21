@@ -94,16 +94,21 @@ export default function useDragDrop() {
     const { type, data } = JSON.parse(raw)
 
     // 获取有效的父级容器信息
-    const { dropContainer, parentSchema } = Geometry.findDropContainer(e, componentSchemas.value) || {
+    const {
+      dropContainer,
+      schema,
+      parentId
+    } = Geometry.findDropContainer(e, componentSchemas.value) || {
       parentSchema: componentSchemas.value, // 默认使用根schema
-      dropContainer: containerRef.value
+      dropContainer: containerRef.value,
+      parentId: null
     }
 
     // 确定插入位置（相对当前容器）
     let insertIndex
     if (store.indicator.type === 'container') {
       // 当显示容器指示线时，强制插入到末尾
-      insertIndex = parentSchema.length
+      insertIndex = schema.length
     } else {
       // 计算相对于容器的位置
       const containerRect = dropContainer.getBoundingClientRect()
@@ -125,7 +130,7 @@ export default function useDragDrop() {
         0,
         Math.min(
           Geometry.determineInsertIndex(mousePosition, midPoints),
-          parentSchema.length
+          schema.length
         )
       )
     }
@@ -134,8 +139,8 @@ export default function useDragDrop() {
     let componentSchema = null
 
     if (type === 'ADD') {
-      componentSchema = store.createComponentSchema(data)
-      parentSchema.splice(insertIndex, 0, componentSchema) // 插入到父级schema
+      componentSchema = store.createComponentSchema(data, parentId)
+      schema.splice(insertIndex, 0, componentSchema) // 插入到父级schema
     } else if (type === 'MOVE') {
       /**
        * 查找原始位置（支持跨容器移动）
@@ -160,11 +165,12 @@ export default function useDragDrop() {
 
       // 执行移动
       const [moved] = origin.parent.splice(origin.index, 1)
+      moved.parentId = parentId
 
       // 调整插入位置（当向前移动时补偿索引）
       let adjustedIndex = insertIndex
       // 仅当在同一个父容器内移动时才需要补偿
-      if (origin.parent === parentSchema) {
+      if (origin.parent === schema) {
         // 当拖动元素在插入位置之后时才需要补偿
         if (origin.index < adjustedIndex) {
           adjustedIndex = adjustedIndex--
@@ -172,9 +178,9 @@ export default function useDragDrop() {
       }
 
       // 双端约束防止越界
-      adjustedIndex = Math.max(0, Math.min(adjustedIndex, parentSchema.length))
+      adjustedIndex = Math.max(0, Math.min(adjustedIndex, schema.length))
 
-      parentSchema.splice(adjustedIndex, 0, moved)
+      schema.splice(adjustedIndex, 0, moved)
       componentSchema = moved
     }
 
