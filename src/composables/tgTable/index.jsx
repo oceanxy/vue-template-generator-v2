@@ -169,10 +169,10 @@ export default function useTGTable({
     scroll: { x: 'max-content' },
     tableLayout: 'fixed',
     size: commonStore.componentSize,
-    bordered: true,
-    rowClassName(record, index) {
-      return index % 2 === 1 ? 'tg-table-striped' : ''
-    },
+    bordered: false,
+    // rowClassName(record, index) {
+    //   return index % 2 === 1 ? 'tg-table-striped' : ''
+    // },
     onChange: handleChange
   })
 
