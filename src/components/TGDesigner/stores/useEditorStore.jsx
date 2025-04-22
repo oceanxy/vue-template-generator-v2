@@ -1,42 +1,54 @@
 import { defineStore } from 'pinia'
-import { Button, Input, InputNumber, Select } from 'ant-design-vue'
+import { Button, Input } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY } from '../materials'
 import ProductCardMeta from '../materials/meta/ProductCard'
 import FlexLayoutMeta from '../materials/meta/FlexLayout'
 import { cloneDeep } from 'lodash'
-import TGColorPicker from '@/components/TGColorPicker'
 import { schema } from '../schemas'
 import { getUUID } from '@/utils/utilityFunction'
+import getPropertyField from '@/components/TGDesigner/properties'
 
 /**
  * @type TGComponentMeta[]
  */
 const canvasConfigForm = {
   fields: [
-    {
-      type: 'number',
+    getPropertyField('input', {
       label: '宽度',
       title: '画布宽度（width）',
-      prop: 'width',
-      modelProp: 'value',
-      component: () => InputNumber
-    },
-    {
-      type: 'number',
+      prop: 'width'
+    }),
+    getPropertyField('input', {
+      label: '间距',
+      title: '间距大小（gap）',
+      prop: 'gap',
+      props: {
+        placeholder: '0px'
+      }
+    }),
+    getPropertyField('input', {
       label: '边距',
       title: '内边距（padding）',
       prop: 'padding',
-      modelProp: 'value',
-      component: () => InputNumber
-    },
-    {
-      type: 'color',
+      props: {
+        placeholder: '0px'
+      }
+    }),
+    getPropertyField('colorPicker', {
       label: '背景颜色',
       title: '画布背景颜色（backgroundColor）',
-      prop: 'backgroundColor',
-      modelProp: 'value',
-      component: () => TGColorPicker
-    }
+      prop: 'backgroundColor'
+    }),
+    getPropertyField('select', {
+      label: '水平对齐',
+      title: '水平对齐方式（align-items）',
+      prop: 'alignItems'
+    }),
+    getPropertyField('select', {
+      label: '垂直对齐',
+      title: '垂直对齐方式（justify-content）',
+      prop: 'justifyContent'
+    })
   ]
 }
 
@@ -81,21 +93,15 @@ export const useEditorStore = defineStore('editor', {
           class: '',
           configForm: {
             fields: [
-              {
-                type: 'input',
+              getPropertyField('input', {
                 title: '按钮文本',
                 label: '按钮文本',
-                prop: 'slot',
-                modelProp: 'value',
-                component: () => Input
-              },
-              {
-                type: 'select',
+                prop: 'slot'
+              }),
+              getPropertyField('select', {
                 title: '按钮类型',
                 label: '按钮类型',
                 prop: 'type',
-                modelProp: 'value',
-                component: () => Select,
                 props: {
                   options: [
                     { label: '主要按钮', value: 'primary' },
@@ -103,7 +109,7 @@ export const useEditorStore = defineStore('editor', {
                     { label: '虚线按钮', value: 'dashed' }
                   ]
                 }
-              }
+              })
             ]
           }
         },
@@ -111,23 +117,21 @@ export const useEditorStore = defineStore('editor', {
           type: 'a-input',
           category: TG_MATERIAL_CATEGORY.BASIC,
           icon: '',
-          preview: props => <Input {...props} />,
+          preview: props => <Input {...props} readonly={props.previewType !== 'preview'} />,
           defaultProps: {
-            placeholder: '请输入',
-            readOnly: true
+            placeholder: '请输入'
           },
-          style: {},
+          style: {
+            width: '100%'
+          },
           class: '',
           configForm: {
             fields: [
-              {
-                type: 'input',
+              getPropertyField('input', {
                 title: '文本框占位符',
                 label: '占位符',
-                prop: 'placeholder',
-                modelProp: 'value',
-                component: () => Input
-              }
+                prop: 'placeholder'
+              })
             ]
           }
         }

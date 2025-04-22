@@ -25,9 +25,12 @@ export const schema = {
   canvas: {
     class: '',
     style: {
-      width: 1200,
+      width: '100%',
       backgroundColor: '#ffffff',
-      padding: 15
+      padding: 15,
+      gap: 8,
+      alignItems: 'flex-start',
+      justifyContent: 'flex-start'
     }
   }
 }

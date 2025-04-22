@@ -57,21 +57,27 @@ export default {
       // 初始化组件props
       const component = {
         ...componentSchema.props,
+        class: componentDef.class,
         style: styleWithUnits(componentSchema.props?.style ?? {}),
         previewType: 'canvas'
       }
 
       const isLayoutComp = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
 
-      if (isLayoutComp) {
-        component.style.width = component.style.width || '100%'
-        component.style.height = component.style.height || 'auto'
-      }
-
-      const canvasCompCategoryClassName = `tg-editor-${componentSchema.category}-component`
+      const addExtraStyleToDragComp = isLayoutComp || componentSchema.type === 'a-input'
+      // 为布局组件的拖拽容器和指定组件的拖拽容器定义默认宽高
+      const dragCompStyle = addExtraStyleToDragComp ? {
+        style: omit({
+          ...component.style,
+          width: '100%',
+          height: 'auto',
+          flexDirection: componentSchema.props.vertical ? 'column' : 'row'
+        }, ['alignItems', 'justifyContent'])
+      } : {}
+      const canvasCompCategoryClassName = `tg-designer-${componentSchema.category}-component`
 
       // 添加布局组件的嵌套支持
-      if (componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT) {
+      if (isLayoutComp) {
         component.children = componentSchema.children?.map(childSchema =>
           renderCanvasFromSchemas(childSchema, componentSchema.id)
         ) ?? []
@@ -90,10 +96,7 @@ export default {
             'tg-designer-drag-component': true,
             'dragging': componentSchema.__dragging // 拖动状态样式
           }}
-          {
-            // 布局组件要应用容器样式到拖拽容器上
-            ...(isLayoutComp && { style: component.style })
-          }
+          {...dragCompStyle}
           onClick={(e) => {
             e.stopPropagation()
             store.updateComponent({

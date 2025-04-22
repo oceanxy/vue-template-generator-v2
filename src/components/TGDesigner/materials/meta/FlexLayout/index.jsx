@@ -1,5 +1,4 @@
-import { Flex, Input, InputNumber, RadioGroup, Select, Switch } from 'ant-design-vue'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
+import { Flex } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import { omit, range } from 'lodash'
 import getPropertyField from '@/components/TGDesigner/properties'
@@ -9,22 +8,21 @@ import getPropertyField from '@/components/TGDesigner/properties'
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-flex-layout',
+  type: 'tg-layout-flex',
   category: TG_MATERIAL_CATEGORY.LAYOUT,
   icon: '',
   preview: FlexLayoutPreview,
   defaultProps: {
-    gap: 'small',
+    gap: 8,
     vertical: false,
     wrap: 'nowrap',
-    align: 'normal',
-    justify: 'normal',
     style: {
-      width: '',
-      height: ''
+      width: '100%',
+      height: 'auto',
+      alignItems: 'stretch',
+      justifyContent: 'flex-start'
     }
   },
-  class: '',
   style: {
     padding: 8,
     backgroundColor: '#f0f2f5',
@@ -33,56 +31,38 @@ export default {
   children: [],
   configForm: {
     fields: [
-      {
-        type: 'string',
+      getPropertyField('input', {
         label: '宽度',
         title: '容器宽度（支持百分比和像素单位）',
         prop: 'width',
-        modelProp: 'value',
-        component: () => <Input placeholder={'自适应'} />
-      },
-      {
-        type: 'string',
+        props: {
+          placeholder: '自适应'
+        }
+      }),
+      getPropertyField('input', {
         label: '高度',
         title: '容器高度（支持像素单位，默认自适应）',
         prop: 'height',
-        modelProp: 'value',
-        component: () => <Input placeholder={'自适应'} />
-      },
-      {
-        type: 'select',
-        title: '排列方向',
-        label: '方向',
-        prop: 'vertical',
-        modelProp: 'checked',
-        component: () => Switch,
         props: {
-          checkedChildren: '垂直',
-          unCheckedChildren: '水平'
+          placeholder: '自适应'
         }
-      },
-      {
-        type: 'select',
-        title: '间距大小',
-        label: '间距',
-        prop: 'gap',
-        modelProp: 'value',
-        component: () => Select,
+      }),
+      getPropertyField('radioGroup', {
+        label: '方向',
+        title: '组件排列方向（flex-direction）',
+        prop: 'vertical',
         props: {
+          optionType: 'button',
           options: [
-            { label: '小', value: 'small' },
-            { label: '中', value: 'middle' },
-            { label: '大', value: 'large' }
+            { label: '水平排列', value: false },
+            { label: '垂直排列', value: true }
           ]
         }
-      },
-      {
-        type: 'radio',
-        title: '自动换行（wrap）',
+      }),
+      getPropertyField('radioGroup', {
         label: '自动换行',
+        title: '自动换行（wrap）',
         prop: 'wrap',
-        modelProp: 'value',
-        component: () => RadioGroup,
         props: {
           optionType: 'button',
           options: [
@@ -90,60 +70,38 @@ export default {
             { label: '自动换行', value: 'wrap' }
           ]
         }
-      },
-      {
-        type: 'select',
+      }),
+      getPropertyField('select', {
+        label: '交叉轴对齐',
         title: '交叉轴对齐方式（align-items）',
-        label: '水平对齐方式',
-        prop: 'align',
-        modelProp: 'value',
-        component: () => Select,
-        props: {
-          options: [
-            { label: '自动', value: 'normal' },
-            { label: '居中', value: 'center' },
-            { label: '左对齐', value: 'flex-start' },
-            { label: '右对齐', value: 'flex-end' },
-            { label: '填满', value: 'stretch' }
-          ]
-        }
-      },
-      {
-        type: 'select',
+        prop: 'alignItems'
+      }),
+      getPropertyField('select', {
+        label: '主轴对齐',
         title: '主轴对齐方式（justify-content）',
-        label: '垂直对齐方式',
-        prop: 'justify',
-        modelProp: 'value',
-        component: () => Select,
+        prop: 'justifyContent'
+      }),
+      getPropertyField('input', {
+        label: '间距',
+        title: '间距大小（gap）',
+        prop: 'gap',
         props: {
-          options: [
-            { label: '自动', value: 'normal' },
-            { label: '居中', value: 'center' },
-            { label: '顶部对齐', value: 'flex-start' },
-            { label: '底部对齐', value: 'flex-end' },
-            { label: '填满', value: 'stretch' },
-            { label: '均分', value: 'space-between' },
-            { label: '均分并居中', value: 'space-around' },
-            { label: '两端对齐', value: 'space-evenly' }
-          ]
+          placeholder: '0px'
         }
-      },
-      {
-        type: 'number',
+      }),
+      getPropertyField('input', {
         label: '边距',
         title: '内边距（padding）',
         prop: 'padding',
-        modelProp: 'value',
-        component: () => InputNumber
-      },
-      {
-        type: 'color',
+        props: {
+          placeholder: '0px'
+        }
+      }),
+      getPropertyField('colorPicker', {
         label: '背景颜色',
         title: '画布背景颜色（backgroundColor）',
-        prop: 'backgroundColor',
-        modelProp: 'value',
-        component: () => TGColorPicker
-      }
+        prop: 'backgroundColor'
+      })
     ]
   }
 }
@@ -157,7 +115,12 @@ export function FlexLayoutPreview(props) {
         {
           <Flex
             {...omit(restProps, 'style')}
-            class={'tg-editor-drag-placeholder-within-layout'}
+            {...{
+              style: {
+                justifyContent: restProps.style.justifyContent,
+                alignItems: restProps.style.alignItems
+              }
+            }}
             class={'tg-designer-drag-placeholder-within-layout'}
           >
             {children?.length ? children : ' '}

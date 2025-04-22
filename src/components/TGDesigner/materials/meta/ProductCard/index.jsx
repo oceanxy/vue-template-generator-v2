@@ -1,4 +1,4 @@
-import { Button, Input } from 'ant-design-vue'
+import { Button } from 'ant-design-vue'
 import { ShopOutlined } from '@ant-design/icons-vue'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import getPropertyField from '@/components/TGDesigner/properties'
@@ -23,22 +23,16 @@ export default {
   class: 'tg-designer-product-card',
   configForm: { // 右侧属性面板配置（必填）
     fields: [
-      {
-        type: 'input',
+      getPropertyField('input', {
         title: '标题',
         label: '标题',
-        prop: 'title',
-        modelProp: 'value',
-        component: () => Input // 对应的antd组件
-      },
-      {
-        type: 'color-picker',
+        prop: 'title'
+      }),
+      getPropertyField('colorPicker', {
         title: '背景色',
         label: '背景色',
-        prop: 'backgroundColor',
-        modelProp: 'value',
-        component: () => TGColorPicker
-      }
+        prop: 'backgroundColor'
+      })
     ]
   }
 }

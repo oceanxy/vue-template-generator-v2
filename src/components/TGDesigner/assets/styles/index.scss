@@ -104,7 +104,7 @@
 
     .tg-designer-canvas-layout {
       padding: 12px;
-      width: auto;
+      width: 100%;
       max-width: 100%;
       height: 100%;
       overflow: auto;
@@ -265,8 +265,9 @@
           }
         }
 
-        .tg-editor-drag-component {
         .tg-designer-drag-component {
+          display: flex;
+          flex-direction: column;
           position: relative;
           transition: all 0.2s;
           transform: translateZ(0); // 强制开启GPU加速
@@ -332,8 +333,9 @@
             z-index: 999;
           }
 
-          .tg-editor-layout-container {
           &.tg-designer-layout-component {
+            width: 100%;
+            height: auto;
           }
 
           .tg-designer-layout-container {

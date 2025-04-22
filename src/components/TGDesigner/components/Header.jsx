@@ -2,9 +2,9 @@ import { Button, message } from 'ant-design-vue'
 import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import { computed, onUnmounted, toRaw, watch, watchEffect } from 'vue'
-import { useEditorStore } from '@/components/TGEditor/stores/useEditorStore'
-import { RedoOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons-vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
+import { EyeOutlined, RedoOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons-vue'
+import router from '@/router'
 
 export default {
   name: 'TGDesignerHeader',
@@ -52,6 +52,14 @@ export default {
       // todo 向服务端保存
     }
 
+    const handlePreview = async () => {
+      // 预览之前保存
+      await SchemaService.save('default', toRaw(schema.value))
+
+      const page = router.resolve({ name: 'Preview' })
+      window.open(page.href, '_blank')
+    }
+
     return () => (
       <div class={'tg-designer-tools'}>
         <Button
@@ -67,6 +75,11 @@ export default {
         <Button
           icon={<UndoOutlined />}
           title={'撤销'}
+        />
+        <Button
+          onClick={handlePreview}
+          icon={<EyeOutlined />}
+          title={'预览'}
         />
         {
           isSaving.value && (
