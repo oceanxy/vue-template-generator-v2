@@ -1,12 +1,13 @@
 import { Button, message } from 'ant-design-vue'
 import { debounce } from 'lodash'
-import { SchemaService } from '@/components/TGEditor/schemas/persistence'
+import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import { computed, onUnmounted, toRaw, watch, watchEffect } from 'vue'
 import { useEditorStore } from '@/components/TGEditor/stores/useEditorStore'
 import { RedoOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons-vue'
+import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 
 export default {
-  name: 'TGEditorHeader',
+  name: 'TGDesignerHeader',
   setup() {
     const store = useEditorStore()
     const isSaving = computed(() => store.isSaving)
@@ -52,7 +53,7 @@ export default {
     }
 
     return () => (
-      <div class={'tg-editor-tools'}>
+      <div class={'tg-designer-tools'}>
         <Button
           onClick={handleSchemaSave}
           data-saving={isSaving.value ? 'true' : null}

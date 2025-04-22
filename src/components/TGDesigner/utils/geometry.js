@@ -80,8 +80,8 @@ export const Geometry = {
   /**
    * 查找最近的布局组件的布局容器（查找最近的合法父容器）
    * 这里的父容器指子组件的直接父容器
-   * 布局组件中为 .tg-editor-drag-placeholder-within-layout
-   * 画布中为 .tg-editor-canvas-container
+   * 布局组件中为 .tg-designer-drag-placeholder-within-layout
+   * 画布中为 .tg-designer-canvas-container
    * @param e
    * @param componentSchemas
    * @returns {{
@@ -104,30 +104,30 @@ export const Geometry = {
      * 2. 当鼠标处于任一基础组件、模板组件、布局组件的非容器区域时，将插入到上级容器中；
      * 3. 当鼠标处于布局组件内部存放子组件的容器区域时，将插入到布局组件中。
      *
-     * 画布中组件的拖拽容器，预览时无此容器：div.tg-editor-drag-component
-     * 布局组件根元素：div.tg-editor-layout-container
-     * 布局组件存放子组件的容器区域：div.tg-editor-drag-placeholder-within-layout
+     * 画布中组件的拖拽容器，预览时无此容器：div.tg-designer-drag-component
+     * 布局组件根元素：div.tg-designer-layout-container
+     * 布局组件存放子组件的容器区域：div.tg-designer-drag-placeholder-within-layout
      * @type {boolean}
      */
     let isInsideLayoutContainer = true
     let layoutCompId = undefined
 
     const draggingElement = path.find(el => el.classList?.contains('dragging'))
-    const isDraggingLayout = draggingElement?.classList?.contains('tg-editor-layout-component')
+    const isDraggingLayout = draggingElement?.classList?.contains('tg-designer-layout-component')
 
     // 查找最近的布局组件（拖拽的组件将保存到该组件的children中）
     // 容器查找，主要为了区分鼠标是否处于布局组件的子组件容器区域内
     let closestLayoutComponent = path.find(el => {
       // 排除被拖拽布局组件自身及其子容器
       if (isDraggingLayout && draggingElement.contains(el)) return false
-      return el.classList?.contains('tg-editor-drag-placeholder-within-layout')
+      return el.classList?.contains('tg-designer-drag-placeholder-within-layout')
     })
 
     if (!closestLayoutComponent) {
       isInsideLayoutContainer = false
-      closestLayoutComponent = path.find(el => el.classList?.contains('tg-editor-canvas-container'))
+      closestLayoutComponent = path.find(el => el.classList?.contains('tg-designer-canvas-container'))
     } else {
-      layoutCompId = closestLayoutComponent.closest('.tg-editor-layout-component').dataset.id
+      layoutCompId = closestLayoutComponent.closest('.tg-designer-layout-component').dataset.id
     }
 
     if (!closestLayoutComponent) return null
@@ -210,7 +210,7 @@ export const Geometry = {
   },
 
   calculateNestedLevel(element) {
-    return element?.closest('.tg-editor-layout-component')?.dataset?.nestedLevel || 0
+    return element?.closest('.tg-designer-layout-component')?.dataset?.nestedLevel || 0
   },
 
   /**
@@ -366,7 +366,7 @@ export const Geometry = {
 
   getValidChildren(children) {
     return Array.from(children)
-      .filter(el => el.classList.contains('tg-editor-drag-component'))
+      .filter(el => el.classList.contains('tg-designer-drag-component'))
       // 排除正在拖动的元素
       .filter(el => !el.classList.contains('dragging'))
   },
@@ -399,7 +399,7 @@ export const Geometry = {
   getLayoutDirectionById(componentId) {
     const element = document.querySelector(`[data-id="${componentId}"]`)
     // 查找最近的布局组件
-    const layoutComponent = element?.closest('.tg-editor-layout-component')
+    const layoutComponent = element?.closest('.tg-designer-layout-component')
 
     if (!element || !layoutComponent) return 'vertical'
 

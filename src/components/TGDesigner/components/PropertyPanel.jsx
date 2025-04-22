@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '../stores/useEditorStore'
 import { Empty } from 'ant-design-vue'
-import { Geometry } from '@/components/TGEditor/utils/geometry'
+import { Geometry } from '@/components/TGDesigner/utils/geometry'
 
 export default {
   name: 'PropertyPanel',
@@ -52,14 +52,14 @@ export default {
     return () => {
       if (!selectedComponent.value?.configForm?.fields) {
         return (
-          <div class="tg-editor-property-container">
+          <div class="tg-designer-property-container">
             <Empty description="未选中任何组件" image={Empty.PRESENTED_IMAGE_SIMPLE} />
           </div>
         )
       }
 
       return (
-        <div class="tg-editor-property-container">
+        <div class="tg-designer-property-container">
           {
             selectedComponent.value?.configForm?.fields.map(field => {
               const CanvasProperty = field.component()
@@ -73,7 +73,7 @@ export default {
               }
 
               return (
-                <div key={field.prop} class="tg-editor-form-item">
+                <div key={field.prop} class="tg-designer-form-item">
                   <label title={field.title}>{field.label}</label>
                   <CanvasProperty
                     {...propertyProps}

@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import { useEditorStore } from '@/components/TGEditor/stores/useEditorStore'
+import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 
 /**
  * 操作栏定位逻辑 Hook

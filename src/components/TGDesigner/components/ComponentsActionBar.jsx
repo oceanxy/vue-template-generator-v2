@@ -2,9 +2,9 @@ import { Button } from 'ant-design-vue'
 import { CopyOutlined, DeleteOutlined, DownOutlined, LeftOutlined, RightOutlined, UpOutlined } from '@ant-design/icons-vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { debounce } from 'lodash'
-import { useEditorStore } from '@/components/TGEditor/stores/useEditorStore'
-import useActionBar from '@/components/TGEditor/hooks/useActionBar'
-import { Geometry } from '@/components/TGEditor/utils/geometry'
+import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
+import useActionBar from '@/components/TGDesigner/hooks/useActionBar'
+import { Geometry } from '@/components/TGDesigner/utils/geometry'
 
 export default {
   name: 'ComponentsActionBar',
@@ -124,7 +124,7 @@ export default {
     return () => (
       <div
         ref={compActionBarRef}
-        class="tg-editor-component-actions-bar"
+        class="tg-designer-component-actions-bar"
         style={{
           display: actionBar.value.visible ? 'flex' : 'none',
           left: `${actionBar.value.position.x}px`,

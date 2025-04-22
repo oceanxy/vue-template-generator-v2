@@ -1,10 +1,10 @@
-import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import { useEditorStore } from '../stores/useEditorStore'
-import useDragDrop from '@/components/TGEditor/hooks/useDragDrop'
-import { styleWithUnits } from '@/components/TGEditor/utils/style'
+import useDragDrop from '@/components/TGDesigner/hooks/useDragDrop'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 
 export default {
-  name: 'TGEditorMaterialPanel',
+  name: 'TGDesignerMaterialPanel',
   setup() {
     const store = useEditorStore()
     const { handleDragStart } = useDragDrop()
@@ -28,23 +28,23 @@ export default {
 
     return () => {
       return (
-        <div class={'tg-editor-material-container'}>
+        <div class={'tg-designer-material-container'}>
           {
             materials.map(material => (
               <div
                 key={material.category}
                 class={{
-                  'tg-editor-material-category': true,
+                  'tg-designer-material-category': true,
                   [material.category]: true
                 }}
               >
-                <h4 class="tg-editor-material-title">{material.title}</h4>
+                <h4 class="tg-designer-material-title">{material.title}</h4>
                 {
                   material.components?.length
                     ? material.components.map(comp => (
                       <div
                         key={comp.type}
-                        class={'tg-editor-material-items'}
+                        class={'tg-designer-material-items'}
                         draggable
                         onDragstart={(e) => handleDragStart(e, comp)}
                       >

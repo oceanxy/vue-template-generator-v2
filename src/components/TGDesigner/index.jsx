@@ -6,11 +6,11 @@ import { Layout } from 'ant-design-vue'
 import Header from './components/Header'
 
 export default {
-  name: 'TGEditor',
+  name: 'TGDesigner',
   setup() {
     return () => (
-      <Layout class={'tg-editor-container'}>
-        <Layout class={'tg-editor-header'}>
+      <Layout class={'tg-designer-container'}>
+        <Layout class={'tg-designer-header'}>
           <Header />
         </Layout>
 
@@ -18,19 +18,19 @@ export default {
           <Layout.Sider
             width={200}
             theme="light"
-            class={'tg-editor-material-wrapper'}
+            class={'tg-designer-material-wrapper'}
           >
             <MaterialPanel />
           </Layout.Sider>
 
-          <Layout.Content class={'tg-editor-canvas-wrapper'}>
+          <Layout.Content class={'tg-designer-canvas-wrapper'}>
             <Canvas />
           </Layout.Content>
 
           <Layout.Sider
             width={200}
             theme="light"
-            class={'tg-editor-property-wrapper'}
+            class={'tg-designer-property-wrapper'}
           >
             <PropertyPanel />
           </Layout.Sider>

@@ -5,8 +5,8 @@ import { styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
-import { Geometry } from '@/components/TGEditor/utils/geometry'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { Geometry } from '@/components/TGDesigner/utils/geometry'
 
 /**
  * @global
@@ -87,7 +87,7 @@ export default {
           draggable
           class={{
             [canvasCompCategoryClassName]: true,
-            'tg-editor-drag-component': true,
+            'tg-designer-drag-component': true,
             'dragging': componentSchema.__dragging // 拖动状态样式
           }}
           {
@@ -120,13 +120,13 @@ export default {
       const canvasStyle = styleWithUnits(schema.value.canvas.style)
 
       return (
-        <div class={'tg-editor-canvas-layout'}>
+        <div class={'tg-designer-canvas-layout'}>
           <div
             ref={containerRef}
             {...omit(schema.value.canvas, ['class', 'style'])}
             data-selected={selectedComponent.value?.type === 'canvas'}
             class={[
-              'tg-editor-canvas-container',
+              'tg-designer-canvas-container',
               { [schema.value.canvas.class]: true }
             ]}
             style={{

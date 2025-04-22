@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import useIndicator from '../hooks/useIndicator'
-import { Geometry } from '@/components/TGEditor/utils/geometry'
+import { Geometry } from '@/components/TGDesigner/utils/geometry'
 
 /**
  * 拖拽处理逻辑 Hook
@@ -57,7 +57,7 @@ export default function useDragDrop() {
 
     setTimeout(() => {
       // 清理所有拖拽状态
-      document.querySelectorAll('.tg-editor-canvas-container .dragging').forEach(el => {
+      document.querySelectorAll('.tg-designer-canvas-container .dragging').forEach(el => {
         el.classList.remove('dragging')
       })
     }, 50)

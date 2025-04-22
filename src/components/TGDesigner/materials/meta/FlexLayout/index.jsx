@@ -1,7 +1,8 @@
 import { Flex, Input, InputNumber, RadioGroup, Select, Switch } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import { omit, range } from 'lodash'
-import TGColorPicker from '@/components/TGColorPicker'
+import getPropertyField from '@/components/TGDesigner/properties'
 
 /**
  * 组件元数据
@@ -152,14 +153,12 @@ export function FlexLayoutPreview(props) {
 
   if (previewType === 'canvas') {
     return (
-      <Flex
-        vertical
-        class={'tg-editor-layout-container'}
-      >
+      <Flex vertical class={'tg-designer-layout-container'}>
         {
           <Flex
             {...omit(restProps, 'style')}
             class={'tg-editor-drag-placeholder-within-layout'}
+            class={'tg-designer-drag-placeholder-within-layout'}
           >
             {children?.length ? children : ' '}
           </Flex>

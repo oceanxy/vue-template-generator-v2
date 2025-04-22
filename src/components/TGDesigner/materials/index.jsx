@@ -1,29 +1,4 @@
 /**
- * 物料类型枚举
- * @readonly
- * @enum {string}
- * @property {string} template - 模板组件
- * @property {string} base - 基础组件
- * @property {string} layout - 布局组件
- */
-export const TG_MATERIAL_CATEGORY = {
-  TEMPLATE: 'template',
-  BASIC: 'basic',
-  LAYOUT: 'layout'
-}
-
-/**
- * @global
- * @typedef TGPropertyField
- * @property {string} type - 属性类型标识
- * @property {string} label - CSS属性名
- * @property {string} title - 鼠标移上显示的完整信息
- * @property {string} prop - 属性标识，指示当前属性控件应该对应组件元数据props中的哪个字段
- * @property {string} [modelProp] - 属性控件用于接收值的prop
- * @property {any} [component] - 操作属性的组件
- */
-
-/**
  * 组件元数据定义
  * @global
  * @typedef TGComponentMeta

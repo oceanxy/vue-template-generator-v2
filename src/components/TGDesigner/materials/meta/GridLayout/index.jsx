@@ -1,7 +1,7 @@
 import { Col, Flex, InputNumber, Row } from 'ant-design-vue'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import { range } from 'lodash'
-import { styleWithUnits } from '@/components/TGEditor/utils/style'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 
 /**
  * 组件元数据
@@ -105,7 +105,7 @@ export function GridLayoutPreview(props) {
       align="center"
       gap={props.gutterY}
       style={styleWithUnits(props.style)}
-      class={'tg-editor-layout-container'}
+      class={'tg-designer-layout-container'}
     >
       {
         range(0, rowCount, 1).map(() => (
@@ -115,7 +115,7 @@ export function GridLayoutPreview(props) {
                 <Col span={24 / columnCount}>
                   {
                     isInCanvas
-                      ? <div style={colStyle} class={'tg-editor-drag-placeholder-within-layout'} />
+                      ? <div style={colStyle} class={'tg-designer-drag-placeholder-within-layout'} />
                       : <div style={{ background: '#d5d5d5', minHeight: '20px' }} />
                   }
                 </Col>

@@ -140,7 +140,7 @@ export default function useIndicator() {
    * @returns {'horizontal' | 'vertical'}
    */
   function getLayoutDirection(container) {
-    if (!container.classList.contains('tg-editor-drag-placeholder-within-layout')) return 'vertical'
+    if (!container.classList.contains('tg-designer-drag-placeholder-within-layout')) return 'vertical'
 
     const style = window.getComputedStyle(container)
     return style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
@@ -153,7 +153,7 @@ export default function useIndicator() {
    */
   const handleContainerIndicator = (container, isInsideLayoutContainer) => {
     // 新增层级有效性检查
-    const currentLevel = container.closest('.tg-editor-layout-component')?.dataset.nestedLevel || 1
+    const currentLevel = container.closest('.tg-designer-layout-component')?.dataset.nestedLevel || 1
     const draggingLevel = indicator.value?.nestedLevel || 1
 
     if (currentLevel > draggingLevel) return // 不显示深层容器指示线
@@ -163,7 +163,7 @@ export default function useIndicator() {
     const containerRect = container.getBoundingClientRect()
 
     if (isInsideLayoutContainer) {
-      const canvasContainer = container.closest('.tg-editor-canvas-container')
+      const canvasContainer = container.closest('.tg-designer-canvas-container')
       const canvasRect = canvasContainer.getBoundingClientRect()
 
       relativePosition = {
@@ -211,7 +211,7 @@ export default function useIndicator() {
    */
   const handlePlaceholderIndicator = (e, container, containerRect, children, direction = 'vertical') => {
     // 获取画布容器作为坐标基准
-    const canvasContainer = container.closest('.tg-editor-canvas-container')
+    const canvasContainer = container.closest('.tg-designer-canvas-container')
     const canvasRect = canvasContainer.getBoundingClientRect()
 
     // 计算容器相对画布的精确偏移量（包含滚动）

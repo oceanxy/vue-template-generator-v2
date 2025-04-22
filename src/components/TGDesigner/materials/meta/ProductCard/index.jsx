@@ -1,7 +1,7 @@
 import { Button, Input } from 'ant-design-vue'
 import { ShopOutlined } from '@ant-design/icons-vue'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGEditor/materials'
-import TGColorPicker from '@/components/TGColorPicker'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import getPropertyField from '@/components/TGDesigner/properties'
 
 /**
  * 组件元数据
@@ -20,7 +20,7 @@ export default {
     // padding: '12px'
     backgroundColor: '#ffffff'
   },
-  class: 'tg-editor-product-card',
+  class: 'tg-designer-product-card',
   configForm: { // 右侧属性面板配置（必填）
     fields: [
       {
@@ -50,9 +50,9 @@ export const ProductCardPreview = {
     return () => (
       <div
         class={{
-          'tg-editor-template-container': true,
+          'tg-designer-template-container': true,
           [props.class]: true
-      }}
+        }}
         style={{
           border: '1px solid #ddd',
           borderRadius: '4px',

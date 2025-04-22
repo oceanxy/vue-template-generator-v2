@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
-import { styleWithUnits } from '@/components/TGEditor/utils/style'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 
 export default {
   name: 'DragPlaceholder',
@@ -17,7 +17,7 @@ export default {
 
     return () => (
       <div
-        class="tg-editor-drag-placeholder"
+        class="tg-designer-drag-placeholder"
         style={style.value}
         data-nested-level={indicator.value.nestedLevel}
         data-type={indicator.value.type}
