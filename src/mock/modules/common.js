@@ -125,5 +125,11 @@ export default {
     code: 10000,
     message: '',
     data: {}
-  }
+  },
+  '/example/commonMockUrl': {
+    status: true,
+    code: 10000,
+    message: '',
+    data: {}
+  },
 }
