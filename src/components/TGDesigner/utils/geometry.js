@@ -241,12 +241,12 @@ export const Geometry = {
    * 计算组件间插入位置
    * @param {number} insertIndex
    * @param {HTMLElement[]} children
-   * @param mouseY
+   * @param mousePosition {number} - 当前鼠标位置（相对于当前容器）
    * @param {number[]} midPoints
    * @param config
    * @returns {number}
    */
-  calculateComponentPosition(insertIndex, children, mouseY, midPoints, config) {
+  calculateComponentPosition(insertIndex, children, mousePosition, midPoints, config) {
     if (config.direction === 'horizontal') {
       if (insertIndex === 0) {
         return Math.max(config.EDGE.OFFSET, children[0].offsetLeft - config.EDGE.OFFSET)
@@ -260,11 +260,17 @@ export const Geometry = {
 
       const prevChild = children[insertIndex - 1]
       const nextChild = children[insertIndex]
+      const finalPosition = (prevChild.offsetLeft + prevChild.offsetWidth + nextChild.offsetLeft) / 2
+      const gap = config.gap / 2
 
-      return (prevChild.offsetLeft + prevChild.offsetWidth + nextChild.offsetLeft) / 2
+      // 防止拖拽时，鼠标处于正在被拖拽的组件附近时，指示线的位置与正在被拖拽的组件重叠
+      // 具体表现为指示线处于正在被拖拽的组件的中点位置
+      return mousePosition >= finalPosition
+        ? nextChild.offsetLeft - gap
+        : prevChild.offsetLeft + prevChild.offsetWidth + gap
     } else {
       // 顶部边界处理
-      if (insertIndex === 0 && midPoints.length > 0 && mouseY < midPoints[0] - config.THRESHOLD.CONTAINER) {
+      if (insertIndex === 0 && midPoints.length > 0 && mousePosition < midPoints[0] - config.THRESHOLD.CONTAINER) {
         return children[0].offsetTop - config.EDGE.OFFSET
       }
 
@@ -280,8 +286,14 @@ export const Geometry = {
 
       const prevChild = children[insertIndex - 1]
       const nextChild = children[insertIndex]
+      const finalPosition = (prevChild.offsetTop + prevChild.offsetHeight + nextChild.offsetTop) / 2
+      const gap = config.gap / 2
 
-      return (prevChild.offsetTop + prevChild.offsetHeight + nextChild.offsetTop) / 2
+      // 防止拖拽时，鼠标处于正在被拖拽的组件附近时，指示线的位置与正在被拖拽的组件重叠
+      // 具体表现为指示线处于正在被拖拽的组件的中点位置
+      return mousePosition >= finalPosition
+        ? nextChild.offsetTop - gap
+        : prevChild.offsetTop + prevChild.offsetHeight + gap
     }
   },
 

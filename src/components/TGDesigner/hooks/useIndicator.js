@@ -22,9 +22,7 @@ export default function useIndicator() {
       CONTAINER: 30
     },
     EDGE: {
-      SNAP_RANGE: 5,
-      OFFSET: 2,
-      MIN_GAP: 8 // 最小间距配置
+      OFFSET: 2
     }
   }
 
@@ -210,6 +208,7 @@ export default function useIndicator() {
    * @param [direction='vertical'] {string} - 当前容器的布局方向
    */
   const handlePlaceholderIndicator = (e, container, containerRect, children, direction = 'vertical') => {
+    children = Array.from(children).filter(el => el.classList.contains('tg-designer-drag-component'))
     // 获取画布容器作为坐标基准
     const canvasContainer = container.closest('.tg-designer-canvas-container')
     const canvasRect = canvasContainer.getBoundingClientRect()
@@ -241,42 +240,27 @@ export default function useIndicator() {
     let left = 0
     let width = 0
     let height = 0
+    const componentPosition = Geometry.calculateComponentPosition(
+      insertIndex,
+      children,
+      adjustedPosition,
+      midPoints,
+      {
+        ...CONFIG,
+        direction,
+        gap: parseFloat(containerStyle.gap)
+      }
+    )
 
     if (direction === 'horizontal') {
-      // 水平布局：计算横向位置
-      const prevChild = children[insertIndex - 1]
-      const nextChild = children[insertIndex]
-
-      if (prevChild && nextChild) {
-        left = (prevChild.offsetLeft + prevChild.offsetWidth + nextChild.offsetLeft) / 2
-      } else if (nextChild) {
-        left = nextChild.offsetLeft - CONFIG.EDGE.OFFSET
-      } else if (prevChild) {
-        left = prevChild.offsetLeft + prevChild.offsetWidth + CONFIG.EDGE.OFFSET
-      } else {
-        left = CONFIG.EDGE.OFFSET
-      }
-
       // 转换为画布坐标系
-      left += containerOffset.left
-      top += containerOffset.top + padding.top
+      left = componentPosition + containerOffset.left
+      top = containerOffset.top + padding.top
       width = '2px'
       height = containerRect.height - padding.top - padding.bottom
     } else {
-      // 垂直布局：使用容器内相对坐标
-      top = Geometry.calculateComponentPosition(
-        insertIndex,
-        children,
-        adjustedPosition,
-        midPoints,
-        {
-          ...CONFIG,
-          direction
-        }
-      )
-
       // 转换为画布绝对坐标（需包含容器偏移）
-      top += containerOffset.top
+      top = componentPosition + containerOffset.top
       left = containerOffset.left + padding.left
       width = containerRect.width - padding.left - padding.right
       height = '2px'
