@@ -115,7 +115,7 @@ export function GridLayoutPreview(props) {
                 <Col span={24 / columnCount}>
                   {
                     isInCanvas
-                      ? <div style={colStyle} class={'tg-designer-drag-placeholder-within-layout'} />
+                      ? <div style={colStyle} class={'tg-designer-layout-container'} />
                       : <div style={{ background: '#d5d5d5', minHeight: '20px' }} />
                   }
                 </Col>

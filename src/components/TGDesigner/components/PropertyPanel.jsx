@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '../stores/useEditorStore'
-import { Empty } from 'ant-design-vue'
+import { Divider, Empty } from 'ant-design-vue'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
 
 export default {
@@ -49,6 +49,37 @@ export default {
       }, 200)
     }
 
+    const renderPropertyFields = (fields) => {
+      return fields.map(field => {
+        if ('items' in field) {
+          return [
+            <Divider dashed orientation="left">{field.label}</Divider>,
+            renderPropertyFields(field.items)
+          ]
+        }
+
+        const CanvasProperty = field.component()
+        const value = field.prop in componentProps.value
+          ? componentProps.value[field.prop]
+          : componentProps.value.style[field.prop]
+        const propertyProps = { ...field.props }
+
+        if (field.modelProp) {
+          propertyProps[field.modelProp] = value
+        }
+
+        return (
+          <div key={field.prop} class="tg-designer-form-item">
+            <label title={field.title}>{field.label}</label>
+            <CanvasProperty
+              {...propertyProps}
+              onChange={handlePropertyChange(field.prop)}
+            />
+          </div>
+        )
+      })
+    }
+
     return () => {
       if (!selectedComponent.value?.configForm?.fields) {
         return (
@@ -60,29 +91,7 @@ export default {
 
       return (
         <div class="tg-designer-property-container">
-          {
-            selectedComponent.value?.configForm?.fields.map(field => {
-              const CanvasProperty = field.component()
-              const value = field.prop in componentProps.value
-                ? componentProps.value[field.prop]
-                : componentProps.value.style[field.prop]
-              const propertyProps = { ...field.props }
-
-              if (field.modelProp) {
-                propertyProps[field.modelProp] = value
-              }
-
-              return (
-                <div key={field.prop} class="tg-designer-form-item">
-                  <label title={field.title}>{field.label}</label>
-                  <CanvasProperty
-                    {...propertyProps}
-                    onChange={handlePropertyChange(field.prop)}
-                  />
-                </div>
-              )
-            })
-          }
+          {renderPropertyFields(selectedComponent.value.configForm.fields)}
         </div>
       )
     }

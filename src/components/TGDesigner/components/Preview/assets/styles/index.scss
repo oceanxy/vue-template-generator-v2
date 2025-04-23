@@ -11,6 +11,10 @@
     height: 100%;
     overflow: auto;
 
+    .tg-designer-layout-container > .ant-btn {
+      height: auto;
+    }
+
     .ant-flex {
       width: 100%;
     }

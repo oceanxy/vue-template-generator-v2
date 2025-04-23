@@ -26,6 +26,7 @@ export const schema = {
     class: '',
     style: {
       width: '100%',
+      height: '',
       backgroundColor: '#ffffff',
       padding: 15,
       gap: 8,

@@ -8,31 +8,64 @@ import getPropertyField from '@/components/TGDesigner/properties'
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-product-card', // 唯一类型标识（必填）
-  category: TG_MATERIAL_CATEGORY.TEMPLATE, // 物料类型
-  icon: <ShopOutlined />, // 组件区显示的图标
-  preview: props => <ProductCardPreview {...props} />, // 拖拽时的预览组件
-  defaultProps: {  // 默认属性值（必填）
+  type: 'tg-product-card',
+  category: TG_MATERIAL_CATEGORY.TEMPLATE,
+  icon: <ShopOutlined />,
+  preview: props => <ProductCardPreview {...props} />,
+  defaultProps: {
     title: '卡片标题'
   },
-  style: { // 默认样式
+  style: {
+    width: '',
+    height: '',
     // margin: '8px',
     // padding: '12px'
     backgroundColor: '#ffffff'
   },
   class: 'tg-designer-product-card',
-  configForm: { // 右侧属性面板配置（必填）
+  configForm: {
     fields: [
-      getPropertyField('input', {
-        title: '标题',
-        label: '标题',
-        prop: 'title'
-      }),
-      getPropertyField('colorPicker', {
-        title: '背景色',
-        label: '背景色',
-        prop: 'backgroundColor'
-      })
+      {
+        label: '尺寸',
+        items: [
+          getPropertyField('input', {
+            label: '宽度',
+            title: '容器宽度（支持百分比和像素单位）',
+            prop: 'width',
+            props: {
+              placeholder: '自适应'
+            }
+          }),
+          getPropertyField('input', {
+            label: '高度',
+            title: '容器高度（支持像素单位，默认自适应）',
+            prop: 'height',
+            props: {
+              placeholder: '自适应'
+            }
+          })
+        ]
+      },
+      {
+        label: '数据',
+        items: [
+          getPropertyField('input', {
+            title: '标题',
+            label: '标题',
+            prop: 'title'
+          })
+        ]
+      },
+      {
+        label: '背景',
+        items: [
+          getPropertyField('colorPicker', {
+            title: '背景色',
+            label: '背景色',
+            prop: 'backgroundColor'
+          })
+        ]
+      }
     ]
   }
 }

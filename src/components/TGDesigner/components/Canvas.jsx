@@ -55,29 +55,31 @@ export default {
       if (!componentDef) return null
 
       // 初始化组件props
-      const component = {
+      const component = omit({
         ...componentSchema.props,
         class: componentDef.class,
         style: styleWithUnits(componentSchema.props?.style ?? {}),
         previewType: 'canvas'
-      }
+      }, 'flexDirection')
 
       const isLayoutComp = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
 
-      const addExtraStyleToDragComp = isLayoutComp || componentSchema.type === 'a-input'
-      // 为布局组件的拖拽容器和指定组件的拖拽容器定义默认宽高
-      const dragCompStyle = addExtraStyleToDragComp ? {
-        style: omit({
-          ...component.style,
-          width: '100%',
-          height: 'auto',
-          flexDirection: componentSchema.props.vertical ? 'column' : 'row'
-        }, ['alignItems', 'justifyContent'])
-      } : {}
+      // 在画布中时，组件的宽高要应用到拖拽容器上，内部组件默认撑满容器。
+      const dragCompStyle = {
+        style: {
+          width: component.style.width,
+          height: component.style.height
+        }
+      }
+
+      component.style = omit(component.style, ['width', 'height'])
+
       const canvasCompCategoryClassName = `tg-designer-${componentSchema.category}-component`
 
       // 添加布局组件的嵌套支持
       if (isLayoutComp) {
+        // 在画布中时，布局组件的布局方向要应用到拖拽容器上，让画布呈现和预览呈现保持一致。
+        dragCompStyle.style.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
         component.children = componentSchema.children?.map(childSchema =>
           renderCanvasFromSchemas(childSchema, componentSchema.id)
         ) ?? []

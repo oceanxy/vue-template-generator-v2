@@ -80,7 +80,7 @@ export const Geometry = {
   /**
    * 查找最近的布局组件的布局容器（查找最近的合法父容器）
    * 这里的父容器指子组件的直接父容器
-   * 布局组件中为 .tg-designer-drag-placeholder-within-layout
+   * 布局组件中为 .tg-designer-layout-container
    * 画布中为 .tg-designer-canvas-container
    * @param e
    * @param componentSchemas
@@ -106,7 +106,6 @@ export const Geometry = {
      *
      * 画布中组件的拖拽容器，预览时无此容器：div.tg-designer-drag-component
      * 布局组件根元素：div.tg-designer-layout-container
-     * 布局组件存放子组件的容器区域：div.tg-designer-drag-placeholder-within-layout
      * @type {boolean}
      */
     let isInsideLayoutContainer = true
@@ -120,7 +119,7 @@ export const Geometry = {
     let closestLayoutComponent = path.find(el => {
       // 排除被拖拽布局组件自身及其子容器
       if (isDraggingLayout && draggingElement.contains(el)) return false
-      return el.classList?.contains('tg-designer-drag-placeholder-within-layout')
+      return el.classList?.contains('tg-designer-layout-container')
     })
 
     if (!closestLayoutComponent) {
@@ -399,7 +398,7 @@ export const Geometry = {
   getLayoutDirectionById(componentId) {
     const element = document.querySelector(`[data-id="${componentId}"]`)
     // 查找最近的布局组件
-    const layoutComponent = element?.closest('.tg-designer-layout-component')
+    const layoutComponent = element?.closest('.tg-designer-layout-container')
 
     if (!element || !layoutComponent) return 'vertical'
 

@@ -266,8 +266,6 @@
         }
 
         .tg-designer-drag-component {
-          display: flex;
-          flex-direction: column;
           position: relative;
           transition: all 0.2s;
           transform: translateZ(0); // 强制开启GPU加速
@@ -277,9 +275,13 @@
           touch-action: none; // 优化移动端体验
           cursor: move; // 显示可拖动光标
           z-index: 998;
+          // 位于画布中的拖拽组件，其下所有组件自动撑满，以确保画布中的组件呈现的效果与预览一致
+          display: flex;
 
           & > * {
             cursor: move;
+            width: 100%;
+            height: auto;
           }
 
           &:hover {
@@ -333,51 +335,48 @@
             z-index: 999;
           }
 
-          &.tg-designer-layout-component {
-            width: 100%;
-            height: auto;
-          }
-
           .tg-designer-layout-container {
-            position: relative; // 新增定位基准
+            position: relative;
             width: 100%;
             height: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
 
-            .tg-designer-drag-placeholder-within-layout {
-              position: relative;
-              padding: var(--canvas-padding);
-              white-space: nowrap;
-              overflow: hidden;
+            &::before {
+              content: '组件放置区';
+              font-size: 16px;
+              position: absolute;
+              top: 0;
+              left: 0;
               width: 100%;
               height: 100%;
-              text-overflow: ellipsis;
-
-              &::before {
-                content: '组件放置区';
-                font-size: 16px;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-family: 'Microsoft YaHei', 'Source Han Sans', sans-serif;
-                color: rgba(255, 255, 255, 0.9);
-                text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-                letter-spacing: 10px;
-                transform: translateZ(0);
-                background: linear-gradient(145deg, #c1c1c1 0%, #e0e0e0 100%);
-                box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-                border-radius: 4px;
-                white-space: nowrap; // 禁止换行
-                overflow: hidden; // 隐藏溢出内容
-                text-overflow: ellipsis; // 显示省略号
-                max-width: 100%; // 确保宽度约束
-                padding: 0 20px; // 添加两侧内边距防止边缘截断
-              }
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-family: 'Microsoft YaHei', 'Source Han Sans', sans-serif;
+              color: rgba(255, 255, 255, 0.9);
+              text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+              letter-spacing: 10px;
+              transform: translateZ(0);
+              background: linear-gradient(145deg, #c1c1c1 0%, #e0e0e0 100%);
+              box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+              border-radius: 4px;
+              white-space: nowrap; // 禁止换行
+              overflow: hidden; // 隐藏溢出内容
+              text-overflow: ellipsis; // 显示省略号
+              max-width: 100%; // 确保宽度约束
+              padding: 0 20px; // 添加两侧内边距防止边缘截断
             }
+
+            // 当设置了背景图片时，取消“组件放置区”的背景色，防止干扰图片显示
+            &.has-background-image::before {
+              background: none !important;
+            }
+          }
+
+          .tg-designer-basic-image {
+
           }
         }
       }
@@ -393,14 +392,31 @@
       gap: 10px;
       height: 100%;
       overflow-y: auto;
+      overflow-x: hidden;
+
+      .ant-divider {
+        &.ant-divider-with-text::before,
+        &.ant-divider-with-text::after {
+          border-block-color: var(--tg-theme-color-border);
+        }
+
+        .ant-divider-inner-text {
+          //padding-left: 0;
+        }
+      }
 
       .tg-designer-form-item {
+        width: 100%;
         display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        gap: var(--tg-theme-margin-sm);
 
-        & > * {
-          width: 100%;
+        label {
+          flex: none;
+        }
+
+        & > *:not(label) {
+          flex: auto;
         }
       }
     }

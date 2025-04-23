@@ -13,7 +13,6 @@ export default {
     const layoutDirection = ref('vertical')
     const store = useEditorStore()
     const compActionBarRef = ref(null)
-    const schema = computed(() => store.schema)
     const componentSchemas = computed(() => store.schema.components)
     const selectedComponent = computed(() => store.selectedComponent)
     const actionBar = computed(() => store.actionBar)
@@ -49,7 +48,7 @@ export default {
         // 再执行位置计算，避免组件功能条位置计算错误
         await updatePosition(props.containerRef, compActionBarRef)
 
-        // 新增：更新布局方向
+        // 更新布局方向
         layoutDirection.value = Geometry.getLayoutDirectionById(val.id)
       }
     })

@@ -140,7 +140,7 @@ export default function useIndicator() {
    * @returns {'horizontal' | 'vertical'}
    */
   function getLayoutDirection(container) {
-    if (!container.classList.contains('tg-designer-drag-placeholder-within-layout')) return 'vertical'
+    if (!container.classList.contains('tg-designer-layout-container')) return 'vertical'
 
     const style = window.getComputedStyle(container)
     return style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
