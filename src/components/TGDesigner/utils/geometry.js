@@ -369,6 +369,14 @@ export const Geometry = {
     return mousePosition < thresholdPosition + dynamicThreshold
   },
 
+  /**
+   * 获取调整后的位置
+   * @param {{clientX: number, clientY: number}} e
+   * @param container
+   * @param containerRect
+   * @param direction
+   * @returns {number|*}
+   */
   getAdjustedPosition(e, container, containerRect, direction) {
     return direction === 'horizontal'
       ? e.clientX - containerRect.left
@@ -417,5 +425,45 @@ export const Geometry = {
     const style = window.getComputedStyle(layoutComponent)
 
     return style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
+  },
+
+  /**
+   * 创建自定义拖拽预览图像
+   * 解决默认拖拽情况下的拖拽图像遮挡目标位置的情况
+   * @param e
+   */
+  createDragPreviewImage(e) {
+    const el = e.currentTarget.cloneNode(true) // 克隆当前元素
+    const rect = e.currentTarget.getBoundingClientRect()
+
+    // 创建拖拽预览容器
+    const dragPreview = document.createElement('div')
+    dragPreview.style.width = `${rect.width}px`
+    dragPreview.style.height = `${rect.height}px`
+    dragPreview.style.position = 'fixed'
+    dragPreview.style.pointerEvents = 'none'
+    dragPreview.style.zIndex = '9999'
+    dragPreview.style.opacity = '0.5'
+    dragPreview.appendChild(el)
+    document.body.appendChild(dragPreview)
+
+    // 设置拖拽图像和偏移补偿
+    const ghost = document.createElement('div')
+    e.dataTransfer.setDragImage(ghost, 0, 0)
+
+    // 实时更新预览位置
+    const handleDrag = moveEvent => {
+      dragPreview.style.left = `${moveEvent.clientX + 20}px`
+      dragPreview.style.top = `${moveEvent.clientY + 30}px`
+    }
+
+    const cleanup = () => {
+      document.removeEventListener('dragover', handleDrag)
+      e.target.removeEventListener('dragend', cleanup)
+      dragPreview.remove()
+    }
+
+    document.addEventListener('dragover', handleDrag)
+    e.target.addEventListener('dragend', cleanup)
   }
 }

@@ -174,10 +174,12 @@
             will-change: opacity;
             transition: opacity 0.1s linear;
             animation: flowLine 5s linear infinite;
+            z-index: 999;
 
             // 根据布局方向动态设置尺寸和背景方向
             &[data-layout-direction='vertical'] {
               width: 2px;
+              margin-left: -1px;
               background: repeating-linear-gradient(
                   90deg, // 水平方向渐变
                   $indicator-color 0 $dash-width,
@@ -187,6 +189,7 @@
 
             &[data-layout-direction='horizontal'] {
               height: 2px;
+              margin-top: -1px;
               background: repeating-linear-gradient(
                   180deg, // 垂直方向渐变
                   $indicator-color 0 $dash-width,
@@ -207,7 +210,7 @@
 
           &[data-type='container'] {
             display: none;
-            background: none;
+            background: rgba(24, 144, 255, 0.1);
             border: 2px dashed var(--tg-theme-color-primary);
             border-radius: 4px;
             box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);

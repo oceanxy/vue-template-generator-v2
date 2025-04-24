@@ -201,7 +201,7 @@ export default function useIndicator() {
 
   /**
    * 处理占位符指示器
-   * @param e {MouseEvent}
+   * @param e {DragEvent}
    * @param container {HTMLElement} - 当前直接父容器（可能是画布容器或布局容器）
    * @param containerRect {Object} - 布局容器的矩形信息
    * @param {HTMLElement[]} children - 当前容器中的可见子元素

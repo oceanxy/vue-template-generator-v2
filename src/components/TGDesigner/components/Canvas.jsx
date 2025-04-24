@@ -46,6 +46,29 @@ export default {
       }
     }
 
+    const handleCompClick = (e, componentSchema, componentDef) => {
+      e.stopPropagation()
+
+      store.updateComponent({
+        ...toRaw(componentSchema),
+        configForm: componentDef.configForm
+      })
+    }
+
+    const handleCompDragStart = (e, componentSchema) => {
+      componentSchema.__dragging = true // 标记拖动状态
+
+      Geometry.createDragPreviewImage(e)
+      dragHandlers.handleDragStart(e, componentSchema)
+
+      e.stopPropagation()
+    }
+
+    const handleCompDragEnd = (e, componentSchema) => {
+      componentSchema.__dragging = false
+      dragHandlers.handleDragEnd(e)
+    }
+
     const renderCanvasFromSchemas = (componentSchema, parentId = null) => {
       const componentDef = store.getComponentByType(
         componentSchema.type,
@@ -99,22 +122,9 @@ export default {
             'dragging': componentSchema.__dragging // 拖动状态样式
           }}
           {...dragCompStyle}
-          onClick={(e) => {
-            e.stopPropagation()
-            store.updateComponent({
-              ...toRaw(componentSchema),
-              configForm: componentDef.configForm
-            })
-          }}
-          onDragstart={(e) => {
-            componentSchema.__dragging = true // 标记拖动状态
-            dragHandlers.handleDragStart(e, componentSchema)
-            e.stopPropagation()
-          }}
-          onDragend={(e) => {
-            componentSchema.__dragging = false
-            dragHandlers.handleDragEnd(e)
-          }}
+          onClick={e => handleCompClick(e, componentSchema, componentDef)}
+          onDragstart={e => handleCompDragStart(e, componentSchema)}
+          onDragend={e => handleCompDragEnd(e, componentSchema)}
         >
           {componentDef.preview(component)}
         </div>

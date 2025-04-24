@@ -30,8 +30,8 @@ export default function useDragDrop() {
     store.selectedComponent = null
 
     e.dataTransfer.effectAllowed = componentSchema.id ? 'move' : 'copy'
-    e.dataTransfer.setData('text/plain', componentSchema.id)
     e.dataTransfer.setData('application/json', JSON.stringify({
+      id: componentSchema.id,
       type: componentSchema.id ? 'MOVE' : 'ADD',
       data: componentSchema
     }))
