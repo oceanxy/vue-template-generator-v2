@@ -1,0 +1,23 @@
+.tg-preview-wrapper {
+  width: 100%;
+  height: 100%;
+  flex: auto;
+
+  .tg-preview-container {
+    display: flex;
+    flex-direction: column;
+    border: 3px solid red;
+    box-sizing: border-box;
+    height: 100%;
+    overflow: auto;
+
+    .tg-designer-layout-container > .ant-btn {
+      height: auto;
+    }
+
+    .ant-flex {
+      width: 100%;
+    }
+  }
+}
+

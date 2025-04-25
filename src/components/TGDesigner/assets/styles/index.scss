@@ -1,0 +1,427 @@
+.tg-designer-container {
+  height: 100%;
+
+  .tg-designer-header {
+    position: relative;
+    height: 48px;
+    flex: none;
+    padding: 8px 16px;
+    background: var(--tg-theme-color-bg-container);
+    border-bottom: 1px solid var(--tg-theme-color-border);
+
+    .tg-designer-tools {
+      position: relative;
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+
+      .save-status-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(24, 144, 255, 0.1);
+
+        .save-progress {
+          width: 0;
+          height: 100%;
+          background: var(--tg-theme-color-primary);
+          transition: width 1s ease;
+          animation: savingProgress 1.5s infinite;
+        }
+      }
+
+      @keyframes savingProgress {
+        0% {
+          width: 0;
+          opacity: 1;
+        }
+        50% {
+          width: 80%;
+          opacity: 0.8;
+        }
+        100% {
+          width: 100%;
+          opacity: 0;
+        }
+      }
+    }
+  }
+
+  .tg-designer-material-wrapper {
+    .tg-designer-material-container {
+      height: 100%;
+      padding: 12px;
+      user-select: none;
+      overflow-y: auto;
+
+      .tg-designer-material-category {
+        margin-bottom: 20px;
+
+        .tg-designer-material-title {
+          font-weight: bolder;
+          border-bottom: 1px solid #e3e3e3;
+        }
+
+        .tg-designer-material-items {
+          margin-bottom: 20px;
+          border: 1px dashed #d9d9d9;
+          padding: 8px;
+          transition: all 0.3s;
+
+          [draggable='true'] {
+            cursor: grab;
+
+            &:active {
+              cursor: grabbing;
+            }
+          }
+
+          & > * {
+            cursor: move;
+            width: 100%;
+          }
+
+          &:hover {
+            border-color: var(--tg-theme-color-primary);
+            background-color: #e6f7ff;
+          }
+        }
+      }
+    }
+  }
+
+  .tg-designer-canvas-wrapper {
+    margin: 2px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    .tg-designer-canvas-layout {
+      padding: 12px;
+      width: 100%;
+      max-width: 100%;
+      height: 100%;
+      overflow: auto;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+
+      .tg-designer-canvas-container {
+        position: relative;
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+        overflow-y: auto;
+        overflow-x: hidden;
+        z-index: 1;
+        height: 100%;
+        cursor: pointer;
+        transition: outline 0.2s;
+        padding: var(--canvas-padding);
+
+        &[data-selected='true'] {
+          outline: 2px dashed var(--tg-theme-color-primary);
+          outline-offset: 1px;
+        }
+
+        &::before,
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          height: 15px;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          pointer-events: none;
+        }
+
+        .tg-designer-drag-placeholder {
+          $indicator-color: var(--tg-theme-color-primary);
+          $dash-width: 10px; // 虚线单段长度
+          $gap-width: 5px; // 虚线间隔
+
+          display: none;
+          will-change: top, opacity;
+          transition: top 0.07s ease-out, opacity 0.1s linear;
+          position: absolute;
+          z-index: 999;
+          background: linear-gradient(
+              90deg,
+              var(--tg-theme-color-primary),
+              transparent
+          );
+          height: 2px;
+          pointer-events: none;
+
+          &[data-type='placeholder'] {
+            display: none;
+            border-radius: 2px;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                90deg,
+                $indicator-color 0 $dash-width,
+                transparent $dash-width ($dash-width + $gap-width)
+            );
+            background-size: ($dash-width + $gap-width) 100%; // 背景尺寸需要等于单周期长度
+            will-change: opacity;
+            transition: opacity 0.1s linear;
+            animation: flowLine 5s linear infinite;
+            z-index: 999;
+
+            // 根据布局方向动态设置尺寸和背景方向
+            &[data-layout-direction='vertical'] {
+              width: 2px;
+              margin-left: -1px;
+              background: repeating-linear-gradient(
+                  90deg, // 水平方向渐变
+                  $indicator-color 0 $dash-width,
+                  transparent $dash-width ($dash-width + $gap-width)
+              );
+            }
+
+            &[data-layout-direction='horizontal'] {
+              height: 2px;
+              margin-top: -1px;
+              background: repeating-linear-gradient(
+                  180deg, // 垂直方向渐变
+                  $indicator-color 0 $dash-width,
+                  transparent $dash-width ($dash-width + $gap-width)
+              );
+            }
+
+            // 定义流动动画
+            @keyframes flowLine {
+              0% {
+                background-position-x: 0;
+              }
+              100% {
+                background-position-x: -($dash-width + $gap-width); // 负数实现无缝滚动
+              }
+            }
+          }
+
+          &[data-type='container'] {
+            display: none;
+            background: rgba(24, 144, 255, 0.1);
+            border: 2px dashed var(--tg-theme-color-primary);
+            border-radius: 4px;
+            box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
+            box-sizing: border-box;
+            overflow: hidden;
+            transform: translateZ(0);
+            animation: pulseContainer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            will-change: top, opacity;
+            transition: top 0.07s ease-out, opacity 0.1s linear;
+            transform-origin: center;
+
+            // 布局组件的容器指示线
+            &[data-container-type='layout'] {
+              display: none;
+              z-index: 1000;
+            }
+
+            // 画布容器指示线
+            &[data-container-type='canvas'] {
+              display: none;
+              inset: var(--canvas-padding) !important; // 匹配容器padding
+              border-width: 2px;
+              z-index: 999;
+            }
+
+            @keyframes pulseContainer {
+              0%, 100% {
+                opacity: 0.6;
+              }
+              50% {
+                opacity: 1;
+              }
+            }
+          }
+        }
+
+        .tg-designer-component-actions-bar {
+          position: fixed;
+          z-index: 10001;
+          background: var(--tg-theme-color-primary);
+          border-radius: 0 0 var(--tg-theme-border-radius) var(--tg-theme-border-radius);
+          box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
+
+          button {
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: none;
+            color: #ffffff;
+            transition: transform 0.2s;
+
+            &:hover {
+              transform: scale(1.1);
+            }
+          }
+        }
+
+        .tg-designer-drag-component {
+          position: relative;
+          transition: all 0.2s;
+          transform: translateZ(0); // 强制开启GPU加速
+          backface-visibility: hidden;
+          outline: 1px dashed transparent;
+          user-select: none; // 防止文字选中干扰
+          touch-action: none; // 优化移动端体验
+          cursor: move; // 显示可拖动光标
+          z-index: 998;
+          // 位于画布中的拖拽组件，其下所有组件自动撑满，以确保画布中的组件呈现的效果与预览一致
+          display: flex;
+
+          & > * {
+            cursor: move;
+            width: 100%;
+            height: auto;
+          }
+
+          &:hover {
+            outline-color: var(--tg-theme-color-primary);
+          }
+
+          &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--tg-theme-color-primary);
+            opacity: 0;
+            transition: opacity 0.1s linear;
+            will-change: opacity; // 启用硬件加速
+            z-index: 999;
+          }
+
+          &::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            pointer-events: none;
+            border: 2px dashed var(--tg-theme-color-primary);
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 999;
+          }
+
+          &.dragging {
+            opacity: 0.4;
+            transform: scale(0.98);
+            transition: all 0.2s ease-out;
+            z-index: 9999;
+
+            &::after {
+              content: '';
+              position: absolute;
+              inset: 0;
+              border: 2px dashed var(--tg-theme-color-primary);
+            }
+          }
+
+          &[data-selected='true'] {
+            outline: 2px dashed var(--tg-theme-color-primary);
+            outline-offset: 1px;
+            z-index: 999;
+          }
+
+          .tg-designer-layout-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &::before {
+              content: '组件放置区';
+              font-size: 16px;
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-family: 'Microsoft YaHei', 'Source Han Sans', sans-serif;
+              color: rgba(255, 255, 255, 0.9);
+              text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+              letter-spacing: 10px;
+              transform: translateZ(0);
+              background: linear-gradient(145deg, #c1c1c1 0%, #e0e0e0 100%);
+              box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+              border-radius: 4px;
+              white-space: nowrap; // 禁止换行
+              overflow: hidden; // 隐藏溢出内容
+              text-overflow: ellipsis; // 显示省略号
+              max-width: 100%; // 确保宽度约束
+              padding: 0 20px; // 添加两侧内边距防止边缘截断
+            }
+
+            // 当设置了背景图片时，取消“组件放置区”的背景色，防止干扰图片显示
+            &.has-background-image::before {
+              background: none !important;
+            }
+          }
+
+          .tg-designer-basic-image {
+
+          }
+        }
+      }
+    }
+  }
+
+  .tg-designer-property-wrapper {
+    padding: 10px;
+
+    .tg-designer-property-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      .ant-divider {
+        &.ant-divider-with-text::before,
+        &.ant-divider-with-text::after {
+          border-block-color: var(--tg-theme-color-border);
+        }
+
+        .ant-divider-inner-text {
+          //padding-left: 0;
+        }
+      }
+
+      .tg-designer-form-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: var(--tg-theme-margin-sm);
+
+        label {
+          flex: none;
+        }
+
+        & > *:not(label) {
+          flex: auto;
+        }
+      }
+    }
+  }
+}
