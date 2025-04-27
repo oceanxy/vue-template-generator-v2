@@ -69,7 +69,7 @@
           margin-bottom: 20px;
           border: 1px dashed #d9d9d9;
           padding: 8px;
-          transition: all 0.3s;
+          transition: all 0.2s;
 
           [draggable='true'] {
             cursor: grab;
@@ -270,7 +270,9 @@
 
         .tg-designer-drag-component {
           position: relative;
-          transition: all 0.2s;
+          transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), // Material Design标准缓动
+          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); // 增强的加速曲线
+          opacity: 1;
           transform: translateZ(0); // 强制开启GPU加速
           backface-visibility: hidden;
           outline: 1px dashed transparent;
@@ -280,16 +282,6 @@
           z-index: 998;
           // 位于画布中的拖拽组件，其下所有组件自动撑满，以确保画布中的组件呈现的效果与预览一致
           display: flex;
-
-          & > * {
-            cursor: move;
-            width: 100%;
-            height: auto;
-          }
-
-          &:hover {
-            outline-color: var(--tg-theme-color-primary);
-          }
 
           &::before {
             content: '';
@@ -318,6 +310,10 @@
             z-index: 999;
           }
 
+          &:hover {
+            outline-color: var(--tg-theme-color-primary);
+          }
+
           &.dragging {
             opacity: 0.4;
             transform: scale(0.98);
@@ -336,6 +332,12 @@
             outline: 2px dashed var(--tg-theme-color-primary);
             outline-offset: 1px;
             z-index: 999;
+          }
+
+          & > * {
+            cursor: move;
+            width: 100%;
+            height: auto;
           }
 
           .tg-designer-layout-container {
@@ -378,8 +380,40 @@
             }
           }
 
-          .tg-designer-basic-image {
+          &.component-enter-active {
+            animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none; // 动画期间禁用交互
+          }
 
+          &.component-leave-active {
+            animation: fadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none; // 禁用交互
+          }
+
+          &.component-move {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: scale(0.95);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+
+          @keyframes fadeOut {
+            from {
+              opacity: 1;
+              transform: scale(1);
+            }
+            to {
+              opacity: 0;
+              transform: scale(0.8);
+            }
           }
         }
       }

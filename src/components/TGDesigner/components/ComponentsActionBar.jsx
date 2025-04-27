@@ -62,6 +62,19 @@ export default {
       { flush: 'post' }
     )
 
+    const handleMoveComplete = (component) => {
+      const markChildren = (schema) => {
+        schema.__initialized = true
+        schema.__animating = false
+        schema.children?.forEach(markChildren)
+      }
+
+      requestAnimationFrame(() => {
+        markChildren(component)
+        store.schema.components.value = [...store.schema.components.value]
+      })
+    }
+
     const handleAction = debounce((action) => {
       let targetSchema = Geometry.findNestedSchema(
         componentSchemas.value,
@@ -74,49 +87,86 @@ export default {
       const index = targetSchema.findIndex(c => c.id === selectedComponent.value.id)
       if (index === -1) return
 
-      let newComponentSchema = null
+      if (action === 'delete') {
+        targetSchema[index].__initialized = true
+        targetSchema[index].__animating = true
 
-      if (action === 'copy') {
-        newComponentSchema = store.copyLayoutComponentSchema(targetSchema[index])
-      }
-
-      switch (action) {
-        case 'delete':
+        setTimeout(() => {
           targetSchema.splice(index, 1)
           store.selectedComponent = null
-          break
-        case 'copy':
-          targetSchema.splice(index + 1, 0, newComponentSchema)
-          store.updateComponent({
-            id: newComponentSchema.id,
-            type: selectedComponent.value.type,
-            category: selectedComponent.value.category
+        }, 200) // 等待动画完成
+      } else if (action === 'copy') {
+        const newComponentSchema = store.copyLayoutComponentSchema(targetSchema[index])
+        targetSchema.splice(index + 1, 0, newComponentSchema)
+
+        store.updateComponent({
+          id: newComponentSchema.id,
+          type: selectedComponent.value.type,
+          category: selectedComponent.value.category
+        })
+
+        setTimeout(() => {
+          newComponentSchema.__initialized = true
+          newComponentSchema.__animating = false
+        }, 300)
+      } else if (action === 'up') {
+        if (index > 0) {
+          // 动画状态检查
+          if (targetSchema[index].__animating || !targetSchema[index].__initialized) {
+            return
+          }
+
+          // 添加FLIP动画逻辑
+          const oldElement = props.containerRef.value.querySelector(`[data-id="${selectedComponent.value.id}"]`)
+          const oldRect = oldElement.getBoundingClientRect()
+
+            // 执行元素交换
+          ;[targetSchema[index], targetSchema[index - 1]] = [targetSchema[index - 1], targetSchema[index]]
+          handleMoveComplete(targetSchema[index])
+
+          // 获取新位置
+          requestAnimationFrame(() => {
+            const newElement = props.containerRef.value.querySelector(`[data-id="${selectedComponent.value.id}"]`)
+            const newRect = newElement.getBoundingClientRect()
+
+            // 计算位置变化
+            const deltaX = oldRect.left - newRect.left
+            const deltaY = oldRect.top - newRect.top
+
+            // 应用FLIP动画
+            newElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`
+            newElement.style.transition = 'none'
+
+            requestAnimationFrame(() => {
+              newElement.style.transform = ''
+              newElement.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)' // 同步曲线
+            })
           })
-          break
-        case 'up':
-          if (index > 0) {
-            [targetSchema[index], targetSchema[index - 1]] = [targetSchema[index - 1], targetSchema[index]]
+        }
+      } else if (action === 'down') {
+        if (index < targetSchema.length - 1) {
+          const oldElement = props.containerRef.value.querySelector(`[data-id="${selectedComponent.value.id}"]`)
+          const oldRect = oldElement.getBoundingClientRect()
 
-            store.updateComponent({
-              id: selectedComponent.value.id,
-              type: selectedComponent.value.type,
-              category: selectedComponent.value.category
-            })
-          }
-          break
-        case 'down':
-          if (index < targetSchema.length - 1) {
-            [targetSchema[index], targetSchema[index + 1]] = [targetSchema[index + 1], targetSchema[index]]
+          ;[targetSchema[index], targetSchema[index + 1]] = [targetSchema[index + 1], targetSchema[index]]
+          handleMoveComplete(targetSchema[index])
 
-            store.updateComponent({
-              id: selectedComponent.value.id,
-              type: selectedComponent.value.type,
-              category: selectedComponent.value.category
+          requestAnimationFrame(() => {
+            const newElement = props.containerRef.value.querySelector(`[data-id="${selectedComponent.value.id}"]`)
+            const newRect = newElement.getBoundingClientRect()
+
+            const deltaX = oldRect.left - newRect.left
+            const deltaY = oldRect.top - newRect.top
+
+            newElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`
+            newElement.style.transition = 'none'
+
+            requestAnimationFrame(() => {
+              newElement.style.transform = ''
+              newElement.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)' // 同步曲线
             })
-          }
-          break
-        default:
-          break
+          })
+        }
       }
     }, 50)
 

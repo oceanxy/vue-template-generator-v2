@@ -20,15 +20,16 @@ export default {
   },
   style: {
     width: '100%',
-    height: 'auto',
+    height: '',
     padding: 16,
+    margin: 0,
     border: '1px dashed #d9d9d9',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
     backgroundColor: '#f0f2f5',
     // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
     backgroundImage: '',
-    backgroundSize: '100% 100%',
+    backgroundSize: '',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
   },
@@ -106,6 +107,14 @@ export default {
             props: {
               placeholder: '0px'
             }
+          }),
+          getPropertyField('input', {
+            label: '外边距',
+            title: '画布的外边距（margin）',
+            prop: 'margin',
+            props: {
+              placeholder: '0px'
+            }
           })
         ]
       },
@@ -131,7 +140,8 @@ export default {
             title: '背景图片尺寸(background-size)',
             prop: 'backgroundSize',
             props: {
-              maxLength: 20
+              maxLength: 20,
+              placeholder: '自动'
             }
           }),
           getPropertyField('input', {
@@ -176,7 +186,7 @@ export function FlexLayoutPreview(props) {
     return (
       <Flex {...restProps} gap={8} wrap={'wrap'}>
         {
-          range(0, 4, 1).map(c => (
+          range(0, 3, 1).map(c => (
             <div
               style={{
                 background: '#d5d5d5',

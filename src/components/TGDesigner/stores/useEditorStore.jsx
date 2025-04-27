@@ -43,9 +43,17 @@ const canvasConfigForm = {
           }
         }),
         getPropertyField('input', {
-          label: '边距',
+          label: '内边距',
           title: '画布的内边距（padding）',
           prop: 'padding',
+          props: {
+            placeholder: '0px'
+          }
+        }),
+        getPropertyField('input', {
+          label: '外边距',
+          title: '画布的外边距（margin）',
+          prop: 'margin',
           props: {
             placeholder: '0px'
           }
@@ -67,8 +75,49 @@ const canvasConfigForm = {
       items: [
         getPropertyField('colorPicker', {
           label: '颜色',
-          title: '画布背景颜色（backgroundColor）',
+          title: '背景颜色(background-color)',
           prop: 'backgroundColor'
+        }),
+        getPropertyField('input', {
+          label: '图片',
+          title: '背景图片(background-image)',
+          prop: 'backgroundImage',
+          props: {
+            placeholder: '请输入图片地址',
+            maxLength: 250
+          }
+        }),
+        getPropertyField('input', {
+          label: '图片尺寸',
+          title: '背景图片尺寸(background-size)',
+          prop: 'backgroundSize',
+          props: {
+            maxLength: 20,
+            placeholder: '自动'
+          }
+        }),
+        getPropertyField('input', {
+          label: '图片位置',
+          title: '背景图片位置(background-position)',
+          prop: 'backgroundPosition',
+          props: {
+            maxLength: 20
+          }
+        }),
+        getPropertyField('select', {
+          label: '图片重复',
+          title: '背景图片重复(background-repeat)',
+          prop: 'backgroundRepeat',
+          props: {
+            options: [
+              { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
+              { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
+              { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
+              { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
+              { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
+              { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
+            ]
+          }
         })
       ]
     }
@@ -501,7 +550,16 @@ export const useEditorStore = defineStore('editor', {
      * @returns {TGComponentSchema}
      */
     createComponentSchema(componentMeta, parentId) {
-      return {
+      const markChildren = (schema) => {
+        schema.__initialized = false
+        schema.__animating = true
+
+        if (schema.children) {
+          schema.children.forEach(markChildren)
+        }
+      }
+
+      const newSchema = {
         id: `comp_${Date.now()}_${getUUID()}`,
         parentId,
         type: componentMeta.type,
@@ -513,8 +571,22 @@ export const useEditorStore = defineStore('editor', {
             ...componentMeta.style
           }
         },
-        children: componentMeta.category === TG_MATERIAL_CATEGORY.LAYOUT ? [] : undefined
+        children: componentMeta.category === TG_MATERIAL_CATEGORY.LAYOUT ? [] : undefined,
+
+        /**
+         * 状态机逻辑
+         * 新建组件：__animating=true，__initialized=false → 触发入场动画
+         * 入场完成：__initialized=true，__animating=false → 可交互状态
+         * 删除组件：__animating=true，__initialized=true → 触发离场动画
+         */
+
+        // 用于过渡动画的临时标记
+        __initialized: false,
+        __animating: true  // 初始状态标记为正在入场动画
       }
+
+      markChildren(newSchema)
+      return newSchema
     },
     /**
      * 复制schema
@@ -524,6 +596,9 @@ export const useEditorStore = defineStore('editor', {
     copyLayoutComponentSchema(fromSchema) {
       const newSchema = cloneDeep(fromSchema)
       newSchema.id = `comp_${Date.now()}_${getUUID()}`
+      // 用于过渡动画的临时标记
+      newSchema.__initialized = false
+      newSchema.__animating = true
 
       const copy = schema => {
         if (schema.children?.length) {

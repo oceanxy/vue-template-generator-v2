@@ -27,6 +27,11 @@ export default function useDragDrop() {
    * @param {Object} componentSchema
    */
   const handleDragStart = (e, componentSchema) => {
+    if (componentSchema.__animating) {
+      e.preventDefault()
+      return
+    }
+
     store.selectedComponent = null
 
     e.dataTransfer.effectAllowed = componentSchema.id ? 'move' : 'copy'
@@ -195,6 +200,17 @@ export default function useDragDrop() {
     if (componentSchema) {
       store.updateComponent(componentSchema)
     }
+
+    // 递归标记组件状态
+    const markComponentInitialized = (component) => {
+      component.__initialized = true
+      component.__animating = false
+      component.children?.forEach(markComponentInitialized)
+    }
+
+    setTimeout(() => {
+      markComponentInitialized(componentSchema)
+    }, 200) // 精确匹配动画时长
   }
 
   /**

@@ -27,11 +27,16 @@ export const schema = {
     style: {
       width: '100%',
       height: '',
-      backgroundColor: '#ffffff',
       padding: 15,
+      margin: 0,
       gap: 8,
       alignItems: 'flex-start',
-      justifyContent: 'flex-start'
+      justifyContent: 'flex-start',
+      backgroundColor: '#ffffff',
+      backgroundImage: '',
+      backgroundSize: '',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
     }
   }
 }

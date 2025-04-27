@@ -66,6 +66,11 @@ export default {
 
     const handleCompDragEnd = (e, componentSchema) => {
       componentSchema.__dragging = false
+
+      if (!componentSchema.__initialized) {
+        componentSchema.__initialized = true
+      }
+
       dragHandlers.handleDragEnd(e)
     }
 
@@ -119,7 +124,9 @@ export default {
           class={{
             [canvasCompCategoryClassName]: true,
             'tg-designer-drag-component': true,
-            'dragging': componentSchema.__dragging // 拖动状态样式
+            'dragging': componentSchema.__dragging, // 拖动状态样式
+            'component-enter-active': componentSchema.__animating && !componentSchema.__initialized,
+            'component-leave-active': componentSchema.__animating && componentSchema.__initialized
           }}
           {...dragCompStyle}
           onClick={e => handleCompClick(e, componentSchema, componentDef)}
