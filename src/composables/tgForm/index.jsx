@@ -49,6 +49,7 @@ export default function useTGForm({
   loaded
 } = {}) {
   const unWatch = ref([])
+  const formRef = ref(null)
   // 表单的数据源`formModel`（通常指`store[location].form`对象的值）是否从`currentItem`中初始化完成。
   // 外部组件如果需要对`formModel`值做处理，则需要通过该字段来控制状态，默认 true。
   const isFormInitCompleted = ref(true)
@@ -471,7 +472,7 @@ export default function useTGForm({
       }
 
       return () => (
-        <Form class={'tg-form'} colon={false}>
+        <Form class={'tg-form'} colon={false} model={formModel} ref={formRef}>
           {slots.default?.()}
           {
             showSubmitButton && (
@@ -503,6 +504,7 @@ export default function useTGForm({
     confirmLoading: formLoading,
     handleClear,
     initSearchParamResult,
-    TGForm
+    TGForm,
+    formRef
   }
 }

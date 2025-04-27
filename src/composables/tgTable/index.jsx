@@ -756,6 +756,7 @@ export default function useTGTable({
     handleClick,
     handleExport,
     TGTable,
-    handleStatusChange
+    handleStatusChange,
+    resize
   }
 }
