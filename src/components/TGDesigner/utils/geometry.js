@@ -117,6 +117,8 @@ export const Geometry = {
     // 查找最近的布局组件（拖拽的组件将保存到该组件的children中）
     // 容器查找，主要为了区分鼠标是否处于布局组件的子组件容器区域内
     let closestLayoutComponent = path.find(el => {
+      if(!(el instanceof Node)) return false
+
       // 排除被拖拽布局组件自身及其子容器
       if (isDraggingLayout && draggingElement.contains(el)) return false
       return el.classList?.contains('tg-designer-layout-container')

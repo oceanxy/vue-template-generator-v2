@@ -172,20 +172,19 @@ export default function useDragDrop() {
       const [moved] = origin.parent.splice(origin.index, 1)
       moved.parentId = parentId
 
-      // 调整插入位置（当向前移动时补偿索引）
-      let adjustedIndex = insertIndex
+      // 当向前移动时补偿索引
       // 仅当在同一个父容器内移动时才需要补偿
       if (origin.parent === schema) {
         // 当拖动元素在插入位置之后时才需要补偿
-        if (origin.index < adjustedIndex) {
-          adjustedIndex = adjustedIndex--
+        if (origin.index < insertIndex) {
+          insertIndex = insertIndex--
         }
       }
 
       // 双端约束防止越界
-      adjustedIndex = Math.max(0, Math.min(adjustedIndex, schema.length))
+      insertIndex = Math.max(0, Math.min(insertIndex, schema.length))
 
-      schema.splice(adjustedIndex, 0, moved)
+      schema.splice(insertIndex, 0, moved)
       componentSchema = moved
     }
 
@@ -201,15 +200,13 @@ export default function useDragDrop() {
       store.updateComponent(componentSchema)
     }
 
-    // 递归标记组件状态
-    const markComponentInitialized = (component) => {
-      component.__initialized = true
-      component.__animating = false
-      component.children?.forEach(markComponentInitialized)
-    }
-
     setTimeout(() => {
-      markComponentInitialized(componentSchema)
+      // 递归标记组件状态
+      schema[insertIndex] = {
+        ...schema[insertIndex],
+        __initialized: true,
+        __animating: false
+      }
     }, 200) // 精确匹配动画时长
   }
 
