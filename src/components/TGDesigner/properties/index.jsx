@@ -110,14 +110,11 @@ export function getOptionsOfPropertyField(prop) {
  * @returns {TGPropertyField}
  */
 export default function getPropertyField(componentType, props) {
-  return {
+  const field = {
     label: props.label || '字符串',
     title: props.title || undefined,
     prop: props.prop,
-    props: {
-      ...props.props,
-      options: props.props?.options || getOptionsOfPropertyField(props.prop)
-    },
+    props: props.props,
     modelProp: props.modelProp || 'value',
     component: () => ({
       input: Input,
@@ -129,4 +126,15 @@ export default function getPropertyField(componentType, props) {
       colorPicker: TGColorPicker
     }[componentType])
   }
+
+  if (!props.props?.options) {
+    const options = getOptionsOfPropertyField(props.prop)
+
+    if (options?.length) {
+      if (!field.props) field.props = {}
+      field.props.options = options
+    }
+  }
+
+  return field
 }
