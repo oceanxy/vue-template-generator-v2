@@ -212,12 +212,11 @@ export default function useIndicator() {
     // 获取画布容器作为坐标基准
     const canvasContainer = container.closest('.tg-designer-canvas-container')
     const canvasRect = canvasContainer.getBoundingClientRect()
-
-    // 计算容器相对画布的精确偏移量（包含滚动）
-    const containerCanvasRect = container.getBoundingClientRect()
+    // container 的 scrollTop 和 scrollLeft是为了适配容器的滚动（目前未实装容器滚动）
+    // canvasContainer 的 scrollTop 和 scrollLeft是为了适配画布的滚动（画布滚动目前只实装了垂直方向滚动）
     const containerOffset = {
-      left: containerCanvasRect.left - canvasRect.left + canvasContainer.scrollLeft,
-      top: containerCanvasRect.top - canvasRect.top + canvasContainer.scrollTop
+      left: containerRect.left - canvasRect.left - container.scrollLeft + canvasContainer.scrollLeft,
+      top: containerRect.top - canvasRect.top - container.scrollTop + canvasContainer.scrollTop
     }
 
     // 获取容器内边距

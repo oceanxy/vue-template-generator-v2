@@ -4,7 +4,10 @@
 
 export const Geometry = {
   /**
-   * 计算子元素中点坐标（相对于直接容器左侧或顶部）
+   * 计算子元素中点坐标
+   * 相对于直接容器左侧或顶部，例如：
+   * 如果该容器是画布，则计算基于画布的坐标；
+   * 如果该容器是布局组件，则计算基于布局组件的布局容器的坐标。
    * @param containerRect
    * @param {HTMLElement[]} elements
    * @param direction
@@ -117,7 +120,7 @@ export const Geometry = {
     // 查找最近的布局组件（拖拽的组件将保存到该组件的children中）
     // 容器查找，主要为了区分鼠标是否处于布局组件的子组件容器区域内
     let closestLayoutComponent = path.find(el => {
-      if(!(el instanceof Node)) return false
+      if (!(el instanceof Node)) return false
 
       // 排除被拖拽布局组件自身及其子容器
       if (isDraggingLayout && draggingElement.contains(el)) return false
