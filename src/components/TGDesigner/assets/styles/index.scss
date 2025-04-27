@@ -88,6 +88,10 @@
             border-color: var(--tg-theme-color-primary);
             background-color: #e6f7ff;
           }
+
+          .ant-image .ant-image-img {
+            pointer-events: none;
+          }
         }
       }
     }
@@ -392,6 +396,10 @@
 
           &.component-move {
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .ant-image .ant-image-img {
+            pointer-events: none;
           }
 
           @keyframes fadeIn {
