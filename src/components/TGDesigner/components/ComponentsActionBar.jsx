@@ -1,6 +1,6 @@
 import { Button } from 'ant-design-vue'
 import { CopyOutlined, DeleteOutlined, DownOutlined, LeftOutlined, RightOutlined, UpOutlined } from '@ant-design/icons-vue'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 import useActionBar from '@/components/TGDesigner/hooks/useActionBar'
@@ -41,15 +41,15 @@ export default {
       actionBar.value.visible = false
 
       if (val?.type && val.type !== 'canvas') {
-        // 先更新可见性状态
-        actionBar.value.visible = true
-        // 等待DOM渲染完成
-        await nextTick()
-        // 再执行位置计算，避免组件功能条位置计算错误
-        await updatePosition(props.containerRef, compActionBarRef)
-
-        // 更新布局方向
-        layoutDirection.value = Geometry.getLayoutDirectionById(val.id)
+        // 等待组件淡入动画完成
+        setTimeout(async () => {
+          // 先更新可见性状态
+          actionBar.value.visible = true
+          // 再执行组件功能条位置计算
+          await updatePosition(props.containerRef, compActionBarRef)
+          // 更新布局方向
+          layoutDirection.value = Geometry.getLayoutDirectionById(val.id)
+        }, 200)
       }
     })
 
