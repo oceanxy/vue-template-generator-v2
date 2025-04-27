@@ -156,7 +156,8 @@
           will-change: top, opacity;
           transition: top 0.07s ease-out, opacity 0.1s linear;
           position: absolute;
-          z-index: 999;
+          z-index: 9999;
+          transform: translateZ(0); // 触发 GPU 加速
           background: linear-gradient(
               90deg,
               var(--tg-theme-color-primary),
