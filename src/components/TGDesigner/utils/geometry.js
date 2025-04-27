@@ -430,7 +430,7 @@ export const Geometry = {
   /**
    * 创建自定义拖拽预览图像
    * 解决默认拖拽情况下的拖拽图像遮挡目标位置的情况
-   * @param e
+   * @param e {DragEvent}
    */
   createDragPreviewImage(e) {
     const el = e.currentTarget.cloneNode(true) // 克隆当前元素
