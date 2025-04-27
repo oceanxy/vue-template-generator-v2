@@ -51,6 +51,9 @@ export default {
           fontSize: themeToken.value.fontSizeLG
         }
     })
+    const localStorageHeaderId = computed(() => {
+      return commonStore.headerId || localStorage.getItem(`${appName}-headerId`)
+    })
     const fontSize = ref(commonStore.fontSize)
     const currentThemeName = ref(
       localStorage.getItem(`${appName}-theme`) ||
@@ -58,13 +61,13 @@ export default {
       configs.header?.buttons?.theme.default
     )
 
-    watch(() => commonStore.headerId, value => {
-      // if (document.querySelector('#tg-responsive-layout')) {
-      //   document.querySelector('#tg-responsive-layout').style.display = 'none'
-      // }
+    watch(() => localStorageHeaderId, value => {
+      if (document.querySelector('#tg-responsive-layout')) {
+        document.querySelector('#tg-responsive-layout').style.display = 'none'
+      }
 
-      // window.location.reload()
-    })
+      window.location.reload()
+    }, { deep: true })
 
     onBeforeMount(async () => {
       await verifyUserInfo()
@@ -190,6 +193,15 @@ export default {
       })
     }
 
+    function onOrgSelectChange(val) {
+      localStorage.setItem(`${appName}-headerId`, val)
+
+      setTimeout(() => {
+        console.log(localStorage.getItem(`${appName}-headerId`))
+      }, 500)
+
+
+    }
 
 
     return () => (
@@ -224,6 +236,7 @@ export default {
                         placeholder={configs.header?.params?.placeholder ?? '请选择'}
                         class={'tg-header-params'}
                         suffixIcon={<IconFont type={'icon-global-down'} />}
+                        onChange={onOrgSelectChange}
                       >
                         {
                           commonStore.organListForHeader.list?.map(item => (
