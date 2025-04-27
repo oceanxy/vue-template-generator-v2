@@ -182,12 +182,12 @@ export default createStore({
       setParamsUseInHeader() {
         if (configs.header?.params?.show) {
           const appName = getFirstLetterOfEachWordOfAppName()
+          const organId = localStorage.getItem(`${appName}-headerId`) || this.userInfo.organId || ''
 
-          localStorage.setItem(`${appName}-headerId`, this.userInfo.organId || '')
+          localStorage.setItem(`${appName}-headerId`, organId)
           const commonStore = useStore('/common')
 
-
-          commonStore.headerId = this.userInfo.organId
+          commonStore.headerId = organId
           commonStore.organListForHeader.list = this.userInfo.organList
         }
       },
