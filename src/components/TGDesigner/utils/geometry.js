@@ -448,7 +448,7 @@ export const Geometry = {
     dragPreview.style.position = 'fixed'
     dragPreview.style.pointerEvents = 'none'
     dragPreview.style.zIndex = '9999'
-    dragPreview.style.opacity = '0.5'
+    dragPreview.style.opacity = '0.8'
     dragPreview.appendChild(el)
     document.body.appendChild(dragPreview)
 
