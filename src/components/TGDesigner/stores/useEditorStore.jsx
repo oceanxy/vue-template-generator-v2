@@ -6,6 +6,7 @@ import { cloneDeep } from 'lodash'
 import { canvasConfigForm, schema } from '../schemas'
 import { getUUID } from '@/utils/utilityFunction'
 import BasicMaterials from '../materials/meta/BasicMaterials'
+import AwardDynamics from '../materials/meta/AwardDynamics'
 
 export const useEditorStore = defineStore('editor', {
   state: () => ({
@@ -36,7 +37,8 @@ export const useEditorStore = defineStore('editor', {
     components: {
       basic: BasicMaterials,
       template: [
-        ProductCardMeta
+        ProductCardMeta,
+        AwardDynamics
       ],
       layout: [FlexLayoutMeta]
     }

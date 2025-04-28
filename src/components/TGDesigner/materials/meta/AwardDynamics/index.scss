@@ -1,0 +1,142 @@
+.tg-designer-award-dynamics {
+  width: 100%;
+  background-color: #ffffff;
+  padding: 20px;
+  box-sizing: border-box;
+
+  .tg-award-dynamics-header {
+    margin-bottom: 20px;
+
+    .tg-award-dynamics-title {
+      color: #333333;
+      display: flex;
+      justify-content: space-between;
+
+      & > span:first-child {
+        font-size: 24px;
+        font-weight: bolder;
+      }
+    }
+
+    .tg-award-dynamics-description {
+      font-size: 14px;
+      color: #666666;
+    }
+  }
+
+  .tg-award-dynamics-item {
+    display: flex;
+    height: 80px;
+    gap: 10px;
+    position: relative;
+
+    img {
+      width: auto;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      flex: none;
+      pointer-events: none;
+    }
+
+    .tg-award-dynamics-item-content {
+      flex: auto;
+      align-items: flex-start;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #333333;
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: column;
+
+      .tg-adc-title {
+        padding-top: 4px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .tg-adc-content {
+        padding-bottom: 4px;
+        color: #999999;
+        margin-bottom: 0;
+        white-space: break-spaces;
+      }
+    }
+  }
+
+  .tg-award-dynamics-content-highlight {
+    display: flex;
+    gap: 60px;
+
+    .tg-award-dynamics-item.tg-award-dynamics-item-first {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      border-radius: 4px;
+      height: auto;
+
+      img {
+        flex: none;
+        height: 300px;
+      }
+
+      .tg-award-dynamics-item-content {
+        flex: none;
+        height: 80px;
+      }
+    }
+
+    .tg-award-dynamics-items-other {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+
+      .tg-award-dynamics-item:not(:first-child) {
+        margin-top: 70px;
+
+        &::after {
+          content: '';
+          display: inline-block;
+          width: 100%;
+          height: 1px;
+          position: absolute;
+          background: var(--tg-theme-color-border);
+          top: -35px;
+        }
+      }
+    }
+  }
+
+  .tg-award-dynamics-content {
+    display: flex;
+    column-gap: 30px;
+    width: 100%;
+    flex-wrap: wrap;
+    padding-top: 20px;
+
+    & > .tg-award-dynamics-item {
+      width: calc((100% - 30px) / 2);
+
+      &:nth-child(n + 3) {
+        margin-top: 70px;
+
+        &::after {
+          content: '';
+          display: inline-block;
+          width: 100%;
+          height: 1px;
+          position: absolute;
+          background: var(--tg-theme-color-border);
+          top: -35px;
+        }
+      }
+    }
+  }
+
+  .tg-award-dynamics-more {
+    text-align: right;
+    margin-top: 10px;
+  }
+}

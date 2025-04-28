@@ -8,7 +8,7 @@ import getPropertyField from '@/components/TGDesigner/properties'
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-product-card',
+  type: 'tg-template-product-card',
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
   icon: <ShopOutlined />,
   preview: props => <ProductCardPreview {...props} />,
