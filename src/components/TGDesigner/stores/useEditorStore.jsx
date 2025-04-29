@@ -7,6 +7,7 @@ import { canvasConfigForm, schema } from '../schemas'
 import { getUUID } from '@/utils/utilityFunction'
 import BasicMaterials from '../materials/meta/BasicMaterials'
 import AwardDynamics from '../materials/meta/AwardDynamics'
+import MainAward from '../materials/meta/MainAward'
 
 export const useEditorStore = defineStore('editor', {
   state: () => ({
@@ -38,6 +39,7 @@ export const useEditorStore = defineStore('editor', {
       basic: BasicMaterials,
       template: [
         ProductCardMeta,
+        MainAward,
         AwardDynamics
       ],
       layout: [FlexLayoutMeta]

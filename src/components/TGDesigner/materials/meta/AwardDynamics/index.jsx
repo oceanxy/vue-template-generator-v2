@@ -59,9 +59,9 @@ export default {
   },
   style: {
     width: '100%',
-    backgroundColor: '#ffffff'
+    backgroundColor: ''
   },
-  class: 'tg-designer-award-dynamics',
+  class: '',
   configForm: {
     fields: [
       {
