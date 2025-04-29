@@ -80,28 +80,6 @@ export default {
         ]
       },
       {
-        label: '动态项',
-        items: [
-          getPropertyField('dynamicList', {
-            label: '动态项',
-            title: '动态项',
-            prop: 'items',
-            itemFields: [
-              getPropertyField('image', {
-                label: '图片',
-                title: '图片',
-                prop: 'image'
-              }),
-              getPropertyField('input', {
-                label: '内容',
-                title: '内容',
-                prop: 'content'
-              })
-            ]
-          })
-        ]
-      },
-      {
         label: '布局',
         items: [
           getPropertyField('switch', {

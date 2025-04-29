@@ -65,16 +65,14 @@ export const Geometry = {
    * @param {number} mouseY
    * @param {HTMLElement[]} children
    * @param containerRect
-   * @param scrollTop
+   * @param containerScrollTop
    * @returns {boolean}
    */
-  isInsideAnyComponent(mouseY, children, containerRect, scrollTop) {
+  isInsideAnyComponent(mouseY, children, containerRect, containerScrollTop) {
     return children.some(child => {
       const childRect = child.getBoundingClientRect()
-      // 增加2px的缓冲区
-      const topThreshold = Math.max(2, childRect.height * 0.1)
-      const adjustedTop = childRect.top - containerRect.top + scrollTop + topThreshold
-      const adjustedBottom = childRect.bottom - containerRect.top + scrollTop - topThreshold
+      const adjustedTop = childRect.top - containerRect.top + containerScrollTop
+      const adjustedBottom = childRect.bottom - containerRect.top + containerScrollTop
 
       return mouseY >= adjustedTop && mouseY <= adjustedBottom
     })
@@ -388,11 +386,18 @@ export const Geometry = {
       : e.clientY - containerRect.top + container.scrollTop
   },
 
+  /**
+   * 获取当前容器下的子元素
+   * @param children {HTMLCollection}
+   * @returns {{all: unknown[], valid: unknown[]}}
+   */
   getValidChildren(children) {
-    return Array.from(children)
+    const all = Array.from(children)
       .filter(el => el.classList.contains('tg-designer-drag-component'))
-      // 排除正在拖动的元素
-      .filter(el => !el.classList.contains('dragging'))
+    // 排除正在拖动的元素
+    const valid = all.filter(el => !el.classList.contains('dragging'))
+
+    return { all, valid }
   },
 
   /**
