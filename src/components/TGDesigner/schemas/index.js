@@ -34,7 +34,7 @@ export const schema = {
       gap: 8,
       alignItems: 'flex-start',
       justifyContent: 'flex-start',
-      backgroundColor: '#ffffff',
+      backgroundColor: '',
       backgroundImage: '',
       backgroundSize: '',
       backgroundPosition: 'center',

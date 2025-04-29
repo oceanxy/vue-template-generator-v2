@@ -98,16 +98,16 @@
   }
 
   .tg-designer-canvas-wrapper {
-    margin: 2px;
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    padding: 10px;
 
     .tg-designer-canvas-layout {
-      padding: 12px;
+      padding: 3px; // 为了适配画布的选中样式
       width: 100%;
       max-width: 100%;
       height: 100%;
@@ -115,6 +115,11 @@
       display: flex;
       justify-content: flex-start;
       align-items: flex-start;
+      // 画布操作区域棋盘背景
+      background-image: linear-gradient(45deg, #dcdcdc 25%, transparent 25%, transparent 75%, #dcdcdc 75%),
+      linear-gradient(45deg, #dcdcdc 25%, transparent 25%, transparent 75%, #dcdcdc 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
 
       .tg-designer-canvas-container {
         position: relative;
