@@ -195,6 +195,7 @@ export default function useThemeVars() {
       '--tg-theme-color-text-quaternary': token.value.colorTextQuaternary,
       '--tg-theme-color-bg-container': token.value.colorBgContainer,
       '--tg-theme-color-bg-elevated': token.value.colorBgElevated,
+      '--tg-theme-color-bg-layout': token.value.colorBgLayout,
       '--tg-theme-color-fill-quaternary': token.value.colorFillQuaternary,
       '--tg-theme-color-fill-secondary': token.value.colorFillSecondary,
       '--tg-theme-color-fill-tertiary': token.value.colorFillTertiary,
