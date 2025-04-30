@@ -122,7 +122,7 @@ export default function useDragDrop() {
         ? e.clientX - containerRect.left
         : e.clientY - containerRect.top + dropContainer.scrollTop
       // 获取容器内可见子元素
-      const children = Geometry.getValidChildren(dropContainer.children)
+      const children = Geometry.getValidChildren(dropContainer.children).valid
       // 计算中间点（基于实际容器）
       const midPoints = Geometry.calculateCompMidPoints(
         containerRect,

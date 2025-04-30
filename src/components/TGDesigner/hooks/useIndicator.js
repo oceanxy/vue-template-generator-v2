@@ -56,7 +56,8 @@ export default function useIndicator() {
     })
 
     // 获取可见子元素
-    const children = Geometry.getValidChildren(dropContainer.children)
+    const _children = Geometry.getValidChildren(dropContainer.children)
+    const children = _children.valid
 
     // 空容器处理
     if (!children.length) {
@@ -64,10 +65,10 @@ export default function useIndicator() {
     } else {
       // 计算相对位置
       const containerRect = dropContainer.getBoundingClientRect()
-      const scrollTop = dropContainer.scrollTop
-      let mouseY = e.clientY - containerRect.top + scrollTop
+      const containerScrollTop = dropContainer.scrollTop
+      let mouseY = e.clientY - containerRect.top + containerScrollTop
 
-      if (Geometry.isInsideAnyComponent(mouseY, children, containerRect, scrollTop)) {
+      if (Geometry.isInsideAnyComponent(mouseY, _children.all, containerRect, containerScrollTop)) {
         // 处理组件内部拖拽
         handleComponentDrag(e, dropContainer, children, containerRect)
       } else {
@@ -88,7 +89,7 @@ export default function useIndicator() {
     // 检查是否是布局组件的布局容器内部
     if (indicator.value.containerType === 'layout') {
       const direction = getLayoutDirection(container)
-      children = Geometry.getValidChildren(container.children)
+      children = Geometry.getValidChildren(container.children).valid
 
       // 处理布局组件中空的布局容器，直接显示容器指示线
       // if (!children?.length) {
@@ -181,8 +182,8 @@ export default function useIndicator() {
       }
 
       relativePosition = {
-        top: container.offsetTop,
-        left: container.offsetLeft,
+        top: padding.top + container.scrollTop,
+        left: padding.left + container.scrollLeft,
         width: containerRect.width - padding.left - padding.right,
         height: containerRect.height - padding.top - padding.bottom
       }

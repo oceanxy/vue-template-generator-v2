@@ -8,7 +8,7 @@ import getPropertyField from '@/components/TGDesigner/properties'
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-product-card',
+  type: 'tg-template-product-card',
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
   icon: <ShopOutlined />,
   preview: props => <ProductCardPreview {...props} />,
@@ -22,7 +22,7 @@ export default {
     // padding: '12px'
     backgroundColor: '#ffffff'
   },
-  class: 'tg-designer-product-card',
+  class: '',
   configForm: {
     fields: [
       {
@@ -76,10 +76,7 @@ export const ProductCardPreview = {
   setup(props) {
     return () => (
       <div
-        class={{
-          'tg-designer-template-container': true,
-          [props.class]: true
-        }}
+        class='tg-designer-product-card'
         style={{
           border: '1px solid #ddd',
           borderRadius: '4px',
