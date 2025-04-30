@@ -12,17 +12,17 @@ export default {
     const materials = [
       {
         category: TG_MATERIAL_CATEGORY.LAYOUT,
-        title: '布局组件',
+        title: '布局部件',
         components: store.components[TG_MATERIAL_CATEGORY.LAYOUT]
       },
       {
         category: TG_MATERIAL_CATEGORY.BASIC,
-        title: '基础组件',
+        title: '基础部件',
         components: store.components[TG_MATERIAL_CATEGORY.BASIC]
       },
       {
         category: TG_MATERIAL_CATEGORY.TEMPLATE,
-        title: '模板组件',
+        title: '模板部件',
         components: store.components[TG_MATERIAL_CATEGORY.TEMPLATE]
       }
     ]
