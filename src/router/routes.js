@@ -14,15 +14,21 @@ export default function getBaseRoutes(routes) {
   const appName = getFirstLetterOfEachWordOfAppName()
   let rootRoutes
   const homePermissions = typeof configs.homePermissions === 'boolean' ? configs.homePermissions : true
+  const staticRoutes = __TG_APP_ROUTES__?.staticRoutes?.map(staticRoute => {
+    return {
+      ...staticRoute,
+      path: staticRoute.path.replace('{appName}', appName)
+    }
+  }) ?? []
 
   if (Array.isArray(routes) && routes.length) {
     // 查询子项目路由中是否存在静态路由，如果有就把静态路由插入到 rootRoutes 中
-    __TG_APP_ROUTES__.staticRoutes?.forEach(staticRoute => {
-      // 筛除重复的路由
-      if (routes.findIndex(route => route.name === staticRoute.name) === -1) {
-        routes.unshift(staticRoute)
-      }
-    })
+    // __TG_APP_ROUTES__.staticRoutes?.forEach(staticRoute => {
+    // 筛除重复的路由
+    // if (routes.findIndex(route => route.name === staticRoute.name) === -1) {
+    //   routes.unshift(staticRoute)
+    // }
+    // })
 
     // 查找根路由
     const homeIndex = routes.findIndex(route => route.path === '/')
@@ -44,7 +50,7 @@ export default function getBaseRoutes(routes) {
         }
       }
     } else {
-      // 当 Routes 不包含跟路由时，则直接将该 Routes 视为跟路由的 children
+      // 当 Routes 不包含根路由时，则直接将该 Routes 视为根路由的 children
       rootRoutes = [
         {
           path: '/',
@@ -72,7 +78,7 @@ export default function getBaseRoutes(routes) {
       ]
     }
   } else {
-    // 当传递的 Vue.Routes 数据时不合法时
+    // 当传递的 Vue.Routes 数据不合法时
     rootRoutes = [
       {
         path: '/',
@@ -109,6 +115,7 @@ export default function getBaseRoutes(routes) {
       }
     },
     ...rootRoutes,
+    ...staticRoutes,
     {
       path: '/no-access',
       name: 'NoAccess',
