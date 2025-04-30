@@ -42,7 +42,10 @@ export default {
                 }}
                 prefix={
                   <div
-                    class="color-block"
+                    class={{
+                      'color-block': true,
+                      'color-block-empty': !colorValue.value
+                    }}
                     style={{
                       width: '16px',
                       height: '16px',
