@@ -179,6 +179,7 @@ export default function useThemeVars() {
       '--tg-theme-color-primary-border-hover': token.value.colorPrimaryBorderHover,
       '--tg-theme-color-error': token.value.colorError,
       '--tg-theme-color-error-bg': token.value.colorErrorBg,
+      '--tg-theme-color-success': token.value.colorSuccess,
       '--tg-theme-color-border': token.value.colorBorder,
       '--tg-theme-color-border-reset': mode !== 'darkAlgorithm' ? token.value.colorBorderSecondary : '#303030',
       '--tg-theme-color-header-text': mode !== 'darkAlgorithm' ? '#c2c2c2' : '#7f7f7f',
