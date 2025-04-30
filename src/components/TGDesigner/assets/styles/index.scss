@@ -3,18 +3,84 @@
 
   .tg-designer-header {
     position: relative;
-    height: 48px;
+    height: 56px;
     flex: none;
-    padding: 8px 16px;
     background: var(--tg-theme-color-bg-container);
     border-bottom: 1px solid var(--tg-theme-color-border);
 
     .tg-designer-tools {
+      height: 100%;
       position: relative;
-      padding-bottom: 4px;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: stretch;
       gap: 6px;
+
+      .tg-designer-functions {
+        display: flex;
+        gap: 30px;
+
+        .tg-designer-logo {
+          width: 260px;
+          background: linear-gradient(90deg, #d4faff, #dbe4fa, #e6edfb, #ffffff);
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 0 14px;
+
+          .tg-designer-logo-text {
+            font-size: 16px;
+            font-weight: bolder;
+            font-style: oblique;
+          }
+
+          .tg-designer-logo-version {
+            font-size: 14px;
+            font-weight: 600;
+
+            .ant-tag {
+              margin-left: 4px;
+              border-radius: 10px;
+            }
+          }
+        }
+
+        .tg-designer-page-name {
+          display: flex;
+          align-items: center;
+
+          .ant-input-affix-wrapper {
+            background: #ededed;
+
+            .ant-input {
+              background: none;
+            }
+          }
+        }
+
+        .tg-designer-canvas-functions {
+          display: flex;
+          gap: 20px;
+          align-items: center;
+          justify-content: flex-start;
+
+          .ant-btn {
+            border: 0;
+          }
+
+          .anticon {
+            font-size: 18px;
+          }
+        }
+      }
+
+      .tg-designer-template-functions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding-inline-end: 10px;
+      }
 
       .save-status-bar {
         position: absolute;
@@ -66,31 +132,42 @@
         }
 
         .tg-designer-material-items {
-          margin-bottom: 20px;
-          border: 1px dashed #d9d9d9;
-          padding: 8px;
-          transition: all 0.2s;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
 
-          [draggable='true'] {
-            cursor: grab;
+          .tg-designer-material-item {
+            width: calc((100% - 20px) / 2);
+            border: 1px solid #d9d9d9;
+            transition: all 0.2s;
+            padding: 6px;
 
-            &:active {
-              cursor: grabbing;
+            [draggable='true'] {
+              cursor: grab;
+
+              &:active {
+                cursor: grabbing;
+              }
             }
-          }
 
-          & > * {
-            cursor: move;
-            width: 100%;
-          }
+            & > * {
+              cursor: move;
+              width: 100%;
+            }
 
-          &:hover {
-            border-color: var(--tg-theme-color-primary);
-            background-color: #e6f7ff;
-          }
+            &:hover {
+              border-color: var(--tg-theme-color-primary);
+              background-color: #e6f7ff;
+            }
 
-          .ant-image .ant-image-img {
-            pointer-events: none;
+            .tg-designer-material-item-name {
+              padding: 2px 10px;
+              font-weight: 500;
+            }
+
+            .ant-image .ant-image-img {
+              pointer-events: none;
+            }
           }
         }
       }

@@ -1,7 +1,7 @@
 import { Flex } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
-import { range } from 'lodash'
 import getPropertyField from '@/components/TGDesigner/properties'
+import { range } from 'lodash'
 
 /**
  * 组件元数据
@@ -10,7 +10,7 @@ import getPropertyField from '@/components/TGDesigner/properties'
 export default {
   type: 'tg-layout-flex',
   category: TG_MATERIAL_CATEGORY.LAYOUT,
-  icon: '',
+  name: 'Flex容器',
   preview: FlexLayoutPreview,
   defaultProps: {
     gap: 8,
@@ -26,7 +26,7 @@ export default {
     border: '1px dashed #d9d9d9',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '',
     // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
     backgroundImage: '',
     backgroundSize: '',
@@ -184,13 +184,13 @@ export function FlexLayoutPreview(props) {
     restProps.style.backgroundImage = 'unset'
 
     return (
-      <Flex {...restProps} gap={8} wrap={'wrap'}>
+      <Flex {...restProps} gap={8} wrap={'wrap'} style={{ padding: '8px' }}>
         {
           range(0, 3, 1).map(c => (
             <div
               style={{
                 background: '#d5d5d5',
-                minHeight: '20px',
+                minHeight: '16px',
                 width: 'calc((100% - 16px) / 3)'
               }}
             />

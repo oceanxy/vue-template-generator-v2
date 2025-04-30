@@ -16,7 +16,7 @@ export default {
 
         <Layout>
           <Layout.Sider
-            width={200}
+            width={300}
             theme="light"
             class={'tg-designer-material-wrapper'}
           >

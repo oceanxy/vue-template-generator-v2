@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { TG_MATERIAL_CATEGORY } from '../materials'
-import ProductCardMeta from '../materials/meta/ProductCard'
 import FlexLayoutMeta from '../materials/meta/FlexLayout'
 import { cloneDeep } from 'lodash'
 import { canvasConfigForm, schema } from '../schemas'
@@ -38,7 +37,6 @@ export const useEditorStore = defineStore('editor', {
     components: {
       basic: BasicMaterials,
       template: [
-        ProductCardMeta,
         MainAward,
         AwardDynamics
       ],

@@ -7,11 +7,11 @@ export default [
   {
     type: 'a-button',
     category: TG_MATERIAL_CATEGORY.BASIC,
-    icon: '',
+    name: '按钮',
     preview: props => <Button {...props}>{props.slot}</Button>,
     defaultProps: {
       type: 'primary',
-      slot: '按钮'
+      slot: 'Button'
     },
     style: {
       width: '',
@@ -74,7 +74,7 @@ export default [
   {
     type: 'a-input',
     category: TG_MATERIAL_CATEGORY.BASIC,
-    icon: '',
+    name: '文本框',
     preview: props => <Input {...props} readonly={props.previewType !== 'preview'} />,
     defaultProps: {
       placeholder: '请输入'
@@ -122,10 +122,10 @@ export default [
   {
     type: 'a-typography-text',
     category: TG_MATERIAL_CATEGORY.BASIC,
-    icon: '',
+    name: '文本',
     preview: props => <TypographyText {...props}>{props.slot}</TypographyText>,
     defaultProps: {
-      slot: '这里是文本内容...',
+      slot: '文本内容...',
       underline: false,
       type: '',
       strong: false,
@@ -236,10 +236,10 @@ export default [
   {
     type: 'a-divider',
     category: TG_MATERIAL_CATEGORY.BASIC,
-    icon: '',
+    name: '分割线',
     preview: props => <Divider {...props}>{props.slot}</Divider>,
     defaultProps: {
-      slot: '分割线',
+      slot: '',
       dashed: false,
       orientation: 'center',
       plain: false,
@@ -333,7 +333,7 @@ export default [
   {
     type: 'a-image',
     category: TG_MATERIAL_CATEGORY.BASIC,
-    icon: '',
+    name: '图片',
     preview: props => <Image {...props} />,
     defaultProps: {
       placeholder: true,

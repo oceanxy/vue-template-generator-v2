@@ -47,30 +47,32 @@ export default {
                 }}
               >
                 <h4 class="tg-designer-material-title">{material.title}</h4>
-                {
-                  material.components?.length
-                    ? material.components.map(comp => (
-                      <div
-                        key={comp.type}
-                        class={'tg-designer-material-items'}
-                        draggable
-                        onDragstart={(e) => handleMaterialDragStart(e, comp)}
-                      >
-                        {/*{comp.icon}*/}
-                        {
-                          comp.preview({
-                            ...comp.defaultProps,
-                            style: {
-                              ...styleWithUnits(comp.defaultProps?.style ?? {}),
-                              ...styleWithUnits(comp.style || {})
-                            },
-                            previewType: 'material'
-                          })
-                        }
-                      </div>
-                    ))
-                    : <div>暂无组件</div>
-                }
+                <div class="tg-designer-material-items">
+                  {
+                    material.components?.length
+                      ? material.components.map(comp => (
+                        <div
+                          key={comp.type}
+                          class={'tg-designer-material-item'}
+                          draggable
+                          onDragstart={(e) => handleMaterialDragStart(e, comp)}
+                        >
+                          <div class={'tg-designer-material-item-name'}>{comp.name}</div>
+                          {
+                            comp.preview({
+                              ...comp.defaultProps,
+                              style: {
+                                ...styleWithUnits(comp.defaultProps?.style ?? {}),
+                                ...styleWithUnits(comp.style || {})
+                              },
+                              previewType: 'material'
+                            })
+                          }
+                        </div>
+                      ))
+                      : <div>暂无组件</div>
+                  }
+                </div>
               </div>
             ))
           }

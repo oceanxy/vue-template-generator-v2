@@ -1,4 +1,3 @@
-import { TrophyOutlined } from '@ant-design/icons-vue'
 import getPropertyField from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import { Button, TypographyParagraph } from 'ant-design-vue'
@@ -12,7 +11,7 @@ import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
 export default {
   type: 'tg-template-award-dynamics',
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
-  icon: <TrophyOutlined />,
+  name: '图文列表',
   preview: props => {
     if (props.previewType !== 'material') {
       return <AwardDynamics {...props} />
@@ -59,23 +58,34 @@ export default {
   },
   style: {
     width: '100%',
-    backgroundColor: ''
+    height: '',
+    backgroundColor: '',
+    backgroundImage: '',
+    backgroundSize: '',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
   },
   class: '',
   configForm: {
     fields: [
       {
-        label: '基本信息',
+        label: '尺寸',
         items: [
           getPropertyField('input', {
-            label: '标题',
-            title: '标题',
-            prop: 'title'
+            label: '宽度',
+            title: '容器宽度（支持百分比和像素单位）',
+            prop: 'width',
+            props: {
+              placeholder: '自适应'
+            }
           }),
           getPropertyField('input', {
-            label: '描述',
-            title: '描述',
-            prop: 'description'
+            label: '高度',
+            title: '容器高度（支持像素单位，默认自适应）',
+            prop: 'height',
+            props: {
+              placeholder: '自适应'
+            }
           })
         ]
       },
@@ -87,6 +97,57 @@ export default {
             title: '突出展示第一条数据',
             prop: 'highlightFirstItem',
             modelProp: 'checked'
+          })
+        ]
+      },
+      {
+        label: '背景',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '背景颜色(background-color)',
+            prop: 'backgroundColor'
+          }),
+          getPropertyField('input', {
+            label: '图片',
+            title: '背景图片(background-image)',
+            prop: 'backgroundImage',
+            props: {
+              placeholder: '请输入图片地址',
+              maxLength: 250
+            }
+          }),
+          getPropertyField('input', {
+            label: '图片尺寸',
+            title: '背景图片尺寸(background-size)',
+            prop: 'backgroundSize',
+            props: {
+              maxLength: 20,
+              placeholder: '自动'
+            }
+          }),
+          getPropertyField('input', {
+            label: '图片位置',
+            title: '背景图片位置(background-position)',
+            prop: 'backgroundPosition',
+            props: {
+              maxLength: 20
+            }
+          }),
+          getPropertyField('select', {
+            label: '图片重复',
+            title: '背景图片重复(background-repeat)',
+            prop: 'backgroundRepeat',
+            props: {
+              options: [
+                { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
+                { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
+                { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
+                { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
+                { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
+                { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
+              ]
+            }
           })
         ]
       }

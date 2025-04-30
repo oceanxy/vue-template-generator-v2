@@ -1,9 +1,9 @@
-import { Button, message } from 'ant-design-vue'
+import { Button, Input, message, Tag } from 'ant-design-vue'
 import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import { computed, onUnmounted, toRaw, watch, watchEffect } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
-import { EyeOutlined, RedoOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons-vue'
+import { EyeOutlined, FileOutlined, RedoOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons-vue'
 import router from '@/router'
 
 export default {
@@ -62,25 +62,40 @@ export default {
 
     return () => (
       <div class={'tg-designer-tools'}>
-        <Button
-          onClick={handleSchemaSave}
-          data-saving={isSaving.value ? 'true' : null}
-          icon={<SaveOutlined />}
-          title={'保存'}
-        />
-        <Button
-          icon={<RedoOutlined />}
-          title={'重做'}
-        />
-        <Button
-          icon={<UndoOutlined />}
-          title={'撤销'}
-        />
-        <Button
-          onClick={handlePreview}
-          icon={<EyeOutlined />}
-          title={'预览'}
-        />
+        <div class={'tg-designer-functions'}>
+          <div class={'tg-designer-logo'}>
+            <div class={'tg-designer-logo-text'}>建家开店-页面设计器</div>
+            <div class={'tg-designer-logo-version'}>CHS-DESIGNER <Tag color="volcano">v1.0</Tag></div>
+          </div>
+          <div class={'tg-designer-page-name'}>
+            <Input placeholder={'页面名称'} prefix={<FileOutlined />} />
+          </div>
+          <div class={'tg-designer-canvas-functions'}>
+            <Button
+              icon={<RedoOutlined />}
+              title={'重做'}
+            />
+            <Button
+              icon={<UndoOutlined />}
+              title={'撤销'}
+            />
+            <Button
+              onClick={handleSchemaSave}
+              data-saving={isSaving.value ? 'true' : null}
+              icon={<SaveOutlined />}
+              title={'保存'}
+            />
+            <Button
+              onClick={handlePreview}
+              icon={<EyeOutlined />}
+              title={'预览'}
+            />
+          </div>
+        </div>
+        <div class={'tg-designer-template-functions'}>
+          <Button type={'primary'}>恢复模版</Button>
+          <Button type={'primary'}>模板中心</Button>
+        </div>
         {
           isSaving.value && (
             <div class="save-status-bar">

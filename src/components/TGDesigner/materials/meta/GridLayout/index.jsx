@@ -10,7 +10,7 @@ import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 export default {
   type: 'tg-grid-layout',
   category: TG_MATERIAL_CATEGORY.LAYOUT,
-  icon: '',
+  name: 'Grid容器',
   preview: GridLayoutPreview,
   defaultProps: {
     gutterX: 8,
