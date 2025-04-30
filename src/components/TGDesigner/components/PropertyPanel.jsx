@@ -1,8 +1,9 @@
 import { computed } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '../stores/useEditorStore'
-import { Divider, Empty } from 'ant-design-vue'
+import { Divider, Empty, Tooltip } from 'ant-design-vue'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
+import { QuestionCircleOutlined } from '@ant-design/icons-vue'
 
 export default {
   name: 'PropertyPanel',
@@ -70,7 +71,12 @@ export default {
 
         return (
           <div key={field.prop} class="tg-designer-form-item">
-            <label title={field.title}>{field.label}</label>
+            <label>
+              {field.label}
+              <Tooltip placement="topLeft" title={field.title}>
+                <QuestionCircleOutlined />
+              </Tooltip>
+            </label>
             <CanvasProperty
               {...propertyProps}
               onChange={handlePropertyChange(field.prop)}

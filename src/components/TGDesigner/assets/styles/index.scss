@@ -540,6 +540,8 @@
 
         label {
           flex: none;
+          display: flex;
+          gap: 4px;
         }
 
         & > *:not(label) {
