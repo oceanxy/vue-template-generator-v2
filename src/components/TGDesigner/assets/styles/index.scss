@@ -116,6 +116,30 @@
     }
   }
 
+  .tg-designer-plugins-wrapper {
+    background: #ededed !important;
+
+    .tg-designer-plugin {
+      width: 100%;
+      height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all .2s;
+      user-select: none;
+
+      &:hover {
+        font-weight: bolder;
+      }
+
+      &.selected {
+        background: #ffffff;
+      }
+    }
+  }
+
   .tg-designer-material-wrapper {
     .tg-designer-material-container {
       height: 100%;

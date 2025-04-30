@@ -4,6 +4,7 @@ import MaterialPanel from './components/MaterialPanel'
 import PropertyPanel from './components/PropertyPanel'
 import { Layout } from 'ant-design-vue'
 import Header from './components/Header'
+import { AppstoreOutlined, DatabaseOutlined, FileOutlined } from '@ant-design/icons-vue'
 
 export default {
   name: 'TGDesigner',
@@ -16,24 +17,43 @@ export default {
 
         <Layout>
           <Layout.Sider
-            width={300}
-            theme="light"
-            class={'tg-designer-material-wrapper'}
+            width={60}
+            class={'tg-designer-plugins-wrapper'}
           >
-            <MaterialPanel />
+            <div class={'tg-designer-plugin selected'}>
+              <AppstoreOutlined />
+              <div>物料</div>
+            </div>
+            <div class={'tg-designer-plugin'}>
+              <DatabaseOutlined />
+              <div>数据</div>
+            </div>
+            <div class={'tg-designer-plugin'}>
+              <FileOutlined />
+              <div>页面</div>
+            </div>
           </Layout.Sider>
+          <Layout>
+            <Layout.Sider
+              width={300}
+              theme="light"
+              class={'tg-designer-material-wrapper'}
+            >
+              <MaterialPanel />
+            </Layout.Sider>
 
-          <Layout.Content class={'tg-designer-canvas-wrapper'}>
-            <Canvas />
-          </Layout.Content>
+            <Layout.Content class={'tg-designer-canvas-wrapper'}>
+              <Canvas />
+            </Layout.Content>
 
-          <Layout.Sider
-            width={300}
-            theme="light"
-            class={'tg-designer-property-wrapper'}
-          >
-            <PropertyPanel />
-          </Layout.Sider>
+            <Layout.Sider
+              width={300}
+              theme="light"
+              class={'tg-designer-property-wrapper'}
+            >
+              <PropertyPanel />
+            </Layout.Sider>
+          </Layout>
         </Layout>
       </Layout>
     )
