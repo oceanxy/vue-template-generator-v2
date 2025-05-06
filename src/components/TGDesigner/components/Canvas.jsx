@@ -41,6 +41,7 @@ export default {
         store.updateComponent({
           type: 'canvas',
           id: 'canvas-root',
+          name: '画布',
           configForm: store.canvasConfigForm
         })
       }

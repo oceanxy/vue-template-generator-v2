@@ -121,8 +121,8 @@ export default function getPropertyField(componentType, props) {
       inputNumber: InputNumber,
       radio: Radio,
       radioGroup: <RadioGroup size="small" optionType="button" />,
-      select: <Select size="small" />,
-      switch: <Switch size="small" />,
+      select: <Select />,
+      switch: <Switch />,
       colorPicker: TGColorPicker
     }[componentType])
   }

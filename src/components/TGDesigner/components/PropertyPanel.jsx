@@ -97,6 +97,9 @@ export default {
 
       return (
         <div class="tg-designer-property-container">
+          <div class='tg-designer-property-comp-type'>
+            {selectedComponent.value.name}
+          </div>
           {renderPropertyFields(selectedComponent.value.configForm.fields)}
         </div>
       )
