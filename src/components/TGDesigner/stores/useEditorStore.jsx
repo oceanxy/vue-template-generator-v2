@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { TG_MATERIAL_CATEGORY } from '../materials'
 import FlexLayoutMeta from '../materials/meta/FlexLayout'
+import GridLayoutMeta from '../materials/meta/GridLayout'
 import { cloneDeep } from 'lodash'
 import { canvasConfigForm, schema } from '../schemas'
 import { getUUID } from '@/utils/utilityFunction'
@@ -40,7 +41,7 @@ export const useEditorStore = defineStore('editor', {
         MainAward,
         AwardDynamics
       ],
-      layout: [FlexLayoutMeta]
+      layout: [FlexLayoutMeta, GridLayoutMeta]
     }
   }),
   actions: {
@@ -48,9 +49,10 @@ export const useEditorStore = defineStore('editor', {
      * 创建schema
      * @param componentMeta {TGComponentMeta} - 用来复制props的组件元数据
      * @param parentId {string} - 父组件ID
+     * @param [cellPosition] {string} - Grid布局组件专用的单元格位置信息
      * @returns {TGComponentSchema}
      */
-    createComponentSchema(componentMeta, parentId) {
+    createComponentSchema(componentMeta, parentId, cellPosition) {
       const markChildren = (schema) => {
         schema.__initialized = false
         schema.__animating = true
@@ -63,6 +65,7 @@ export const useEditorStore = defineStore('editor', {
       const newSchema = {
         id: `comp_${Date.now()}_${getUUID()}`,
         parentId,
+        cellPosition,
         type: componentMeta.type,
         category: componentMeta.category,
         props: {

@@ -59,8 +59,8 @@ export default function useIndicator() {
     const _children = Geometry.getValidChildren(dropContainer.children)
     const children = _children.valid
 
-    // 空容器处理
-    if (!children.length) {
+    // 空容器或Grid布局组件强制显示为容器指示线
+    if (!children.length || (containerType && dropContainer.dataset?.cellPosition)) {
       handleContainerIndicator(dropContainer, isInsideLayoutContainer)
     } else {
       // 计算相对位置

@@ -103,12 +103,16 @@ export default {
 
       component.style = omit(component.style, ['width', 'height'])
 
+      // 布局组件需要添加额外的样式
       const canvasCompCategoryClassName = `tg-designer-${componentSchema.category}-component`
 
       // 添加布局组件的嵌套支持
       if (isLayoutComp) {
-        // 在画布中时，布局组件的布局方向要应用到拖拽容器上，让画布呈现和预览呈现保持一致。
-        dragCompStyle.style.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
+        if (componentSchema.type === 'tg-layout-flex') {
+          // 在画布中时，Flex布局组件的布局方向要应用到拖拽容器上，让画布呈现和预览呈现保持一致。
+          dragCompStyle.style.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
+        }
+
         component.children = componentSchema.children?.map(childSchema =>
           renderCanvasFromSchemas(childSchema, componentSchema.id)
         ) ?? []
@@ -121,9 +125,10 @@ export default {
           data-parent-id={parentId}
           data-selected={selectedComponent.value?.id === componentSchema.id}
           data-nested-level={Geometry.calculateNestedLevelById(componentSchema.id, componentSchemas.value)} // 新增此行
+          data-cell-position={componentSchema.cellPosition}
           draggable
           class={{
-            [canvasCompCategoryClassName]: true,
+            [canvasCompCategoryClassName]: true, // tg-designer-layout-component
             'tg-designer-drag-component': true,
             'dragging': componentSchema.__dragging, // 拖动状态样式
             'component-enter-active': componentSchema.__animating && !componentSchema.__initialized,
@@ -134,7 +139,7 @@ export default {
           onDragstart={e => handleCompDragStart(e, componentSchema)}
           onDragend={e => handleCompDragEnd(e, componentSchema)}
         >
-          {componentDef.preview(component)}
+          {componentDef.preview(component, componentSchema)}
         </div>
       )
     }

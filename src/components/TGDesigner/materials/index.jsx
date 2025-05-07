@@ -6,7 +6,7 @@
  * @property {string} type - 组件类型标识
  * @property {TG_MATERIAL_CATEGORY} category - 物料类型
  * @property {string} name - 组件名称
- * @property {function(Object): Element|JSX.Element} preview - 拖拽时的预览组件
+ * @property {function(Object, TGComponentSchema): Element|JSX.Element} preview - 拖拽时的预览组件
  * @property {Object} [defaultProps] - 默认属性值。
  * 注意 defaultProps.style 为组件默认样式，不可通过属性面板修改，仅能被 TGComponentMeta.style 同名样式覆盖
  * @property {{[key in keyof CSSStyleDeclaration]?: string}} [style] - 组件样式。此对象内的样式可在属性面板中进行修改

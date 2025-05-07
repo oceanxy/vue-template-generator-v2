@@ -378,18 +378,22 @@ export const Geometry = {
   /**
    * 计算布局方向
    * @param componentId
-   * @returns {string|string|string}
+   * @returns {{isInGridLayout: boolean, layoutDirection: string}}
    */
-  getLayoutDirectionById(componentId) {
+  getLayoutInfoById(componentId) {
+    // 查找当前组件的拖拽层
     const element = document.querySelector(`[data-id="${componentId}"]`)
     // 查找最近的布局组件
     const layoutComponent = element?.closest('.tg-designer-layout-container')
 
-    if (!element || !layoutComponent) return 'vertical'
+    if (!element || !layoutComponent) return { isInGridLayout: false, layoutDirection: 'vertical' }
 
     const style = window.getComputedStyle(layoutComponent)
 
-    return style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
+    return {
+      isInGridLayout: !!layoutComponent.dataset?.cellPosition,
+      layoutDirection: style.flexDirection.startsWith('row') ? 'horizontal' : 'vertical'
+    }
   },
 
   /**
@@ -430,5 +434,91 @@ export const Geometry = {
 
     document.addEventListener('dragover', handleDrag)
     e.target.addEventListener('dragend', cleanup)
+  },
+
+  /**
+   * 在数组中查找给定Grid布局中的下一个空位，查找方向为从左至右，从上到下。
+   * @param elements {Object[]} - 查找源，必须包含`cellPosition`字段
+   * @param [rowCount=2] {number} - 行数，默认2
+   * @param [colCount=2] {number} - 列数，默认2
+   * @param [position] {string} - 查找起始位置，默认为 '0-0'
+   * @returns {{row: number, col: number, position: string} | null}
+   */
+  findNextEmptyPosition({ elements, rowCount = 2, colCount = 2, position = '0-0' } = {}) {
+    // 创建一个映射来快速查找已存在的 positions
+    const positionMap = new Set(elements.map(el => el.cellPosition))
+
+    // 解析起始位置
+    const [startRowStr, startColStr] = position.split('-')
+    let currentRow = parseInt(startRowStr, 10)
+    let currentCol = parseInt(startColStr, 10)
+
+    // 遍历所有可能的位置
+    for (let row = currentRow; row < rowCount; row++) {
+      for (let col = (row === currentRow ? currentCol + 1 : 0); col < colCount; col++) {
+        const pos = `${row}-${col}`
+
+        if (!positionMap.has(pos)) {
+          return { row, col, position: pos } // 返回第一个找到的空位
+        }
+      }
+    }
+
+    // 如果没有找到空位返回 null
+    return null
+  },
+
+  /**
+   * 在数组中查找给定Grid布局中的相邻位置
+   * @param elements {Object[]} - 查找源，必须包含`cellPosition`字段
+   * @param position {string} - 基准位置（格式：row-col）
+   * @param direction {string} - 检查方向（up/down/left/right）
+   * @param [rowCount=2] {number} - 总行数，默认2
+   * @param [colCount=2] {number} - 总列数，默认2
+   * @returns {null | {row: number, col: number, position: string, isEmptyAdjacentLocation: boolean}}
+   */
+  checkAdjacentPositionInGridLayout({ elements, position, direction, rowCount = 2, colCount = 2 } = {}) {
+    // 创建快速查找的position集合
+    const positionSet = new Set(elements.map(el => el.cellPosition))
+
+    // 解析当前坐标
+    const [currentRow, currentCol] = position.split('-').map(Number)
+
+    // 根据方向计算目标坐标
+    let targetRow = currentRow
+    let targetCol = currentCol
+
+    switch (direction) {
+      case 'up':
+        targetRow--
+        break
+      case 'down':
+        targetRow++
+        break
+      case 'left':
+        targetCol--
+        break
+      case 'right':
+        targetCol++
+        break
+      default:
+        throw new Error('无效的搜索方向')
+    }
+
+    // 边界检查（性能关键点）
+    if (targetRow < 0 || targetRow >= rowCount || targetCol < 0 || targetCol >= colCount) {
+      return null
+    }
+
+    // 构造目标位置字符串
+    const targetPos = `${targetRow}-${targetCol}`
+
+    // 返回检查结果
+    return {
+      row: targetRow,
+      col: targetCol,
+      position: targetPos,
+      isEmptyAdjacentLocation: !positionSet.has(targetPos)
+    }
   }
 }
