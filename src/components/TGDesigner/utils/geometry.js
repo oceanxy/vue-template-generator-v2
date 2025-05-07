@@ -301,31 +301,6 @@ export const Geometry = {
   },
 
   /**
-   * 计算最小距离
-   * @param {number} mouseY
-   * @param {HTMLElement[]} children
-   * @param container
-   * @returns {number}
-   */
-  calculateMinDistance(mouseY, children, container) {
-    if (children.length === 0) return Infinity
-
-    const containerRect = container.getBoundingClientRect()
-    const scrollTop = container.scrollTop
-
-    return Math.min(...children.map(child => {
-      const childRect = child.getBoundingClientRect()
-      const topEdge = childRect.top - containerRect.top + scrollTop
-      const bottomEdge = childRect.bottom - containerRect.top + scrollTop
-
-      return Math.min(
-        Math.abs(mouseY - topEdge),
-        Math.abs(mouseY - bottomEdge)
-      )
-    }))
-  },
-
-  /**
    * 检查拖拽边缘阈值（根据布局方向动态调整）
    * @param containerRect - 当前容器元素
    * @param scrollTop
@@ -398,26 +373,6 @@ export const Geometry = {
     const valid = all.filter(el => !el.classList.contains('dragging'))
 
     return { all, valid }
-  },
-
-  /**
-   * 获取元素相对于指定容器的位置
-   * @param {HTMLElement} element
-   * @param {HTMLElement} container
-   * @returns {DOMRect}
-   */
-  getRelativeRect(element, container) {
-    const elementRect = element.getBoundingClientRect()
-    const containerRect = container.getBoundingClientRect()
-
-    return {
-      left: elementRect.left - containerRect.left,
-      top: elementRect.top - containerRect.top,
-      right: elementRect.right - containerRect.left,
-      bottom: elementRect.bottom - containerRect.top,
-      width: elementRect.width,
-      height: elementRect.height
-    }
   },
 
   /**
