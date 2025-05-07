@@ -186,7 +186,7 @@ export function FlexLayoutPreview(props) {
     return (
       <Flex {...restProps} gap={8} wrap={'wrap'} style={{ padding: '8px' }}>
         {
-          range(0, 3, 1).map(c => (
+          range(0, 4, 1).map(c => (
             <div
               style={{
                 background: '#d5d5d5',
