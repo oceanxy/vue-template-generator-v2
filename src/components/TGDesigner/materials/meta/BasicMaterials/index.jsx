@@ -123,7 +123,13 @@ export default [
     type: 'a-typography-text',
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '文本',
-    preview: props => <TypographyText {...props}>{props.slot}</TypographyText>,
+    preview: props => {
+      if (props.italic) {
+        props.style.fontStyle = 'italic'
+      }
+
+      return <TypographyText {...props}>{props.slot}</TypographyText>
+    },
     defaultProps: {
       slot: '文本内容...',
       underline: false,
@@ -131,12 +137,14 @@ export default [
       strong: false,
       mark: false,
       delete: false,
-      ellipsis: false
+      ellipsis: false,
+      italic: false
     },
     style: {
       width: 'auto',
       height: 'auto',
-      fontSize: 14
+      fontSize: 14,
+      lineHeight: ''
     },
     class: '',
     configForm: {
@@ -183,6 +191,20 @@ export default [
               title: '字号',
               label: '字号',
               prop: 'fontSize'
+            }),
+            getPropertyField('input', {
+              title: '行高',
+              label: '行高',
+              prop: 'lineHeight',
+              props: {
+                placeholder: '默认'
+              }
+            }),
+            getPropertyField('switch', {
+              title: '斜体',
+              label: '斜体',
+              prop: 'italic',
+              modelProp: 'checked'
             }),
             getPropertyField('switch', {
               title: '下划线',
