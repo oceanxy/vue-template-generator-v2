@@ -183,17 +183,17 @@ export function GridLayoutPreview(props) {
     colStyle.background = '#d5d5d5'
   }
 
-  const { margin, ...restStyle } = styleWithUnits(props.style)
+  const style = styleWithUnits(props.style)
 
-  if (restStyle.backgroundImage && !restStyle.backgroundImage.startsWith('url(')) {
-    restStyle.backgroundImage = `url(${restStyle.backgroundImage})`
+  if (style.backgroundImage && !style.backgroundImage.startsWith('url(')) {
+    style.backgroundImage = `url(${style.backgroundImage})`
   }
 
   if (isInMaterial) {
     rowCount = 2
     columnCount = 2
-    restStyle.backgroundImage = 'unset'
-    restStyle.padding = '8px'
+    style.backgroundImage = 'unset'
+    style.padding = '8px'
   }
 
   const findChild = (rowIdx, colIdx) => {
@@ -201,14 +201,13 @@ export function GridLayoutPreview(props) {
   }
 
   return (
-    <div class={'tg-designer-layout-grid-container'} style={{ margin }}>
+    <div class={'tg-designer-layout-grid-container'} style={style}>
       <Flex
         vertical
         wrap="wrap"
         justify="center"
         align="center"
         gap={props.gutterY}
-        style={restStyle}
       >
         {
           range(0, rowCount, 1).map(rowIdx => (
@@ -222,7 +221,7 @@ export function GridLayoutPreview(props) {
                         : (
                           <div
                             style={colStyle}
-                            class={'tg-designer-layout-container'}
+                            class={'tg-designer-layout-container grid'}
                             data-cell-position={`${rowIdx}-${colIdx}`}
                           >
                             {findChild(rowIdx, colIdx)}

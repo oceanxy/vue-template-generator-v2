@@ -139,7 +139,7 @@ export default {
           onDragstart={e => handleCompDragStart(e, componentSchema)}
           onDragend={e => handleCompDragEnd(e, componentSchema)}
         >
-          {componentDef.preview(component, componentSchema)}
+          {componentDef.preview(component)}
         </div>
       )
     }

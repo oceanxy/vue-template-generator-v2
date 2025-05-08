@@ -23,7 +23,8 @@ export default {
         key: componentSchema.id,
         ...componentSchema.props,
         previewType: 'preview',
-        style: styleWithUnits(componentSchema.props?.style ?? {})
+        style: styleWithUnits(componentSchema.props?.style ?? {}),
+        'data-cell-position': componentSchema.cellPosition
       }
 
       // 添加布局组件的嵌套支持

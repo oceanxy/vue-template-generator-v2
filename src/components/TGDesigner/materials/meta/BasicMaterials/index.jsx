@@ -141,8 +141,8 @@ export default [
       italic: false
     },
     style: {
-      width: 'auto',
-      height: 'auto',
+      width: '',
+      height: '',
       fontSize: 14,
       lineHeight: ''
     },
