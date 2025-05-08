@@ -1,6 +1,7 @@
 import getPropertyField from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import './index.scss'
+import { TypographyParagraph } from 'ant-design-vue'
 
 /**
  * 主奖项名称模板组件元数据
@@ -15,12 +16,12 @@ export default {
       return <MainAwardPreview {...props} />
     }
 
-    return <div>主奖项</div>
+    return <IconFont type="icon-designer-material-main-award" />
   },
   defaultProps: {
     mainAwardName: '主奖项名称',
     foundingYear: '2021年',
-    subAwards: '子奖项名称，子奖项名称，子奖项名称',
+    subAwards: '子奖项名称',
     organizer: '中国科协培训和人才服务中心',
     description: '中国大学生机械工程创新创意大赛智能制造赛是由中国机械工程学会于2018年开始创办的国家级学科竞赛，' +
       '从2021年开始已列入中国高等教育学会发布的“全国普通高校大学生竞赛排行榜竞赛项目名单”。' +
@@ -48,7 +49,8 @@ export default {
             title: '容器宽度（支持百分比和像素单位）',
             prop: 'width',
             props: {
-              placeholder: '自适应'
+              placeholder: '自适应',
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -56,7 +58,8 @@ export default {
             title: '容器高度（支持像素单位，默认自适应）',
             prop: 'height',
             props: {
-              placeholder: '自适应'
+              placeholder: '自适应',
+              allowClear: true
             }
           })
         ]
@@ -75,7 +78,8 @@ export default {
             prop: 'backgroundImage',
             props: {
               placeholder: '请输入图片地址',
-              maxLength: 250
+              maxLength: 250,
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -84,7 +88,8 @@ export default {
             prop: 'backgroundSize',
             props: {
               maxLength: 20,
-              placeholder: '自动'
+              placeholder: '自动',
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -92,7 +97,8 @@ export default {
             title: '背景图片位置(background-position)',
             prop: 'backgroundPosition',
             props: {
-              maxLength: 20
+              maxLength: 20,
+              allowClear: true
             }
           }),
           getPropertyField('select', {
@@ -131,7 +137,7 @@ export const MainAwardPreview = {
         <div class="tg-main-award-content">
           <div class="tg-main-award-description">
             <h2>简介</h2>
-            <p>{props.description}</p>
+            <TypographyParagraph ellipsis={{ rows: 4 }}>{props.description}</TypographyParagraph>
           </div>
           <div class="tg-main-award-button">
             <button>去申报</button>

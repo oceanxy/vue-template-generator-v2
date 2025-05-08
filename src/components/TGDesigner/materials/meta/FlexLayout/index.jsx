@@ -44,7 +44,8 @@ export default {
             title: '容器宽度(支持百分比和像素单位)',
             prop: 'width',
             props: {
-              placeholder: '自适应'
+              placeholder: '自适应',
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -52,7 +53,8 @@ export default {
             title: '容器高度(支持像素单位，默认自适应)',
             prop: 'height',
             props: {
-              placeholder: '自适应'
+              placeholder: '自适应',
+              allowClear: true
             }
           })
         ]
@@ -97,7 +99,8 @@ export default {
             title: '内部组件间的距离(gap)',
             prop: 'gap',
             props: {
-              placeholder: '0px'
+              placeholder: '0px',
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -105,7 +108,8 @@ export default {
             title: '容器的内边距(padding)',
             prop: 'padding',
             props: {
-              placeholder: '0px'
+              placeholder: '0px',
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -113,7 +117,8 @@ export default {
             title: '画布的外边距（margin）',
             prop: 'margin',
             props: {
-              placeholder: '0px'
+              placeholder: '0px',
+              allowClear: true
             }
           })
         ]
@@ -132,7 +137,8 @@ export default {
             prop: 'backgroundImage',
             props: {
               placeholder: '请输入图片地址',
-              maxLength: 250
+              maxLength: 250,
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -141,7 +147,8 @@ export default {
             prop: 'backgroundSize',
             props: {
               maxLength: 20,
-              placeholder: '自动'
+              placeholder: '自动',
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -149,7 +156,8 @@ export default {
             title: '背景图片位置(background-position)',
             prop: 'backgroundPosition',
             props: {
-              maxLength: 20
+              maxLength: 20,
+              allowClear: true
             }
           }),
           getPropertyField('select', {
@@ -180,7 +188,7 @@ export function FlexLayoutPreview(props) {
     restProps.style.backgroundImage = `url(${restProps.style.backgroundImage})`
   }
 
-  if (previewType === 'material') {
+  if (previewType === 'materialPreview') {
     restProps.style.backgroundImage = 'unset'
 
     return (
@@ -198,6 +206,8 @@ export function FlexLayoutPreview(props) {
         }
       </Flex>
     )
+  } else if (previewType === 'material') {
+    return <IconFont type="icon-designer-material-flex-layout" />
   }
 
   return (
@@ -206,7 +216,7 @@ export function FlexLayoutPreview(props) {
       style={restProps.style}
       class={{
         'tg-designer-layout-container': true,
-        'has-background-image': !!restProps.style.backgroundImage
+        'has-background-image': !!restProps.style.backgroundImage || !!restProps.style.backgroundColor
       }}
     >
       {children?.length ? children : ' '}

@@ -17,25 +17,25 @@ export default {
 
         <Layout>
           <Layout.Sider
-            width={60}
+            width={68}
             class={'tg-designer-plugins-wrapper'}
           >
             <div class={'tg-designer-plugin selected'}>
-              <AppstoreOutlined />
+              <IconFont type='icon-designer-materials' />
               <div>物料</div>
             </div>
             <div class={'tg-designer-plugin'}>
-              <DatabaseOutlined />
+              <IconFont type='icon-designer-data' />
               <div>数据</div>
             </div>
             <div class={'tg-designer-plugin'}>
-              <FileOutlined />
+              <IconFont type='icon-designer-pages' />
               <div>页面</div>
             </div>
           </Layout.Sider>
           <Layout>
             <Layout.Sider
-              width={300}
+              width={220}
               theme="light"
               class={'tg-designer-material-wrapper'}
             >

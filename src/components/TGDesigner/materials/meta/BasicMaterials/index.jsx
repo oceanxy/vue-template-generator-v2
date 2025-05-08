@@ -8,7 +8,13 @@ export default [
     type: 'a-button',
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '按钮',
-    preview: props => <Button {...props}>{props.slot}</Button>,
+    preview: props => {
+      if (props.previewType === 'material') {
+        return <IconFont type="icon-designer-material-button" />
+      }
+
+      return <Button {...props}>{props.slot}</Button>
+    },
     defaultProps: {
       type: 'primary',
       slot: 'Button'
@@ -28,7 +34,8 @@ export default [
               title: '容器宽度（支持百分比和像素单位）',
               prop: 'width',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             }),
             getPropertyField('input', {
@@ -36,7 +43,8 @@ export default [
               title: '容器高度（支持像素单位，默认自适应）',
               prop: 'height',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             })
           ]
@@ -47,7 +55,10 @@ export default [
             getPropertyField('input', {
               title: '按钮文本',
               label: '按钮文本',
-              prop: 'slot'
+              prop: 'slot',
+              props: {
+                allowClear: true
+              }
             })
           ]
         },
@@ -75,7 +86,13 @@ export default [
     type: 'a-input',
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '文本框',
-    preview: props => <Input {...props} readonly={props.previewType !== 'preview'} />,
+    preview: props => {
+      if (props.previewType === 'material') {
+        return <IconFont type="icon-designer-material-input" />
+      }
+
+      return <Input {...props} readonly={props.previewType !== 'preview'} />
+    },
     defaultProps: {
       placeholder: '请输入'
     },
@@ -93,7 +110,8 @@ export default [
               title: '容器宽度（支持百分比和像素单位）',
               prop: 'width',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             }),
             getPropertyField('input', {
@@ -101,7 +119,8 @@ export default [
               title: '容器高度（支持像素单位，默认自适应）',
               prop: 'height',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             })
           ]
@@ -112,7 +131,10 @@ export default [
             getPropertyField('input', {
               title: '文本框占位符',
               label: '占位符',
-              prop: 'placeholder'
+              prop: 'placeholder',
+              props: {
+                allowClear: true
+              }
             })
           ]
         }
@@ -124,6 +146,10 @@ export default [
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '文本',
     preview: props => {
+      if (props.previewType === 'material') {
+        return <IconFont type="icon-designer-material-text" />
+      }
+
       if (props.italic) {
         props.style.fontStyle = 'italic'
       }
@@ -157,7 +183,8 @@ export default [
               title: '容器宽度（支持百分比和像素单位）',
               prop: 'width',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             }),
             getPropertyField('input', {
@@ -165,7 +192,8 @@ export default [
               title: '容器高度（支持像素单位，默认自适应）',
               prop: 'height',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             })
           ]
@@ -179,7 +207,8 @@ export default [
               prop: 'slot',
               props: {
                 maxLength: 100,
-                placeholder: '无'
+                placeholder: '无',
+                allowClear: true
               }
             })
           ]
@@ -197,7 +226,8 @@ export default [
               label: '行高',
               prop: 'lineHeight',
               props: {
-                placeholder: '默认'
+                placeholder: '默认',
+                allowClear: true
               }
             }),
             getPropertyField('switch', {
@@ -259,7 +289,13 @@ export default [
     type: 'a-divider',
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '分割线',
-    preview: props => <Divider {...props}>{props.slot}</Divider>,
+    preview: props => {
+      if (props.previewType === 'material') {
+        return <IconFont type="icon-designer-material-line" />
+      }
+
+      return <Divider {...props}>{props.slot}</Divider>
+    },
     defaultProps: {
       slot: '',
       dashed: false,
@@ -282,7 +318,8 @@ export default [
               title: '容器宽度（支持百分比和像素单位）',
               prop: 'width',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             }),
             getPropertyField('input', {
@@ -290,7 +327,8 @@ export default [
               title: '容器高度（支持像素单位，默认自适应）',
               prop: 'height',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             })
           ]
@@ -304,7 +342,8 @@ export default [
               prop: 'slot',
               props: {
                 maxLength: 10,
-                placeholder: '无'
+                placeholder: '无',
+                allowClear: true
               }
             })
           ]
@@ -356,7 +395,13 @@ export default [
     type: 'a-image',
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '图片',
-    preview: props => <Image {...props} />,
+    preview: props => {
+      if (props.previewType === 'material') {
+        return <IconFont type="icon-designer-material-picture" />
+      }
+
+      return <Image {...props} />
+    },
     defaultProps: {
       placeholder: true,
       preview: false,
@@ -379,7 +424,8 @@ export default [
               title: '容器宽度（像素单位或百分比）',
               prop: 'width',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             }),
             getPropertyField('input', {
@@ -387,7 +433,8 @@ export default [
               title: '容器高度（像素单位或百分比）',
               prop: 'height',
               props: {
-                placeholder: '自适应'
+                placeholder: '自适应',
+                allowClear: true
               }
             })
           ]
@@ -401,7 +448,8 @@ export default [
               prop: 'src',
               props: {
                 placeholder: '图片地址',
-                maxLength: 100
+                maxLength: 100,
+                allowClear: true
               }
             })
           ]

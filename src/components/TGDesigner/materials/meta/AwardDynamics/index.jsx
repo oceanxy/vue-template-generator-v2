@@ -11,13 +11,13 @@ import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
 export default {
   type: 'tg-template-award-dynamics',
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
-  name: '图文列表',
+  name: '奖项动态',
   preview: props => {
     if (props.previewType !== 'material') {
       return <AwardDynamics {...props} />
     }
 
-    return <div>动态奖项</div>
+    return <IconFont type='icon-designer-material-award-dynamics' />
   },
   defaultProps: {
     title: '奖项动态',
@@ -76,7 +76,8 @@ export default {
             title: '容器宽度（支持百分比和像素单位）',
             prop: 'width',
             props: {
-              placeholder: '自适应'
+              placeholder: '自适应',
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -84,7 +85,8 @@ export default {
             title: '容器高度（支持像素单位，默认自适应）',
             prop: 'height',
             props: {
-              placeholder: '自适应'
+              placeholder: '自适应',
+              allowClear: true
             }
           })
         ]
@@ -114,7 +116,8 @@ export default {
             prop: 'backgroundImage',
             props: {
               placeholder: '请输入图片地址',
-              maxLength: 250
+              maxLength: 250,
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -123,7 +126,8 @@ export default {
             prop: 'backgroundSize',
             props: {
               maxLength: 20,
-              placeholder: '自动'
+              placeholder: '自动',
+              allowClear: true
             }
           }),
           getPropertyField('input', {
@@ -131,7 +135,8 @@ export default {
             title: '背景图片位置(background-position)',
             prop: 'backgroundPosition',
             props: {
-              maxLength: 20
+              maxLength: 20,
+              allowClear: true
             }
           }),
           getPropertyField('select', {

@@ -1,3 +1,13 @@
+.tg-designer-material-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  & > .anticon {
+    font-size: 40px;
+  }
+}
+
 .tg-designer-container {
   height: 100%;
 
@@ -70,7 +80,7 @@
           }
 
           .anticon {
-            font-size: 18px;
+            font-size: 20px;
           }
         }
       }
@@ -117,7 +127,7 @@
   }
 
   .tg-designer-plugins-wrapper {
-    background: #ededed !important;
+    background: #f8f9fb !important;
 
     .tg-designer-plugin {
       width: 100%;
@@ -129,6 +139,12 @@
       cursor: pointer;
       transition: all .2s;
       user-select: none;
+      gap: 4px;
+      margin: 15px 0;
+
+      & > .anticon {
+        font-size: 24px;
+      }
 
       &:hover {
         font-weight: bolder;
@@ -148,23 +164,25 @@
       overflow-y: auto;
 
       .tg-designer-material-category {
-        margin-bottom: 20px;
+        margin-bottom: 30px;
 
         .tg-designer-material-title {
           font-weight: bolder;
           border-bottom: 1px solid #e3e3e3;
+          padding-bottom: 4px;
         }
 
         .tg-designer-material-items {
           display: flex;
           flex-wrap: wrap;
-          gap: 20px;
+          justify-content: space-between;
+          row-gap: 15px;
 
           .tg-designer-material-item {
-            width: calc((100% - 20px) / 2);
-            border: 1px solid #d9d9d9;
+            width: calc((100% - 10px) / 2);
             transition: all 0.2s;
-            padding: 6px;
+            cursor: move;
+            padding: 15px 0;
 
             [draggable='true'] {
               cursor: grab;
@@ -174,18 +192,12 @@
               }
             }
 
-            & > * {
-              cursor: move;
-              width: 100%;
-            }
-
             &:hover {
               border-color: var(--tg-theme-color-primary);
               background-color: #e6f7ff;
             }
 
             .tg-designer-material-item-name {
-              padding: 2px 10px;
               font-weight: 500;
             }
 
@@ -380,11 +392,12 @@
         .tg-designer-drag-component {
           position: relative;
           transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), // Material Design标准缓动
-          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); // 增强的加速曲线
+          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+          outline 0.2s cubic-bezier(0.4, 0, 0.2, 1); // 增强的加速曲线
           opacity: 1;
           transform: translateZ(0); // 强制开启GPU加速
           backface-visibility: hidden;
-          outline: 1px dashed transparent;
+          outline: 2px solid transparent;
           user-select: none; // 防止文字选中干扰
           touch-action: none; // 优化移动端体验
           cursor: move; // 显示可拖动光标
@@ -421,6 +434,7 @@
 
           &:hover {
             outline-color: var(--tg-theme-color-primary);
+            z-index: 9999;
           }
 
           &.dragging {

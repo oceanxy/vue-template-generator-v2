@@ -3,6 +3,7 @@ import { useEditorStore } from '../stores/useEditorStore'
 import useDragDrop from '@/components/TGDesigner/hooks/useDragDrop'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
+import { Popover } from 'ant-design-vue'
 
 export default {
   name: 'TGDesignerMaterialPanel',
@@ -51,24 +52,54 @@ export default {
                   {
                     material.components?.length
                       ? material.components.map(comp => (
-                        <div
-                          key={comp.type}
-                          class={'tg-designer-material-item'}
-                          draggable
-                          onDragstart={(e) => handleMaterialDragStart(e, comp)}
-                        >
-                          <div class={'tg-designer-material-item-name'}>{comp.name}</div>
-                          {
-                            comp.preview({
-                              ...comp.defaultProps,
-                              style: {
-                                ...styleWithUnits(comp.defaultProps?.style ?? {}),
-                                ...styleWithUnits(comp.style || {})
-                              },
-                              previewType: 'material'
-                            })
-                          }
-                        </div>
+                        <Popover placement="right">
+                          {{
+                            default: () => (
+                              <div
+                                key={comp.type}
+                                class={'tg-designer-material-item'}
+                                draggable
+                                onDragstart={(e) => handleMaterialDragStart(e, comp)}
+                              >
+                                {
+                                  comp.preview({
+                                    ...comp.defaultProps,
+                                    style: {
+                                      ...styleWithUnits(comp.defaultProps?.style ?? {}),
+                                      ...styleWithUnits(comp.style || {})
+                                    },
+                                    previewType: 'material'
+                                  })
+                                }
+                                <div class={'tg-designer-material-item-name'}>{comp.name}</div>
+                              </div>
+                            ),
+                            content: () => (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'center',
+                                  minWidth: '100px',
+                                  maxWidth: '800px',
+                                  maxHeight: '600px',
+                                  overflow: 'auto'
+                                }}
+                              >
+                                {
+                                  comp.preview({
+                                      ...comp.defaultProps,
+                                      style: {
+                                        ...styleWithUnits(comp.defaultProps?.style ?? {}),
+                                        ...styleWithUnits(comp.style || {})
+                                      },
+                                      previewType: 'materialPreview'
+                                    }
+                                  )
+                                }
+                              </div>
+                            )
+                          }}
+                        </Popover>
                       ))
                       : <div>暂无组件</div>
                   }

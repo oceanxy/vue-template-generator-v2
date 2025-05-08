@@ -3,7 +3,7 @@ import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import { computed, onUnmounted, toRaw, watch, watchEffect } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
-import { EyeOutlined, FileOutlined, RedoOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons-vue'
+import { FileOutlined } from '@ant-design/icons-vue'
 import router from '@/router'
 
 export default {
@@ -72,22 +72,22 @@ export default {
           </div>
           <div class={'tg-designer-canvas-functions'}>
             <Button
-              icon={<RedoOutlined />}
-              title={'重做'}
+              icon={<IconFont type="icon-designer-tool-undo" />}
+              title={'撤销'}
             />
             <Button
-              icon={<UndoOutlined />}
-              title={'撤销'}
+              icon={<IconFont type="icon-designer-tool-redo" />}
+              title={'重做'}
             />
             <Button
               onClick={handleSchemaSave}
               data-saving={isSaving.value ? 'true' : null}
-              icon={<SaveOutlined />}
+              icon={<IconFont type="icon-designer-tool-save" />}
               title={'保存'}
             />
             <Button
               onClick={handlePreview}
-              icon={<EyeOutlined />}
+              icon={<IconFont type="icon-designer-tool-preview" />}
               title={'预览'}
             />
           </div>
