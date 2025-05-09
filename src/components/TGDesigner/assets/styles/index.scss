@@ -85,13 +85,6 @@
         }
       }
 
-      .tg-designer-template-functions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        padding-inline-end: 10px;
-      }
-
       .save-status-bar {
         position: absolute;
         bottom: 0;
@@ -104,7 +97,7 @@
           width: 0;
           height: 100%;
           background: var(--tg-theme-color-primary);
-          transition: width 1s ease;
+          transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
           animation: savingProgress 1.5s infinite;
         }
       }
@@ -137,7 +130,7 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      transition: all .2s;
+      transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
       gap: 4px;
       margin: 15px 0;
@@ -180,7 +173,7 @@
 
           .tg-designer-material-item {
             width: calc((100% - 10px) / 2);
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: move;
             padding: 15px 0;
 
@@ -245,7 +238,7 @@
         z-index: 1;
         height: 100%;
         cursor: pointer;
-        transition: outline 0.2s;
+        transition: outline 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         padding: var(--canvas-padding);
 
         &[data-selected='true'] {
@@ -295,7 +288,7 @@
             );
             background-size: ($dash-width + $gap-width) 100%; // 背景尺寸需要等于单周期长度
             will-change: opacity;
-            transition: opacity 0.1s linear;
+            transition: opacity 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             animation: flowLine 5s linear infinite;
             z-index: 999;
 
@@ -428,7 +421,7 @@
             pointer-events: none;
             border: 2px dashed var(--tg-theme-color-primary);
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
           }
 
@@ -440,7 +433,7 @@
           &.dragging {
             opacity: 0.4;
             transform: scale(0.98);
-            transition: all 0.2s ease-out;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
 
             &::after {

@@ -5,6 +5,7 @@ import { computed, onUnmounted, toRaw, watch, watchEffect } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 import { FileOutlined } from '@ant-design/icons-vue'
 import router from '@/router'
+import DesignerTemplates from './Templates'
 
 export default {
   name: 'TGDesignerHeader',
@@ -64,7 +65,7 @@ export default {
       <div class={'tg-designer-tools'}>
         <div class={'tg-designer-functions'}>
           <div class={'tg-designer-logo'}>
-            <div class={'tg-designer-logo-text'}>建家开店-页面设计器</div>
+            <div class={'tg-designer-logo-text'}>建家开店页面设计器</div>
             <div class={'tg-designer-logo-version'}>CHS-DESIGNER <Tag color="volcano">v1.0</Tag></div>
           </div>
           <div class={'tg-designer-page-name'}>
@@ -92,10 +93,7 @@ export default {
             />
           </div>
         </div>
-        <div class={'tg-designer-template-functions'}>
-          <Button type={'primary'}>恢复模版</Button>
-          <Button type={'primary'}>模板中心</Button>
-        </div>
+        <DesignerTemplates />
         {
           isSaving.value && (
             <div class="save-status-bar">

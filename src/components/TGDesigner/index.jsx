@@ -1,14 +1,28 @@
-import './assets/styles/index.scss'
 import Canvas from './components/Canvas'
 import MaterialPanel from './components/MaterialPanel'
 import PropertyPanel from './components/PropertyPanel'
 import { Layout } from 'ant-design-vue'
 import Header from './components/Header'
-import { AppstoreOutlined, DatabaseOutlined, FileOutlined } from '@ant-design/icons-vue'
+import { provide } from 'vue'
+import './assets/styles/index.scss'
 
 export default {
   name: 'TGDesigner',
-  setup() {
+  props: {
+    tgStore: {
+      required: true,
+      type: Object
+    },
+    apiNameForGetTemplate: String,
+    apiNameForGetTemplates: String,
+    getSchemaById: String
+  },
+  setup(props) {
+    provide('tgStore', props.tgStore)
+    provide('apiNameForGetTemplate', props.apiNameForGetTemplate)
+    provide('apiNameForGetTemplates', props.apiNameForGetTemplates)
+    provide('getSchemaById', props.getSchemaById)
+
     return () => (
       <Layout class={'tg-designer-container'}>
         <Layout class={'tg-designer-header'}>
@@ -21,15 +35,15 @@ export default {
             class={'tg-designer-plugins-wrapper'}
           >
             <div class={'tg-designer-plugin selected'}>
-              <IconFont type='icon-designer-materials' />
+              <IconFont type="icon-designer-materials" />
               <div>物料</div>
             </div>
             <div class={'tg-designer-plugin'}>
-              <IconFont type='icon-designer-data' />
+              <IconFont type="icon-designer-data" />
               <div>数据</div>
             </div>
             <div class={'tg-designer-plugin'}>
-              <IconFont type='icon-designer-pages' />
+              <IconFont type="icon-designer-pages" />
               <div>页面</div>
             </div>
           </Layout.Sider>
