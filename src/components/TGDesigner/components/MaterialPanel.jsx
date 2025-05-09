@@ -4,10 +4,12 @@ import useDragDrop from '@/components/TGDesigner/hooks/useDragDrop'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
 import { Popover } from 'ant-design-vue'
+import { ref } from 'vue'
 
 export default {
   name: 'TGDesignerMaterialPanel',
   setup() {
+    const popoverStates = ref({})
     const store = useEditorStore()
     const { handleDragStart } = useDragDrop()
     const materials = [
@@ -28,7 +30,18 @@ export default {
       }
     ]
 
+    const getPopoverState = (compType) => {
+      if (!popoverStates.value[compType]) {
+        popoverStates.value[compType] = false
+      }
+
+      return popoverStates.value[compType]
+    }
+
     const handleMaterialDragStart = (e, comp) => {
+      // 关闭当前组件的 Popover
+      popoverStates.value[comp.type] = false
+
       Geometry.createDragPreviewImage(e)
       handleDragStart(e, comp)
 
@@ -52,7 +65,12 @@ export default {
                   {
                     material.components?.length
                       ? material.components.map(comp => (
-                        <Popover placement="right">
+                        <Popover
+                          key={comp.type}
+                          placement="right"
+                          open={getPopoverState(comp.type)}
+                          onOpenChange={v => popoverStates.value[comp.type] = v}
+                        >
                           {{
                             default: () => (
                               <div
@@ -81,8 +99,9 @@ export default {
                                   justifyContent: 'center',
                                   minWidth: '100px',
                                   maxWidth: '800px',
-                                  maxHeight: '600px',
-                                  overflow: 'auto'
+                                  maxHeight: '520px',
+                                  overflow: 'auto',
+                                  zoom: comp.category === TG_MATERIAL_CATEGORY.TEMPLATE ? .7 : 1
                                 }}
                               >
                                 {
