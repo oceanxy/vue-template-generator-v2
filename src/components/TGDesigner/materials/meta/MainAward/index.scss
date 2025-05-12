@@ -49,10 +49,12 @@
         }
       }
 
-      p {
+      .ant-typography {
         font-size: 14px;
         color: #333333;
         line-height: 1.5;
+        white-space: break-spaces;
+        word-break: break-word;
       }
     }
 
