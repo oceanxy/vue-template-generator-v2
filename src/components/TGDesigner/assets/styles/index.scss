@@ -340,14 +340,14 @@
             // 布局组件的容器指示线
             &[data-container-type='layout'] {
               display: none;
-              z-index: 1000;
+              z-index: 9999;
             }
 
             // 画布容器指示线
             &[data-container-type='canvas'] {
               display: none;
               border-width: 2px;
-              z-index: 999;
+              z-index: 9998;
             }
 
             @keyframes pulseContainer {
@@ -429,13 +429,8 @@
             outline-color: var(--tg-theme-color-primary);
             z-index: 9999;
 
-            &:has(.tg-designer-drag-component:hover) {
+            &:not([data-selected='true']):has(.tg-designer-drag-component:hover) {
               outline-color: transparent;
-            }
-
-            .tg-designer-drag-component:hover {
-              outline-color: var(--tg-theme-color-primary);
-              z-index: 9999;
             }
           }
 
