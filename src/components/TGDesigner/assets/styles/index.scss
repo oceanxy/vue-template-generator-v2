@@ -428,6 +428,15 @@
           &:hover {
             outline-color: var(--tg-theme-color-primary);
             z-index: 9999;
+
+            &:has(.tg-designer-drag-component:hover) {
+              outline-color: transparent;
+            }
+
+            .tg-designer-drag-component:hover {
+              outline-color: var(--tg-theme-color-primary);
+              z-index: 9999;
+            }
           }
 
           &.dragging {
@@ -448,6 +457,20 @@
             outline: 2px dashed var(--tg-theme-color-primary);
             outline-offset: 1px;
             z-index: 999;
+          }
+
+          &.component-enter-active {
+            animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none; // 动画期间禁用交互
+          }
+
+          &.component-leave-active {
+            animation: fadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none; // 禁用交互
+          }
+
+          &.component-move {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           }
 
           & > * {
@@ -494,20 +517,6 @@
             &.has-background-image::before {
               background: none !important;
             }
-          }
-
-          &.component-enter-active {
-            animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            pointer-events: none; // 动画期间禁用交互
-          }
-
-          &.component-leave-active {
-            animation: fadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            pointer-events: none; // 禁用交互
-          }
-
-          &.component-move {
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           }
 
           .ant-image .ant-image-img {
