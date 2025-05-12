@@ -1,66 +1,101 @@
 import { Cascader } from 'ant-design-vue'
-import { computed, watch, ref } from 'vue'
+import { ref, useAttrs, onBeforeMount, onBeforeUnmount, watch } from 'vue'
 
 export default {
   name: 'TGCascader',
   props: {
     // 解构 ant-design-vue Cascader props
-    ...Cascader.props,
+
+    value: {
+      type: Array,
+      default: () => []
+    },
+
   },
-  setup(props, { slots, events }) {
-    const { fieldNames, options } = props
-    const selectedPath = ref(null)
+  emits: ['update:value', 'change'],
+  setup(props, { slots, emit }) {
+    const attrs = useAttrs()
+    const { fieldNames, options } = attrs
+    const selectedPath = ref([])
 
-    // props.value 通过传入最后一级遍历回显前面一级或者多级的数据
-    function findPath(tree, targetValue, path = []) {
-      for (const node of tree) {
-        const currentPath = [...path, node[fieldNames.value]];
-        if (node[fieldNames.value] === targetValue) {
-          return currentPath; // 找到目标，返回路径
-        }
-        if (node[props.fieldNames.children]) {
-          const found = findPath(node[props.fieldNames.children], targetValue, currentPath);
-          if (found) return found; // 子节点中找到目标，传递路径
-        }
+    const getTreePath = (
+      value,
+      dataSource,
+      { key = "id", resultKey, children = "children" } = {},
+      complete = false,
+      isFullForEach = false
+    ) => {
+      const result = [];
+      const temporary = [];
+      const _resultKey = resultKey || key;
+
+      if (!value) {
+        return result;
       }
-      return null; // 未找到目标
-    }
 
+      const fn = (list) => {
+        let isFind = false;
+
+        for (let i = 0; i < list.length; i++) {
+          const item = list[i];
+
+          if (complete) {
+            temporary.push(item);
+          } else {
+            temporary.push(item[_resultKey]);
+          }
+
+          if (item[_resultKey] == value) {
+            result.push(...temporary);
+            isFind = true;
+          }
+
+          if (isFullForEach || !isFind) {
+            if (item[children] && item[children].length > 0) {
+              isFind = fn(item[children]);
+            }
+          }
+
+          temporary.pop();
+
+          if (!isFullForEach && isFind) {
+            break;
+          }
+        }
+
+        return isFind;
+      };
+
+      fn(dataSource);
+
+      return result;
+    };
 
     const updateSelectedPath = (value) => {
       if (value && value.length > 0) {
-        selectedPath.value = findPath(options, value[value.length - 1])
-      } else {
-        selectedPath.value = null
+        selectedPath.value = getTreePath(value, options, {
+          key: fieldNames.value, children: fieldNames.children
+        }, false)
       }
     }
 
     updateSelectedPath(props.value)
 
     watch(() => props.value, (newValue) => {
-      updateSelectedPath(newValue)
-    })
-
-    const innerProps = computed(() => {
-      const {
-        identification,
-        ...cascaderProps
-      } = props
-
-      return {
-        identification,
-        cascaderProps: {
-          ...cascaderProps,
-          value: selectedPath.value
-        }
+      if (!newValue.length) {
+        selectedPath.value = []
       }
     })
 
     return () => (
       <Cascader
-        {...innerProps.value.cascaderProps}
+        {...attrs}
+        vModel:value={selectedPath.value}
         slots={slots}
-        {...events}
+        onChange={(value, selectedOptions) => {
+          emit('update:value', value)
+          emit('change', value, selectedOptions)
+        }}
       >
       </Cascader>
     )
