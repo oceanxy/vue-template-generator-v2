@@ -56,7 +56,8 @@ export default function getService(conf, router) {
       if (!axios.isCancel(error)) {
         showMessage({
           message: error.message,
-          type: 'error'
+          type: 'error',
+          code: 0
         })
       }
 
@@ -102,7 +103,8 @@ export default function getService(conf, router) {
           if (res.code !== 200) {
             showMessage({
               message: '第三方接口调用失败！',
-              type: 'error'
+              type: 'error',
+              code: res.code
             })
           } else {
             return Promise.resolve({
@@ -114,7 +116,8 @@ export default function getService(conf, router) {
         } else {
           showMessage({
             message: res.message,
-            type: 'error'
+            type: 'error',
+            code: res.code
           })
         }
 
@@ -141,7 +144,8 @@ export default function getService(conf, router) {
       if (!axios.isCancel(error)) {
         showMessage({
           message: error.message,
-          type: 'error'
+          type: 'error',
+          code: 0
         })
       }
 
