@@ -3,10 +3,13 @@ import { useEditorStore } from '../stores/useEditorStore'
 import useDragDrop from '@/components/TGDesigner/hooks/useDragDrop'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
+import { Popover } from 'ant-design-vue'
+import { ref } from 'vue'
 
 export default {
   name: 'TGDesignerMaterialPanel',
   setup() {
+    const popoverStates = ref({})
     const store = useEditorStore()
     const { handleDragStart } = useDragDrop()
     const materials = [
@@ -27,7 +30,18 @@ export default {
       }
     ]
 
+    const getPopoverState = (compType) => {
+      if (!popoverStates.value[compType]) {
+        popoverStates.value[compType] = false
+      }
+
+      return popoverStates.value[compType]
+    }
+
     const handleMaterialDragStart = (e, comp) => {
+      // 关闭当前组件的 Popover
+      popoverStates.value[comp.type] = false
+
       Geometry.createDragPreviewImage(e)
       handleDragStart(e, comp)
 
@@ -51,24 +65,60 @@ export default {
                   {
                     material.components?.length
                       ? material.components.map(comp => (
-                        <div
+                        <Popover
                           key={comp.type}
-                          class={'tg-designer-material-item'}
-                          draggable
-                          onDragstart={(e) => handleMaterialDragStart(e, comp)}
+                          placement="right"
+                          open={getPopoverState(comp.type)}
+                          onOpenChange={v => popoverStates.value[comp.type] = v}
                         >
-                          <div class={'tg-designer-material-item-name'}>{comp.name}</div>
-                          {
-                            comp.preview({
-                              ...comp.defaultProps,
-                              style: {
-                                ...styleWithUnits(comp.defaultProps?.style ?? {}),
-                                ...styleWithUnits(comp.style || {})
-                              },
-                              previewType: 'material'
-                            })
-                          }
-                        </div>
+                          {{
+                            default: () => (
+                              <div
+                                key={comp.type}
+                                class={'tg-designer-material-item'}
+                                draggable
+                                onDragstart={(e) => handleMaterialDragStart(e, comp)}
+                              >
+                                {
+                                  comp.preview({
+                                    ...comp.defaultProps,
+                                    style: {
+                                      ...styleWithUnits(comp.defaultProps?.style ?? {}),
+                                      ...styleWithUnits(comp.style || {})
+                                    },
+                                    previewType: 'material'
+                                  })
+                                }
+                                <div class={'tg-designer-material-item-name'}>{comp.name}</div>
+                              </div>
+                            ),
+                            content: () => (
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'center',
+                                  minWidth: '100px',
+                                  maxWidth: '800px',
+                                  maxHeight: '520px',
+                                  overflow: 'auto',
+                                  zoom: comp.category === TG_MATERIAL_CATEGORY.TEMPLATE ? .7 : 1
+                                }}
+                              >
+                                {
+                                  comp.preview({
+                                      ...comp.defaultProps,
+                                      style: {
+                                        ...styleWithUnits(comp.defaultProps?.style ?? {}),
+                                        ...styleWithUnits(comp.style || {})
+                                      },
+                                      previewType: 'materialPreview'
+                                    }
+                                  )
+                                }
+                              </div>
+                            )
+                          }}
+                        </Popover>
                       ))
                       : <div>暂无组件</div>
                   }

@@ -1,5 +1,27 @@
+.tg-designer-material-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  & > .anticon {
+    font-size: 40px;
+  }
+}
+
 .tg-designer-container {
   height: 100%;
+
+  & > .ant-spin-nested-loading {
+    width: 100%;
+    height: 100%;
+  }
+
+  & > .ant-spin-nested-loading > .ant-spin-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 
   .tg-designer-header {
     position: relative;
@@ -70,31 +92,24 @@
           }
 
           .anticon {
-            font-size: 18px;
+            font-size: 20px;
           }
         }
       }
 
-      .tg-designer-template-functions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        padding-inline-end: 10px;
-      }
-
-      .save-status-bar {
+      .tg-designer-save-status-bar {
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
         height: 2px;
-        background: rgba(24, 144, 255, 0.1);
+        background: inherit;
 
-        .save-progress {
+        .tg-designer-save-progress {
           width: 0;
           height: 100%;
           background: var(--tg-theme-color-primary);
-          transition: width 1s ease;
+          transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
           animation: savingProgress 1.5s infinite;
         }
       }
@@ -117,7 +132,7 @@
   }
 
   .tg-designer-plugins-wrapper {
-    background: #ededed !important;
+    background: #f8f9fb !important;
 
     .tg-designer-plugin {
       width: 100%;
@@ -127,8 +142,14 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      transition: all .2s;
+      transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
+      gap: 4px;
+      margin: 15px 0;
+
+      & > .anticon {
+        font-size: 24px;
+      }
 
       &:hover {
         font-weight: bolder;
@@ -148,23 +169,25 @@
       overflow-y: auto;
 
       .tg-designer-material-category {
-        margin-bottom: 20px;
+        margin-bottom: 30px;
 
         .tg-designer-material-title {
           font-weight: bolder;
           border-bottom: 1px solid #e3e3e3;
+          padding-bottom: 4px;
         }
 
         .tg-designer-material-items {
           display: flex;
           flex-wrap: wrap;
-          gap: 20px;
+          justify-content: space-between;
+          row-gap: 15px;
 
           .tg-designer-material-item {
-            width: calc((100% - 20px) / 2);
-            border: 1px solid #d9d9d9;
-            transition: all 0.2s;
-            padding: 6px;
+            width: calc((100% - 10px) / 2);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: move;
+            padding: 15px 0;
 
             [draggable='true'] {
               cursor: grab;
@@ -174,18 +197,12 @@
               }
             }
 
-            & > * {
-              cursor: move;
-              width: 100%;
-            }
-
             &:hover {
               border-color: var(--tg-theme-color-primary);
               background-color: #e6f7ff;
             }
 
             .tg-designer-material-item-name {
-              padding: 2px 10px;
               font-weight: 500;
             }
 
@@ -233,7 +250,7 @@
         z-index: 1;
         height: 100%;
         cursor: pointer;
-        transition: outline 0.2s;
+        transition: outline 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         padding: var(--canvas-padding);
 
         &[data-selected='true'] {
@@ -283,14 +300,14 @@
             );
             background-size: ($dash-width + $gap-width) 100%; // 背景尺寸需要等于单周期长度
             will-change: opacity;
-            transition: opacity 0.1s linear;
+            transition: opacity 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             animation: flowLine 5s linear infinite;
             z-index: 999;
 
             // 根据布局方向动态设置尺寸和背景方向
             &[data-layout-direction='vertical'] {
               width: 2px;
-              margin-left: -1px;
+              transform: translateY(-1px);
               background: repeating-linear-gradient(
                   90deg, // 水平方向渐变
                   $indicator-color 0 $dash-width,
@@ -300,7 +317,6 @@
 
             &[data-layout-direction='horizontal'] {
               height: 2px;
-              margin-top: -1px;
               background: repeating-linear-gradient(
                   180deg, // 垂直方向渐变
                   $indicator-color 0 $dash-width,
@@ -336,14 +352,14 @@
             // 布局组件的容器指示线
             &[data-container-type='layout'] {
               display: none;
-              z-index: 1000;
+              z-index: 9999;
             }
 
             // 画布容器指示线
             &[data-container-type='canvas'] {
               display: none;
               border-width: 2px;
-              z-index: 999;
+              z-index: 9998;
             }
 
             @keyframes pulseContainer {
@@ -381,11 +397,12 @@
         .tg-designer-drag-component {
           position: relative;
           transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), // Material Design标准缓动
-          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); // 增强的加速曲线
+          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+          outline 0.2s cubic-bezier(0.4, 0, 0.2, 1); // 增强的加速曲线
           opacity: 1;
           transform: translateZ(0); // 强制开启GPU加速
           backface-visibility: hidden;
-          outline: 1px dashed transparent;
+          outline: 2px solid transparent;
           user-select: none; // 防止文字选中干扰
           touch-action: none; // 优化移动端体验
           cursor: move; // 显示可拖动光标
@@ -416,18 +433,23 @@
             pointer-events: none;
             border: 2px dashed var(--tg-theme-color-primary);
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 999;
           }
 
           &:hover {
             outline-color: var(--tg-theme-color-primary);
+            z-index: 9999;
+
+            &:not([data-selected='true']):has(.tg-designer-drag-component:hover) {
+              outline-color: transparent;
+            }
           }
 
           &.dragging {
             opacity: 0.4;
             transform: scale(0.98);
-            transition: all 0.2s ease-out;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 9999;
 
             &::after {
@@ -444,6 +466,20 @@
             z-index: 999;
           }
 
+          &.component-enter-active {
+            animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none; // 动画期间禁用交互
+          }
+
+          &.component-leave-active {
+            animation: fadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none; // 禁用交互
+          }
+
+          &.component-move {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
           & > * {
             cursor: move;
             width: 100%;
@@ -455,7 +491,7 @@
             width: 100%;
             height: 100%;
             white-space: nowrap;
-            overflow: hidden;
+            //overflow: hidden;
             text-overflow: ellipsis;
 
             &::before {
@@ -488,20 +524,6 @@
             &.has-background-image::before {
               background: none !important;
             }
-          }
-
-          &.component-enter-active {
-            animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            pointer-events: none; // 动画期间禁用交互
-          }
-
-          &.component-leave-active {
-            animation: fadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            pointer-events: none; // 禁用交互
-          }
-
-          &.component-move {
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           }
 
           .ant-image .ant-image-img {
@@ -537,6 +559,13 @@
   .tg-designer-property-wrapper {
     padding: 10px;
 
+    .tg-designer-property-comp-type {
+      font-size: 18px;
+      font-weight: bolder;
+      border-bottom: 1px solid var(--tg-theme-color-border);
+      padding-bottom: 4px;
+    }
+
     .tg-designer-property-container {
       display: flex;
       flex-direction: column;
@@ -568,8 +597,12 @@
           gap: 4px;
         }
 
-        & > *:not(label) {
+        & > *:not(label, .ant-switch) {
           flex: auto;
+        }
+
+        .ant-radio-group {
+          display: flex;
         }
       }
     }

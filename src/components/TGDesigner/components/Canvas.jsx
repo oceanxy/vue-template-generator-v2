@@ -1,4 +1,4 @@
-import { computed, ref, toRaw, watch } from 'vue'
+import { computed, ref, toRaw } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
 import { styleWithUnits } from '../utils/style'
@@ -20,39 +20,40 @@ import { Geometry } from '@/components/TGDesigner/utils/geometry'
 export default {
   name: 'CanvasRenderer',
   setup() {
-    const store = useEditorStore()
-    const schema = computed(() => store.schema)
+    const designerStore = useEditorStore()
+    const schema = computed(() => designerStore.schema)
     const componentSchemas = computed(() => schema.value.components)
     const containerRef = ref(null)
     const indicatorRef = ref(null)
     const dragHandlers = useDragDrop()
-    const selectedComponent = computed(() => store.selectedComponent)
-
-    watch(
-      componentSchemas,
-      (val) => {
-        store.schema.components.value = [...val]
-      },
-      { deep: true, immediate: true }
-    )
+    const selectedComponent = computed(() => designerStore.selectedComponent)
 
     const handleCanvasClick = (e) => {
       if (e.target === e.currentTarget) {
-        store.updateComponent({
-          type: 'canvas',
-          id: 'canvas-root',
-          configForm: store.canvasConfigForm
-        })
+        if (selectedComponent.value?.type === 'canvas') {
+          designerStore.updateComponent()
+        } else {
+          designerStore.updateComponent({
+            type: 'canvas',
+            id: 'canvas-root',
+            name: '画布',
+            configForm: designerStore.canvasConfigForm
+          })
+        }
       }
     }
 
     const handleCompClick = (e, componentSchema, componentDef) => {
       e.stopPropagation()
 
-      store.updateComponent({
-        ...toRaw(componentSchema),
-        configForm: componentDef.configForm
-      })
+      if (componentSchema.id === selectedComponent.value?.id) {
+        designerStore.updateComponent()
+      } else {
+        designerStore.updateComponent({
+          ...toRaw(componentSchema),
+          configForm: componentDef.configForm
+        })
+      }
     }
 
     const handleCompDragStart = (e, componentSchema) => {
@@ -75,7 +76,7 @@ export default {
     }
 
     const renderCanvasFromSchemas = (componentSchema, parentId = null) => {
-      const componentDef = store.getComponentByType(
+      const componentDef = designerStore.getComponentByType(
         componentSchema.type,
         componentSchema.category
       )
@@ -102,12 +103,16 @@ export default {
 
       component.style = omit(component.style, ['width', 'height'])
 
+      // 布局组件需要添加额外的样式
       const canvasCompCategoryClassName = `tg-designer-${componentSchema.category}-component`
 
       // 添加布局组件的嵌套支持
       if (isLayoutComp) {
-        // 在画布中时，布局组件的布局方向要应用到拖拽容器上，让画布呈现和预览呈现保持一致。
-        dragCompStyle.style.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
+        if (componentSchema.type === 'tg-layout-flex') {
+          // 在画布中时，Flex布局组件的布局方向要应用到拖拽容器上，让画布呈现和预览呈现保持一致。
+          dragCompStyle.style.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
+        }
+
         component.children = componentSchema.children?.map(childSchema =>
           renderCanvasFromSchemas(childSchema, componentSchema.id)
         ) ?? []
@@ -120,9 +125,10 @@ export default {
           data-parent-id={parentId}
           data-selected={selectedComponent.value?.id === componentSchema.id}
           data-nested-level={Geometry.calculateNestedLevelById(componentSchema.id, componentSchemas.value)} // 新增此行
+          data-cell-position={componentSchema.cellPosition}
           draggable
           class={{
-            [canvasCompCategoryClassName]: true,
+            [canvasCompCategoryClassName]: true, // tg-designer-layout-component
             'tg-designer-drag-component': true,
             'dragging': componentSchema.__dragging, // 拖动状态样式
             'component-enter-active': componentSchema.__animating && !componentSchema.__initialized,
@@ -154,7 +160,7 @@ export default {
             style={{
               ...canvasStyle,
               '--canvas-padding': canvasStyle?.padding || '15px',
-              overflowY: store.indicator.type === 'container' ? 'hidden' : 'auto'
+              overflowY: designerStore.indicator.type === 'container' ? 'hidden' : 'auto'
             }}
             onClick={handleCanvasClick}
             onDrop={e => dragHandlers.handleDrop(e, containerRef)}

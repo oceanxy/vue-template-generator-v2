@@ -109,43 +109,66 @@ export default function useDragDrop() {
       parentId: null
     }
 
+    // 获取Grid布局组件内当前布局容器的信息
+    let cellPosition = dropContainer.dataset?.cellPosition
+    const isCell = dropContainer.classList?.contains('tg-designer-layout-container') && cellPosition
     // 确定插入位置（相对当前容器）
-    let insertIndex
-    if (store.indicator.type === 'container') {
-      // 当显示容器指示线时，强制插入到末尾
-      insertIndex = schema.length
-    } else {
-      // 计算相对于容器的位置
-      const containerRect = dropContainer.getBoundingClientRect()
-      const direction = indicator.value.layoutDirection
-      const mousePosition = direction === 'horizontal'
-        ? e.clientX - containerRect.left
-        : e.clientY - containerRect.top + dropContainer.scrollTop
-      // 获取容器内可见子元素
-      const children = Geometry.getValidChildren(dropContainer.children).valid
-      // 计算中间点（基于实际容器）
-      const midPoints = Geometry.calculateCompMidPoints(
-        containerRect,
-        children,
-        indicator.value.layoutDirection,
-        dropContainer.scrollTop
-      )
-      // 原有计算逻辑
-      insertIndex = Math.max(
-        0,
-        Math.min(
-          Geometry.determineInsertIndex(mousePosition, midPoints),
-          schema.length
+    let insertIndex = 0
+
+    if (!isCell) {
+      if (store.indicator.type === 'container') {
+        // 当显示容器指示线时，强制插入到末尾
+        insertIndex = schema.length
+      } else {
+        // 计算相对于容器的位置
+        const containerRect = dropContainer.getBoundingClientRect()
+        const direction = indicator.value.layoutDirection
+        const mousePosition = direction === 'horizontal'
+          ? e.clientX - containerRect.left
+          : e.clientY - containerRect.top + dropContainer.scrollTop
+        // 获取容器内可见子元素
+        const children = Geometry.getValidChildren(dropContainer.children).valid
+        // 计算中间点（基于实际容器）
+        const midPoints = Geometry.calculateCompMidPoints(
+          containerRect,
+          children,
+          indicator.value.layoutDirection,
+          dropContainer.scrollTop
         )
-      )
+        // 原有计算逻辑
+        insertIndex = Math.max(
+          0,
+          Math.min(
+            Geometry.determineInsertIndex(mousePosition, midPoints),
+            schema.length
+          )
+        )
+      }
     }
 
     // 执行插入/移动操作
     let componentSchema = null
 
+    function insertOrReplace(insertIndex, componentSchema) {
+      // 插入到父级schema
+      if (isCell) {
+        // Grid容器插入时要检测该单元格是否已存在组件，存在则替换，反之则插入
+        const index = schema.findIndex(item => item.cellPosition === cellPosition)
+
+        if (index > -1) {
+          schema.splice(index, 1, componentSchema)
+        } else {
+          schema.splice(insertIndex, 0, componentSchema)
+        }
+      } else {
+        // Flex容器直接插入
+        schema.splice(insertIndex, 0, componentSchema)
+      }
+    }
+
     if (type === 'ADD') {
-      componentSchema = store.createComponentSchema(data, parentId)
-      schema.splice(insertIndex, 0, componentSchema) // 插入到父级schema
+      componentSchema = store.createComponentSchema(data, parentId, cellPosition)
+      insertOrReplace(insertIndex, componentSchema)
     } else if (type === 'MOVE') {
       /**
        * 查找原始位置（支持跨容器移动）
@@ -171,6 +194,8 @@ export default function useDragDrop() {
       // 执行移动
       const [moved] = origin.parent.splice(origin.index, 1)
       moved.parentId = parentId
+      // 更新在Grid布局组件内移动元素的位置信息
+      moved.cellPosition = isCell ? cellPosition : undefined
 
       // 当向前移动时补偿索引
       // 仅当在同一个父容器内移动时才需要补偿
@@ -183,8 +208,7 @@ export default function useDragDrop() {
 
       // 双端约束防止越界
       insertIndex = Math.max(0, Math.min(insertIndex, schema.length))
-
-      schema.splice(insertIndex, 0, moved)
+      insertOrReplace(insertIndex, moved)
       componentSchema = moved
     }
 

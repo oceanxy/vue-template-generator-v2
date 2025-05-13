@@ -1,0 +1,30 @@
+.tg-designer-layout-grid-container {
+  .ant-row > .ant-col {
+    // 消除 ant-design 内置样式的影响
+    &:first-child {
+      padding-left: 0 !important;
+    }
+
+    &:last-child {
+      padding-right: 0 !important;
+    }
+  }
+
+  .tg-designer-drag-component,
+  .tg-designer-layout-container.grid {
+    width: 100%;
+    height: 100%;
+    min-height: 30px;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .tg-designer-layout-container.grid {
+    & > * {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  }
+}

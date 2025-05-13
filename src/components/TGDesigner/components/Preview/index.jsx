@@ -3,12 +3,14 @@ import { styleWithUnits } from '../../utils/style'
 import { useEditorStore } from '../../stores/useEditorStore'
 import './assets/styles/index.scss'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { useRoute } from 'vue-router'
 
 export default {
   name: 'Preview',
   setup() {
     const store = useEditorStore()
     const schema = ref(null)
+    const route = useRoute()
 
     const renderPreviewFromSchema = (componentSchema, parentId = null) => {
       const componentDef = store.getComponentByType(
@@ -23,7 +25,8 @@ export default {
         key: componentSchema.id,
         ...componentSchema.props,
         previewType: 'preview',
-        style: styleWithUnits(componentSchema.props?.style ?? {})
+        style: styleWithUnits(componentSchema.props?.style ?? {}),
+        'data-cell-position': componentSchema.cellPosition
       }
 
       // 添加布局组件的嵌套支持
@@ -38,7 +41,7 @@ export default {
 
     onMounted(() => {
       const previewSchema = JSON.parse(sessionStorage.getItem('tg-schemas') || '{}')
-      schema.value = previewSchema.default
+      schema.value = previewSchema[route.query.pageId]
     })
 
     return () => (

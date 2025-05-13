@@ -3,8 +3,6 @@
   padding: 20px;
   box-sizing: border-box;
   background: inherit;
-  overflow: auto;
-
 
   .tg-main-award-header {
     margin-bottom: 20px;
@@ -51,10 +49,12 @@
         }
       }
 
-      p {
+      .ant-typography {
         font-size: 14px;
         color: #333333;
         line-height: 1.5;
+        white-space: break-spaces;
+        word-break: break-word;
       }
     }
 

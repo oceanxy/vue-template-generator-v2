@@ -59,8 +59,8 @@ export default function useIndicator() {
     const _children = Geometry.getValidChildren(dropContainer.children)
     const children = _children.valid
 
-    // 空容器处理
-    if (!children.length) {
+    // 空容器或Grid布局组件强制显示为容器指示线
+    if (!children.length || (containerType && dropContainer.dataset?.cellPosition)) {
       handleContainerIndicator(dropContainer, isInsideLayoutContainer)
     } else {
       // 计算相对位置
@@ -167,10 +167,10 @@ export default function useIndicator() {
 
       relativePosition = {
         // 转换为相对于canvas容器的坐标
-        top: containerRect.top - canvasRect.top + canvasContainer.scrollTop,
-        left: containerRect.left - canvasRect.left + canvasContainer.scrollLeft,
-        width: containerRect.width,
-        height: containerRect.height
+        top: containerRect.top - canvasRect.top + canvasContainer.scrollTop - 3,
+        left: containerRect.left - canvasRect.left + canvasContainer.scrollLeft - 3,
+        width: containerRect.width + 6,
+        height: containerRect.height + 6
       }
     } else {
       const containerStyle = window.getComputedStyle(container)
@@ -182,10 +182,10 @@ export default function useIndicator() {
       }
 
       relativePosition = {
-        top: padding.top + container.scrollTop,
-        left: padding.left + container.scrollLeft,
-        width: containerRect.width - padding.left - padding.right,
-        height: containerRect.height - padding.top - padding.bottom
+        top: padding.top + container.scrollTop - 3,
+        left: padding.left + container.scrollLeft - 3,
+        width: containerRect.width - padding.left - padding.right + 6,
+        height: containerRect.height - padding.top - padding.bottom + 6
       }
     }
 

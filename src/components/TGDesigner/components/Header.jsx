@@ -1,27 +1,29 @@
 import { Button, Input, message, Tag } from 'ant-design-vue'
 import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
-import { computed, onUnmounted, toRaw, watch, watchEffect } from 'vue'
+import { computed, inject, onMounted, onUnmounted, toRaw, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
-import { EyeOutlined, FileOutlined, RedoOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons-vue'
+import { FileOutlined } from '@ant-design/icons-vue'
 import router from '@/router'
+import DesignerTemplates from './Templates'
 
 export default {
   name: 'TGDesignerHeader',
   setup() {
+    let interval = null
+    const tgStore = inject('tgStore')
+    const updateSchema = inject('updateSchema')
     const store = useEditorStore()
     const isSaving = computed(() => store.isSaving)
     const schema = computed(() => store.schema)
+    const search = computed(() => tgStore.search)
 
     const autoSave = debounce(
       async () => {
         try {
-          store.isSaving = true
-          await SchemaService.save('default', toRaw(schema.value))
+          await SchemaService.save(search.value.pageId, toRaw(schema.value))
         } catch (e) {
-          message.error('保存失败')
-        } finally {
-          store.isSaving = false
+          message.warning('本地缓存失败')
         }
       },
       1500, // 自动保存时间间隔
@@ -31,32 +33,66 @@ export default {
       }
     )
 
-    // 关键操作立即保存（如组件删除/顺序变更）
-    watch(() => store.schema.components.length, autoSave) // 组件数量变化立即触发
-    watch(() => store.schema.canvas, autoSave, { deep: true }) // 画布设置变更立即触发
+    const autoUpdate = () => {
+      // 30s自动向后端保存一次
+      interval = setInterval(async () => {
+        await handleSchemaSave('auto')
+      }, 30000)
+    }
 
-    watchEffect(() => {
-      autoSave()
-    })
+    // 本地缓存实时进行
+    watch(schema, autoSave, { deep: true })
 
     // 在页面卸载前强制保存
     window.addEventListener('beforeunload', () => {
       autoSave.flush()
+      clearInterval(interval)
+    })
+
+    onMounted(async () => {
+      await autoUpdate()
     })
 
     onUnmounted(() => {
       autoSave.flush()
+      clearInterval(interval)
     })
 
-    const handleSchemaSave = () => {
-      // todo 向服务端保存
+    const handleSchemaSave = async type => {
+      if (search.value.id && search.value.sceneId) {
+        store.isSaving = true
+
+        // 向服务端保存
+        await tgStore.fetch({
+          loading: false,
+          apiName: updateSchema,
+          params: {
+            id: search.value.id,
+            sceneId: search.value.sceneId,
+            schema: JSON.stringify(schema.value),
+            pageId: search.value.pageId
+          }
+        })
+
+        store.isSaving = false
+
+        // 手动触发保存后，清空已存在的定时器，重新设置定时器
+        if (type !== 'auto') {
+          clearInterval(interval)
+          autoUpdate()
+        }
+      }
     }
 
     const handlePreview = async () => {
-      // 预览之前保存
-      await SchemaService.save('default', toRaw(schema.value))
+      // 预览之前保存schema到本地session中
+      await SchemaService.save(search.value.pageId, toRaw(schema.value))
 
-      const page = router.resolve({ name: 'Preview' })
+      const page = router.resolve({
+        name: 'Preview',
+        query: { pageId: search.value.pageId }
+      })
+
       window.open(page.href, '_blank')
     }
 
@@ -64,7 +100,7 @@ export default {
       <div class={'tg-designer-tools'}>
         <div class={'tg-designer-functions'}>
           <div class={'tg-designer-logo'}>
-            <div class={'tg-designer-logo-text'}>建家开店-页面设计器</div>
+            <div class={'tg-designer-logo-text'}>建家开店页面设计器</div>
             <div class={'tg-designer-logo-version'}>CHS-DESIGNER <Tag color="volcano">v1.0</Tag></div>
           </div>
           <div class={'tg-designer-page-name'}>
@@ -72,34 +108,34 @@ export default {
           </div>
           <div class={'tg-designer-canvas-functions'}>
             <Button
-              icon={<RedoOutlined />}
-              title={'重做'}
-            />
-            <Button
-              icon={<UndoOutlined />}
+              disabled={isSaving.value}
+              icon={<IconFont type="icon-designer-tool-undo" />}
               title={'撤销'}
             />
             <Button
+              disabled={isSaving.value}
+              icon={<IconFont type="icon-designer-tool-redo" />}
+              title={'重做'}
+            />
+            <Button
+              disabled={isSaving.value}
               onClick={handleSchemaSave}
               data-saving={isSaving.value ? 'true' : null}
-              icon={<SaveOutlined />}
+              icon={<IconFont type="icon-designer-tool-save" />}
               title={'保存'}
             />
             <Button
               onClick={handlePreview}
-              icon={<EyeOutlined />}
+              icon={<IconFont type="icon-designer-tool-preview" />}
               title={'预览'}
             />
           </div>
         </div>
-        <div class={'tg-designer-template-functions'}>
-          <Button type={'primary'}>恢复模版</Button>
-          <Button type={'primary'}>模板中心</Button>
-        </div>
+        <DesignerTemplates updateSchema={handleSchemaSave} />
         {
           isSaving.value && (
-            <div class="save-status-bar">
-              <div class="save-progress" />
+            <div class="tg-designer-save-status-bar">
+              <div class="tg-designer-save-progress" />
             </div>
           )
         }

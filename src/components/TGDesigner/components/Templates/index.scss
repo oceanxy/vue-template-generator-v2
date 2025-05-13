@@ -1,0 +1,40 @@
+.tg-designer-template-functions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-inline-end: 10px;
+}
+
+.tg-designer-template-items {
+  .ant-card {
+    position: relative;
+    transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &::after {
+      content: '已选择';
+      position: absolute;
+      right: 3px;
+      top: 2px;
+      padding: 4px 10px;
+      border-bottom-left-radius: 4px;
+      color: var(--tg-theme-color-white);
+      background: var(--tg-theme-color-primary);
+      opacity: 0;
+      transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &.selected {
+      border: 1px solid var(--tg-theme-color-primary);
+
+      &::after {
+        right: 0;
+        top: 0;
+        opacity: 1;
+      }
+    }
+
+    .ant-card-cover {
+      margin: 3px;
+    }
+  }
+}

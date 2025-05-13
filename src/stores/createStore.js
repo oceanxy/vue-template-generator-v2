@@ -260,9 +260,8 @@ export function createStore({
         isRequired,
         raw,
         merge,
-        done,
+        done
       } = {}) {
-
         let store
 
         if (storeName && storeName !== moduleName) {
@@ -318,6 +317,8 @@ export function createStore({
         const response = await apis[apiName](requestObject, paginationByParams ? _pagination : undefined)
 
         if (response.status) {
+          if (!response.data) response.data = {}
+
           if (raw) {
             location
               ? this.$patch({ [location]: { [stateName]: response.data } })
@@ -439,7 +440,8 @@ export function createStore({
         return response
       },
       /**
-       * 获取详情数据
+       * 获取详情数据。
+       * setValue不为函数时，返回值将与`store.currentItem`合并。
        * @param {string} location
        * @param {Object} [params] - 查询参数。默认`store.currentItem.id`，默认值受`store.state.rowKey`影响。
        * @param {string} [apiName] - 接口名称，默认`getDetailsOf${route.name}`。
@@ -453,7 +455,7 @@ export function createStore({
         apiName,
         setValue
       }) {
-        this.setLoading({ value: true, stateName: location })
+        this.setLoading({ value: true, location })
 
         let api
         let res = {}
@@ -467,6 +469,8 @@ export function createStore({
         }
 
         if (res.status) {
+          if (!res.data) res.data = {}
+
           if (typeof setValue === 'function') {
             setValue(res.data, this)
           } else {
@@ -480,7 +484,7 @@ export function createStore({
           }
         }
 
-        this.setLoading({ value: false, stateName: location })
+        this.setLoading({ value: false, location })
 
         return res
       },
@@ -551,20 +555,20 @@ export function createStore({
 
           if (merge && typeof targetState !== 'object') {
             console.warn(`[store.setState] ${moduleName}.state${location ? `.${location}` : ''
-              }.${stateName}不是数组或对象，只能赋值，不能合并！`)
+            }.${stateName}不是数组或对象，只能赋值，不能合并！`)
           }
         }
       },
       /**
        * 设置 loading 状态
        * @param {boolean} [value] - loading 状态。自动为 store.state.dataSource.loading 赋值，不传递该值的情况下默认取反。
-       * @param {string} [stateName='dataSource'] - store.state 中的字段名，支持含有`loading`属性的对象或布尔类型的字段。
-       * 默认名为'dataSource'的对象。
+       * @param {string} [stateName='loading'] - store.state 中的字段名，支持含有`loading`属性的对象或布尔类型的字段。
+       * 默认名为`state.loading`字段。
        * @param {string} [location] - 次级表格的 state。
        */
       setLoading({
         value,
-        stateName = 'dataSource',
+        stateName = 'loading',
         location
       } = {}) {
         const setValue = (obj, key, val) => {
@@ -802,6 +806,7 @@ export function createStore({
        * @param [isRefreshTable] {boolean} - 成功后，是否刷新表格数据，默认 false。
        * @param [isClearSelectedRows] {boolean} - 成功后，是否清除表格已选行，默认 false。
        * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作成功后关闭指定弹窗。
+       * @param optionsOfGetList
        * @returns {Promise<Object>}
        */
       async fetch({
@@ -819,7 +824,7 @@ export function createStore({
         let res = { status: false }
 
         if (loading) {
-          this.setLoading(location ? { stateName: location, value: true } : {})
+          this.setLoading({ location, value: true })
         }
 
         if (!apiName) {
@@ -847,7 +852,7 @@ export function createStore({
         }
 
         if (loading) {
-          this.setLoading(location ? { stateName: location, value: false } : {})
+          this.setLoading({ location, value: false })
         }
 
         if (res.status) {
