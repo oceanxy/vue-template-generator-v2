@@ -1,21 +1,23 @@
 import { Cascader } from 'ant-design-vue'
-import { ref, useAttrs, onBeforeMount, onBeforeUnmount, watch } from 'vue'
+import { ref, useAttrs, watch } from 'vue'
 
 export default {
   name: 'TGCascader',
   props: {
     // 解构 ant-design-vue Cascader props
-
     value: {
       type: Array,
       default: () => []
     },
-
+    options: {
+      type: Array,
+      default: () => []
+    },
   },
   emits: ['update:value', 'change'],
   setup(props, { slots, emit }) {
     const attrs = useAttrs()
-    const { fieldNames, options } = attrs
+    const { fieldNames } = attrs
     const selectedPath = ref([])
 
     const getTreePath = (
@@ -73,13 +75,17 @@ export default {
 
     const updateSelectedPath = (value) => {
       if (value && value.length > 0) {
-        selectedPath.value = getTreePath(value, options, {
+        selectedPath.value = getTreePath(value, props.options, {
           key: fieldNames.value, children: fieldNames.children
         }, false)
       }
     }
 
-    updateSelectedPath(props.value)
+    watch(() => props.options, (newOptions) => {
+      if (props.value.length && newOptions.length) {
+        updateSelectedPath(props.value)
+      }
+    })
 
     watch(() => props.value, (newValue) => {
       if (!newValue.length) {
@@ -91,7 +97,7 @@ export default {
       <Cascader
         {...attrs}
         vModel:value={selectedPath.value}
-        slots={slots}
+        options={props.options}
         onChange={(value, selectedOptions) => {
           emit('update:value', value)
           emit('change', value, selectedOptions)
