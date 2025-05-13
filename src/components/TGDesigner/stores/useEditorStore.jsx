@@ -121,7 +121,7 @@ export const useEditorStore = defineStore('editor', {
     },
     /**
      * 更新选中的组件元数据
-     * @param newComponent {{
+     * @param [newComponent] {{
      *  id: string,
      *  type: string,
      *  category: TG_MATERIAL_CATEGORY
@@ -129,7 +129,10 @@ export const useEditorStore = defineStore('editor', {
      * @returns {TGComponentMeta|null}
      */
     updateComponent(newComponent) {
-      if (!newComponent) return null
+      if (!newComponent) {
+        this.selectedComponent = null
+        return null
+      }
 
       if (newComponent.type === 'canvas') {
         this.selectedComponent = newComponent

@@ -168,7 +168,6 @@ export default {
 
       requestAnimationFrame(() => {
         markChildren(targetSchema[preIndex])
-        store.schema.components.value = [...store.schema.components.value]
       })
 
       // 获取新位置
