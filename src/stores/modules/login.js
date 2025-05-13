@@ -27,7 +27,13 @@ export default createStore({
       currentItem: {},
       // 全局修改密码弹窗的显示状态
       showModalForChangePassword: false,
-      modalForChangePassword: {}
+      modalForChangePassword: {},
+      // 待办事项
+      messageList: {
+        list: [],
+        loading: false
+      },
+      unreadMessageCount: false,
     },
     actions: {
       async jumpAfterLogin() {
@@ -170,6 +176,9 @@ export default createStore({
           const commonStore = useStore('/common')
 
           commonStore.setTheme(appName, userInfo)
+
+          // 判断config配置文件中是否配置顶部消息 news属性配置
+          // 在完成获取用户信息之后，获取代办信息
         }
 
         this.loading = false
@@ -238,6 +247,24 @@ export default createStore({
         } else {
           this.codeKey = ''
         }
+      },
+      // 获取header上的代办信息暂时先放在login文件
+      // 获取代办消息列表
+      async getMessageList() {
+        this.messageList.loading = true
+        const payload = {
+          pageSize: 20,
+          pageIndex: 0,
+          readStatus: '0'
+        }
+
+        const res = await apis.getMessageList(payload)
+
+        if (res.status) {
+          this.unreadMessageCount = res.data.totalNum ? true : false
+        }
+
+        this.messageList.loading = false
       }
     }
   },

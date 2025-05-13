@@ -1,6 +1,6 @@
 import './assets/styles/index.scss'
 import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref, watch } from 'vue'
-import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme, Select } from 'ant-design-vue'
+import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme, Select, Badge } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
@@ -60,6 +60,21 @@ export default {
       loginStore?.userInfo?.themeFileName ||
       configs.header?.buttons?.theme.default
     )
+
+    watch(userInfo, async (val) => {
+      if (val) {
+        // 获取header上的代办信息暂时先放在login文件
+        if (proxy.GlobalShowNewDrawerPopup) {
+          // 判断config配置中buttons里的extraButtons text为消息的配置
+          const isNewBtn = configs.header?.buttons?.extraButtons?.some(item => item.text == '消息')
+          if (isNewBtn) {
+            await loginStore.getMessageList()
+          }
+        } else {
+          console.warn('未找到可用的全局注册组件：GlobalShowNewDrawerPopup')
+        }
+      }
+    })
 
     watch(() => localStorageHeaderId, value => {
       if (document.querySelector('#tg-responsive-layout')) {
@@ -199,10 +214,7 @@ export default {
       setTimeout(() => {
         console.log(localStorage.getItem(`${appName}-headerId`))
       }, 500)
-
-
     }
-
 
     return () => (
       <Layout.Header class={'tg-layout-header'} style={headerTheme.value}>
@@ -310,6 +322,25 @@ export default {
               style={{ background: themeToken.value.colorSplit }}
             />
             <Space class={'tg-header-functions'} size={themeToken.value.fontSizeSM}>
+              {
+                configs.header?.buttons?.extraButtons?.map(button => (
+                  <Badge dot={loginStore[button.BadgeDot]} offset={[-4, 2]}>
+                    <Button
+                      shape="circle"
+                      type={'link'}
+                      title={button.text}
+                      class={'tg-header-icon'}
+                      onClick={e => { __TG_APP_EVENT_MAPPINGS__?.[button.event]?.call(this, proxy, e) }}
+                    >
+                      {
+                        button.iconType === 'antd'
+                          ? <Icon style={{ fontSize: '0.84em' }} type={button.icon} />
+                          : <IconFont type={button.icon} />
+                      }
+                    </Button>
+                  </Badge>
+                ))
+              }
               {
                 configs.header?.buttons?.algorithm?.show && (
                   <Popover
