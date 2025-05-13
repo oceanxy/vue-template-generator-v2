@@ -21,7 +21,7 @@ export default {
     const autoSave = debounce(
       async () => {
         try {
-          await SchemaService.save('default', toRaw(schema.value))
+          await SchemaService.save(search.value.pageId, toRaw(schema.value))
         } catch (e) {
           message.warning('本地缓存失败')
         }
@@ -70,7 +70,7 @@ export default {
             id: search.value.id,
             sceneId: search.value.sceneId,
             schema: JSON.stringify(schema.value),
-            pageRoute: 'default'
+            pageId: search.value.pageId
           }
         })
 
@@ -85,10 +85,14 @@ export default {
     }
 
     const handlePreview = async () => {
-      // 预览之前保存
-      await SchemaService.save('default', toRaw(schema.value))
+      // 预览之前保存schema到本地session中
+      await SchemaService.save(search.value.pageId, toRaw(schema.value))
 
-      const page = router.resolve({ name: 'Preview' })
+      const page = router.resolve({
+        name: 'Preview',
+        query: { pageId: search.value.pageId }
+      })
+
       window.open(page.href, '_blank')
     }
 
