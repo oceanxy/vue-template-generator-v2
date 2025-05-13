@@ -17,44 +17,10 @@ export default {
       return <AwardDynamics {...props} />
     }
 
-    return <IconFont type='icon-designer-material-award-dynamics' />
+    return <IconFont type="icon-designer-material-award-dynamics" />
   },
   defaultProps: {
-    title: '奖项动态',
-    description: '了解更多动态资讯，点击查看更多动态',
-    highlightFirstItem: true,
-    items: [
-      {
-        id: 1,
-        image: defaultImg,
-        title: '动态标题',
-        content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
-      },
-      {
-        id: 2,
-        image: defaultImg,
-        title: '动态标题',
-        content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
-      },
-      {
-        id: 3,
-        image: defaultImg,
-        title: '动态标题',
-        content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
-      },
-      {
-        id: 4,
-        image: defaultImg,
-        title: '动态标题',
-        content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
-      },
-      {
-        id: 5,
-        image: defaultImg,
-        title: '动态标题',
-        content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
-      }
-    ]
+    highlightFirstItem: true
   },
   style: {
     width: '100%',
@@ -164,6 +130,43 @@ export const AwardDynamics = {
   name: 'AwardDynamics',
   props: ['title', 'description', 'items', 'highlightFirstItem'],
   setup(props) {
+    const data = {
+      title: '奖项动态',
+      description: '了解更多动态资讯，点击查看更多动态',
+      items: [
+        {
+          id: 1,
+          image: defaultImg,
+          title: '动态标题',
+          content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
+        },
+        {
+          id: 2,
+          image: defaultImg,
+          title: '动态标题',
+          content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
+        },
+        {
+          id: 3,
+          image: defaultImg,
+          title: '动态标题',
+          content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
+        },
+        {
+          id: 4,
+          image: defaultImg,
+          title: '动态标题',
+          content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
+        },
+        {
+          id: 5,
+          image: defaultImg,
+          title: '动态标题',
+          content: '动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容动态内容'
+        }
+      ]
+    }
+
     function RenderItem(props) {
       const dataSource = props.dataSource
 
@@ -183,7 +186,7 @@ export const AwardDynamics = {
     }
 
     function RenderMoreButton() {
-      if (props.items.length > 4) {
+      if (data.items.length > 4) {
         return (
           <div class="tg-award-dynamics-more">
             <Button type="primary" ghost size="large">更多动态</Button>
@@ -195,9 +198,9 @@ export const AwardDynamics = {
     }
 
     const RenderItems = () => {
-      if (props.highlightFirstItem && props.items.length > 1) {
-        const firstItem = props.items[0]
-        const otherItems = props.items.slice(1).slice(0, 3)
+      if (props.highlightFirstItem && data.items.length > 1) {
+        const firstItem = data.items[0]
+        const otherItems = data.items.slice(1).slice(0, 3)
 
         return (
           <div class="tg-award-dynamics-content-highlight">
@@ -210,7 +213,7 @@ export const AwardDynamics = {
       } else {
         return (
           <div class="tg-award-dynamics-content">
-            {props.items?.slice(0, 4).map(item => <RenderItem key={item.id} dataSource={item} />)}
+            {data.items?.slice(0, 4).map(item => <RenderItem key={item.id} dataSource={item} />)}
           </div>
         )
       }
@@ -220,10 +223,10 @@ export const AwardDynamics = {
       <div class="tg-designer-award-dynamics">
         <div class="tg-award-dynamics-header">
           <div class="tg-award-dynamics-title">
-            <span>{props.title}</span>
+            <span>{data.title}</span>
             <RenderMoreButton />
           </div>
-          <div class="tg-award-dynamics-description">{props.description}</div>
+          <div class="tg-award-dynamics-description">{data.description}</div>
         </div>
         <RenderItems />
       </div>
