@@ -178,6 +178,7 @@ export default function useThemeVars() {
       '--tg-theme-color-primary-border': token.value.colorPrimaryBorder,
       '--tg-theme-color-primary-border-hover': token.value.colorPrimaryBorderHover,
       '--tg-theme-color-warning': token.value.colorWarning,
+      '--tg-theme-color-warning-border': token.value.colorWarningBorder,
       '--tg-theme-color-error': token.value.colorError,
       '--tg-theme-color-error-bg': token.value.colorErrorBg,
       '--tg-theme-color-success': token.value.colorSuccess,
