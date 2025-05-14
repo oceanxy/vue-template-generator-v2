@@ -7,7 +7,17 @@ import { useRoute } from 'vue-router'
 
 export default {
   name: 'Preview',
-  setup() {
+  props: {
+    previewType: {
+      type: String,
+      default: 'preview'
+    },
+    schema: {
+      type: String,
+      default: '{}'
+    }
+  },
+  setup(props) {
     const store = useEditorStore()
     const schema = ref(null)
     const route = useRoute()
@@ -24,7 +34,7 @@ export default {
       const component = {
         key: componentSchema.id,
         ...componentSchema.props,
-        previewType: 'preview',
+        previewType: props.previewType,
         style: styleWithUnits(componentSchema.props?.style ?? {}),
         'data-cell-position': componentSchema.cellPosition
       }
@@ -40,8 +50,12 @@ export default {
     }
 
     onMounted(() => {
-      const previewSchema = JSON.parse(sessionStorage.getItem('tg-schemas') || '{}')
-      schema.value = previewSchema[route.query.pageId]
+      if (props.previewType === 'preview') {
+        const previewSchema = JSON.parse(sessionStorage.getItem('tg-schemas') || '{}')
+        schema.value = previewSchema[route.query.pageId]
+      } else if (props.previewType === 'portal') {
+        schema.value = JSON.parse(props.schema)
+      }
     })
 
     return () => (
