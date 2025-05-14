@@ -195,13 +195,21 @@ router.beforeEach(async (to, from, next) => {
     to.meta.title = decodeURIComponent(to.query.title)
   }
 
-  let title = to.meta.title || ''
+  let title
 
-  if (title) {
-    title += ' | '
+  if (to.params.title || to.query.title) {
+    title = decodeURIComponent(to.params.title || to.query.title)
+  } else {
+    title = to.meta.title || ''
+
+    if (title) {
+      title += ' | '
+    }
+
+    title += configs.systemName
   }
 
-  document.title = title + configs.systemName
+  document.title = title
 
   // 从search中获取token
   const searchToken = new URL(window.location.href).searchParams.get(configs.tokenConfig.fieldName)
