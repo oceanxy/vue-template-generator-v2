@@ -147,6 +147,11 @@ export default {
     return () => {
       const canvasStyle = styleWithUnits(schema.value.canvas.style)
 
+      if (canvasStyle.width === '100%' && parseInt(canvasStyle.padding) < 3) {
+        // 为了给画布的辅助线和指示线留出位置
+        canvasStyle.padding = '3px'
+      }
+
       return (
         <div class={'tg-designer-canvas-layout'}>
           <div
