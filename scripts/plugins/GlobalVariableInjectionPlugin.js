@@ -4,7 +4,7 @@ const { resolve, join } = require('path')
 const { accessSync, constants } = require('node:fs')
 
 class GlobalVariableInjectionPlugin {
-  constructor() {}
+  constructor() { }
 
   log(text) {
     console.info(chalk.hex('#1fb0ff')('编译信息：') + chalk.gray(`检测到${text}，已成功加载。`))
@@ -98,6 +98,25 @@ class GlobalVariableInjectionPlugin {
 
                     if (_plugin) {
                       _plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__ = undefined
+                    }
+                  }
+                }
+              )
+            }
+
+            // 预加载事件映射器
+            if (!plugin.definitions.__TG_APP_EVENT_MAPPINGS__) {
+              this.preloadResources(
+                `src/apps/${appName}/configs/eventMappings.js`,
+                resource => {
+                  this.log(`动态菜单映射文件（src/apps/${appName}/configs/eventMappings.js）`)
+                  plugin.definitions.__TG_APP_EVENT_MAPPINGS__ = resource
+                }, () => {
+                  if (!this.checkDefinePlugin(compilation, '__TG_APP_EVENT_MAPPINGS__')) {
+                    const _plugin = existingPlugins.find(plugin => plugin instanceof DefinePlugin)
+
+                    if (_plugin) {
+                      _plugin.definitions.__TG_APP_EVENT_MAPPINGS__ = undefined
                     }
                   }
                 }

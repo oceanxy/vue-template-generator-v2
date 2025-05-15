@@ -12,7 +12,8 @@ module.exports = {
     __TG_APP_LOGIN_COMPONENT__: true,
     __TG_APP_CUSTOMIZE_PROD_TINY_ECHARTS__: true,
     __TG_APP_INTERFACE_MAPPINGS__: true,
-    __TG_APP_USER_INFO_MAPPINGS__: true
+    __TG_APP_USER_INFO_MAPPINGS__: true,
+    __TG_APP_EVENT_MAPPINGS__: true
     // EVENT_MAPPINGS: true
   },
   'extends': [

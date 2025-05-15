@@ -45,7 +45,8 @@ module.exports = merge(baseConfig, {
               '__TG_APP_LOGIN_COMPONENT__',
               '__TG_APP_CUSTOMIZE_PROD_TINY_ECHARTS__',
               '__TG_APP_INTERFACE_MAPPINGS__',
-              '__TG_APP_USER_INFO_MAPPINGS__'
+              '__TG_APP_USER_INFO_MAPPINGS__',
+              '__TG_APP_EVENT_MAPPINGS__'
             ]
           }
         }
