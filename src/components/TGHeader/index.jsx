@@ -208,6 +208,10 @@ export default {
       })
     }
 
+    function onOrgSelectChange(val) {
+      localStorage.setItem(`${appName}-headerId`, val)
+    }
+
     return () => (
       <Layout.Header class={'tg-layout-header'} style={headerTheme.value}>
         <TGLogo style={`font-size: ${themeToken.value.fontSizeLG}px`} />
@@ -240,6 +244,7 @@ export default {
                         placeholder={configs.header?.params?.placeholder ?? '请选择'}
                         class={'tg-header-params'}
                         suffixIcon={<IconFont type={'icon-global-down'} />}
+                        onChange={onOrgSelectChange}
                       >
                         {
                           commonStore.organListForHeader.list?.map(item => (
