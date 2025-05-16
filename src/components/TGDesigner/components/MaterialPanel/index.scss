@@ -1,0 +1,51 @@
+.tg-designer-material-container {
+  height: 100%;
+  padding: 12px;
+  user-select: none;
+  overflow-y: auto;
+
+  .tg-designer-material-category {
+    margin-bottom: 30px;
+
+    .tg-designer-material-title {
+      font-weight: bolder;
+      border-bottom: 1px solid #e3e3e3;
+      padding-bottom: 4px;
+    }
+
+    .tg-designer-material-items {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      row-gap: 15px;
+
+      .tg-designer-material-item {
+        width: calc((100% - 10px) / 2);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: move;
+        padding: 15px 0;
+
+        [draggable='true'] {
+          cursor: grab;
+
+          &:active {
+            cursor: grabbing;
+          }
+        }
+
+        &:hover {
+          border-color: var(--tg-theme-color-primary);
+          background-color: #e6f7ff;
+        }
+
+        .tg-designer-material-item-name {
+          font-weight: 500;
+        }
+
+        .ant-image .ant-image-img {
+          pointer-events: none;
+        }
+      }
+    }
+  }
+}

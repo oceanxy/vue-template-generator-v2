@@ -1,11 +1,9 @@
-import { Button, Input, message, Tag } from 'ant-design-vue'
+import { Button, message, Tag } from 'ant-design-vue'
 import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
-import { computed, inject, onMounted, onUnmounted, toRaw, watch } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
-import { FileOutlined } from '@ant-design/icons-vue'
-import router from '@/router'
-import DesignerTemplates from './Templates'
+import { jumpToRoute } from '@/utils/designer'
 
 export default {
   name: 'TGDesignerHeader',
@@ -17,6 +15,7 @@ export default {
     const isSaving = computed(() => store.isSaving)
     const schema = computed(() => store.schema)
     const search = computed(() => tgStore.search)
+    const isChanged = ref(false)
 
     const autoSave = debounce(
       async () => {
@@ -26,7 +25,7 @@ export default {
           message.warning('本地缓存失败')
         }
       },
-      1500, // 自动保存时间间隔
+      15000, // 自动本地保存时间间隔
       {
         leading: false,   // 不立即执行首次
         trailing: true    // 保证最后一次触发会执行
@@ -41,7 +40,10 @@ export default {
     }
 
     // 本地缓存实时进行
-    watch(schema, autoSave, { deep: true })
+    watch(schema, () => {
+      isChanged.value = true
+      autoSave()
+    }, { deep: true })
 
     // 在页面卸载前强制保存
     window.addEventListener('beforeunload', () => {
@@ -59,7 +61,8 @@ export default {
     })
 
     const handleSchemaSave = async type => {
-      if (search.value.id && search.value.sceneId) {
+      if (search.value.id && search.value.sceneId && isChanged.value) {
+        isChanged.value = false
         store.isSaving = true
 
         // 向服务端保存
@@ -88,12 +91,10 @@ export default {
       // 预览之前保存schema到本地session中
       await SchemaService.save(search.value.pageId, toRaw(schema.value))
 
-      const page = router.resolve({
+      jumpToRoute({
         name: 'Preview',
         query: { pageId: search.value.pageId }
       })
-
-      window.open(page.href, '_blank')
     }
 
     return () => (
@@ -103,9 +104,9 @@ export default {
             <div class={'tg-designer-logo-text'}>建家开店页面设计器</div>
             <div class={'tg-designer-logo-version'}>CHS-DESIGNER <Tag color="volcano">v1.0</Tag></div>
           </div>
-          <div class={'tg-designer-page-name'}>
-            <Input placeholder={'页面名称'} prefix={<FileOutlined />} />
-          </div>
+          {/*<div class={'tg-designer-page-name'}>*/}
+          {/*  <Input placeholder={'页面名称'} prefix={<FileOutlined />} />*/}
+          {/*</div>*/}
           <div class={'tg-designer-canvas-functions'}>
             <Button
               disabled={isSaving.value}
@@ -131,7 +132,7 @@ export default {
             />
           </div>
         </div>
-        <DesignerTemplates updateSchema={handleSchemaSave} />
+        {/*<DesignerTemplates updateSchema={handleSchemaSave} />*/}
         {
           isSaving.value && (
             <div class="tg-designer-save-status-bar">

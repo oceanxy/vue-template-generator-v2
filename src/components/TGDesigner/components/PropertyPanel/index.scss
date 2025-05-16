@@ -1,0 +1,47 @@
+.tg-designer-property-comp-type {
+  font-size: 18px;
+  font-weight: bolder;
+  border-bottom: 1px solid var(--tg-theme-color-border);
+  padding-bottom: 4px;
+}
+
+.tg-designer-property-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  .ant-divider {
+    &.ant-divider-with-text::before,
+    &.ant-divider-with-text::after {
+      border-block-color: var(--tg-theme-color-border);
+    }
+
+    .ant-divider-inner-text {
+      //padding-left: 0;
+    }
+  }
+
+  .tg-designer-form-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--tg-theme-margin-sm);
+
+    label {
+      flex: none;
+      display: flex;
+      gap: 4px;
+    }
+
+    & > *:not(label, .ant-switch) {
+      flex: auto;
+    }
+
+    .ant-radio-group {
+      display: flex;
+    }
+  }
+}

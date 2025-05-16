@@ -8,6 +8,8 @@ import { getUUID } from '@/utils/utilityFunction'
 import BasicMaterials from '../materials/meta/BasicMaterials'
 import AwardDynamics from '../materials/meta/AwardDynamics'
 import MainAward from '../materials/meta/MainAward'
+import Header from '../materials/meta/Header'
+import Footer from '../materials/meta/Footer'
 
 export const useEditorStore = defineStore('editor', {
   state: () => ({
@@ -15,6 +17,9 @@ export const useEditorStore = defineStore('editor', {
     selectedComponent: null,
     canvasConfigForm,
     schema: cloneDeep(schema),
+    selectedPlugin: {
+      id: null
+    },
     indicator: {
       containerType: 'canvas', // 'canvas' | 'layout'
       layoutDirection: 'vertical', // 'horizontal' | 'vertical'
@@ -39,7 +44,9 @@ export const useEditorStore = defineStore('editor', {
       basic: BasicMaterials,
       template: [
         MainAward,
-        AwardDynamics
+        AwardDynamics,
+        Header,
+        Footer
       ],
       layout: [FlexLayoutMeta, GridLayoutMeta]
     }

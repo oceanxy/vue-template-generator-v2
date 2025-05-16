@@ -12,7 +12,7 @@ import './index.scss'
 export default {
   type: 'tg-layout-grid',
   category: TG_MATERIAL_CATEGORY.LAYOUT,
-  name: 'Grid容器',
+  name: '网格容器',
   preview: GridLayoutPreview,
   defaultProps: {
     gutterX: 8,
@@ -28,7 +28,7 @@ export default {
     height: '',
     padding: 0,
     margin: 0,
-    border: '1px dashed #d9d9d9',
+    border: '',
     background: '#f0f2f5',
     backgroundColor: '',
     backgroundImage: '',

@@ -1,11 +1,11 @@
 import Canvas from './components/Canvas'
-import MaterialPanel from './components/MaterialPanel'
 import PropertyPanel from './components/PropertyPanel'
 import { Layout, Spin } from 'ant-design-vue'
 import Header from './components/Header'
-import { computed, onMounted, provide } from 'vue'
-import './assets/styles/index.scss'
+import Plugins from './components/Plugins'
+import { computed, onMounted, provide, ref, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
+import './assets/styles/index.scss'
 
 export default {
   name: 'TGDesigner',
@@ -27,17 +27,26 @@ export default {
     provide('updateSchema', props.updateSchema)
     provide('setTemplateId', props.setTemplateId)
 
+    const pluginRef = ref(null)
+    let CurrentPluginComponent = ref(null)
     const designerStore = useEditorStore()
     const { tgStore } = props
     const schema = computed(() => designerStore.schema)
     const loading = computed(() => tgStore.loading)
+    const pluginId = computed(() => designerStore.selectedPlugin.id)
+
+    watch(pluginId, val => {
+      if (val) {
+        CurrentPluginComponent.value = pluginRef.value.getPluginContent()
+      }
+    })
 
     onMounted(async () => {
       // 从后台获取schema
       const res = await tgStore.getDetails({
         params: {
           pageId: tgStore.search.pageId,
-          sceneId: tgStore.search.sceneId
+          applyType: tgStore.search.applyType
         },
         apiName: props.getSchemaById
       })
@@ -80,26 +89,15 @@ export default {
               width={68}
               class={'tg-designer-plugins-wrapper'}
             >
-              <div class={'tg-designer-plugin selected'}>
-                <IconFont type="icon-designer-materials" />
-                <div>物料</div>
-              </div>
-              <div class={'tg-designer-plugin'}>
-                <IconFont type="icon-designer-data" />
-                <div>数据</div>
-              </div>
-              <div class={'tg-designer-plugin'}>
-                <IconFont type="icon-designer-pages" />
-                <div>页面</div>
-              </div>
+              <Plugins ref={pluginRef} />
             </Layout.Sider>
             <Layout>
               <Layout.Sider
                 width={220}
                 theme="light"
-                class={'tg-designer-material-wrapper'}
+                class={'tg-designer-plugin-content-wrapper'}
               >
-                <MaterialPanel />
+                <CurrentPluginComponent.value />
               </Layout.Sider>
 
               <Layout.Content class={'tg-designer-canvas-wrapper'}>

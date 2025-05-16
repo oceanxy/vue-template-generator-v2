@@ -1,10 +1,11 @@
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
-import { useEditorStore } from '../stores/useEditorStore'
+import { useEditorStore } from '../../stores/useEditorStore'
 import useDragDrop from '@/components/TGDesigner/hooks/useDragDrop'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
 import { Popover } from 'ant-design-vue'
 import { ref } from 'vue'
+import './index.scss'
 
 export default {
   name: 'TGDesignerMaterialPanel',

@@ -1,39 +1,43 @@
-import { Flex } from 'ant-design-vue'
+import { Menu } from 'ant-design-vue'
+import { computed, nextTick, onBeforeMount } from 'vue'
+import useStore from '@/composables/tgStore'
+import { useRoute, useRouter } from 'vue-router'
+import { range } from 'lodash'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import getPropertyField from '@/components/TGDesigner/properties'
-import { range } from 'lodash'
+import './index.scss'
 
 /**
- * 组件元数据
+ * Navigation模板组件元数据
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-layout-flex',
-  category: TG_MATERIAL_CATEGORY.LAYOUT,
-  name: '弹性容器',
-  preview: FlexLayoutPreview,
+  type: 'tg-template-navigation',
+  category: TG_MATERIAL_CATEGORY.TEMPLATE,
+  name: '导航',
+  preview: props => {
+    if (props.previewType !== 'material') {
+      return <Navigation {...props} />
+    }
+
+    return <IconFont type="icon-designer-navigation" />
+  },
   defaultProps: {
-    gap: 8,
-    vertical: false,
-    wrap: 'nowrap',
-    style: {}
+    contentWidth: '100%'
   },
   style: {
     width: '100%',
     height: '',
-    padding: 16,
+    paddingTop: 30,
+    paddingBottom: 30,
     margin: 0,
-    border: '',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
     backgroundColor: '',
-    // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
     backgroundImage: '',
     backgroundSize: '',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
   },
-  children: [],
+  class: '',
   configForm: {
     fields: [
       {
@@ -41,7 +45,7 @@ export default {
         items: [
           getPropertyField('input', {
             label: '宽度',
-            title: '容器宽度(支持百分比和像素单位)',
+            title: '容器宽度（支持百分比和像素单位）',
             prop: 'width',
             props: {
               placeholder: '自适应',
@@ -50,7 +54,7 @@ export default {
           }),
           getPropertyField('input', {
             label: '高度',
-            title: '容器高度(支持像素单位，默认自适应)',
+            title: '容器高度（支持像素单位，默认自适应）',
             prop: 'height',
             props: {
               placeholder: '自适应',
@@ -62,53 +66,30 @@ export default {
       {
         label: '布局',
         items: [
-          getPropertyField('radioGroup', {
-            label: '方向',
-            title: '组件排列方向(flex-direction)',
-            prop: 'vertical',
-            props: {
-              options: [
-                { label: '水平排列', value: false },
-                { label: '垂直排列', value: true }
-              ]
-            }
-          }),
-          getPropertyField('radioGroup', {
-            label: '自动换行',
-            title: '自动换行(wrap)',
-            prop: 'wrap',
-            props: {
-              options: [
-                { label: '不换行', value: 'nowrap' },
-                { label: '自动换行', value: 'wrap' }
-              ]
-            }
-          }),
-          getPropertyField('select', {
-            label: '交叉轴',
-            title: '交叉轴对齐方式(align-items)',
-            prop: 'alignItems'
-          }),
-          getPropertyField('select', {
-            label: '主轴',
-            title: '主轴对齐方式(justify-content)',
-            prop: 'justifyContent'
-          }),
           getPropertyField('input', {
-            label: '组件间距',
-            title: '内部组件间的距离(gap)',
-            prop: 'gap',
+            label: '内容宽度',
+            title: 'Header内展示内容区域容器的宽度',
+            prop: 'contentWidth',
             props: {
-              placeholder: '0px',
+              placeholder: '100%',
               allowClear: true
             }
           }),
           getPropertyField('input', {
-            label: '内边距',
-            title: '容器的内边距(padding)',
-            prop: 'padding',
+            label: '上边距',
+            title: '头部容器的上边距(padding-top/padding-bottom)',
+            prop: 'paddingTop',
             props: {
-              placeholder: '0px',
+              placeholder: '30px',
+              allowClear: true
+            }
+          }),
+          getPropertyField('input', {
+            label: '下边距',
+            title: '头部容器的下边距(padding-bottom)',
+            prop: 'paddingBottom',
+            props: {
+              placeholder: '30px',
               allowClear: true
             }
           }),
@@ -181,45 +162,91 @@ export default {
   }
 }
 
-export function FlexLayoutPreview(props) {
-  const { previewType, children, ...restProps } = props
+export const Navigation = {
+  name: 'Navigation',
+  props: {
+    previewType: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    if (props.previewType !== 'portal') {
+      return () => (
+        <Menu
+          class={'tg-designer-template-navigation'}
+          mode={'horizontal'}
+          style={{ width: props.previewType !== 'materialPreview' ? '640px' : '300px' }}
+          items={range(1, 7, 1).map(item => ({ key: item, label: `导航样例${item}` }))}
+        />
+      )
+    }
 
-  if (restProps.style.backgroundImage && !restProps.style.backgroundImage.startsWith('url(')) {
-    restProps.style.backgroundImage = `url(${restProps.style.backgroundImage})`
-  }
+    const store = useStore('portal')
+    const router = useRouter()
+    const route = useRoute()
+    const pageRoute = computed(() => store.search.pageRoute)
+    const navs = computed(() => store.dataSource.list)
 
-  if (previewType === 'materialPreview') {
-    restProps.style.backgroundImage = 'unset'
+    const handleMenuClick = async ({ key, item }) => {
+      await switchRoute(key, item.title, item.id)
+    }
 
-    return (
-      <Flex {...restProps} gap={8} wrap={'wrap'} style={{ padding: '8px' }}>
+    const switchRoute = async (key, title, pageId) => {
+      store.search.pageId = pageId
+      store.search.pageRoute = key
+
+      await router.push({
+          name: 'PortalPage',
+          params: { pageRoute: key },
+          query: { title: encodeURIComponent(title) }
+        }
+      )
+    }
+
+    onBeforeMount(async () => {
+      await store.getList({
+        apiName: 'getPortalNavs',
+        paramsForGetList: {
+          sceneId: route.params.id,
+          sceneConfigId: route.params.sceneConfigId
+        }
+      })
+
+      await nextTick()
+
+      const home = navs.value.find(route => route.routeInfo.includes('-home'))
+
+      if (home) {
+        await switchRoute(home.routeInfo, home.navName, home.relScenePageId)
+      } else {
+        await switchRoute(
+          navs.value[0].routeInfo,
+          navs.value[0].title,
+          navs.value[0].relScenePageId
+        )
+      }
+    })
+
+    return () => (
+      <Menu
+        class={'tg-designer-template-navigation'}
+        mode={'horizontal'}
+        selectedKeys={[pageRoute.value]}
+        onClick={handleMenuClick}
+      >
         {
-          range(0, 4, 1).map(c => (
-            <div
-              style={{
-                background: '#d5d5d5',
-                minHeight: '16px',
-                width: 'calc((100% - 16px) / 3)'
-              }}
-            />
+          navs.value.map(item => (
+            <Menu.Item
+              key={item.routeInfo}
+              title={item.navName}
+              id={item.relScenePageId}
+            >
+              {item.navName}
+            </Menu.Item>
           ))
         }
-      </Flex>
+      </Menu>
     )
-  } else if (previewType === 'material') {
-    return <IconFont type="icon-designer-material-flex-layout" />
   }
-
-  return (
-    <Flex
-      {...restProps}
-      style={restProps.style}
-      class={{
-        'tg-designer-layout-container': true,
-        'has-background-image': !!restProps.style.backgroundImage || !!restProps.style.backgroundColor
-      }}
-    >
-      {children?.length ? children : ' '}
-    </Flex>
-  )
 }

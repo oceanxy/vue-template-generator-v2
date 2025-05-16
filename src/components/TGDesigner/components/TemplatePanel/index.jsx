@@ -2,9 +2,9 @@ import { Button, Card, CardMeta, Image, List, ListItem, message as m } from 'ant
 import useTGModal from '@/composables/tgModal'
 import { computed, inject, watch } from 'vue'
 import { verificationDialog } from '@/utils/message'
-import './index.scss'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
+import './index.scss'
 
 export default {
   name: 'DesignerTemplates',
@@ -26,7 +26,6 @@ export default {
     const dataSource = computed(() => tgStore[location].dataSource)
     const search = computed(() => tgStore.search)
     const isSaving = computed(() => designerStore.isSaving)
-    const currentItem = computed(() => tgStore.currentItem)
 
     const { TGModal, open } = useTGModal({
       store: tgStore,
@@ -128,21 +127,24 @@ export default {
     }
 
     return () => (
-      <div class={'tg-designer-template-functions'}>
-        <Button
-          disabled={isSaving.value || !search.value.templateId}
-          type={'primary'}
-          onClick={restoreTemplate}
-        >
-          恢复模板
-        </Button>
-        <Button
-          disabled={isSaving.value}
-          type={'primary'}
-          onClick={selectTemplate}
-        >
-          选择模板
-        </Button>
+      <div class={'tg-designer-template-functions-container'}>
+        <div class={'tg-designer-template-functions'}>
+          <Button
+            disabled={isSaving.value || !search.value.templateId}
+            type={'primary'}
+            onClick={restoreTemplate}
+          >
+            恢复模板
+          </Button>
+          <Button
+            disabled={isSaving.value}
+            type={'primary'}
+            onClick={selectTemplate}
+          >
+            选择模板
+          </Button>
+        </div>
+
         <TGModal class={'tg-designer-template-items'}>
           <List
             loading={dataSource.value.loading}

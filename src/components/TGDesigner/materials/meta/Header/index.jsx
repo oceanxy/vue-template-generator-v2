@@ -1,39 +1,40 @@
-import { Flex } from 'ant-design-vue'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import getPropertyField from '@/components/TGDesigner/properties'
-import { range } from 'lodash'
+import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { Navigation } from '@/components/TGDesigner/materials/meta/Navigation'
+import './assets/styles/index.scss'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 
 /**
- * 组件元数据
+ * Header模板组件元数据
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-layout-flex',
-  category: TG_MATERIAL_CATEGORY.LAYOUT,
-  name: '弹性容器',
-  preview: FlexLayoutPreview,
+  type: 'tg-template-header',
+  category: TG_MATERIAL_CATEGORY.TEMPLATE,
+  name: '页头',
+  preview: props => {
+    if (props.previewType !== 'material') {
+      return <Header {...props} />
+    }
+
+    return <IconFont type="icon-designer-header" />
+  },
   defaultProps: {
-    gap: 8,
-    vertical: false,
-    wrap: 'nowrap',
-    style: {}
+    contentWidth: '100%'
   },
   style: {
     width: '100%',
     height: '',
-    padding: 16,
+    paddingTop: 30,
+    paddingBottom: 30,
     margin: 0,
-    border: '',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
     backgroundColor: '',
-    // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
     backgroundImage: '',
     backgroundSize: '',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
   },
-  children: [],
+  class: '',
   configForm: {
     fields: [
       {
@@ -41,7 +42,7 @@ export default {
         items: [
           getPropertyField('input', {
             label: '宽度',
-            title: '容器宽度(支持百分比和像素单位)',
+            title: '容器宽度（支持百分比和像素单位）',
             prop: 'width',
             props: {
               placeholder: '自适应',
@@ -50,7 +51,7 @@ export default {
           }),
           getPropertyField('input', {
             label: '高度',
-            title: '容器高度(支持像素单位，默认自适应)',
+            title: '容器高度（支持像素单位，默认自适应）',
             prop: 'height',
             props: {
               placeholder: '自适应',
@@ -62,53 +63,30 @@ export default {
       {
         label: '布局',
         items: [
-          getPropertyField('radioGroup', {
-            label: '方向',
-            title: '组件排列方向(flex-direction)',
-            prop: 'vertical',
-            props: {
-              options: [
-                { label: '水平排列', value: false },
-                { label: '垂直排列', value: true }
-              ]
-            }
-          }),
-          getPropertyField('radioGroup', {
-            label: '自动换行',
-            title: '自动换行(wrap)',
-            prop: 'wrap',
-            props: {
-              options: [
-                { label: '不换行', value: 'nowrap' },
-                { label: '自动换行', value: 'wrap' }
-              ]
-            }
-          }),
-          getPropertyField('select', {
-            label: '交叉轴',
-            title: '交叉轴对齐方式(align-items)',
-            prop: 'alignItems'
-          }),
-          getPropertyField('select', {
-            label: '主轴',
-            title: '主轴对齐方式(justify-content)',
-            prop: 'justifyContent'
-          }),
           getPropertyField('input', {
-            label: '组件间距',
-            title: '内部组件间的距离(gap)',
-            prop: 'gap',
+            label: '内容宽度',
+            title: 'Header内展示内容区域容器的宽度',
+            prop: 'contentWidth',
             props: {
-              placeholder: '0px',
+              placeholder: '100%',
               allowClear: true
             }
           }),
           getPropertyField('input', {
-            label: '内边距',
-            title: '容器的内边距(padding)',
-            prop: 'padding',
+            label: '上边距',
+            title: '头部容器的上边距(padding-top/padding-bottom)',
+            prop: 'paddingTop',
             props: {
-              placeholder: '0px',
+              placeholder: '30px',
+              allowClear: true
+            }
+          }),
+          getPropertyField('input', {
+            label: '下边距',
+            title: '头部容器的下边距(padding-bottom)',
+            prop: 'paddingBottom',
+            props: {
+              placeholder: '30px',
               allowClear: true
             }
           }),
@@ -181,45 +159,38 @@ export default {
   }
 }
 
-export function FlexLayoutPreview(props) {
-  const { previewType, children, ...restProps } = props
+export const Header = {
+  name: 'Header',
+  props: ['contentWidth', 'style', 'previewType'],
+  setup(props) {
+    const data = {}
+    const { style } = props
 
-  if (restProps.style.backgroundImage && !restProps.style.backgroundImage.startsWith('url(')) {
-    restProps.style.backgroundImage = `url(${restProps.style.backgroundImage})`
-  }
+    if (!style.backgroundColor && !style.backgroundImage) {
+      style.backgroundImage = 'linear-gradient(0deg,#31549c, #253a66, #191b25)'
+    }
 
-  if (previewType === 'materialPreview') {
-    restProps.style.backgroundImage = 'unset'
-
-    return (
-      <Flex {...restProps} gap={8} wrap={'wrap'} style={{ padding: '8px' }}>
-        {
-          range(0, 4, 1).map(c => (
-            <div
-              style={{
-                background: '#d5d5d5',
-                minHeight: '16px',
-                width: 'calc((100% - 16px) / 3)'
-              }}
-            />
-          ))
-        }
-      </Flex>
+    return () => (
+      <div
+        class="tg-designer-template-header"
+        style={style}
+      >
+        <div
+          class="tg-designer-template-header-content"
+          style={styleWithUnits({ width: props.contentWidth || '100%' })}
+        >
+          <div class={'tg-designer-template-header-logo'}>
+            <IconFont type={'icon-logo'} />
+            <div class={'tg-designer-template-header-title'}>
+              <div>中国科学技术协会</div>
+              <div>China Association for Science and Technology</div>
+            </div>
+          </div>
+          <div class={'tg-designer-template-header-nav'}>
+            <Navigation previewType={props.previewType} />
+          </div>
+        </div>
+      </div>
     )
-  } else if (previewType === 'material') {
-    return <IconFont type="icon-designer-material-flex-layout" />
   }
-
-  return (
-    <Flex
-      {...restProps}
-      style={restProps.style}
-      class={{
-        'tg-designer-layout-container': true,
-        'has-background-image': !!restProps.style.backgroundImage || !!restProps.style.backgroundColor
-      }}
-    >
-      {children?.length ? children : ' '}
-    </Flex>
-  )
 }

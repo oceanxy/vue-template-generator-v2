@@ -132,7 +132,7 @@
   }
 
   .tg-designer-plugins-wrapper {
-    background: #f8f9fb !important;
+    background: #efefef !important;
 
     .tg-designer-plugin {
       width: 100%;
@@ -161,58 +161,8 @@
     }
   }
 
-  .tg-designer-material-wrapper {
-    .tg-designer-material-container {
-      height: 100%;
-      padding: 12px;
-      user-select: none;
-      overflow-y: auto;
+  .tg-designer-plugin-content-wrapper {
 
-      .tg-designer-material-category {
-        margin-bottom: 30px;
-
-        .tg-designer-material-title {
-          font-weight: bolder;
-          border-bottom: 1px solid #e3e3e3;
-          padding-bottom: 4px;
-        }
-
-        .tg-designer-material-items {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          row-gap: 15px;
-
-          .tg-designer-material-item {
-            width: calc((100% - 10px) / 2);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: move;
-            padding: 15px 0;
-
-            [draggable='true'] {
-              cursor: grab;
-
-              &:active {
-                cursor: grabbing;
-              }
-            }
-
-            &:hover {
-              border-color: var(--tg-theme-color-primary);
-              background-color: #e6f7ff;
-            }
-
-            .tg-designer-material-item-name {
-              font-weight: 500;
-            }
-
-            .ant-image .ant-image-img {
-              pointer-events: none;
-            }
-          }
-        }
-      }
-    }
   }
 
   .tg-designer-canvas-wrapper {
@@ -558,53 +508,5 @@
 
   .tg-designer-property-wrapper {
     padding: 10px;
-
-    .tg-designer-property-comp-type {
-      font-size: 18px;
-      font-weight: bolder;
-      border-bottom: 1px solid var(--tg-theme-color-border);
-      padding-bottom: 4px;
-    }
-
-    .tg-designer-property-container {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-
-      .ant-divider {
-        &.ant-divider-with-text::before,
-        &.ant-divider-with-text::after {
-          border-block-color: var(--tg-theme-color-border);
-        }
-
-        .ant-divider-inner-text {
-          //padding-left: 0;
-        }
-      }
-
-      .tg-designer-form-item {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        gap: var(--tg-theme-margin-sm);
-
-        label {
-          flex: none;
-          display: flex;
-          gap: 4px;
-        }
-
-        & > *:not(label, .ant-switch) {
-          flex: auto;
-        }
-
-        .ant-radio-group {
-          display: flex;
-        }
-      }
-    }
   }
 }
