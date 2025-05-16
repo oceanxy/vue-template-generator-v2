@@ -442,7 +442,14 @@ export function createStore({
       /**
        * 获取详情数据。
        * setValue不为函数时，返回值将与`store.currentItem`合并。
-       * @param {string} location
+       * @param {string} location - 字段名。`location`指定的字段的格式：
+       * ```
+       * {
+       *  loading?: boolean,
+       *  list?: Array,
+       *  data?: Object
+       * }
+       * ```
        * @param {Object} [params] - 查询参数。默认`store.currentItem.id`，默认值受`store.state.rowKey`影响。
        * @param {string} [apiName] - 接口名称，默认`getDetailsOf${route.name}`。
        * @param {(data: Object, store: import('pinia').StoreDefinition) => void} [setValue] - 处理接口返回值的函数，
@@ -474,12 +481,20 @@ export function createStore({
           if (typeof setValue === 'function') {
             setValue(res.data, this)
           } else {
-            if (Object.prototype.toString.call(res.data) === '[object Object]') {
+            if (location) {
               this.$patch({
-                currentItem: res.data
+                [location]: {
+                  [Array.isArray(res.data) ? 'list' : 'data']: res.data
+                }
               })
             } else {
-              throw new Error(`store.getDetails：当接口（${api}）返回值是一个数组时，必须传递setValue回调函数！`)
+              if (Object.prototype.toString.call(res.data) === '[object Object]') {
+                this.$patch({
+                  currentItem: res.data
+                })
+              } else {
+                throw new Error(`store.getDetails：当接口（${api}）返回值是一个数组且未传递location参数时，必须传递setValue回调函数！`)
+              }
             }
           }
         }
