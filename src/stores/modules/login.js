@@ -53,13 +53,32 @@ export default createStore({
         const { redirect, ...query } = router.currentRoute.value.query
         // 检测本地存储是否存在保存的路由（意外退出的路由），如果有，则在登录成功后直接跳转到该路由
         const selectedRoute = localStorage.getItem(`${appName}-selectedKey`)
+        // 检测本地缓存是否存在指定回调地址，如果有则在登录之后直接跳转指定路由然后删除缓存
+        const callbackUrl = localStorage.getItem(`${appName}-callbackUrl`)
 
-        if (redirect) {
-          await router.replace({ path: `${redirect}`, query })
-        } else if (selectedRoute) {
-          await router.replace(selectedRoute)
+        // 登录成功后，传入callbackUrl时，跳转到指定的页面
+        if (callbackUrl) {
+          // 动态解析参数对象
+          const extractParams = (url) => {
+            try {
+              const searchParams = new URL(url, window.location.origin).searchParams;
+              return Object.fromEntries(searchParams.entries());
+            } catch {
+              return {};
+            }
+          };
+          const callbackUrlParams = extractParams(callbackUrl);
+
+          await router.replace({ path: callbackUrl, query: callbackUrlParams })
+          localStorage.removeItem(`${appName}-callbackUrl`)
         } else {
-          await router.replace({ name: 'Home' })
+          if (redirect) {
+            await router.replace({ path: `${redirect}`, query })
+          } else if (selectedRoute) {
+            await router.replace(selectedRoute)
+          } else {
+            await router.replace({ name: 'Home' })
+          }
         }
       },
       async login(options) {
@@ -154,6 +173,8 @@ export default createStore({
             const menuList = userInfoResponseData.menuList
             const defaultMenuUrl = userInfoResponseData.defaultMenuUrl
             const buttonPermissions = userInfoResponseData.buttonPermissions
+
+            console.log('menuList', menuList)
 
             if (menuList) {
               localStorage.setItem(`${appName}-defaultRoute`, defaultMenuUrl || '')
