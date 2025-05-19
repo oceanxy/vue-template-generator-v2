@@ -3,6 +3,7 @@ import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import './assets/styles/index.scss'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { QRCode } from 'ant-design-vue'
+import { ref, watch } from 'vue'
 
 /**
  * Footer模板组件元数据
@@ -20,7 +21,7 @@ export default {
     return <IconFont type="icon-designer-footer" />
   },
   defaultProps: {
-    contentWidth: '100%'
+    contentWidth: '90%'
   },
   style: {
     width: '100%',
@@ -28,7 +29,7 @@ export default {
     paddingTop: 30,
     paddingBottom: 30,
     margin: 0,
-    backgroundColor: '',
+    backgroundColor: '#0050b3',
     backgroundImage: '',
     backgroundSize: '',
     backgroundPosition: 'center',
@@ -163,17 +164,16 @@ export const Footer = {
   name: 'Footer',
   props: ['contentWidth', 'style', 'previewType'],
   setup(props) {
-    const data = {}
-    const { style } = props
+    const style = ref({})
 
-    if (!style.backgroundColor && !style.backgroundImage) {
-      style.backgroundColor = '#0050b3'
-    }
+    watch(() => props.style, val => {
+      style.value = styleWithUnits(val)
+    }, { immediate: true })
 
     return () => (
       <div
         class="tg-designer-template-footer"
-        style={style}
+        style={style.value}
       >
         <div
           class="tg-designer-template-footer-content"

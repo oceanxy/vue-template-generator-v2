@@ -3,6 +3,7 @@ import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
 import { Navigation } from '@/components/TGDesigner/materials/meta/Navigation'
 import './assets/styles/index.scss'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
+import { ref, watch } from 'vue'
 
 /**
  * Header模板组件元数据
@@ -163,17 +164,20 @@ export const Header = {
   name: 'Header',
   props: ['contentWidth', 'style', 'previewType'],
   setup(props) {
-    const data = {}
-    const { style } = props
+    const style = ref({})
 
-    if (!style.backgroundColor && !style.backgroundImage) {
-      style.backgroundImage = 'linear-gradient(0deg,#31549c, #253a66, #191b25)'
-    }
+    watch(() => props.style, val => {
+      style.value = styleWithUnits(val)
+
+      if (!style.value.backgroundColor && !style.value.backgroundImage) {
+        style.value.backgroundImage = 'linear-gradient(0deg,#31549c, #253a66, #191b25)'
+      }
+    }, { immediate: true })
 
     return () => (
       <div
         class="tg-designer-template-header"
-        style={style}
+        style={style.value}
       >
         <div
           class="tg-designer-template-header-content"
