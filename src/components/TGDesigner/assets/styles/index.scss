@@ -252,7 +252,7 @@
             will-change: opacity;
             transition: opacity 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             animation: flowLine 5s linear infinite;
-            z-index: 999;
+            z-index: 9999;
 
             // 根据布局方向动态设置尺寸和背景方向
             &[data-layout-direction='vertical'] {
@@ -263,6 +263,7 @@
                   $indicator-color 0 $dash-width,
                   transparent $dash-width ($dash-width + $gap-width)
               );
+              z-index: 9999;
             }
 
             &[data-layout-direction='horizontal'] {
@@ -272,6 +273,7 @@
                   $indicator-color 0 $dash-width,
                   transparent $dash-width ($dash-width + $gap-width)
               );
+              z-index: 9999;
             }
 
             // 定义流动动画
@@ -309,7 +311,7 @@
             &[data-container-type='canvas'] {
               display: none;
               border-width: 2px;
-              z-index: 9998;
+              z-index: 9999;
             }
 
             @keyframes pulseContainer {
