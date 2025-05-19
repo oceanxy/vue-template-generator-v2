@@ -1,5 +1,5 @@
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
-import { Button, Divider, Image, Input, TypographyText } from 'ant-design-vue'
+import { Button, Divider, Image, Input, QRCode, TypographyText } from 'ant-design-vue'
 import getPropertyField from '@/components/TGDesigner/properties'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
 
@@ -450,6 +450,114 @@ export default [
                 placeholder: '图片地址',
                 maxLength: 100,
                 allowClear: true
+              }
+            })
+          ]
+        }
+      ]
+    }
+  },
+  {
+    type: 'a-qrcode',
+    category: TG_MATERIAL_CATEGORY.BASIC,
+    name: '二维码',
+    preview: props => {
+      if (props.previewType === 'material') {
+        return <IconFont type="icon-designer-material-qrcode" />
+      }
+
+      return <QRCode {...props} />
+    },
+    defaultProps: {
+      value: '',
+      icon: '',
+      size: 160,
+      iconSize: 40,
+      bordered: false,
+      bgColor: '',
+      color: '#ffffff',
+      status: 'active' // active | expired | loading | scanned
+    },
+    style: {},
+    class: 'tg-designer-basic-qrcode',
+    configForm: {
+      fields: [
+        {
+          label: '尺寸',
+          items: [
+            getPropertyField('inputNumber', {
+              label: '尺寸',
+              title: '二维码的尺寸',
+              prop: 'size',
+              props: {
+                placeholder: '160'
+              }
+            }),
+            getPropertyField('inputNumber', {
+              label: '图片大小',
+              title: '二维码中图片的大小',
+              prop: 'iconSize',
+              props: {
+                placeholder: '40'
+              }
+            })
+          ]
+        },
+        {
+          label: '数据',
+          items: [
+            getPropertyField('input', {
+              label: '扫描后的地址',
+              title: '扫描后的地址',
+              prop: 'value',
+              props: {
+                placeholder: '扫描后的地址',
+                maxLength: 100,
+                allowClear: true
+              }
+            }),
+            getPropertyField('input', {
+              label: '图片地址',
+              title: '二维码中图片的地址（目前只支持图片地址）',
+              prop: 'icon',
+              props: {
+                placeholder: '图片地址',
+                maxLength: 100,
+                allowClear: true
+              }
+            })
+          ]
+        },
+        {
+          label: '外观',
+          items: [
+            getPropertyField('switch', {
+              title: '显示边框',
+              label: '显示边框',
+              prop: 'bordered',
+              modelProp: 'checked'
+            }),
+            getPropertyField('colorPicker', {
+              title: '背景色',
+              label: '背景色',
+              prop: 'bgColor'
+            }),
+            getPropertyField('colorPicker', {
+              title: '二维码颜色',
+              label: '二维码颜色',
+              prop: 'color'
+            }),
+            getPropertyField('select', {
+              title: '二维码状态',
+              label: '二维码状态',
+              prop: 'status',
+              props: {
+                options: [
+                  { label: '正常', value: 'active' },
+                  { label: '已过期', value: 'expired' },
+                  { label: '加载中', value: 'loading' },
+                  { label: '已扫描', value: 'scanned' }
+                ]
               }
             })
           ]
