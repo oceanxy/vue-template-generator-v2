@@ -1,6 +1,17 @@
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
 
+/**
+ * 插件列表
+ * @type {{MATERIALS: string, TEMPLATES: string, DATA: string, PAGES: string}}
+ */
+export const PLUGIN_KEY = {
+  MATERIALS: 'plugin-materials',
+  TEMPLATES: 'plugin-templates',
+  DATA: 'plugin-data',
+  PAGES: 'plugin-pages'
+}
+
 export default {
   name: 'Plugins',
   setup(props, { expose }) {
@@ -8,19 +19,19 @@ export default {
     const selectedPlugin = computed(() => store.selectedPlugin)
     const plugins = [
       {
-        key: 'plugin-materials',
+        key: PLUGIN_KEY.MATERIALS,
         name: '物料',
         icon: 'icon-designer-materials'
       }, {
-        key: 'plugin-templates',
+        key: PLUGIN_KEY.TEMPLATES,
         name: '模板',
         icon: 'icon-designer-templates'
       }, {
-        key: 'plugin-data',
+        key: PLUGIN_KEY.DATA,
         name: '数据',
         icon: 'icon-designer-data'
       }, {
-        key: 'plugin-pages',
+        key: PLUGIN_KEY.PAGES,
         name: '页面',
         icon: 'icon-designer-pages'
       }
@@ -28,16 +39,16 @@ export default {
 
     onMounted(() => {
       // 设置默认选中的插件
-      store.selectedPlugin.id = 'plugin-materials'
+      store.selectedPlugin.id = PLUGIN_KEY.MATERIALS
     })
 
     expose({
       getPluginContent: () => {
         const componentMap = {
-          'plugin-materials': defineAsyncComponent(() => import('./MaterialPanel')),
-          'plugin-templates': defineAsyncComponent(() => import('./TemplatePanel')),
-          'plugin-data': defineAsyncComponent(() => import('./DataPanel')),
-          'plugin-pages': defineAsyncComponent(() => import('./PagePanel'))
+          [PLUGIN_KEY.MATERIALS]: defineAsyncComponent(() => import('./MaterialPanel')),
+          [PLUGIN_KEY.TEMPLATES]: defineAsyncComponent(() => import('./TemplatePanel')),
+          [PLUGIN_KEY.DATA]: defineAsyncComponent(() => import('./DataPanel')),
+          [PLUGIN_KEY.PAGES]: defineAsyncComponent(() => import('./PagePanel'))
         }
 
         return componentMap[selectedPlugin.value.id] || null

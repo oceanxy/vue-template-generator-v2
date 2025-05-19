@@ -4,6 +4,8 @@ import { Layout, Spin } from 'ant-design-vue'
 import Header from './components/Header'
 import Plugins from './components/Plugins'
 import { computed, onMounted, provide, ref, watch } from 'vue'
+import Plugins, { PLUGIN_KEY } from './components/Plugins'
+import { computed, markRaw, onMounted, provide, ref, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 import './assets/styles/index.scss'
 
@@ -29,11 +31,13 @@ export default {
 
     const pluginRef = ref(null)
     let CurrentPluginComponent = ref(null)
+    const headerRef = ref(null)
     const designerStore = useEditorStore()
     const { tgStore } = props
     const schema = computed(() => designerStore.schema)
     const loading = computed(() => tgStore.loading)
     const pluginId = computed(() => designerStore.selectedPlugin.id)
+    const search = computed(() => tgStore.search)
 
     watch(pluginId, val => {
       if (val) {
@@ -81,7 +85,7 @@ export default {
       <Layout class={'tg-designer-container'}>
         <Spin spinning={loading.value}>
           <Layout class={'tg-designer-header'}>
-            <Header />
+            <Header ref={headerRef} />
           </Layout>
 
           <Layout>
