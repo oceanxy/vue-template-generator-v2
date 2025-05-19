@@ -52,9 +52,9 @@ export default {
     onMounted(() => {
       if (props.previewType === 'preview') {
         const previewSchema = JSON.parse(sessionStorage.getItem('tg-schemas') || '{}')
-        schema.value = previewSchema[route.query.pageId]
+        schema.value = previewSchema[route.query.pageId || route.query.sceneType]
       } else if (props.previewType === 'portal') {
-        schema.value = JSON.parse(props.schema)
+        schema.value = JSON.parse(props.schemaContent)
       }
     })
 
