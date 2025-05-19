@@ -16,9 +16,6 @@ export default {
   },
   setup(props) {
     const designerStore = useEditorStore()
-    const apiNameForGetTemplate = inject('apiNameForGetTemplate')
-    const apiNameForGetTemplates = inject('apiNameForGetTemplates')
-    const setTemplateId = inject('setTemplateId')
     const location = 'templates'
     const modalStatusFieldName = 'showModalForTemplates'
     const tgStore = inject('tgStore')
@@ -40,14 +37,20 @@ export default {
           } else {
             verificationDialog(
               async () => {
-                if (search.value.templateId && apiNameForGetTemplate) {
+                if (search.value.templateId) {
                   const res = await Promise.all([
                     // 保存选择的模版ID
                     tgStore.fetch({
                       location,
-                      apiName: setTemplateId,
+                      apiName: search.value.pageType === 13 ? 'setTemplateId' : 'setTemplateIdOfHF',
                       params: {
-                        id: search.value.pageId,
+                        ...(search.value.pageType === 13
+                            ? { configPageId: search.value.pageId }
+                            : {
+                              sceneConfigId: search.value.sceneConfigId,
+                              pageType: search.value.pageType
+                            }
+                        ),
                         pageTemplateId: search.value.templateId
                       }
                     }),
@@ -63,12 +66,12 @@ export default {
                     })
 
                     // 用模板内定义的组件schema替换画布中组件schema
-                    designerStore.schema = JSON.parse(res[1].data?.schema || '{}')
+                    designerStore.schema = JSON.parse(res[1].data?.schemaContent || '{}')
                     props.updateSchema()
                   }
                 }
               },
-              '若选择新的模板，现有的数据将会被覆盖，确定要使用新模板吗？'
+              '若选择新的模板，现有的画布数据将会被覆盖。确定要使用新模板吗？'
             )
           }
         }
@@ -76,12 +79,12 @@ export default {
     })
 
     watch(open, async val => {
-      if (val && apiNameForGetTemplates) {
+      if (val) {
         // 获取模板列表
         await tgStore.getList({
           isPagination: true,
           location,
-          apiName: apiNameForGetTemplates
+          apiName: search.value.pageType === 13 ? 'getTemplates' : 'getTemplatesOfHF'
         })
       }
     })
@@ -89,9 +92,9 @@ export default {
     const getTemplateDetails = async () => {
       return await tgStore.getDetails({
         location,
-        apiName: apiNameForGetTemplate,
+        apiName: 'getSchemaByTemplateId',
         params: {
-          id: search.value.templateId
+          templateId: search.value.templateId
         }
       })
     }
@@ -102,21 +105,22 @@ export default {
           if (search.value.templateId) {
             const res = await getTemplateDetails()
 
-            if (res.status && res.data.schema) {
-              designerStore.schema = JSON.parse(res.data.schema)
+            if (res.status && res.data.schemaContent) {
+              designerStore.schema = JSON.parse(res.data.schemaContent)
               props.updateSchema()
             }
           } else {
             m.info('当前未使用模板')
           }
         },
-        '此操作将丢弃对模板所做的更改，确定继续吗？'
+        '此操作将丢弃所有更改，恢复成原始模板，确定继续吗？'
       )
     }
 
     const selectTemplate = () => {
       tgStore.setVisibilityOfModal({
         modalStatusFieldName,
+        injectSearchParams: ['pageType', search.value.pageType === 13 ? 'pageId' : 'sceneType'],
         location,
         value: true
       })

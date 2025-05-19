@@ -2,8 +2,6 @@ import Canvas from './components/Canvas'
 import PropertyPanel from './components/PropertyPanel'
 import { Layout, Spin } from 'ant-design-vue'
 import Header from './components/Header'
-import Plugins from './components/Plugins'
-import { computed, onMounted, provide, ref, watch } from 'vue'
 import Plugins, { PLUGIN_KEY } from './components/Plugins'
 import { computed, markRaw, onMounted, provide, ref, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
@@ -15,23 +13,15 @@ export default {
     tgStore: {
       required: true,
       type: Object
-    },
-    apiNameForGetTemplate: String,
-    apiNameForGetTemplates: String,
-    getSchemaById: String,
-    updateSchema: String,
-    setTemplateId: String
+    }
   },
   setup(props) {
     provide('tgStore', props.tgStore)
-    provide('apiNameForGetTemplate', props.apiNameForGetTemplate)
-    provide('apiNameForGetTemplates', props.apiNameForGetTemplates)
-    provide('updateSchema', props.updateSchema)
-    provide('setTemplateId', props.setTemplateId)
 
     const pluginRef = ref(null)
-    let CurrentPluginComponent = ref(null)
     const headerRef = ref(null)
+    let CurrentPluginComponent = ref(<div>加载中...</div>)
+    const asyncComponentProps = ref({})
     const designerStore = useEditorStore()
     const { tgStore } = props
     const schema = computed(() => designerStore.schema)
@@ -39,44 +29,48 @@ export default {
     const pluginId = computed(() => designerStore.selectedPlugin.id)
     const search = computed(() => tgStore.search)
 
+    // 动态加载插件组件
     watch(pluginId, val => {
       if (val) {
-        CurrentPluginComponent.value = pluginRef.value.getPluginContent()
+        if (val === PLUGIN_KEY.TEMPLATES) {
+          asyncComponentProps.value = { updateSchema: headerRef.value.updateSchema }
+        }
+
+        CurrentPluginComponent.value = markRaw(pluginRef.value.getPluginContent())
       }
     })
 
+    // 初始化画布
     onMounted(async () => {
       // 从后台获取schema
       const res = await tgStore.getDetails({
-        params: {
-          pageId: tgStore.search.pageId,
-          applyType: tgStore.search.applyType
-        },
-        apiName: props.getSchemaById
+        params: search.value.pageType === 13
+          ? {
+            configPageId: search.value.pageId,
+            pageType: search.value.pageType
+          }
+          : {
+            configId: search.value.sceneConfigId,
+            pageType: search.value.pageType
+          },
+        apiName: 'getSchema'
       })
 
       if (res.status) {
-        if (res.data.schema) {
-          designerStore.schema = JSON.parse(res.data.schema)
-        }
+        search.value.schemaId = res.data.id
 
-        if (res.data.id) {
-          tgStore.search.id = res.data.id
+        if (res.data?.schemaContent) {
+          designerStore.schema = JSON.parse(res.data.schemaContent)
         } else {
           // 当本页面不存在已保存的schema数据时，立即保存一次，以初始化数据
-          const res = await tgStore.fetch({
+          await tgStore.fetch({
             loading: false,
-            apiName: props.updateSchema,
+            apiName: 'updateSchema',
             params: {
-              sceneId: tgStore.search.sceneId,
-              pageId: tgStore.search.pageId,
-              schema: JSON.stringify(schema.value)
+              scenePageSchemaId: search.value.schemaId,
+              schemaContent: JSON.stringify(schema.value)
             }
           })
-
-          if (res.status) {
-            tgStore.search.id = res.data.id
-          }
         }
       }
     })
@@ -101,7 +95,7 @@ export default {
                 theme="light"
                 class={'tg-designer-plugin-content-wrapper'}
               >
-                <CurrentPluginComponent.value />
+                <CurrentPluginComponent.value {...asyncComponentProps.value} />
               </Layout.Sider>
 
               <Layout.Content class={'tg-designer-canvas-wrapper'}>

@@ -7,10 +7,9 @@ import { jumpToRoute } from '@/utils/designer'
 
 export default {
   name: 'TGDesignerHeader',
-  setup() {
+  setup(props, { expose }) {
     let interval = null
     const tgStore = inject('tgStore')
-    const updateSchema = inject('updateSchema')
     const store = useEditorStore()
     const isSaving = computed(() => store.isSaving)
     const schema = computed(() => store.schema)
@@ -20,7 +19,10 @@ export default {
     const autoSave = debounce(
       async () => {
         try {
-          await SchemaService.save(search.value.pageId, toRaw(schema.value))
+          await SchemaService.save(
+            search.value.pageType === 13 ? search.value.pageId : search.value.sceneType,
+            toRaw(schema.value)
+          )
         } catch (e) {
           message.warning('本地缓存失败')
         }
@@ -61,19 +63,17 @@ export default {
     })
 
     const handleSchemaSave = async type => {
-      if (search.value.id && search.value.sceneId && isChanged.value) {
+      if (search.value.schemaId && isChanged.value) {
         isChanged.value = false
         store.isSaving = true
 
         // 向服务端保存
         await tgStore.fetch({
           loading: false,
-          apiName: updateSchema,
+          apiName: 'updateSchema',
           params: {
-            id: search.value.id,
-            sceneId: search.value.sceneId,
-            schema: JSON.stringify(schema.value),
-            pageId: search.value.pageId
+            scenePageSchemaId: search.value.schemaId,
+            schemaContent: JSON.stringify(schema.value)
           }
         })
 
@@ -89,13 +89,22 @@ export default {
 
     const handlePreview = async () => {
       // 预览之前保存schema到本地session中
-      await SchemaService.save(search.value.pageId, toRaw(schema.value))
+      await SchemaService.save(
+        search.value.pageType === 13
+          ? search.value.pageId
+          : search.value.sceneType,
+        toRaw(schema.value)
+      )
 
       jumpToRoute({
         name: 'Preview',
-        query: { pageId: search.value.pageId }
+        query: search.value.pageType === 13
+          ? { pageId: search.value.pageId }
+          : { sceneType: search.value.sceneType }
       })
     }
+
+    expose({ updateSchema: handleSchemaSave })
 
     return () => (
       <div class={'tg-designer-tools'}>
@@ -132,7 +141,6 @@ export default {
             />
           </div>
         </div>
-        {/*<DesignerTemplates updateSchema={handleSchemaSave} />*/}
         {
           isSaving.value && (
             <div class="tg-designer-save-status-bar">
