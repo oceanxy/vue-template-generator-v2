@@ -1,9 +1,9 @@
 import getPropertyField from '@/components/TGDesigner/properties'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
-import './assets/styles/index.scss'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { QRCode } from 'ant-design-vue'
 import { ref, watch } from 'vue'
+import './assets/styles/index.scss'
 
 /**
  * Footer模板组件元数据
@@ -14,7 +14,7 @@ export default {
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
   name: '页尾',
   preview: props => {
-    if (props.previewType !== 'material') {
+    if (props.previewType !== TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
       return <Footer {...props} />
     }
 

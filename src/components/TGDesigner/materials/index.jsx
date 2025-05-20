@@ -27,3 +27,15 @@ export const TG_MATERIAL_CATEGORY = {
   BASIC: 'basic',
   LAYOUT: 'layout'
 }
+
+/**
+ * 物料预览类型枚举
+ * @type {{PREVIEW: string, PORTAL: string}}
+ */
+export const TG_MATERIAL_PREVIEW_TYPE = {
+  CANVAS: 'canvas',
+  MATERIAL: 'material',
+  MATERIAL_PREVIEW: 'materialPreview',
+  PREVIEW: 'preview',
+  PORTAL: 'portal'
+}

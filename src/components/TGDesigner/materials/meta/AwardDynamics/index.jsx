@@ -1,8 +1,8 @@
 import getPropertyField from '@/components/TGDesigner/properties'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { Button, TypographyParagraph } from 'ant-design-vue'
-import './index.scss'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
+import './index.scss'
 
 /**
  * 奖项动态模板组件元数据
@@ -13,7 +13,7 @@ export default {
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
   name: '奖项动态',
   preview: props => {
-    if (props.previewType !== 'material') {
+    if (props.previewType !== TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
       return <AwardDynamics {...props} />
     }
 

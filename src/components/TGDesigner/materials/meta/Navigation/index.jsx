@@ -3,7 +3,7 @@ import { computed, nextTick, onBeforeMount } from 'vue'
 import useStore from '@/composables/tgStore'
 import { useRoute, useRouter } from 'vue-router'
 import { range } from 'lodash'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import getPropertyField from '@/components/TGDesigner/properties'
 import './index.scss'
 
@@ -16,11 +16,14 @@ export default {
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
   name: '导航',
   preview: props => {
-    if (props.previewType === 'material') {
+    if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
+      return <Navigation {...props} />
+    } else if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
       return <IconFont type="icon-designer-material-navigation" />
-    }
-
-    if (props.previewType === 'materialPreview') {
+    } else if (
+      props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW ||
+      props.previewType === TG_MATERIAL_PREVIEW_TYPE.CANVAS
+    ) {
       const style = props.style || {}
 
       if (!style.width || style.width === '100%') {
@@ -40,8 +43,6 @@ export default {
         />
       )
     }
-
-    return <Navigation {...props} />
   },
   defaultProps: {
     contentWidth: '100%'

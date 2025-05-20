@@ -1,9 +1,9 @@
 import { onMounted, ref, watch } from 'vue'
 import { styleWithUnits } from '../../utils/style'
 import { useEditorStore } from '../../stores/useEditorStore'
-import './assets/styles/index.scss'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { useRoute } from 'vue-router'
+import './assets/styles/index.scss'
 
 export default {
   name: 'Preview',
@@ -50,10 +50,10 @@ export default {
     }
 
     onMounted(() => {
-      if (props.previewType === 'preview') {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW) {
         const previewSchema = JSON.parse(sessionStorage.getItem('tg-schemas') || '{}')
         schema.value = previewSchema[route.query.pageId || route.query.sceneType]
-      } else if (props.previewType === 'portal') {
+      } else if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
         watch(
           () => props.schema,
           newSchema => {
