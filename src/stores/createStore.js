@@ -13,6 +13,10 @@ import useStore from '@/composables/tgStore'
 
 /**
  * 创建 store
+ * @note 通过此函数创建的store支持嵌套子级store，命名方式为`modalFor{子级store名称}`，
+ * 在各个action中用`location`字段来传递子级store的名称。
+ * 子级store中的字段与顶级store中的字段几乎相同，但使用时需要自行提前定义。并且子级store中不存在currentItem字段，
+ * 为了方便数据管理，该字段始终处于顶级store中，操作不同的子级store时，currentItem会自动更新其内容。
  * @param {string} moduleName - store名称。
  * @param {Object} [module={}] - 需要合并到 store 的 state。
  * @param {string[] | boolean} [excludeFromState=[]] - 需要从 store 中排除的 state 集合，为 true 时将排除所有内置状态。
@@ -441,13 +445,15 @@ export function createStore({
       },
       /**
        * 获取详情数据。
-       * setValue不为函数时，返回值将与`store.currentItem`合并。
-       * @param {string} location - 字段名。`location`指定的字段的格式：
+       * 返回值默认与`store.currentItem`合并，`setValue`回调可以自定义处理返回值。
+       * 当返回值是一个数组时，必须传递setValue回调函数以自定义处理数据。
+       * @param {string} location - `store.state`下的字段名，该字段对应一个内部store，相对于
+       * store的一个子级store，子级store的结构与父级store类似，结构如下：
        * ```
        * {
-       *  loading?: boolean,
-       *  list?: Array,
-       *  data?: Object
+       *   loading: boolean,
+       *   dataSource: Object,
+       *   ...
        * }
        * ```
        * @param {Object} [params] - 查询参数。默认`store.currentItem.id`，默认值受`store.state.rowKey`影响。
@@ -481,20 +487,12 @@ export function createStore({
           if (typeof setValue === 'function') {
             setValue(res.data, this)
           } else {
-            if (location) {
+            if (Object.prototype.toString.call(res.data) === '[object Object]') {
               this.$patch({
-                [location]: {
-                  [Array.isArray(res.data) ? 'list' : 'data']: res.data
-                }
+                currentItem: res.data
               })
             } else {
-              if (Object.prototype.toString.call(res.data) === '[object Object]') {
-                this.$patch({
-                  currentItem: res.data
-                })
-              } else {
-                throw new Error(`store.getDetails：当接口（${api}）返回值是一个数组且未传递location参数时，必须传递setValue回调函数！`)
-              }
+              throw new Error(`store.getDetails：当接口（${api}）返回值是一个数组时，必须传递setValue回调函数以自定义处理数据！`)
             }
           }
         }
