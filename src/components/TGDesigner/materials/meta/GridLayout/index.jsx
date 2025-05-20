@@ -1,5 +1,5 @@
 import { Col, Flex, Row } from 'ant-design-vue'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { range } from 'lodash'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import getPropertyField from '@/components/TGDesigner/properties'
@@ -173,8 +173,8 @@ export default {
 }
 
 export function GridLayoutPreview(props) {
-  const isInCanvas = props.previewType === 'canvas'
-  const isInMaterial = props.previewType === 'materialPreview'
+  const isInCanvas = props.previewType === TG_MATERIAL_PREVIEW_TYPE.CANVAS
+  const isInMaterial = props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW
   const rowProps = {
     gutter: [props.gutterX, props.gutterY],
     wrap: props.wrap,
@@ -207,7 +207,7 @@ export function GridLayoutPreview(props) {
     return props.children.find(child => child.props['data-cell-position'] === `${rowIdx}-${colIdx}`)
   }
 
-  if (props.previewType === 'material') {
+  if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
     return <IconFont type="icon-designer-material-grid-layout" />
   }
 

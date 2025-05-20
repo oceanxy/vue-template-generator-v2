@@ -1,4 +1,4 @@
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { useEditorStore } from '../../stores/useEditorStore'
 import useDragDrop from '@/components/TGDesigner/hooks/useDragDrop'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
@@ -87,7 +87,7 @@ export default {
                                       ...styleWithUnits(comp.defaultProps?.style ?? {}),
                                       ...styleWithUnits(comp.style || {})
                                     },
-                                    previewType: 'material'
+                                    previewType: TG_MATERIAL_PREVIEW_TYPE.MATERIAL
                                   })
                                 }
                                 <div class={'tg-designer-material-item-name'}>{comp.name}</div>
@@ -112,7 +112,7 @@ export default {
                                         ...styleWithUnits(comp.defaultProps?.style ?? {}),
                                         ...styleWithUnits(comp.style || {})
                                       },
-                                      previewType: 'materialPreview'
+                                      previewType: TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW
                                     }
                                   )
                                 }

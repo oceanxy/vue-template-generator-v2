@@ -5,7 +5,7 @@ import { styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
 
 /**
@@ -88,7 +88,7 @@ export default {
         ...componentSchema.props,
         class: componentDef.class,
         style: styleWithUnits(componentSchema.props?.style ?? {}),
-        previewType: 'canvas'
+        previewType: TG_MATERIAL_PREVIEW_TYPE.CANVAS
       }, 'flexDirection')
 
       const isLayoutComp = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT

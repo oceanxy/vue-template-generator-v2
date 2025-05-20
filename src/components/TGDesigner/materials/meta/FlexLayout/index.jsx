@@ -1,5 +1,5 @@
 import { Flex } from 'ant-design-vue'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import getPropertyField from '@/components/TGDesigner/properties'
 import { range } from 'lodash'
 
@@ -188,7 +188,7 @@ export function FlexLayoutPreview(props) {
     restProps.style.backgroundImage = `url(${restProps.style.backgroundImage})`
   }
 
-  if (previewType === 'materialPreview') {
+  if (previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW) {
     restProps.style.backgroundImage = 'unset'
 
     return (
@@ -206,7 +206,7 @@ export function FlexLayoutPreview(props) {
         }
       </Flex>
     )
-  } else if (previewType === 'material') {
+  } else if (previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
     return <IconFont type="icon-designer-material-flex-layout" />
   }
 

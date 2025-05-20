@@ -1,7 +1,7 @@
 import getPropertyField from '@/components/TGDesigner/properties'
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
-import './index.scss'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { TypographyParagraph } from 'ant-design-vue'
+import './index.scss'
 
 /**
  * 主奖项名称模板组件元数据
@@ -12,7 +12,7 @@ export default {
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
   name: '主奖项',
   preview: props => {
-    if (props.previewType !== 'material') {
+    if (props.previewType !== TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
       return <MainAwardPreview {...props} />
     }
 

@@ -1,4 +1,4 @@
-import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { Button, Divider, Image, Input, QRCode, TypographyText } from 'ant-design-vue'
 import getPropertyField from '@/components/TGDesigner/properties'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
@@ -9,7 +9,7 @@ export default [
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '按钮',
     preview: props => {
-      if (props.previewType === 'material') {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
         return <IconFont type="icon-designer-material-button" />
       }
 
@@ -87,11 +87,11 @@ export default [
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '文本框',
     preview: props => {
-      if (props.previewType === 'material') {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
         return <IconFont type="icon-designer-material-input" />
       }
 
-      return <Input {...props} readonly={props.previewType !== 'preview'} />
+      return <Input {...props} readonly={props.previewType !== TG_MATERIAL_PREVIEW_TYPE.PREVIEW} />
     },
     defaultProps: {
       placeholder: '请输入'
@@ -146,7 +146,7 @@ export default [
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '文本',
     preview: props => {
-      if (props.previewType === 'material') {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
         return <IconFont type="icon-designer-material-text" />
       }
 
@@ -290,7 +290,7 @@ export default [
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '分割线',
     preview: props => {
-      if (props.previewType === 'material') {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
         return <IconFont type="icon-designer-material-line" />
       }
 
@@ -396,7 +396,7 @@ export default [
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '图片',
     preview: props => {
-      if (props.previewType === 'material') {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
         return <IconFont type="icon-designer-material-picture" />
       }
 
@@ -462,7 +462,7 @@ export default [
     category: TG_MATERIAL_CATEGORY.BASIC,
     name: '二维码',
     preview: props => {
-      if (props.previewType === 'material') {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
         return <IconFont type="icon-designer-material-qrcode" />
       }
 
