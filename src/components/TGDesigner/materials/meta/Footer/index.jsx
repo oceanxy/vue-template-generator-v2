@@ -188,7 +188,7 @@ export const Footer = {
             <div>中国科学技术协会主办</div>
           </div>
           <div>
-            <QRCode color={'#ffffff'} />
+            <QRCode value={''} color={'#ffffff'} />
           </div>
         </div>
       </div>
