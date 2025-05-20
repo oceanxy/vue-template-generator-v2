@@ -1,4 +1,4 @@
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { styleWithUnits } from '../../utils/style'
 import { useEditorStore } from '../../stores/useEditorStore'
 import './assets/styles/index.scss'
@@ -54,7 +54,12 @@ export default {
         const previewSchema = JSON.parse(sessionStorage.getItem('tg-schemas') || '{}')
         schema.value = previewSchema[route.query.pageId || route.query.sceneType]
       } else if (props.previewType === 'portal') {
-        schema.value = JSON.parse(props.schemaContent)
+        watch(
+          () => props.schema,
+          newSchema => {
+            schema.value = JSON.parse(newSchema)
+          }
+        )
       }
     })
 
