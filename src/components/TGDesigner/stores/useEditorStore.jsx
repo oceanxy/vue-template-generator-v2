@@ -8,6 +8,7 @@ import { getUUID } from '@/utils/utilityFunction'
 import BasicMaterials from '../materials/meta/BasicMaterials'
 import AwardDynamics from '../materials/meta/AwardDynamics'
 import MainAward from '../materials/meta/MainAward'
+import Navigation from '../materials/meta/Navigation'
 import Header from '../materials/meta/Header'
 import Footer from '../materials/meta/Footer'
 
@@ -45,6 +46,7 @@ export const useEditorStore = defineStore('editor', {
       template: [
         MainAward,
         AwardDynamics,
+        Navigation,
         Header,
         Footer
       ],

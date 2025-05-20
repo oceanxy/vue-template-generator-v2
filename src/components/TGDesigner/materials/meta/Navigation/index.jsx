@@ -16,11 +16,32 @@ export default {
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
   name: '导航',
   preview: props => {
-    if (props.previewType !== 'material') {
-      return <Navigation {...props} />
+    if (props.previewType === 'material') {
+      return <IconFont type="icon-designer-material-navigation" />
     }
 
-    return <IconFont type="icon-designer-navigation" />
+    if (props.previewType === 'materialPreview') {
+      const style = props.style || {}
+
+      if (!style.width || style.width === '100%') {
+        style.width = '640px'
+      }
+
+      if (!props.isBuiltInHeader) {
+        style.backgroundImage = 'linear-gradient(0deg,#31549c, #253a66, #191b25)'
+      }
+
+      return (
+        <Menu
+          class={'tg-designer-template-navigation'}
+          mode={'horizontal'}
+          style={style}
+          items={range(1, 7, 1).map(item => ({ key: item, label: `导航样例${item}` }))}
+        />
+      )
+    }
+
+    return <Navigation {...props} />
   },
   defaultProps: {
     contentWidth: '100%'
@@ -162,26 +183,9 @@ export default {
   }
 }
 
-export const Navigation = {
+const Navigation = {
   name: 'Navigation',
-  props: {
-    previewType: {
-      type: String,
-      required: true
-    }
-  },
-  setup(props) {
-    if (props.previewType !== 'portal') {
-      return () => (
-        <Menu
-          class={'tg-designer-template-navigation'}
-          mode={'horizontal'}
-          style={{ width: props.previewType !== 'materialPreview' ? '640px' : '300px' }}
-          items={range(1, 7, 1).map(item => ({ key: item, label: `导航样例${item}` }))}
-        />
-      )
-    }
-
+  setup() {
     const store = useStore('portal')
     const router = useRouter()
     const route = useRoute()
@@ -207,10 +211,7 @@ export const Navigation = {
     onBeforeMount(async () => {
       await store.getList({
         apiName: 'getPortalNavs',
-        paramsForGetList: {
-          sceneId: route.params.id,
-          sceneConfigId: route.params.sceneConfigId
-        }
+        paramsForGetList: { sceneConfigId: route.params.sceneConfigId }
       })
 
       await nextTick()

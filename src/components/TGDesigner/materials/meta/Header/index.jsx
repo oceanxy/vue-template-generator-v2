@@ -1,9 +1,9 @@
 import getPropertyField from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY } from '@/components/TGDesigner/materials'
-import { Navigation } from '@/components/TGDesigner/materials/meta/Navigation'
-import './assets/styles/index.scss'
+import navigation from '@/components/TGDesigner/materials/meta/Navigation'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { ref, watch } from 'vue'
+import './assets/styles/index.scss'
 
 /**
  * Header模板组件元数据
@@ -191,7 +191,13 @@ export const Header = {
             </div>
           </div>
           <div class={'tg-designer-template-header-nav'}>
-            <Navigation previewType={props.previewType} />
+            {
+              navigation.preview({
+                previewType: props.previewType,
+                isBuiltInHeader: true,
+                style: props.previewType === 'materialPreview' ? { width: '400px' } : {}
+              })
+            }
           </div>
         </div>
       </div>
