@@ -58,7 +58,8 @@ export default {
           () => props.schema,
           newSchema => {
             schema.value = JSON.parse(newSchema)
-          }
+          },
+          { immediate: true }
         )
       }
     })
