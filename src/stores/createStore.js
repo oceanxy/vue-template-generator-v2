@@ -460,15 +460,24 @@ export function createStore({
        * @param {string} [apiName] - 接口名称，默认`getDetailsOf${route.name}`。
        * @param {(data: Object, store: import('pinia').StoreDefinition) => void} [setValue] - 处理接口返回值的函数，
        * 该值不为函数时，接口返回值将与`store.currentItem`合并。
+       * @param {(isLoading: boolean) => void} [setLoading] - 辅助 setValue 设置 loading 状态的回调函数，依赖 setValue 参数。
        * @returns {Promise<{}>}
        */
       async getDetails({
         location,
         params,
         apiName,
-        setValue
+        setValue,
+        setLoading
       }) {
-        this.setLoading({ value: true, location })
+        const isSetValue = typeof setValue === 'function'
+        const isSetLoading = typeof setLoading === 'function'
+
+        if (!isSetValue) {
+          this.setLoading({ value: true, location })
+        } else if (isSetValue && isSetLoading) {
+          setLoading(true)
+        }
 
         let api
         let res = {}
@@ -497,12 +506,17 @@ export function createStore({
           }
         }
 
-        this.setLoading({ value: false, location })
+        if (!isSetValue) {
+          this.setLoading({ value: false, location })
+        } else if (isSetValue && isSetLoading) {
+          setLoading(false)
+        }
 
         return res
       },
       /**
        * 设置接口返回的列表/枚举等数据
+       * 本action区别于setState，本action专用于设置含有loading、data或list的对象。
        * @param stateName {string} - store.state 中的字段名
        * @param value {any} - 值
        * @param [location]
