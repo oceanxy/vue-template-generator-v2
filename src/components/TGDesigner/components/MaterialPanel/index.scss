@@ -17,10 +17,9 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
-      row-gap: 15px;
 
       .tg-designer-material-item {
-        width: calc((100% - 10px) / 2);
+        width: calc(100% / 2);
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: move;
         padding: 15px 0;
