@@ -137,6 +137,9 @@
       background: var(--tg-theme-color-bg-container);
       padding: 20px;
       border-radius: var(--tg-theme-border-radius);
+      .ant-pagination{
+        margin-bottom: 0;
+      }
     }
   }
 }
