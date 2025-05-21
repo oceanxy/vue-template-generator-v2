@@ -94,6 +94,7 @@ export default {
       const isLayoutComp = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
 
       // 在画布中时，组件的宽高要应用到拖拽容器上，内部组件默认撑满容器。
+      // 但部分容器除外，这部分组件因为其内部有特殊处理，所以需要单独处理。
       const dragCompStyle = {
         style: {
           width: component.style.width,
@@ -101,7 +102,9 @@ export default {
         }
       }
 
-      component.style = omit(component.style, ['width', 'height'])
+      if (componentDef.type !== 'a-image') {
+        component.style = omit(component.style, ['width', 'height'])
+      }
 
       // 布局组件需要添加额外的样式
       const canvasCompCategoryClassName = `tg-designer-${componentSchema.category}-component`

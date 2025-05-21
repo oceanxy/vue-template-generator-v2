@@ -192,6 +192,7 @@ const Navigation = {
     const route = useRoute()
     const pageRoute = computed(() => store.search.pageRoute)
     const navs = computed(() => store.dataSource.list)
+    const previewFlag = computed(() => store.search.previewFlag)
 
     const handleMenuClick = async ({ key, item }) => {
       await switchRoute(key, item.title, item.id)
@@ -202,7 +203,7 @@ const Navigation = {
       store.search.pageRoute = key
 
       await router.push({
-          name: 'PortalPage',
+          name: previewFlag.value ? 'PortalPagePreview' : 'PortalPage',
           params: { pageRoute: key },
           query: { title: encodeURIComponent(title) }
         }

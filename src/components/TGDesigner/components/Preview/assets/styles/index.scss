@@ -18,6 +18,19 @@
     .ant-flex {
       width: 100%;
     }
+
+    .ant-image {
+      width: auto;
+      height: auto;
+      overflow: hidden;
+
+      .ant-image-img {
+        width: auto;
+        height: auto;
+        pointer-events: none;
+        object-fit: cover;
+      }
+    }
   }
 }
 

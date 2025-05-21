@@ -35,6 +35,7 @@ export default {
         key: componentSchema.id,
         ...componentSchema.props,
         previewType: props.previewType,
+        class: componentDef.class,
         style: styleWithUnits(componentSchema.props?.style ?? {}),
         'data-cell-position': componentSchema.cellPosition
       }
