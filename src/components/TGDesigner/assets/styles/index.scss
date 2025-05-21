@@ -7,6 +7,32 @@
     font-size: 40px;
   }
 }
+.tg-scrollable{
+  overflow-y: auto;
+   /* Webkit浏览器滚动条样式 */
+  //  scrollbar-width: none; /* Firefox隐藏滚动条 */
+  //  -ms-overflow-style: none; /* IE/Edge隐藏滚动条 */
+  &::-webkit-scrollbar{
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0);
+    border-radius: 6px;
+  }
+   /* 鼠标悬停显示滚动条 */
+   &:hover::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+  }
+  &:hover::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+  }
+  // &:hover{
+  //   scrollbar-width: thin;
+  // }
+}
 
 .tg-designer-container {
   height: 100%;
@@ -25,7 +51,7 @@
 
   .tg-designer-header {
     position: relative;
-    height: 56px;
+    height: 60px;
     flex: none;
     background: var(--tg-theme-color-bg-container);
     border-bottom: 1px solid var(--tg-theme-color-border);
@@ -52,7 +78,8 @@
           padding: 0 14px;
 
           .tg-designer-logo-text {
-            font-size: 16px;
+            font-size: 18px;
+            line-height: 1;
             font-weight: bolder;
             font-style: oblique;
           }
@@ -60,10 +87,11 @@
           .tg-designer-logo-version {
             font-size: 14px;
             font-weight: 600;
+            line-height: 1;
 
             .ant-tag {
-              margin-left: 4px;
               border-radius: 10px;
+              transform: scale(.8);
             }
           }
         }
@@ -132,11 +160,11 @@
   }
 
   .tg-designer-plugins-wrapper {
-    background: #efefef !important;
+    background: #f0f1f3 !important;
 
     .tg-designer-plugin {
       width: 100%;
-      height: 60px;
+      padding: 15px 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -145,7 +173,6 @@
       transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
       gap: 4px;
-      margin: 15px 0;
 
       & > .anticon {
         font-size: 24px;
@@ -162,7 +189,7 @@
   }
 
   .tg-designer-plugin-content-wrapper {
-
+    // border-right: 1px solid #EEEEF0;
   }
 
   .tg-designer-canvas-wrapper {
@@ -173,6 +200,7 @@
     align-items: center;
     overflow: hidden;
     padding: 10px;
+    background-color: #f2f3f5;
 
     .tg-designer-canvas-layout {
       padding: 3px; // 为了适配画布的选中样式
@@ -183,6 +211,7 @@
       display: flex;
       justify-content: flex-start;
       align-items: flex-start;
+      // background-image: url('../images/bg-dot.png');
       // 画布操作区域棋盘背景
       background-image: linear-gradient(45deg, #e7e7e7 25%, transparent 25%, transparent 75%, #e7e7e7 75%),
       linear-gradient(45deg, #e7e7e7 25%, transparent 25%, transparent 75%, #e7e7e7 75%);
@@ -510,6 +539,6 @@
   }
 
   .tg-designer-property-wrapper {
-    padding: 10px;
+    // padding: 10px;
   }
 }

@@ -1,22 +1,39 @@
 .tg-designer-property-comp-type {
-  font-size: 18px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  flex-shrink: 0;
+  font-size: 14px;
   font-weight: bolder;
-  border-bottom: 1px solid var(--tg-theme-color-border);
-  padding-bottom: 4px;
+  border-bottom: 1px solid var(--tg-theme-color-border-secondary);
 }
 
 .tg-designer-property-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  .tg-designer-property-scrollable{
+    overflow-x: hidden;
+    .tg-designer-field-group{
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-bottom: 1px solid var(--tg-theme-color-border-secondary);
+      padding: 15px;
+      .tg-designer-field-title{
+        font-size: 14px;
+        color: var(--tg-theme-color-text);
+        font-weight: bolder;
+        margin-bottom: 10px;
+      }
+    }
+  }
 
   .ant-divider {
     &.ant-divider-with-text::before,
     &.ant-divider-with-text::after {
-      border-block-color: var(--tg-theme-color-border);
+      border-block-color: var(--tg-theme-color-border-secondary);
     }
 
     .ant-divider-inner-text {
@@ -33,11 +50,26 @@
     label {
       flex: none;
       display: flex;
+      font-size: 14px;
       gap: 4px;
+      color: var(--tg-theme-color-text-secondary);
+      min-width: 74px;
+      flex-shrink: 0;
+      .anticon{
+        color: var(--tg-theme-color-text-quaternary);
+      }
     }
 
     & > *:not(label, .ant-switch) {
       flex: auto;
+    }
+    .tg-designer-form-item-control{
+      display: flex;
+      justify-content: flex-end;
+      flex-grow: 1;
+      > .ant-select{
+        width: 100%;
+      }
     }
 
     .ant-radio-group {

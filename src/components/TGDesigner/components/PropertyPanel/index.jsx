@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '../../stores/useEditorStore'
-import { Divider, Empty, Tooltip } from 'ant-design-vue'
+import { Empty, Tooltip } from 'ant-design-vue'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
 import { QuestionCircleOutlined } from '@ant-design/icons-vue'
 import './index.scss'
@@ -54,10 +54,12 @@ export default {
     const renderPropertyFields = (fields) => {
       return fields.map(field => {
         if ('items' in field) {
-          return [
-            <Divider dashed orientation="left">{field.label}</Divider>,
-            renderPropertyFields(field.items)
-          ]
+          return (
+            <div class="tg-designer-field-group">
+              <div class="tg-designer-field-title">{field.label}</div>
+              {renderPropertyFields(field.items)}
+            </div>
+          )
         }
 
         const CanvasProperty = field.component()
@@ -78,10 +80,13 @@ export default {
                 <QuestionCircleOutlined />
               </Tooltip>
             </label>
-            <CanvasProperty
-              {...propertyProps}
-              onChange={handlePropertyChange(field.prop)}
-            />
+            <div class="tg-designer-form-item-control">
+              <CanvasProperty
+
+                {...propertyProps}
+                onChange={handlePropertyChange(field.prop)}
+              />
+            </div>
           </div>
         )
       })
@@ -101,7 +106,9 @@ export default {
           <div class="tg-designer-property-comp-type">
             {selectedComponent.value.name}
           </div>
-          {renderPropertyFields(selectedComponent.value.configForm.fields)}
+          <div class="tg-designer-property-scrollable tg-scrollable">
+            {renderPropertyFields(selectedComponent.value.configForm.fields)}
+          </div>
         </div>
       )
     }

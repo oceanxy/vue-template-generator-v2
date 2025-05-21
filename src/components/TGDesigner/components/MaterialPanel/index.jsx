@@ -51,7 +51,7 @@ export default {
 
     return () => {
       return (
-        <div class={'tg-designer-material-container'}>
+        <div class={'tg-designer-material-container tg-scrollable'}>
           {
             materials.map(material => (
               <div
@@ -107,13 +107,13 @@ export default {
                               >
                                 {
                                   comp.preview({
-                                      ...comp.defaultProps,
-                                      style: {
-                                        ...styleWithUnits(comp.defaultProps?.style ?? {}),
-                                        ...styleWithUnits(comp.style || {})
-                                      },
-                                      previewType: TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW
-                                    }
+                                    ...comp.defaultProps,
+                                    style: {
+                                      ...styleWithUnits(comp.defaultProps?.style ?? {}),
+                                      ...styleWithUnits(comp.style || {})
+                                    },
+                                    previewType: TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW
+                                  }
                                   )
                                 }
                               </div>
