@@ -29,7 +29,7 @@ export default {
     padding: 0,
     margin: 0,
     border: '',
-    background: '#f0f2f5',
+    background: '',
     backgroundColor: '',
     backgroundImage: '',
     // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
@@ -185,10 +185,6 @@ export function GridLayoutPreview(props) {
   const colStyle = {}
   let rowCount = props.rowCount
   let columnCount = props.columnCount
-
-  if (isInCanvas) {
-    colStyle.background = '#d5d5d5'
-  }
 
   const style = styleWithUnits(props.style)
 

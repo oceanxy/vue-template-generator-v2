@@ -98,6 +98,7 @@ export default {
 
       jumpToRoute({
         name: 'Preview',
+        params: { sceneConfigId: search.value.sceneConfigId },
         query: search.value.pageType === 13
           ? { pageId: search.value.pageId }
           : { sceneType: search.value.sceneType }

@@ -181,8 +181,7 @@ export const Footer = {
         >
           <div>
             <div class="tg-designer-template-footer-content-title">
-              <IconFont type={'icon-logo'} />
-              <span>中国科学技术协会</span>
+              <img src="https://oss.bj-dx-dzqywjd-hlw-icp.inspurcloudoss.com:6063/tygzt01/upload/cServ/c-serv/5735606129182378245.png" alt="" />
             </div>
             <div>中国科学技术协会版权所有 京ICP 备 10216604号-4 海淀分局备案 1101084647</div>
             <div>中国科学技术协会主办</div>

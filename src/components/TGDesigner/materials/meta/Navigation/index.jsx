@@ -1,11 +1,11 @@
 import { Menu } from 'ant-design-vue'
-import { computed, nextTick, onBeforeMount } from 'vue'
+import { computed, onBeforeMount } from 'vue'
 import useStore from '@/composables/tgStore'
-import { useRoute, useRouter } from 'vue-router'
 import { range } from 'lodash'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import getPropertyField from '@/components/TGDesigner/properties'
 import './index.scss'
+import { useRoute } from 'vue-router'
 
 /**
  * Navigation模板组件元数据
@@ -188,26 +188,12 @@ const Navigation = {
   name: 'Navigation',
   setup() {
     const store = useStore('portal')
-    const router = useRouter()
     const route = useRoute()
     const pageRoute = computed(() => store.search.pageRoute)
     const navs = computed(() => store.dataSource.list)
-    const previewFlag = computed(() => store.search.previewFlag)
 
-    const handleMenuClick = async ({ key, item }) => {
-      await switchRoute(key, item.title, item.id)
-    }
-
-    const switchRoute = async (key, title, pageId) => {
-      store.search.pageId = pageId
-      store.search.pageRoute = key
-
-      await router.push({
-          name: previewFlag.value ? 'PortalPagePreview' : 'PortalPage',
-          params: { pageRoute: key },
-          query: { title: encodeURIComponent(title) }
-        }
-      )
+    const handleMenuClick = route => {
+      store.$patch({ search: route })
     }
 
     onBeforeMount(async () => {
@@ -216,18 +202,36 @@ const Navigation = {
         paramsForGetList: { sceneConfigId: route.params.sceneConfigId }
       })
 
-      await nextTick()
+      let targetRoute
 
-      const home = navs.value.find(route => route.routeInfo.includes('-home'))
+      if (route.params.pageRoute) {
+        const currentRoute = navs.value.find(nav => nav.routeInfo === route.params.pageRoute)
 
-      if (home) {
-        await switchRoute(home.routeInfo, home.navName, home.relScenePageId)
+        targetRoute = {
+          pageRoute: currentRoute.routeInfo,
+          pageId: currentRoute.relScenePageId,
+          title: currentRoute.navName
+        }
       } else {
-        await switchRoute(
-          navs.value[0].routeInfo,
-          navs.value[0].title,
-          navs.value[0].relScenePageId
-        )
+        const home = navs.value.find(nav => nav.routeInfo.includes('-home'))
+
+        if (home) {
+          targetRoute = {
+            pageRoute: home.routeInfo,
+            pageId: home.relScenePageId,
+            title: home.navName
+          }
+        } else if (navs.value[0]) {
+          targetRoute = {
+            pageRoute: navs.value[0].routeInfo,
+            pageId: navs.value[0].title,
+            title: navs.value[0].relScenePageId
+          }
+        }
+      }
+
+      if (targetRoute) {
+        handleMenuClick(targetRoute)
       }
     })
 
@@ -236,7 +240,11 @@ const Navigation = {
         class={'tg-designer-template-navigation'}
         mode={'horizontal'}
         selectedKeys={[pageRoute.value]}
-        onClick={handleMenuClick}
+        onClick={e => handleMenuClick({
+          pageRoute: e.key,
+          pageId: e.item.id,
+          title: e.item.title
+        })}
       >
         {
           navs.value.map(item => (

@@ -1,6 +1,9 @@
 import getPropertyField from '@/components/TGDesigner/properties'
-import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
-import { TypographyParagraph } from 'ant-design-vue'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE, TG_MATERIAL_TEMPLATE_COMPONENT_ENUM } from '@/components/TGDesigner/materials'
+import { Button, TypographyParagraph } from 'ant-design-vue'
+import { computed, onMounted, ref, watchEffect } from 'vue'
+import useStore from '@/composables/tgStore'
+import { useRoute, useRouter } from 'vue-router'
 import './index.scss'
 
 /**
@@ -20,7 +23,7 @@ export default {
   },
   defaultProps: {},
   style: {
-    width: '100%',
+    width: '1200',
     height: '',
     backgroundColor: '',
     backgroundImage: '',
@@ -114,38 +117,100 @@ export default {
 
 export const MainAwardPreview = {
   name: 'MainAward',
-  props: ['mainAwardName', 'foundingYear', 'subAwards', 'organizer', 'description'],
+  props: ['previewType', 'style'],
   setup(props) {
-    const data = {
-      mainAwardName: '主奖项名称',
-      foundingYear: '2021年',
-      subAwards: '子奖项名称',
-      organizer: '中国科协培训和人才服务中心',
-      description: '中国大学生机械工程创新创意大赛智能制造赛是由中国机械工程学会于2018年开始创办的国家级学科竞赛，' +
-        '从2021年开始已列入中国高等教育学会发布的“全国普通高校大学生竞赛排行榜竞赛项目名单”。' +
-        '大赛旨在推动智能制造先进理念传播及技术应用，为智能制造人才教育确立风向标，' +
-        '加快培养和选拔符合产业需求的创新型复合人才及系统型人才，提升智能制造领域的创新能力，' +
-        '推动中国智能制造的可持续发展。'
+    const store = useStore('portal')
+    const route = useRoute()
+    const router = useRouter()
+    const data = ref({
+      title: '｛主奖项名称｝',
+      sceneYear: '{创办时间}',
+      childrenName: '｛子奖项名称｝',
+      organizer: '{主办单位}',
+      abstractDesc: '{简介}'
+    })
+
+    const style = ref({})
+    const btnTargetRoute = computed(() => data.value.judgeButton?.buttonRouter)
+    const btnTargetPageId = computed(() => data.value.judgeButton?.relScenePageId)
+    const previewFlag = computed(() => store.search.previewFlag)
+
+    watchEffect(() => {
+      let bgImg = { backgroundImage: '' }
+
+      if (props.style.backgroundImage && !props.style.backgroundImage.startsWith('url(')) {
+        bgImg = { backgroundImage: `url(${props.style.backgroundImage})` }
+      }
+
+      style.value = {
+        ...props.style,
+        ...bgImg
+      }
+    })
+
+    onMounted(async () => {
+      if (
+        props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW ||
+        props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL
+      ) {
+        const res = await store.getDetails({
+          apiName: 'getTemplateComponentData',
+          params: {
+            sceneConfigId: route.params.sceneConfigId,
+            param: TG_MATERIAL_TEMPLATE_COMPONENT_ENUM.PZMARK
+          },
+          setValue(data) {
+            return false
+          },
+          setLoading(isLoading) {
+
+          }
+        })
+
+        if (res.status) {
+          data.value = res?.data || {}
+        }
+      }
+    })
+
+    const handleToApply = async () => {
+      if (
+        props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW ||
+        props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL
+      ) {
+        store.search.pageId = btnTargetPageId.value
+        store.search.pageRoute = btnTargetRoute.value
+
+        await router.push({
+          name: previewFlag.value ? 'PortalPagePreview' : 'PortalPage',
+          params: { pageRoute: btnTargetRoute.value }
+        })
+      }
     }
 
     return () => (
-      <div class="tg-designer-main-award">
+      <div class="tg-designer-main-award" style={style.value}>
         <div class="tg-main-award-header">
-          <h1>{data.mainAwardName}</h1>
-          <p>创办时间：{data.foundingYear}</p>
-          <p>子奖项：{data.subAwards}</p>
-          <p>主办单位：{data.organizer}</p>
+          <h1>{data.value.title}</h1>
+          <p>创办时间：{data.value.sceneYear}</p>
+          <p>子奖项：{data.value.childrenName}</p>
+          <p>主办单位：{data.value.organizer}</p>
         </div>
         <div class="tg-main-award-content">
           <div class="tg-main-award-description">
             <h2>简介</h2>
             <TypographyParagraph
-              content={data.description}
+              content={data.value.abstractDesc}
               ellipsis={{ rows: 4 }}
             />
           </div>
           <div class="tg-main-award-button">
-            <button>去申报</button>
+            <Button
+              disabled={!btnTargetRoute.value}
+              onClick={handleToApply}
+            >
+              去申报
+            </Button>
           </div>
         </div>
       </div>

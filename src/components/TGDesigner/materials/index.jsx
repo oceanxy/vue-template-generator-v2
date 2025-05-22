@@ -39,3 +39,26 @@ export const TG_MATERIAL_PREVIEW_TYPE = {
   PREVIEW: 'preview',
   PORTAL: 'portal'
 }
+
+/**
+ * 模板组件接口枚举
+ * @type {{
+ *   ARTICLE: string,
+ *   PZMARK: string,
+ *   PZCHD: string,
+ *   PZSCE: string,
+ *   SCEMD: string
+ * }}
+ * - ARTICLE 资讯信息
+ * - PZMARK 奖项详情
+ * - PZCHD 子奖项集合
+ * - PZSCE 奖项场景集合
+ * - SCEMD 场景功能集集合
+ */
+export const TG_MATERIAL_TEMPLATE_COMPONENT_ENUM = {
+  ARTICLE: 'ARTICLE',
+  PZMARK: 'PZMARK',
+  PZCHD: 'PZCHD',
+  PZSCE: 'PZSCE',
+  SCEMD: 'SCEMD'
+}
