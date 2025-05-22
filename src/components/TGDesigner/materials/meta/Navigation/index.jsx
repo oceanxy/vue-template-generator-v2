@@ -16,7 +16,10 @@ export default {
   category: TG_MATERIAL_CATEGORY.TEMPLATE,
   name: '导航',
   preview: props => {
-    if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
+    if (
+      props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW ||
+      props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL
+    ) {
       return <Navigation {...props} />
     } else if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
       return <IconFont type="icon-designer-material-navigation" />
@@ -186,14 +189,17 @@ export default {
 
 const Navigation = {
   name: 'Navigation',
-  setup() {
+  props: ['previewType'],
+  setup(props) {
     const store = useStore('portal')
     const route = useRoute()
     const pageRoute = computed(() => store.search.pageRoute)
     const navs = computed(() => store.dataSource.list)
 
     const handleMenuClick = route => {
-      store.$patch({ search: route })
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
+        store.$patch({ search: route })
+      }
     }
 
     onBeforeMount(async () => {
