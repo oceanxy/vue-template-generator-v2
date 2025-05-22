@@ -178,10 +178,7 @@ export const AwardDynamics = {
     })
 
     async function handleMoreClick() {
-      if (
-        props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW ||
-        props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL
-      ) {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
         store.search.pageId = btnTargetPageId.value
         store.search.pageRoute = btnTargetRoute.value
 

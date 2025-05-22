@@ -174,10 +174,7 @@ export const MainAwardPreview = {
     })
 
     const handleToApply = async () => {
-      if (
-        props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW ||
-        props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL
-      ) {
+      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
         store.search.pageId = btnTargetPageId.value
         store.search.pageRoute = btnTargetRoute.value
 
