@@ -4,8 +4,8 @@ import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import { computed, inject, onMounted, onUnmounted, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 import { jumpToRoute } from '@/utils/designer'
-import './index.scss'
 import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
+import './index.scss'
 
 export default {
   name: 'TGDesignerHeader',

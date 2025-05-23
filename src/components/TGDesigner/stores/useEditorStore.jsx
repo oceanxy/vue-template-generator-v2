@@ -15,7 +15,7 @@ import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
 
 export const useEditorStore = defineStore('editor', {
   state: () => ({
-    saveStatus: SAVE_STATUS.UNSAVED, // 服务端保存状态
+    saveStatus: SAVE_STATUS.SAVED, // 服务端保存状态
     isSchemaLoaded: false,
     selectedComponent: null,
     canvasConfigForm,
