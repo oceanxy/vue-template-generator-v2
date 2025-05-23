@@ -30,7 +30,7 @@ export default {
     const autoSave = () => {
       // 30s自动向后端保存一次
       interval = setInterval(async () => {
-        await handleSchemaSave('auto')
+        await handleSchemaSave(true)
       }, 30000)
     }
 
@@ -67,7 +67,12 @@ export default {
       automaticCaching.cancel()
     })
 
-    const handleSchemaSave = async type => {
+    /**
+     * 保存schema
+     * @param [isAutoSave] {boolean}
+     * @returns {Promise<void>}
+     */
+    const handleSchemaSave = async isAutoSave => {
       if (!localCacheStatus.value) {
         automaticCaching.flush()
       }
@@ -88,7 +93,7 @@ export default {
 
           store.saveStatus = SAVE_STATUS.SAVED
 
-          if (type !== 'auto' && res.status) {
+          if (!isAutoSave && res.status) {
             // 手动触发保存后，清空已存在的定时器，重新设置定时器
             clearInterval(interval)
             autoSave()
@@ -99,7 +104,12 @@ export default {
           }
 
           // 延迟3秒后改变schema变化的状态，主要用于提示保存按钮的dot状态
-          setTimeout(() => isSchemaChanged.value = false, 3000)
+          // 如果在timeout的回调执行期间发生schema更改，则以isSchemaChanged最新值为准
+          setTimeout(
+            isSchemaChanged => isSchemaChanged.value = isSchemaChanged,
+            3000,
+            isSchemaChanged.value
+          )
         } catch (e) {
           store.saveStatus = SAVE_STATUS.UNSAVED
         }
@@ -117,7 +127,15 @@ export default {
       })
     }
 
-    expose({ updateSchema: handleSchemaSave })
+    const updateSchema = async () => {
+      localCacheStatus.value = false
+      isSchemaChanged.value = true
+      store.saveStatus = SAVE_STATUS.UNSAVED
+
+      await handleSchemaSave(true)
+    }
+
+    expose({ updateSchema })
 
     return () => (
       <div class={'tg-designer-tools'}>
@@ -147,7 +165,7 @@ export default {
             >
               <Button
                 disabled={saveStatus.value !== SAVE_STATUS.UNSAVED || !isSchemaChanged.value}
-                onClick={handleSchemaSave}
+                onClick={() => handleSchemaSave()}
                 icon={<IconFont type="icon-designer-tool-save" />}
                 title={'保存'}
               />
