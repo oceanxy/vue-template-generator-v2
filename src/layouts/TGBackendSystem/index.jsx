@@ -24,6 +24,7 @@ export default {
             theme={'light'}
             collapsible
             trigger={null}
+            width={235}
             class={`tg-responsive-layout-sider${
               showMenu.value
                 ? store.collapsed ? ' collapsed' : ' normal'
