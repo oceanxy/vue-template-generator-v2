@@ -286,6 +286,10 @@ export default createStore({
         }
 
         this.messageList.loading = false
+      },
+      // 用户组织切换
+      async switchUserOrg() {
+        await apis.switchUserOrg()
       }
     }
   },
