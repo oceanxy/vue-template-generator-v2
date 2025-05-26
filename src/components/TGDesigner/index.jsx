@@ -5,8 +5,8 @@ import Header from './components/Header'
 import Plugins, { PLUGIN_KEY } from './components/Plugins'
 import { computed, markRaw, onMounted, provide, ref, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
-import './assets/styles/index.scss'
 import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
+import './assets/styles/index.scss'
 
 export default {
   name: 'TGDesigner',
@@ -51,6 +51,7 @@ export default {
         localSchema = Object.entries(JSON.parse(localSchema || '{}'))
         designerStore.schema = localSchema[0][1]
         tgStore.search.schemaId = localSchema[0][0]
+        tgStore.search.templateId = sessionStorage.getItem('tg-designer-template-id')
         tgStore.isSchemaLoaded = true
       } else {
         // 如果本地没有缓存schema，则从后台获取schema
@@ -70,7 +71,8 @@ export default {
         if (res.status) {
           tgStore.isSchemaLoaded = true
           tgStore.search.schemaId = res.data.id
-          tgStore.search.templateId = res.data.templateId
+          tgStore.search.templateId = res.data.pageTemplateId
+          sessionStorage.setItem('tg-designer-template-id', res.data.pageTemplateId)
 
           if (res.data?.schemaContent) {
             designerStore.schema = JSON.parse(res.data.schemaContent)

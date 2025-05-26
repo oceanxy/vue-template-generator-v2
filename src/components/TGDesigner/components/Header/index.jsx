@@ -10,7 +10,8 @@ import './index.scss'
 export default {
   name: 'TGDesignerHeader',
   setup(props, { expose }) {
-    let interval = null
+    let timerId = null
+    let intervalId = null
     const tgStore = inject('tgStore')
     const store = useEditorStore()
     const saveStatus = computed(() => store.saveStatus)
@@ -29,7 +30,7 @@ export default {
 
     const autoSave = () => {
       // 30s自动向后端保存一次
-      interval = setInterval(async () => {
+      intervalId = setInterval(async () => {
         await handleSchemaSave(true)
       }, 30000)
     }
@@ -41,6 +42,7 @@ export default {
 
         // 本地缓存实时进行
         watch(schema, () => {
+          clearTimeout(timerId)
           isSchemaChanged.value = true
           localCacheStatus.value = false
           store.saveStatus = SAVE_STATUS.UNSAVED
@@ -63,7 +65,7 @@ export default {
     })
 
     onUnmounted(() => {
-      clearInterval(interval)
+      clearInterval(intervalId)
       automaticCaching.cancel()
     })
 
@@ -95,7 +97,7 @@ export default {
 
           if (!isAutoSave && res.status) {
             // 手动触发保存后，清空已存在的定时器，重新设置定时器
-            clearInterval(interval)
+            clearInterval(intervalId)
             autoSave()
 
             if (res.status) {
@@ -105,11 +107,7 @@ export default {
 
           // 延迟3秒后改变schema变化的状态，主要用于提示保存按钮的dot状态
           // 如果在timeout的回调执行期间发生schema更改，则以isSchemaChanged最新值为准
-          setTimeout(
-            isSchemaChanged => isSchemaChanged.value = isSchemaChanged,
-            3000,
-            isSchemaChanged.value
-          )
+          timerId = setTimeout(() => isSchemaChanged.value = false, 3000)
         } catch (e) {
           store.saveStatus = SAVE_STATUS.UNSAVED
         }
