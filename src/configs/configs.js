@@ -102,8 +102,8 @@ module.exports = {
       logout: {
         // 是否显示消息通知按钮，默认 true。
         show: true,
-        // 按钮文本，默认“注销”
-        text: '注销'
+        // 按钮文本，默认“退出登录”
+        text: '退出登录'
       },
       // 网站指引（暂未实现）
       guide: {
