@@ -135,6 +135,7 @@ export default {
     const status = ref(false)
     const defaultExpandedTreeIds = ref([])
     const searchValue = ref('')
+    const key = ref(1)
     const expandedKeysFormEvent = ref([])
     // 上一次设置的用于保存树选中值的字段名，
     // （通常用于 treeIdField 会发生变化的时候。如点击树的不同层级，传递的字段名不一样的情况）
@@ -195,7 +196,21 @@ export default {
     async function getTree() {
       return await treeStore.getList({
         stateName: props.treeDataOptions?.stateName,
-        apiName: props.treeDataOptions.apiName
+        apiName: props.treeDataOptions.apiName,
+        setValueToStateName(data, store) {
+          if (props.loadData) {
+            key.value += 1
+            store[props.treeDataOptions?.stateName].list = data.map(item => {
+              return {
+                ...item,
+                isLeaf: false,
+                key: item.id
+              }
+            })
+          } else {
+            store[props.treeDataOptions?.stateName].list = data
+          }
+        },
       })
     }
 
@@ -417,6 +432,7 @@ export default {
               />
               <Spin spinning={loading.value}>
                 <Tree
+                  key={key.value}
                   showLine
                   showIcon
                   blockNode
