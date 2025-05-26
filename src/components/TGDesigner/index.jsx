@@ -70,6 +70,7 @@ export default {
         if (res.status) {
           tgStore.isSchemaLoaded = true
           tgStore.search.schemaId = res.data.id
+          tgStore.search.templateId = res.data.templateId
 
           if (res.data?.schemaContent) {
             designerStore.schema = JSON.parse(res.data.schemaContent)
