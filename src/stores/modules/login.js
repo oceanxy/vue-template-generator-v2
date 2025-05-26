@@ -134,7 +134,7 @@ export default createStore({
         return Promise.resolve(response)
       },
       async logout() {
-        message.loading('正在注销，请稍候...', 0)
+        message.loading('正在退出登录，请稍候...', 0)
         this.loading = true
 
         const response = await apis.logout()
