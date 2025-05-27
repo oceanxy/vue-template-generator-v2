@@ -82,6 +82,9 @@ export default {
       }
 
       window.location.reload()
+
+      // 当用户切换组织成功之后 后端保存当前组织信息
+      loginStore.switchUserOrg()
     }, { deep: true })
 
     onBeforeMount(async () => {
@@ -248,7 +251,11 @@ export default {
                       >
                         {
                           commonStore.organListForHeader.list?.map(item => (
-                            <Select.Option value={item.orgId}>{item.orgName || '暂无组织名称'}</Select.Option>
+                            <Select.Option
+                              value={item.orgId}
+                              title={item.orgName}>
+                              {item.orgName || '暂无组织名称'}
+                            </Select.Option>
                           ))
                         }
                       </Select>,
