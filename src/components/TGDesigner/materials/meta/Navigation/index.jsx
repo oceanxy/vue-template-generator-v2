@@ -4,8 +4,8 @@ import useStore from '@/composables/tgStore'
 import { range } from 'lodash'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import getPropertyField from '@/components/TGDesigner/properties'
-import './index.scss'
 import { useRoute } from 'vue-router'
+import './index.scss'
 
 /**
  * Navigation模板组件元数据
@@ -216,7 +216,8 @@ const Navigation = {
         targetRoute = {
           pageRoute: currentRoute.routeInfo,
           pageId: currentRoute.relScenePageId,
-          title: currentRoute.navName
+          title: currentRoute.navName,
+          isLoginRequired: currentRoute.outLoginFlag
         }
       } else {
         const home = navs.value.find(nav => nav.routeInfo.includes('-home'))
@@ -225,13 +226,15 @@ const Navigation = {
           targetRoute = {
             pageRoute: home.routeInfo,
             pageId: home.relScenePageId,
-            title: home.navName
+            title: home.navName,
+            isLoginRequired: home.outLoginFlag
           }
         } else if (navs.value[0]) {
           targetRoute = {
             pageRoute: navs.value[0].routeInfo,
             pageId: navs.value[0].title,
-            title: navs.value[0].relScenePageId
+            title: navs.value[0].relScenePageId,
+            isLoginRequired: navs.value[0].outLoginFlag
           }
         }
       }
@@ -249,7 +252,8 @@ const Navigation = {
         onClick={e => handleMenuClick({
           pageRoute: e.key,
           pageId: e.item.id,
-          title: e.item.title
+          title: e.item.title,
+          isLoginRequired: e.item.isLoginRequired
         })}
       >
         {
@@ -257,6 +261,7 @@ const Navigation = {
             <Menu.Item
               key={item.routeInfo}
               title={item.navName}
+              isLoginRequired={item.outLoginFlag}
               id={item.relScenePageId}
             >
               {item.navName}
