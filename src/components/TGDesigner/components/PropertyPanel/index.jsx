@@ -33,23 +33,23 @@ export default {
       }
     })
 
-    const handlePropertyChange = (prop) => {
-      return debounce(e => {
-        if (prop in componentProps.value) {
-          componentProps.value[prop] = e.target?.value ?? e
-        } else if (prop in componentProps.value.style) {
-          componentProps.value.style[prop] = e.target?.value ?? e
-        }
-
-        // 更新组件的 Schema
-        if (store.selectedComponent?.type === 'canvas') {
-          // 更新画布属性
-          store.schema.canvas = schema.value.canvas
-        } else {
-          componentSchema.value.props = componentProps.value
-        }
-      }, 200)
+    const handleInput = (e, prop) => {
+      if (prop in componentProps.value) {
+        componentProps.value[prop] = e.target?.value ?? e
+      } else if (prop in componentProps.value.style) {
+        componentProps.value.style[prop] = e.target?.value ?? e
+      }
     }
+
+    const handlePropertyChange = debounce(() => {
+      // 更新组件的 Schema
+      if (store.selectedComponent?.type === 'canvas') {
+        // 更新画布属性
+        store.schema.canvas = schema.value.canvas
+      } else {
+        componentSchema.value.props = componentProps.value
+      }
+    }, 200)
 
     const renderPropertyFields = (fields) => {
       return fields.map(field => {
@@ -82,9 +82,14 @@ export default {
             </label>
             <div class="tg-designer-form-item-control">
               <CanvasProperty
-
                 {...propertyProps}
-                onChange={handlePropertyChange(field.prop)}
+                onInput={e => handleInput(e, field.prop)}
+                onChange={handlePropertyChange}
+                onCompositionstart={e => e.target.composing = true}
+                onCompositionend={e => {
+                  e.target.composing = false
+                  e.target.dispatchEvent(new Event('input'))
+                }}
               />
             </div>
           </div>
