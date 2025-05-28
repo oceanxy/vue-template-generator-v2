@@ -3,6 +3,7 @@ import { Sketch } from '@ckpack/vue-color'
 import { Button, Input, InputGroup, Popover } from 'ant-design-vue'
 import { ref, watch } from 'vue'
 import { ClearOutlined } from '@ant-design/icons-vue'
+import { debounce } from 'lodash'
 
 export default {
   name: 'TGColorPicker',
@@ -15,13 +16,24 @@ export default {
   setup(props, { attrs }) {
     const visible = ref(false)
     const colorValue = ref(props.value)
+    const colorChanged = ref(false)
 
     watch(() => props.value, val => colorValue.value = val)
 
-    const handleColorChange = (color) => {
-      colorValue.value = color.hex
-      attrs.onChange?.(color.hex)
-      visible.value = false
+    const handleColorChange = debounce(color => {
+      if (visible.value) {
+        colorChanged.value = true
+        colorValue.value = color.hex
+        attrs.onChange?.(color.hex)
+      }
+    }, 100)
+
+    const handleCompleteColorSelection = () => {
+      if (colorChanged.value) {
+        visible.value = false
+      }
+
+      colorChanged.value = false
     }
 
     return () => (
@@ -37,7 +49,7 @@ export default {
                 readonly
                 placeholder="无"
                 value={colorValue.value}
-                onChange={(e) => {
+                onChange={e => {
                   handleColorChange(e.target.value)
                 }}
                 prefix={
@@ -62,6 +74,7 @@ export default {
                 modelValue={colorValue.value}
                 onUpdate:modelValue={handleColorChange}
                 presetColors={[]}
+                onMouseup={() => handleCompleteColorSelection()}
               />
             )
           }}
