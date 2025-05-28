@@ -53,7 +53,7 @@ export default {
       }
 
       return (
-        <RouterLink to={route.key || '/'}>
+        <RouterLink to={route.path || '/'}>
           {handleBreadcrumbName(route)}
         </RouterLink>
       )
