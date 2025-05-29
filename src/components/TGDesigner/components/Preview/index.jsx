@@ -3,6 +3,7 @@ import { styleWithUnits } from '../../utils/style'
 import { useEditorStore } from '../../stores/useEditorStore'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { useRoute } from 'vue-router'
+import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import './assets/styles/index.scss'
 
 export default {
@@ -52,8 +53,7 @@ export default {
 
     onMounted(() => {
       if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW) {
-        const previewSchema = JSON.parse(sessionStorage.getItem('tg-schemas') || '{}')
-        schema.value = previewSchema[route.query.schemaId]
+        schema.value = SchemaService.load(route.query.schemaId)
       } else if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
         watch(
           () => props.schema,

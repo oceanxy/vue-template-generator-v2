@@ -1,5 +1,5 @@
 export class SchemaService {
-  static STORAGE_KEY = 'tg-schemas'
+  static STORAGE_KEY = 'tg-designer-schema'
 
   static save(name, schema) {
     const schemas = JSON.parse(sessionStorage.getItem(this.STORAGE_KEY) || '{}')

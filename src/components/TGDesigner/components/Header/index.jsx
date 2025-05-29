@@ -21,12 +21,10 @@ export default {
     const isSchemaChanged = ref(false)
     const localCacheStatus = ref(null) // 本地缓存状态
 
-    const automaticCaching = debounce(
-      async () => {
-        await SchemaService.save(search.value.schemaId, toRaw(schema.value))
-        localCacheStatus.value = true
-      }, 15000 // 自动本地保存时间间隔
-    )
+    const automaticCaching = debounce(async () => {
+      await SchemaService.save(search.value.schemaId, toRaw(schema.value))
+      localCacheStatus.value = true
+    }, 15000) // 自动本地保存时间间隔
 
     const autoSave = () => {
       // 30s自动向后端保存一次
