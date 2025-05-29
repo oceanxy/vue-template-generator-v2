@@ -116,6 +116,7 @@ export default function getPropertyField(componentType, props) {
     prop: props.prop,
     props: props.props,
     modelProp: props.modelProp || 'value',
+    componentType,
     component: () => ({
       input: Input,
       inputNumber: InputNumber,
