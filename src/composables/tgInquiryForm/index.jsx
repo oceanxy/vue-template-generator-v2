@@ -104,7 +104,6 @@ export default function useInquiryForm({
 
     if (!resetParams.value && !buttonDisabled.value) {
       await handleFinish()
-
     }
 
     resetParams.value = true
@@ -257,7 +256,9 @@ export default function useInquiryForm({
     }
   })
 
-  onUnmounted(() => {
+  onUnmounted(async () => {
+    resetParams.value = true
+    await handleClear()
     store.$reset()
   })
 
