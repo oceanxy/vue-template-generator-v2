@@ -20,20 +20,22 @@ export default {
 
     watch(() => props.value, val => colorValue.value = val)
 
-    const handleColorChange = debounce(color => {
-      if (visible.value) {
+    const handleColorChange = debounce((color, isForce) => {
+      if (isForce || visible.value) {
         colorChanged.value = true
         colorValue.value = color.hex
         attrs.onChange?.(color.hex)
       }
     }, 100)
 
-    const handleCompleteColorSelection = () => {
-      if (colorChanged.value) {
-        visible.value = false
-      }
+    const handleCompleteColorSelection = async () => {
+      setTimeout(() => {
+        if (colorChanged.value) {
+          visible.value = false
+        }
 
-      colorChanged.value = false
+        colorChanged.value = false
+      }, 200)
     }
 
     return () => (
@@ -79,7 +81,7 @@ export default {
             )
           }}
         </Popover>
-        <Button onClick={() => handleColorChange({ hex: '' })}>
+        <Button onClick={() => handleColorChange({ hex: '' }, true)}>
           <ClearOutlined title="清空" />
         </Button>
       </InputGroup>
