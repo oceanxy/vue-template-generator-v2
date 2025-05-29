@@ -133,6 +133,60 @@ export default createStore({
 
         return Promise.resolve(response)
       },
+      // 从第三方获取到token 后，进行登录操作
+      async trilateralLogin(payload) {
+        this.loading = true
+
+
+        const response = await apis.trilateralLogin(payload)
+
+        const { status } = response
+
+        if (status) {
+          const {
+            userInfo,
+            token,
+            menuList,
+            defaultMenuUrl
+          } = response.data
+
+          this.userInfo = userInfo
+          this.lastLoginTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
+          this.lastLoginToken = token
+
+          const appName = getFirstLetterOfEachWordOfAppName()
+
+          if (__TG_APP_USER_INFO_MAPPINGS__) {
+            // 适配非蓝桥后端框架的用户信息返回体
+            const userInfoResponseData = __TG_APP_USER_INFO_MAPPINGS__.mapping(response.data)
+
+
+            const menuList = userInfoResponseData.menuList
+            const defaultMenuUrl = userInfoResponseData.defaultMenuUrl
+            const buttonPermissions = userInfoResponseData.buttonPermissions
+
+            if (menuList.length) {
+              localStorage.setItem(`${appName}-defaultRoute`, defaultMenuUrl || '')
+              localStorage.setItem(`${appName}-menu`, JSON.stringify(menuList))
+              localStorage.setItem(`${appName}-buttonPermissions`, JSON.stringify(buttonPermissions))
+            }
+
+          }
+
+          localStorage.setItem(`${appName}-${configs.tokenConfig.fieldName}`, token)
+          localStorage.setItem(`${appName}-lastLoginTime`, this.lastLoginTime)
+
+          this.setParamsUseInHeader()
+
+          const commonStore = useStore('/common')
+
+          commonStore.setTheme(appName, userInfo)
+        }
+
+        this.loading = false
+
+        return Promise.resolve(response)
+      },
       async logout() {
         message.loading('正在退出登录，请稍候...', 0)
         this.loading = true
@@ -174,9 +228,7 @@ export default createStore({
             const defaultMenuUrl = userInfoResponseData.defaultMenuUrl
             const buttonPermissions = userInfoResponseData.buttonPermissions
 
-            console.log('menuList', menuList)
-
-            if (menuList) {
+            if (menuList.length) {
               localStorage.setItem(`${appName}-defaultRoute`, defaultMenuUrl || '')
               localStorage.setItem(`${appName}-menu`, JSON.stringify(menuList))
               localStorage.setItem(`${appName}-buttonPermissions`, JSON.stringify(buttonPermissions))
@@ -289,7 +341,7 @@ export default createStore({
       },
       // 用户组织切换
       async switchUserOrg() {
-        await apis.switchUserOrg()
+        return await apis.switchUserOrg()
       }
     }
   },

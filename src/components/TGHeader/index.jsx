@@ -62,29 +62,38 @@ export default {
     )
 
     watch(userInfo, async (val) => {
-      if (val) {
+      if (Object.keys(val).length) {
         // 获取header上的代办信息暂时先放在login文件
         if (proxy.GlobalShowNewDrawerPopup) {
           // 判断config配置中buttons里的extraButtons text为消息的配置
           const isNewBtn = configs.header?.buttons?.extraButtons?.some(item => item.text == '消息')
           if (isNewBtn) {
-            await loginStore.getMessageList()
+            loginStore.getMessageList()
           }
         } else {
           console.warn('未找到可用的全局注册组件：GlobalShowNewDrawerPopup')
         }
       }
-    })
+    }, { immediate: true })
 
-    watch(() => localStorageHeaderId, value => {
-      if (document.querySelector('#tg-responsive-layout')) {
-        document.querySelector('#tg-responsive-layout').style.display = 'none'
+    watch(() => localStorageHeaderId, async value => {
+      if (value) {
+        // 当用户切换组织成功之后 后端保存当前组织信息
+        const res = await loginStore.switchUserOrg()
+
+        if (res.status) {
+          // clearRoutes()
+          const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
+          await loginStore.trilateralLogin({ token })
+          // loginStore.jumpAfterLogin()
+          // if (document.querySelector('#tg-responsive-layout')) {
+          //   document.querySelector('#tg-responsive-layout').style.display = 'none'
+          // }
+
+          window.location.reload()
+          // loginStore.jumpAfterLogin()
+        }
       }
-
-      window.location.reload()
-
-      // 当用户切换组织成功之后 后端保存当前组织信息
-      loginStore.switchUserOrg()
     }, { deep: true })
 
     onBeforeMount(async () => {
@@ -122,7 +131,9 @@ export default {
             !Object.keys(userInfo.value).length
           )
         ) {
-          await loginStore.getUserInfo({ token })
+          const res = await loginStore.getUserInfo({ token })
+
+          return res
         }
       }
     }
@@ -211,8 +222,10 @@ export default {
       })
     }
 
-    function onOrgSelectChange(val) {
+    async function onOrgSelectChange(val) {
       localStorage.setItem(`${appName}-headerId`, val)
+      localStorage.removeItem(`${appName}-selectedKey`)
+      localStorage.removeItem(`${appName}-menu`)
     }
 
     return () => (

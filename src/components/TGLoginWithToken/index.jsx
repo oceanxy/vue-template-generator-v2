@@ -9,11 +9,26 @@ const appName = getFirstLetterOfEachWordOfAppName()
 
 export default defineComponent({
   name: 'TGLoginWithToken',
+  props: {
+    /**
+     * 是否优先获取地址栏中的 token ，默认true
+     * @type {boolean}
+     */
+    isPriorityHrefToken: {
+      type: Boolean,
+      default: true
+    }
+  },
   setup(props, { emit }) {
     const loginStore = useStore('/login')
 
     onMounted(async () => {
-      const searchToken = new URL(window.location.href).searchParams.get(configs.tokenConfig.fieldName)
+      let searchToken = null
+      // 是否优先获取地址栏token
+      if (props.isPriorityHrefToken) {
+        searchToken = new URL(window.location.href).searchParams.get(configs.tokenConfig.fieldName)
+      }
+
       const localToken = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
       // 使用局部变量代替直接操作 props.token
       let tokenFromProps = props.token || null
