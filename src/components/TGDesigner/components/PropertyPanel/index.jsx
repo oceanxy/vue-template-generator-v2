@@ -41,7 +41,7 @@ export default {
       }
     }
 
-    const handlePropertyChange = debounce(() => {
+    const updateSchema = debounce(() => {
       // 更新组件的 Schema
       if (store.selectedComponent?.type === 'canvas') {
         // 更新画布属性
@@ -50,6 +50,11 @@ export default {
         componentSchema.value.props = componentProps.value
       }
     }, 200)
+
+    const handlePropertyChange = (e, prop) => {
+      handleInput(e, prop)
+      updateSchema()
+    }
 
     const renderPropertyFields = (fields) => {
       return fields.map(field => {
@@ -63,13 +68,36 @@ export default {
         }
 
         const CanvasProperty = field.component()
-        const value = field.prop in componentProps.value
-          ? componentProps.value[field.prop]
-          : componentProps.value.style[field.prop]
         const propertyProps = { ...field.props }
 
         if (field.modelProp) {
-          propertyProps[field.modelProp] = value
+          propertyProps[field.modelProp] = field.prop in componentProps.value
+            ? componentProps.value[field.prop]
+            : componentProps.value.style[field.prop]
+        }
+
+        const getCanvasProperty = () => {
+          if (field.componentType === 'input') {
+            return (
+              <CanvasProperty
+                {...propertyProps}
+                onInput={e => handleInput(e, field.prop)}
+                onChange={updateSchema}
+                onCompositionstart={e => e.target.composing = true}
+                onCompositionend={e => {
+                  e.target.composing = false
+                  e.target.dispatchEvent(new Event('input'))
+                }}
+              />
+            )
+          } else {
+            return (
+              <CanvasProperty
+                {...propertyProps}
+                onChange={value => handlePropertyChange(value, field.prop)}
+              />
+            )
+          }
         }
 
         return (
@@ -81,16 +109,7 @@ export default {
               </Tooltip>
             </label>
             <div class="tg-designer-form-item-control">
-              <CanvasProperty
-                {...propertyProps}
-                onInput={e => handleInput(e, field.prop)}
-                onChange={handlePropertyChange}
-                onCompositionstart={e => e.target.composing = true}
-                onCompositionend={e => {
-                  e.target.composing = false
-                  e.target.dispatchEvent(new Event('input'))
-                }}
-              />
+              {getCanvasProperty()}
             </div>
           </div>
         )

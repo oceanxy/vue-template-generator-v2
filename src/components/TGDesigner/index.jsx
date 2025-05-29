@@ -6,6 +6,7 @@ import Plugins, { PLUGIN_KEY } from './components/Plugins'
 import { computed, markRaw, onMounted, provide, ref, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
+import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import './assets/styles/index.scss'
 
 export default {
@@ -44,51 +45,50 @@ export default {
 
     // 初始化画布schema
     onMounted(async () => {
-      // 【性能优化】先从本地恢复schema
-      let localSchema = sessionStorage.getItem('tg-schemas')
-
-      if (localSchema) {
-        localSchema = Object.entries(JSON.parse(localSchema || '{}'))
-        designerStore.schema = localSchema[0][1]
-        tgStore.search.schemaId = localSchema[0][0]
-        tgStore.search.templateId = sessionStorage.getItem('tg-designer-template-id')
-        tgStore.isSchemaLoaded = true
-      } else {
-        // 如果本地没有缓存schema，则从后台获取schema
-        const res = await tgStore.getDetails({
-          apiName: 'getSchema',
-          params: search.value.pageType === 13
-            ? {
-              configPageId: search.value.pageId,
-              pageType: search.value.pageType
-            }
-            : {
-              configId: search.value.sceneConfigId,
-              pageType: search.value.pageType
-            }
-        })
-
-        if (res.status) {
-          tgStore.isSchemaLoaded = true
-          tgStore.search.schemaId = res.data.id
-          tgStore.search.templateId = res.data.pageTemplateId
-          sessionStorage.setItem('tg-designer-template-id', res.data.pageTemplateId)
-
-          if (res.data?.schemaContent) {
-            designerStore.schema = JSON.parse(res.data.schemaContent)
-          } else {
-            // 当本页面不存在已保存的schema数据时，立即保存一次，以初始化数据
-            await tgStore.fetch({
-              loading: false,
-              apiName: 'updateSchema',
-              params: {
-                scenePageSchemaId: search.value.schemaId,
-                schemaContent: JSON.stringify(schema.value)
-              }
-            })
+      const res = await tgStore.getDetails({
+        apiName: 'getSchema',
+        params: search.value.pageType === 13
+          ? {
+            configPageId: search.value.pageId,
+            pageType: search.value.pageType
           }
+          : {
+            configId: search.value.sceneConfigId,
+            pageType: search.value.pageType
+          }
+      })
 
-          tgStore.saveStatus = SAVE_STATUS.SAVED
+      if (res.status) {
+        tgStore.search.schemaId = res.data.id
+        tgStore.search.templateId = res.data.pageTemplateId
+        sessionStorage.setItem('tg-designer-template-id', res.data.pageTemplateId)
+
+        if (res.data?.schemaContent) {
+          designerStore.schema = JSON.parse(res.data.schemaContent)
+          tgStore.isSchemaLoaded = true
+          SchemaService.save(search.value.schemaId, designerStore.schema)
+        } else {
+          // 当本页面不存在已保存的schema数据时，立即保存一次，以初始化数据
+          await tgStore.fetch({
+            loading: false,
+            apiName: 'updateSchema',
+            params: {
+              scenePageSchemaId: search.value.schemaId,
+              schemaContent: JSON.stringify(schema.value)
+            }
+          })
+          // 同时执行本地缓存
+          SchemaService.save(search.value.schemaId, schema.value)
+        }
+
+        tgStore.saveStatus = SAVE_STATUS.SAVED
+      } else {
+        // 如果服务暂时无法获取，则临时从本地缓存中恢复schema（如果本地存在缓存）
+        let localSchema = SchemaService.load(search.value.schemaId)
+
+        if (localSchema) {
+          designerStore.schema = localSchema
+          tgStore.isSchemaLoaded = true
         }
       }
     })
