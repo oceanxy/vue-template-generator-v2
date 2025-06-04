@@ -186,6 +186,7 @@ router.afterEach((to, from) => {
 })
 
 router.beforeEach(async (to, from, next) => {
+
   // vue路由跳转时取消上一个页面的http请求
   abortController.abort()
   abortController = createAbortController()
@@ -260,6 +261,7 @@ router.beforeEach(async (to, from, next) => {
           ...to.query
         }
       })
+      return;
     }
 
     // 如果地址栏带了 token，且新旧 token 一致，则删除地址栏中的 token，路由正常跳转
@@ -277,6 +279,7 @@ router.beforeEach(async (to, from, next) => {
           [configs.tokenConfig.fieldName]: undefined
         }
       })
+      return;
     }
 
     next()
@@ -289,6 +292,7 @@ router.beforeEach(async (to, from, next) => {
 
       if (!token && !cookieToken) {
         next({ name: 'Home' })
+        return
       }
 
       if (
@@ -309,6 +313,7 @@ router.beforeEach(async (to, from, next) => {
         toRoute.query[configs.tokenConfig.fieldName] = undefined
 
         next(toRoute)
+        return;
       }
     }
 
