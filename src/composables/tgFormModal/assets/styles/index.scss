@@ -64,6 +64,10 @@
         }
       }
     }
+    // 暂时处理在触发验证时，宽度直线没有100%
+    .ant-form-item{
+      column-gap: 0px;
+    }
 
     .tg-form-checkbox {
       padding: 9px 0 2px;
