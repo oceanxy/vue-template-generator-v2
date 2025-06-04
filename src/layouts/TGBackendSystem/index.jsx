@@ -25,20 +25,19 @@ export default {
             collapsible
             trigger={null}
             width={235}
-            class={`tg-responsive-layout-sider${
-              showMenu.value
+            class={`tg-responsive-layout-sider${showMenu.value
                 ? store.collapsed ? ' collapsed' : ' normal'
                 : ''
-            }`}
+              }`}
           >
             {showMenu.value ? <TGMenu /> : null}
           </Layout.Sider>
           <Layout.Content class="tg-responsive-layout-content">
-            {
+            {/* {
               configs.hideBreadCrumb || router.currentRoute.value.meta.hideBreadCrumb || !showMenu.value
                 ? null
                 : <TGBreadcrumb />
-            }
+            } */}
             {/*{this.$config.enableTabPage && showMenu ? <TGPageTabs /> : null}*/}
             <Suspense>
               {{
