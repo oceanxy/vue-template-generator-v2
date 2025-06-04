@@ -340,6 +340,7 @@ export default function useInquiryForm({
                         ? [
                           <TGPermissionsButton
                             type="primary"
+                            key={'query-1'}
                             icon={<SearchOutlined />}
                             loading={loading.value}
                             disabledType={disabledType.DISABLE}
@@ -350,6 +351,7 @@ export default function useInquiryForm({
                             查询
                           </TGPermissionsButton>,
                           <TGPermissionsButton
+                            key={'reset-1'}
                             icon={<ReloadOutlined />}
                             disabledType={disabledType.DISABLE}
                             disabled={loading.value}
@@ -361,6 +363,7 @@ export default function useInquiryForm({
                         ]
                         : [
                           <Button
+                            key={'query-2'}
                             type="primary"
                             icon={<SearchOutlined />}
                             disabled={loading.value || buttonDisabled.value}
@@ -370,6 +373,7 @@ export default function useInquiryForm({
                             查询
                           </Button>,
                           <Button
+                            key={'reset-2'}
                             icon={<ReloadOutlined />}
                             disabled={loading.value}
                             onClick={handleClear}

@@ -255,6 +255,7 @@ export default function useFunction({
         {[
           functionButtons?.includes(FunctionButtonEnum.ADD) && (
             <TGPermissionsButton
+              key={'add'}
               type="primary"
               identification={'ADD'}
               disabled={buttonDisabled.value}
@@ -266,6 +267,7 @@ export default function useFunction({
           ),
           functionButtons?.includes(FunctionButtonEnum.DELETE) && (
             <TGPermissionsButton
+              key={'delete'}
               danger
               identification={'DELETE'}
               disabled={deleteButtonDisabled.value}
@@ -277,6 +279,7 @@ export default function useFunction({
           ),
           functionButtons?.includes(FunctionButtonEnum.EDIT) && (
             <TGPermissionsButton
+              key={'update'}
               identification={'UPDATE'}
               disabled={editButtonDisabled.value}
               onClick={() => handleEdit()}
@@ -287,6 +290,7 @@ export default function useFunction({
           ),
           functionButtons?.includes(FunctionButtonEnum.EXPORT) && (
             <TGPermissionsButton
+              key={'export'}
               identification={'EXPORT'}
               disabled={exportButtonDisabled.value}
               onClick={() => handleExport()}
