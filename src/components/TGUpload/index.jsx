@@ -109,6 +109,17 @@ export default {
     })
 
     function beforeUpload(file, fileList) {
+      // 获取名称里面的后缀
+      const suffix = file.name.substring(file.name.lastIndexOf('.'))
+      // 文件格式限制
+      if (!file.type || suffix && !props.accept.includes(suffix)) {
+        file.status = 'error'
+        file.error = new Error('文件格式错误，上传失败。')
+        file.response = '文件格式错误，上传失败。'
+
+        return false
+      }
+      // 文件大小限制
       if (file.size / 1024 / 1024 > props.fileSize) {
         file.status = 'error'
         file.error = new Error('文件大小超过限制，上传失败。')
