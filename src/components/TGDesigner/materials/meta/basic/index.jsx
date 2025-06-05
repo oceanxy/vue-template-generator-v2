@@ -2,6 +2,7 @@ import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGD
 import { Button, Divider, Image, Input, QRCode, TypographyText } from 'ant-design-vue'
 import getPropertyField from '@/components/TGDesigner/properties'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
+import Menu from './Menu'
 
 export default [
   {
@@ -564,5 +565,6 @@ export default [
         }
       ]
     }
-  }
+  },
+  Menu
 ]

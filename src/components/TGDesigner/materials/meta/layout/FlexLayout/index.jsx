@@ -1,41 +1,40 @@
-import getPropertyField from '@/components/TGDesigner/properties'
+import { Flex } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
-import { styleWithUnits } from '@/components/TGDesigner/utils/style'
-import { QRCode } from 'ant-design-vue'
-import { ref, watch } from 'vue'
-import './assets/styles/index.scss'
+import getPropertyField from '@/components/TGDesigner/properties'
+import { range } from 'lodash'
 
 /**
- * Footer模板组件元数据
+ * 组件元数据
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-template-footer',
-  category: TG_MATERIAL_CATEGORY.TEMPLATE,
-  name: '页尾',
-  preview: props => {
-    if (props.previewType !== TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
-      return <Footer {...props} />
-    }
-
-    return <IconFont type="icon-designer-footer" />
-  },
+  type: 'tg-layout-flex',
+  category: TG_MATERIAL_CATEGORY.LAYOUT,
+  name: '弹性容器',
+  preview: FlexLayoutPreview,
   defaultProps: {
-    contentWidth: '90%'
+    gap: 8,
+    vertical: false,
+    wrap: 'nowrap',
+    style: {}
   },
   style: {
     width: '100%',
     height: '',
-    paddingTop: 30,
-    paddingBottom: 30,
+    padding: 16,
     margin: 0,
-    backgroundColor: '#0050b3',
+    border: '',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    backgroundColor: '',
+    // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
     backgroundImage: '',
     backgroundSize: '',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
   },
   class: '',
+  children: [],
   configForm: {
     fields: [
       {
@@ -43,7 +42,7 @@ export default {
         items: [
           getPropertyField('input', {
             label: '宽度',
-            title: '容器宽度（支持百分比和像素单位）',
+            title: '容器宽度(支持百分比和像素单位)',
             prop: 'width',
             props: {
               placeholder: '自适应',
@@ -52,7 +51,7 @@ export default {
           }),
           getPropertyField('input', {
             label: '高度',
-            title: '容器高度（支持像素单位，默认自适应）',
+            title: '容器高度(支持像素单位，默认自适应)',
             prop: 'height',
             props: {
               placeholder: '自适应',
@@ -64,30 +63,53 @@ export default {
       {
         label: '布局',
         items: [
-          getPropertyField('input', {
-            label: '内容宽度',
-            title: 'Header内展示内容区域容器的宽度',
-            prop: 'contentWidth',
+          getPropertyField('radioGroup', {
+            label: '方向',
+            title: '组件排列方向(flex-direction)',
+            prop: 'vertical',
             props: {
-              placeholder: '100%',
+              options: [
+                { label: '水平排列', value: false },
+                { label: '垂直排列', value: true }
+              ]
+            }
+          }),
+          getPropertyField('radioGroup', {
+            label: '自动换行',
+            title: '自动换行(wrap)',
+            prop: 'wrap',
+            props: {
+              options: [
+                { label: '不换行', value: 'nowrap' },
+                { label: '自动换行', value: 'wrap' }
+              ]
+            }
+          }),
+          getPropertyField('select', {
+            label: '交叉轴',
+            title: '交叉轴对齐方式(align-items)',
+            prop: 'alignItems'
+          }),
+          getPropertyField('select', {
+            label: '主轴',
+            title: '主轴对齐方式(justify-content)',
+            prop: 'justifyContent'
+          }),
+          getPropertyField('input', {
+            label: '组件间距',
+            title: '内部组件间的距离(gap)',
+            prop: 'gap',
+            props: {
+              placeholder: '0px',
               allowClear: true
             }
           }),
           getPropertyField('input', {
-            label: '上边距',
-            title: '头部容器的上边距(padding-top/padding-bottom)',
-            prop: 'paddingTop',
+            label: '内边距',
+            title: '容器的内边距(padding)',
+            prop: 'padding',
             props: {
-              placeholder: '30px',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '下边距',
-            title: '头部容器的下边距(padding-bottom)',
-            prop: 'paddingBottom',
-            props: {
-              placeholder: '30px',
+              placeholder: '0px',
               allowClear: true
             }
           }),
@@ -160,37 +182,45 @@ export default {
   }
 }
 
-export const Footer = {
-  name: 'Footer',
-  props: ['contentWidth', 'style', 'previewType'],
-  setup(props) {
-    const style = ref({})
+export function FlexLayoutPreview(props) {
+  const { previewType, children, ...restProps } = props
 
-    watch(() => props.style, val => {
-      style.value = styleWithUnits(val)
-    }, { immediate: true })
-
-    return () => (
-      <div
-        class="tg-designer-template-footer"
-        style={style.value}
-      >
-        <div
-          class="tg-designer-template-footer-content"
-          style={styleWithUnits({ width: props.contentWidth || '100%' })}
-        >
-          <div>
-            <div class="tg-designer-template-footer-content-title">
-              <img src="https://oss.bj-dx-dzqywjd-hlw-icp.inspurcloudoss.com:6063/tygzt01/upload/cServ/c-serv/5735606129182378245.png" alt="" />
-            </div>
-            <div>中国科学技术协会版权所有 京ICP 备 10216604号-4 海淀分局备案 1101084647</div>
-            <div>中国科学技术协会主办</div>
-          </div>
-          <div>
-            <QRCode value={''} color={'#ffffff'} />
-          </div>
-        </div>
-      </div>
-    )
+  if (restProps.style.backgroundImage && !restProps.style.backgroundImage.startsWith('url(')) {
+    restProps.style.backgroundImage = `url(${restProps.style.backgroundImage})`
   }
+
+  if (previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW) {
+    restProps.style.backgroundImage = 'unset'
+
+    return (
+      <Flex {...restProps} gap={8} wrap={'wrap'} style={{ padding: '8px' }}>
+        {
+          range(0, 4, 1).map(c => (
+            <div
+              style={{
+                background: '#d5d5d5',
+                minHeight: '16px',
+                width: 'calc((100% - 16px) / 3)'
+              }}
+            />
+          ))
+        }
+      </Flex>
+    )
+  } else if (previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
+    return <IconFont type="icon-designer-material-flex-layout" />
+  }
+
+  return (
+    <Flex
+      {...restProps}
+      style={restProps.style}
+      class={{
+        'tg-designer-layout-container': true,
+        'has-background-image': !!restProps.style.backgroundImage || !!restProps.style.backgroundColor
+      }}
+    >
+      {children?.length ? children : ''}
+    </Flex>
+  )
 }

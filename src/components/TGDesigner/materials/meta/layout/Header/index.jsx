@@ -1,6 +1,5 @@
 import getPropertyField from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
-import navigation from '@/components/TGDesigner/materials/meta/Navigation'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { ref, watch } from 'vue'
 import './assets/styles/index.scss'
@@ -10,8 +9,8 @@ import './assets/styles/index.scss'
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-template-header',
-  category: TG_MATERIAL_CATEGORY.TEMPLATE,
+  type: 'tg-layout-header',
+  category: TG_MATERIAL_CATEGORY.LAYOUT,
   name: '页头',
   preview: props => {
     if (props.previewType !== TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
@@ -26,8 +25,8 @@ export default {
   style: {
     width: '100%',
     height: '',
-    paddingTop: 30,
-    paddingBottom: 30,
+    paddingTop: 5,
+    paddingBottom: 5,
     margin: 0,
     backgroundColor: '',
     backgroundImage: '',
@@ -36,6 +35,7 @@ export default {
     backgroundRepeat: 'no-repeat'
   },
   class: '',
+  children: [],
   configForm: {
     fields: [
       {
@@ -162,9 +162,11 @@ export default {
 
 export const Header = {
   name: 'Header',
-  props: ['contentWidth', 'style', 'previewType'],
+  props: ['contentWidth', 'style', 'previewType', 'children'],
   setup(props) {
     const style = ref({})
+    const isDesignPatterns = props.previewType === TG_MATERIAL_PREVIEW_TYPE.CANVAS ||
+      props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW
 
     watch(() => props.style, val => {
       style.value = styleWithUnits(val)
@@ -176,28 +178,28 @@ export const Header = {
 
     return () => (
       <div
-        class="tg-designer-template-header"
+        class="tg-designer-layout-header"
         style={style.value}
       >
         <div
-          class="tg-designer-template-header-content"
+          class="tg-designer-layout-header-content"
           style={styleWithUnits({ width: props.contentWidth || '100%' })}
         >
-          <div class={'tg-designer-template-header-logo'}>
+          <div class={'tg-designer-layout-header-logo'}>
             <IconFont type={'icon-logo'} />
-            <div class={'tg-designer-template-header-title'}>
+            <div class={'tg-designer-layout-header-title'}>
               <div>中国科学技术协会</div>
               <div>China Association for Science and Technology</div>
             </div>
           </div>
-          <div class={'tg-designer-template-header-nav'}>
-            {
-              navigation.preview({
-                previewType: props.previewType,
-                isBuiltInHeader: true,
-                style: props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW ? { width: '400px' } : {}
-              })
-            }
+          <div
+            class={{
+              'tg-designer-layout-header-nav': true,
+              'tg-designer-layout-container': true,
+              'is-design-patterns': isDesignPatterns
+            }}
+          >
+            {props.children?.length ? props.children : ''}
           </div>
         </div>
       </div>

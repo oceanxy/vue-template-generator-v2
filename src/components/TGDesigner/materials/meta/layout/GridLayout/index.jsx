@@ -1,34 +1,38 @@
-import { Flex } from 'ant-design-vue'
+import { Col, Flex, Row } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
-import getPropertyField from '@/components/TGDesigner/properties'
 import { range } from 'lodash'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
+import getPropertyField from '@/components/TGDesigner/properties'
+import './index.scss'
 
 /**
  * 组件元数据
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-layout-flex',
+  type: 'tg-layout-grid',
   category: TG_MATERIAL_CATEGORY.LAYOUT,
-  name: '弹性容器',
-  preview: FlexLayoutPreview,
+  name: '网格容器',
+  preview: GridLayoutPreview,
   defaultProps: {
-    gap: 8,
-    vertical: false,
-    wrap: 'nowrap',
-    style: {}
+    gutterX: 8,
+    gutterY: 8,
+    wrap: false,
+    justify: 'center',
+    style: {},
+    rowCount: 2,
+    columnCount: 2
   },
   style: {
     width: '100%',
     height: '',
-    padding: 16,
+    padding: 0,
     margin: 0,
     border: '',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
+    background: '',
     backgroundColor: '',
-    // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
     backgroundImage: '',
+    // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
     backgroundSize: '',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
@@ -62,45 +66,32 @@ export default {
       {
         label: '布局',
         items: [
-          getPropertyField('radioGroup', {
-            label: '方向',
-            title: '组件排列方向(flex-direction)',
-            prop: 'vertical',
+          getPropertyField('inputNumber', {
+            title: '水平间距',
+            label: '列间距',
+            prop: 'gutterX'
+          }),
+          getPropertyField('inputNumber', {
+            title: '垂直间距',
+            label: '行间距',
+            prop: 'gutterY'
+          }),
+          getPropertyField('inputNumber', {
+            title: '行数，取值区间 [1,10]',
+            label: '行数',
+            prop: 'rowCount',
             props: {
-              options: [
-                { label: '水平排列', value: false },
-                { label: '垂直排列', value: true }
-              ]
+              min: 1,
+              max: 10
             }
           }),
-          getPropertyField('radioGroup', {
-            label: '自动换行',
-            title: '自动换行(wrap)',
-            prop: 'wrap',
+          getPropertyField('inputNumber', {
+            title: '列数，取值区间 [1,4]',
+            label: '列数',
+            prop: 'columnCount',
             props: {
-              options: [
-                { label: '不换行', value: 'nowrap' },
-                { label: '自动换行', value: 'wrap' }
-              ]
-            }
-          }),
-          getPropertyField('select', {
-            label: '交叉轴',
-            title: '交叉轴对齐方式(align-items)',
-            prop: 'alignItems'
-          }),
-          getPropertyField('select', {
-            label: '主轴',
-            title: '主轴对齐方式(justify-content)',
-            prop: 'justifyContent'
-          }),
-          getPropertyField('input', {
-            label: '组件间距',
-            title: '内部组件间的距离(gap)',
-            prop: 'gap',
-            props: {
-              placeholder: '0px',
-              allowClear: true
+              min: 1,
+              max: 4
             }
           }),
           getPropertyField('input', {
@@ -181,45 +172,75 @@ export default {
   }
 }
 
-export function FlexLayoutPreview(props) {
-  const { previewType, children, ...restProps } = props
-
-  if (restProps.style.backgroundImage && !restProps.style.backgroundImage.startsWith('url(')) {
-    restProps.style.backgroundImage = `url(${restProps.style.backgroundImage})`
+export function GridLayoutPreview(props) {
+  const isInMaterial = props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW
+  const rowProps = {
+    gutter: [props.gutterX, props.gutterY],
+    wrap: props.wrap,
+    justify: props.justify,
+    style: { width: '100%' }
   }
 
-  if (previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW) {
-    restProps.style.backgroundImage = 'unset'
+  const colStyle = {}
+  let rowCount = props.rowCount
+  let columnCount = props.columnCount
 
-    return (
-      <Flex {...restProps} gap={8} wrap={'wrap'} style={{ padding: '8px' }}>
-        {
-          range(0, 4, 1).map(c => (
-            <div
-              style={{
-                background: '#d5d5d5',
-                minHeight: '16px',
-                width: 'calc((100% - 16px) / 3)'
-              }}
-            />
-          ))
-        }
-      </Flex>
-    )
-  } else if (previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
-    return <IconFont type="icon-designer-material-flex-layout" />
+  const style = styleWithUnits(props.style)
+
+  if (style.backgroundImage && !style.backgroundImage.startsWith('url(')) {
+    style.backgroundImage = `url(${style.backgroundImage})`
+  }
+
+  if (isInMaterial) {
+    rowCount = 2
+    columnCount = 2
+    style.backgroundImage = 'unset'
+    style.padding = '8px'
+  }
+
+  const findChild = (rowIdx, colIdx) => {
+    return props.children.find(child => child.props['data-cell-position'] === `${rowIdx}-${colIdx}`)
+  }
+
+  if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
+    return <IconFont type="icon-designer-material-grid-layout" />
   }
 
   return (
-    <Flex
-      {...restProps}
-      style={restProps.style}
-      class={{
-        'tg-designer-layout-container': true,
-        'has-background-image': !!restProps.style.backgroundImage || !!restProps.style.backgroundColor
-      }}
-    >
-      {children?.length ? children : ' '}
-    </Flex>
+    <div class={'tg-designer-layout-grid-container'} style={style}>
+      <Flex
+        vertical
+        wrap="wrap"
+        justify="center"
+        align="center"
+        gap={props.gutterY}
+      >
+        {
+          range(0, rowCount, 1).map(rowIdx => (
+            <Row {...rowProps} key={rowIdx}>
+              {
+                range(0, columnCount, 1).map(colIdx => (
+                  <Col span={24 / columnCount} key={colIdx}>
+                    {
+                      isInMaterial
+                        ? <div style={{ background: '#d5d5d5', minHeight: '16px' }} />
+                        : (
+                          <div
+                            style={colStyle}
+                            class={'tg-designer-layout-container grid'}
+                            data-cell-position={`${rowIdx}-${colIdx}`}
+                          >
+                            {findChild(rowIdx, colIdx)}
+                          </div>
+                        )
+                    }
+                  </Col>
+                ))
+              }
+            </Row>
+          ))
+        }
+      </Flex>
+    </div>
   )
 }

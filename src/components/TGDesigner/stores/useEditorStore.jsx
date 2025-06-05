@@ -1,16 +1,11 @@
 import { defineStore } from 'pinia'
 import { TG_MATERIAL_CATEGORY } from '../materials'
-import FlexLayoutMeta from '../materials/meta/FlexLayout'
-import GridLayoutMeta from '../materials/meta/GridLayout'
 import { cloneDeep } from 'lodash'
 import { canvasConfigForm, schema } from '../schemas'
 import { getUUID } from '@/utils/utilityFunction'
-import BasicMaterials from '../materials/meta/BasicMaterials'
-import AwardDynamics from '../materials/meta/AwardDynamics'
-import MainAward from '../materials/meta/MainAward'
-import Navigation from '../materials/meta/Navigation'
-import Header from '../materials/meta/Header'
-import Footer from '../materials/meta/Footer'
+import basicMaterials from '../materials/meta/basic'
+import layoutMaterials from '../materials/meta/layout'
+import templateMaterials from '../materials/meta/template'
 import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
 
 export const useEditorStore = defineStore('editor', {
@@ -44,15 +39,9 @@ export const useEditorStore = defineStore('editor', {
      * @type {{ [key in keyof TG_MATERIAL_CATEGORY]: TGComponentMeta[] }}
      */
     components: {
-      basic: BasicMaterials,
-      template: [
-        MainAward,
-        AwardDynamics,
-        Navigation,
-        Header,
-        Footer
-      ],
-      layout: [FlexLayoutMeta, GridLayoutMeta]
+      basic: basicMaterials,
+      template: templateMaterials,
+      layout: layoutMaterials
     }
   }),
   actions: {

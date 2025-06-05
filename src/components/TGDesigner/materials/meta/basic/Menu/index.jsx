@@ -1,60 +1,113 @@
 import { Menu } from 'ant-design-vue'
-import { computed, onBeforeMount } from 'vue'
-import useStore from '@/composables/tgStore'
-import { range } from 'lodash'
+import { omit, range } from 'lodash'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import getPropertyField from '@/components/TGDesigner/properties'
-import { useRoute } from 'vue-router'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
+import { ref, watch } from 'vue'
 import './index.scss'
 
+export const MenuComp = {
+  name: 'MenuComp',
+  props: {
+    previewType: { type: String, required: true },
+    style: { type: Object, default: () => ({}) },
+    hoverColor: { type: String, default: '' },
+    selectedColor: { type: String, default: '' },
+    selectedKeys: { type: [Array, undefined], default: undefined },
+    fieldNames: {
+      type: Object,
+      default: () => ({
+        key: 'key',
+        title: 'title',
+        disabled: 'disabled'
+      })
+    },
+    dataSource: {
+      type: Array,
+      default: () => range(1, 7, 1).map(item => ({ key: item, title: `导航样例${item}` }))
+    }
+  },
+  setup(props, { emit }) {
+    const _props = ref(props)
+    const style = ref({})
+
+    watch(
+      _props,
+      newProps => {
+        _props.value = newProps
+        style.value = styleWithUnits(newProps.style || {})
+
+        if (newProps.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW) {
+          if (!style.value.width || style.value.width === '100%') {
+            style.value.width = '640px'
+            style.value.height = 'auto'
+          }
+        } else {
+          style.value['--tg-designer-navigation-color-selected'] = newProps.selectedColor
+          style.value['--tg-designer-navigation-color-hover'] = newProps.hoverColor
+        }
+      },
+      { deep: true, immediate: true }
+    )
+
+    const handleMenuClick = e => {
+      emit('menuClick', e)
+    }
+
+    return () => (
+      <div
+        class={'tg-designer-navigation-wrapper'}
+        style={style.value}
+      >
+        <Menu
+          class={'tg-designer-navigation'}
+          mode={'horizontal'}
+          selectedKeys={_props.value.selectedKeys}
+          onClick={handleMenuClick}
+        >
+          {
+            _props.value.dataSource.map(item => (
+              <Menu.Item
+                {...omit(item, 'children')}
+                disabled={item[props.fieldNames.disabled]}
+                key={item[props.fieldNames.key]}
+                title={item[props.fieldNames.title]}
+              >
+                {item[props.fieldNames.title]}
+              </Menu.Item>
+            ))
+          }
+        </Menu>
+      </div>
+    )
+  }
+}
+
 /**
- * Navigation模板组件元数据
+ * Menu基础组件元数据
  * @type TGComponentMeta
  */
 export default {
-  type: 'tg-template-navigation',
-  category: TG_MATERIAL_CATEGORY.TEMPLATE,
-  name: '导航',
+  type: 'a-menu',
+  category: TG_MATERIAL_CATEGORY.BASIC,
+  name: '导航菜单',
   preview: props => {
-    if (
-      props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW ||
-      props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL
-    ) {
-      return <Navigation {...props} />
-    } else if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
+    if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
       return <IconFont type="icon-designer-material-navigation" />
-    } else if (
-      props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW ||
-      props.previewType === TG_MATERIAL_PREVIEW_TYPE.CANVAS
-    ) {
-      const style = props.style || {}
-
-      if (!style.width || style.width === '100%') {
-        style.width = '640px'
-      }
-
-      if (!props.isBuiltInHeader) {
-        style.backgroundImage = 'linear-gradient(0deg,#31549c, #253a66, #191b25)'
-      }
-
-      return (
-        <Menu
-          class={'tg-designer-template-navigation'}
-          mode={'horizontal'}
-          style={style}
-          items={range(1, 7, 1).map(item => ({ key: item, label: `导航样例${item}` }))}
-        />
-      )
     }
+
+    return <MenuComp {...props} />
   },
   defaultProps: {
-    contentWidth: '100%'
+    hoverColor: '#000000e0',
+    selectedColor: '#1677ff'
   },
   style: {
     width: '100%',
     height: '',
-    paddingTop: 30,
-    paddingBottom: 30,
+    color: '#000000e0',
+    paddingTop: 0,
+    paddingBottom: 0,
     margin: 0,
     backgroundColor: '',
     backgroundImage: '',
@@ -92,15 +145,6 @@ export default {
         label: '布局',
         items: [
           getPropertyField('input', {
-            label: '内容宽度',
-            title: 'Header内展示内容区域容器的宽度',
-            prop: 'contentWidth',
-            props: {
-              placeholder: '100%',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
             label: '上边距',
             title: '头部容器的上边距(padding-top/padding-bottom)',
             prop: 'paddingTop',
@@ -126,6 +170,26 @@ export default {
               placeholder: '0px',
               allowClear: true
             }
+          })
+        ]
+      },
+      {
+        label: '前景',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '导航文字正常状态下的颜色(color)',
+            prop: 'color'
+          }),
+          getPropertyField('colorPicker', {
+            label: '悬浮颜色',
+            title: '导航文字鼠标悬浮状态下的颜色(color)',
+            prop: 'hoverColor'
+          }),
+          getPropertyField('colorPicker', {
+            label: '选中颜色',
+            title: '导航文字选中状态下的颜色(color)',
+            prop: 'selectedColor'
           })
         ]
       },
@@ -184,91 +248,5 @@ export default {
         ]
       }
     ]
-  }
-}
-
-const Navigation = {
-  name: 'Navigation',
-  props: ['previewType'],
-  setup(props) {
-    const store = useStore('portal')
-    const route = useRoute()
-    const pageRoute = computed(() => store.search.pageRoute)
-    const navs = computed(() => store.dataSource.list)
-
-    const handleMenuClick = route => {
-      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
-        store.$patch({ search: route })
-      }
-    }
-
-    onBeforeMount(async () => {
-      await store.getList({
-        apiName: 'getPortalNavs',
-        paramsForGetList: { sceneConfigId: route.params.sceneConfigId }
-      })
-
-      let targetRoute
-
-      if (route.params.pageRoute) {
-        const currentRoute = navs.value.find(nav => nav.routeInfo === route.params.pageRoute)
-
-        targetRoute = {
-          pageRoute: currentRoute.routeInfo,
-          pageId: currentRoute.relScenePageId,
-          title: currentRoute.navName,
-          isLoginRequired: currentRoute.outLoginFlag
-        }
-      } else {
-        const home = navs.value.find(nav => nav.routeInfo.includes('-home'))
-
-        if (home) {
-          targetRoute = {
-            pageRoute: home.routeInfo,
-            pageId: home.relScenePageId,
-            title: home.navName,
-            isLoginRequired: home.outLoginFlag
-          }
-        } else if (navs.value[0]) {
-          targetRoute = {
-            pageRoute: navs.value[0].routeInfo,
-            pageId: navs.value[0].title,
-            title: navs.value[0].relScenePageId,
-            isLoginRequired: navs.value[0].outLoginFlag
-          }
-        }
-      }
-
-      if (targetRoute) {
-        handleMenuClick(targetRoute)
-      }
-    })
-
-    return () => (
-      <Menu
-        class={'tg-designer-template-navigation'}
-        mode={'horizontal'}
-        selectedKeys={[pageRoute.value]}
-        onClick={e => handleMenuClick({
-          pageRoute: e.key,
-          pageId: e.item.id,
-          title: e.item.title,
-          isLoginRequired: e.item.isLoginRequired
-        })}
-      >
-        {
-          navs.value.map(item => (
-            <Menu.Item
-              key={item.routeInfo}
-              title={item.navName}
-              isLoginRequired={item.outLoginFlag}
-              id={item.relScenePageId}
-            >
-              {item.navName}
-            </Menu.Item>
-          ))
-        }
-      </Menu>
-    )
   }
 }
