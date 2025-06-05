@@ -26,19 +26,19 @@ export default {
             trigger={null}
             width={235}
             class={`tg-responsive-layout-sider${showMenu.value
-                ? store.collapsed ? ' collapsed' : ' normal'
-                : ''
-              }`}
+              ? store.collapsed ? ' collapsed' : ' normal'
+              : ''
+            }`}
           >
             {showMenu.value ? <TGMenu /> : null}
           </Layout.Sider>
           <Layout.Content class="tg-responsive-layout-content">
-            {/* {
+            {
               configs.hideBreadCrumb || router.currentRoute.value.meta.hideBreadCrumb || !showMenu.value
                 ? null
                 : <TGBreadcrumb />
-            } */}
-            {/*{this.$config.enableTabPage && showMenu ? <TGPageTabs /> : null}*/}
+            }
+            {/*{configs.enableTabPage && showMenu ? <TGPageTabs /> : null}*/}
             <Suspense>
               {{
                 default: () => <RouterView key={router.currentRoute.value.name} />,
