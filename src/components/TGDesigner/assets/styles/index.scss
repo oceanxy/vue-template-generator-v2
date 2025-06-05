@@ -367,7 +367,12 @@
             //overflow: hidden;
             text-overflow: ellipsis;
 
-            &::before {
+            &:empty {
+              display: flex; // 重置antd的Flex组件属性
+              height: 32px;
+            }
+
+            &:empty::before {
               content: '组件放置区';
               font-size: 16px;
               position: absolute;
@@ -383,7 +388,7 @@
               text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
               letter-spacing: 10px;
               transform: translateZ(0);
-              background: linear-gradient(145deg, #c1c1c1 0%, #e0e0e0 100%);
+              background: linear-gradient(145deg, rgba(194, 194, 194, 0.3) 0%, rgba(224, 224, 224, 0.3) 100%);
               box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
               border-radius: 4px;
               white-space: nowrap; // 禁止换行
@@ -391,7 +396,6 @@
               text-overflow: ellipsis; // 显示省略号
               max-width: 100%; // 确保宽度约束
               padding: 0 20px; // 添加两侧内边距防止边缘截断
-              opacity: 0.3;
             }
 
             // 当设置了背景图片时，取消“组件放置区”的背景色，防止干扰图片显示
