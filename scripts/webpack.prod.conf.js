@@ -12,7 +12,7 @@ const TG_APP_NAME = process.env.TG_APP_NAME
 
 module.exports = merge(baseConfig, {
   mode: 'production', // 生产模式，会开启tree-shaking和压缩代码，以及其他优化
-
+  // devtool: 'source-map', // 生产模式调试错误专用，注意部署时一定不要使用该配置！！！
   optimization: {
     minimizer: [
       // 抽离css插件
