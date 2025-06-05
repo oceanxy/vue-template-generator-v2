@@ -1,4 +1,4 @@
-import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_CATEGORY_LABEL, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { useEditorStore } from '../../stores/useEditorStore'
 import useDragDrop from '@/components/TGDesigner/hooks/useDragDrop'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
@@ -16,17 +16,17 @@ export default {
     const materials = [
       {
         category: TG_MATERIAL_CATEGORY.LAYOUT,
-        title: '布局部件',
+        title: TG_MATERIAL_CATEGORY_LABEL[TG_MATERIAL_CATEGORY.LAYOUT],
         components: store.components[TG_MATERIAL_CATEGORY.LAYOUT]
       },
       {
         category: TG_MATERIAL_CATEGORY.BASIC,
-        title: '基础部件',
+        title: TG_MATERIAL_CATEGORY_LABEL[TG_MATERIAL_CATEGORY.BASIC],
         components: store.components[TG_MATERIAL_CATEGORY.BASIC]
       },
       {
         category: TG_MATERIAL_CATEGORY.TEMPLATE,
-        title: '模板部件',
+        title: TG_MATERIAL_CATEGORY_LABEL[TG_MATERIAL_CATEGORY.TEMPLATE],
         components: store.components[TG_MATERIAL_CATEGORY.TEMPLATE]
       }
     ]
@@ -107,13 +107,13 @@ export default {
                               >
                                 {
                                   comp.preview({
-                                    ...comp.defaultProps,
-                                    style: {
-                                      ...styleWithUnits(comp.defaultProps?.style ?? {}),
-                                      ...styleWithUnits(comp.style || {})
-                                    },
-                                    previewType: TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW
-                                  }
+                                      ...comp.defaultProps,
+                                      style: {
+                                        ...styleWithUnits(comp.defaultProps?.style ?? {}),
+                                        ...styleWithUnits(comp.style || {})
+                                      },
+                                      previewType: TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW
+                                    }
                                   )
                                 }
                               </div>

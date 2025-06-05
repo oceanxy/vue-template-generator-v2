@@ -4,6 +4,7 @@ import { useEditorStore } from '../../stores/useEditorStore'
 import { Empty, Tooltip } from 'ant-design-vue'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
 import { QuestionCircleOutlined } from '@ant-design/icons-vue'
+import { TG_MATERIAL_CATEGORY_LABEL } from '@/components/TGDesigner/materials'
 import './index.scss'
 
 export default {
@@ -128,6 +129,8 @@ export default {
       return (
         <div class="tg-designer-property-container">
           <div class="tg-designer-property-comp-type">
+            {TG_MATERIAL_CATEGORY_LABEL[selectedComponent.value.category]}
+            &nbsp;-&nbsp;
             {selectedComponent.value.name}
           </div>
           <div class="tg-designer-property-scrollable tg-scrollable">

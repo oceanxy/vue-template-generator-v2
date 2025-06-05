@@ -19,13 +19,19 @@
  * @readonly
  * @enum {string}
  * @property {string} template - 模板组件
- * @property {string} base - 基础组件
+ * @property {string} basic - 基础组件
  * @property {string} layout - 布局组件
  */
 export const TG_MATERIAL_CATEGORY = {
   TEMPLATE: 'template',
   BASIC: 'basic',
   LAYOUT: 'layout'
+}
+
+export const TG_MATERIAL_CATEGORY_LABEL = {
+  template: '模版部件',
+  basic: '基础部件',
+  layout: '布局部件'
 }
 
 /**
