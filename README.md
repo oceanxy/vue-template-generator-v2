@@ -1,13 +1,59 @@
 # vue-template-generator-v2
 
-## node >= 18
-
 ## Project setup
 
+> node >= v18, git = latest
+
+### 拉取项目
+
+```bash
+cd project-dir
+git clone [本项目GIT仓库地址]
+cd [本项目GIT仓库名称]/src/apps
+git clone [子项目仓库地址]
+cd ../..
 ```
-npm run install
+
+### 安装依赖/运行/打包/清缓存
+
+#### 使用NPM包管理器：
+
+```bash
+npm install
+#############################################
+npm run dev -- --app demo # 本地开发环境
+npm run build -- --app demo # 生产环境打包
+npm run test -- --app demo # 测试环境打包
+npm run stage -- --app demo # 预发布环境打包
+#############################################
+npm run clean:cache # 清除缓存
+```
+
+#### 使用yarn包管理器：
+
+```bash
 yarn install
+#############################################
+yarn dev --app demo
+yarn build --app demo
+yarn test --app demo
+yarn stage --app demo
+#############################################
+yarn clean:cache
 ```
+
+如要修改**本地/生产/测试/预发布**的运行/打包参数，请修改 `project-dir/[本项目GIT仓库名称]/src/apps/[子项目仓库名称]/configs` 目录下对应的环境变量文件：
+
+- .env.development
+- .env.production
+- .env.test
+- .env.stage
+
+> 注意：
+> - 更新代码或修改环境变量之后启动任意一个环境，遇到代码不生效的问题，请先清除本地缓存后再次执行相应命令。
+> - 打包好的文件位于 `project-dir/[本项目GIT仓库名称]/dist/[子项目仓库名称]`。
+
+
 ## 开发问题排查
 
 ### 搜索栏的重置按钮不会重置各个表单项的值为初始值？

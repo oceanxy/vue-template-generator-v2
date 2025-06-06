@@ -4,6 +4,8 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development BASE_ENV=development node ./scripts",
     "build": "cross-env NODE_ENV=production BASE_ENV=production node ./scripts",
+    "test": "cross-env NODE_ENV=production BASE_ENV=test node ./scripts",
+    "stage": "cross-env NODE_ENV=production BASE_ENV=stage node ./scripts",
     "analy": "cross-env NODE_ENV=production BASE_ENV=analysis node ./scripts",
     "lint": "eslint . --ext .vue,.js,.jsx --fix",
     "clean:cache": "rm -rf .cache/webpack",
