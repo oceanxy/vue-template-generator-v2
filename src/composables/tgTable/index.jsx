@@ -291,7 +291,7 @@ export default function useTGTable({
         isMergeParam: isInjectRouterQuery || typeof isMergeParam !== 'boolean'
           ? optionsOfGetList.isMergeParam
           : isMergeParam,
-        isPagination: typeof isPagination !== 'boolean' ? optionsOfGetList.isPagination : isPagination
+        isPagination: typeof optionsOfGetList.isPagination === 'boolean' ? optionsOfGetList.isPagination : isPagination
       })
     } else {
       if (!optionsOfGetList?.apiName) {
@@ -302,7 +302,7 @@ export default function useTGTable({
         location,
         stateName,
         ...optionsOfGetList,
-        isPagination: typeof isPagination !== 'boolean' ? optionsOfGetList.isPagination : isPagination,
+        isPagination: typeof optionsOfGetList.isPagination === 'boolean' ? optionsOfGetList.isPagination : isPagination,
         // 弹窗中不处理 isInjectRouterQuery 参数，请在打开弹窗时传递该需要的路由参数到需要的位置。
         paramsForGetList: { ...paramsForGetList, ..._paramsForGetList },
         isMergeParam: true
