@@ -191,12 +191,21 @@ export const AwardDynamics = {
 
     function RenderItem(props) {
       const dataSource = props.dataSource
+      let coverImg = dataSource.coverImg || ''
+
+      if (coverImg) {
+        coverImg = JSON.parse(dataSource.coverImg)
+
+        if (Array.isArray(coverImg)) {
+          coverImg = coverImg[0]
+        }
+      }
 
       return (
         <div class="tg-award-dynamics-item">
           <Image
             preview={false}
-            src={dataSource.coverImg && JSON.parse(dataSource.coverImg)}
+            src={coverImg}
             fallback={defaultImg}
           />
           <div class="tg-award-dynamics-item-content">
