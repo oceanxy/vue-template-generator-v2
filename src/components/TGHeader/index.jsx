@@ -131,9 +131,7 @@ export default {
             !Object.keys(userInfo.value).length
           )
         ) {
-          const res = await loginStore.getUserInfo({ token })
-
-          return res
+          await loginStore.getUserInfo({ token })
         }
       }
     }
