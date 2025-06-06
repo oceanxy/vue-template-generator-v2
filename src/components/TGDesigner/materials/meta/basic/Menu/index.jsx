@@ -93,7 +93,7 @@ export default {
   name: '导航菜单',
   preview: props => {
     if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
-      return <IconFont type="icon-designer-material-navigation" />
+      return <IconFont type="icon-designer-material-menu" />
     }
 
     return <MenuComp {...props} />
