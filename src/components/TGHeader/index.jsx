@@ -89,9 +89,8 @@ export default {
           // if (document.querySelector('#tg-responsive-layout')) {
           //   document.querySelector('#tg-responsive-layout').style.display = 'none'
           // }
-
+          await loginStore.jumpAfterLogin()
           window.location.reload()
-          // loginStore.jumpAfterLogin()
         }
       }
     }, { deep: true })
