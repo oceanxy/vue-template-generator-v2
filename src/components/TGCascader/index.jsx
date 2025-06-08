@@ -85,7 +85,7 @@ export default {
       if (props.value.length && newOptions.length) {
         updateSelectedPath(props.value)
       }
-    })
+    }, { immediate: true })
 
     watch(() => props.value, (newValue) => {
       if (!newValue.length) {
