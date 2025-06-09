@@ -54,11 +54,13 @@ export default [
           label: '数据',
           items: [
             getPropertyField('input', {
-              title: '按钮文本',
+              title: '按钮文本，最大限制10个字符',
               label: '按钮文本',
               prop: 'slot',
               props: {
-                allowClear: true
+                allowClear: true,
+                maxLength: 10,
+                placeholder: '请输入按钮文本内容'
               }
             })
           ]
