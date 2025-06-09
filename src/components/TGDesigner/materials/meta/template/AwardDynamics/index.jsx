@@ -137,6 +137,7 @@ export const AwardDynamics = {
     const store = useStore('portal')
     const route = useRoute()
     const router = useRouter()
+    const search = computed(() => store.search)
     const data = ref({
       title: '奖项动态',
       abstractDesc: '了解更多动态资讯，点击查看更多动态',
@@ -160,7 +161,7 @@ export const AwardDynamics = {
         const res = await store.getDetails({
           apiName: 'getTemplateComponentData',
           params: {
-            sceneConfigId: route.params.sceneConfigId,
+            sceneConfigId: search.value.sceneConfigId,
             param: TG_MATERIAL_TEMPLATE_COMPONENT_ENUM.ARTICLE
           },
           setValue(data) {

@@ -30,6 +30,7 @@ const Navigation = {
   props: MenuComp.props,
   setup(props) {
     const store = useStore('portal')
+    const search = computed(() => store.search)
     const route = useRoute()
     const navs = computed(() => store.dataSource.list || [])
 
@@ -50,7 +51,7 @@ const Navigation = {
       if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
         await store.getList({
           apiName: 'getPortalNavs',
-          paramsForGetList: { sceneConfigId: route.params.sceneConfigId }
+          paramsForGetList: { sceneConfigId: search.value.sceneConfigId }
         })
 
         let targetRoute

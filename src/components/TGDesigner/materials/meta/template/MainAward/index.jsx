@@ -122,6 +122,7 @@ export const MainAwardPreview = {
     const store = useStore('portal')
     const route = useRoute()
     const router = useRouter()
+    const search = computed(() => store.search)
     const data = ref({
       title: '｛主奖项名称｝',
       sceneYear: '{创办时间}',
@@ -156,7 +157,7 @@ export const MainAwardPreview = {
         const res = await store.getDetails({
           apiName: 'getTemplateComponentData',
           params: {
-            sceneConfigId: route.params.sceneConfigId,
+            sceneConfigId: search.value.sceneConfigId,
             param: TG_MATERIAL_TEMPLATE_COMPONENT_ENUM.PZMARK
           },
           setValue(data) {
