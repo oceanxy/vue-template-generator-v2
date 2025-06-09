@@ -130,7 +130,7 @@ export default {
         <div class="tg-designer-property-container">
           <div class="tg-designer-property-comp-type">
             {TG_MATERIAL_CATEGORY_LABEL[selectedComponent.value.category]}
-            &nbsp;-&nbsp;
+            {!!TG_MATERIAL_CATEGORY_LABEL[selectedComponent.value.category] && ' - '}
             {selectedComponent.value.name}
           </div>
           <div class="tg-designer-property-scrollable tg-scrollable">
