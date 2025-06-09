@@ -82,14 +82,14 @@ export default {
         const res = await loginStore.switchUserOrg()
 
         if (res.status) {
-          // clearRoutes()
           const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
+
           await loginStore.trilateralLogin({ token })
-          // loginStore.jumpAfterLogin()
-          // if (document.querySelector('#tg-responsive-layout')) {
-          //   document.querySelector('#tg-responsive-layout').style.display = 'none'
-          // }
+          if (document.querySelector('#root')) {
+            document.querySelector('#root').style.display = 'none'
+          }
           await loginStore.jumpAfterLogin()
+
           window.location.reload()
         }
       }
