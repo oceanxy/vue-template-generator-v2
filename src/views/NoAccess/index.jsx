@@ -25,4 +25,6 @@ const NoAccess = () => {
     </Layout>
   )
 }
+// 处理 Component "default" in record with path "/no-access" is a function that does not return a Promise. If you were passing a functional component, make sure to add a "displayName" to the component. This will break in production if not fixed.
+NoAccess.displayName = 'NoAccess'
 export default NoAccess
