@@ -1,6 +1,6 @@
 import Canvas from './components/Canvas'
 import PropertyPanel from './components/PropertyPanel'
-import { Layout, Spin } from 'ant-design-vue'
+import { Layout, message, Spin } from 'ant-design-vue'
 import Header from './components/Header'
 import Plugins, { PLUGIN_KEY } from './components/Plugins'
 import { computed, markRaw, onMounted, provide, ref, watch } from 'vue'
@@ -65,7 +65,6 @@ export default {
 
         if (res.data?.schemaContent) {
           designerStore.schema = JSON.parse(res.data.schemaContent)
-          tgStore.isSchemaLoaded = true
           SchemaService.save(search.value.schemaId, designerStore.schema)
         } else {
           // 当本页面不存在已保存的schema数据时，立即保存一次，以初始化数据
@@ -81,6 +80,7 @@ export default {
           SchemaService.save(search.value.schemaId, schema.value)
         }
 
+        tgStore.isSchemaLoaded = true
         tgStore.saveStatus = SAVE_STATUS.SAVED
       } else {
         // 如果服务暂时无法获取，则临时从本地缓存中恢复schema（如果本地存在缓存）
@@ -89,6 +89,9 @@ export default {
         if (localSchema) {
           designerStore.schema = localSchema
           tgStore.isSchemaLoaded = true
+        } else {
+          // 服务无法连接，本地也无已缓存的schema时，提示异常
+          message.error('无法获取服务，您所有的操作都不会被保存，请刷新页面重试。如果持续出现异常，请联系系统管理员处理。')
         }
       }
     })
