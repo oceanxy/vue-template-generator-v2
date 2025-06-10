@@ -51,7 +51,7 @@ export default {
 
     return () => {
       return (
-        <div class={'tg-designer-material-container tg-scrollable'}>
+        <div class={'tg-designer-material-container tg-designer-scrollable'}>
           {
             materials.map(material => (
               <div

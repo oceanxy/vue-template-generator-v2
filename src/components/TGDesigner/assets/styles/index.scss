@@ -7,31 +7,31 @@
     font-size: 40px;
   }
 }
-.tg-scrollable{
+
+.tg-designer-scrollable {
   overflow-y: auto;
-   /* Webkit浏览器滚动条样式 */
-  //  scrollbar-width: none; /* Firefox隐藏滚动条 */
-  //  -ms-overflow-style: none; /* IE/Edge隐藏滚动条 */
-  &::-webkit-scrollbar{
+
+  &::-webkit-scrollbar {
     width: 4px;
   }
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+
   &::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0);
+    background: rgba(0, 0, 0, 0);
     border-radius: 6px;
   }
-   /* 鼠标悬停显示滚动条 */
-   &:hover::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.2);
+
+  /* 鼠标悬停显示滚动条 */
+  &:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
   }
+
   &:hover::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
   }
-  // &:hover{
-  //   scrollbar-width: thin;
-  // }
 }
 
 .tg-designer-container {
@@ -372,9 +372,8 @@
               height: 32px;
             }
 
-            &:empty::before {
-              content: '组件放置区';
-              font-size: 16px;
+            &::before {
+              content: '';
               position: absolute;
               top: 0;
               left: 0;
@@ -396,6 +395,11 @@
               text-overflow: ellipsis; // 显示省略号
               max-width: 100%; // 确保宽度约束
               padding: 0 20px; // 添加两侧内边距防止边缘截断
+            }
+
+            &:empty::before {
+              content: '组件放置区';
+              font-size: 16px;
             }
 
             // 当设置了背景图片时，取消“组件放置区”的背景色，防止干扰图片显示

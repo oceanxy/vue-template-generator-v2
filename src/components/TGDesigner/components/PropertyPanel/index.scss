@@ -13,15 +13,18 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  .tg-designer-property-scrollable{
+
+  .tg-designer-property-scrollable {
     overflow-x: hidden;
-    .tg-designer-field-group{
+
+    .tg-designer-field-group {
       display: flex;
       flex-direction: column;
       gap: 10px;
       border-bottom: 1px solid var(--tg-theme-color-border-secondary);
       padding: 15px;
-      .tg-designer-field-title{
+
+      .tg-designer-field-title {
         font-size: 14px;
         color: var(--tg-theme-color-text);
         font-weight: bolder;
@@ -55,7 +58,8 @@
       color: var(--tg-theme-color-text-secondary);
       min-width: 74px;
       flex-shrink: 0;
-      .anticon{
+
+      .anticon {
         color: var(--tg-theme-color-text-quaternary);
       }
     }
@@ -63,11 +67,13 @@
     & > *:not(label, .ant-switch) {
       flex: auto;
     }
-    .tg-designer-form-item-control{
+
+    .tg-designer-form-item-control {
       display: flex;
       justify-content: flex-end;
       flex-grow: 1;
-      > .ant-select{
+
+      > .ant-select {
         width: 100%;
       }
     }

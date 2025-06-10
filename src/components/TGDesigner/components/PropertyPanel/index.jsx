@@ -133,7 +133,7 @@ export default {
             {!!TG_MATERIAL_CATEGORY_LABEL[selectedComponent.value.category] && ' - '}
             {selectedComponent.value.name}
           </div>
-          <div class="tg-designer-property-scrollable tg-scrollable">
+          <div class="tg-designer-property-scrollable tg-designer-scrollable">
             {renderPropertyFields(selectedComponent.value.configForm.fields)}
           </div>
         </div>
