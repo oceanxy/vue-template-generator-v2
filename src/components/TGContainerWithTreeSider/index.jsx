@@ -107,7 +107,7 @@ export default {
     loadData: {
       type: Function,
       default: undefined
-    },
+    }
   },
   setup(props, { slots }) {
     const initSearchParameters = inject('initSearchParameters')
@@ -208,9 +208,9 @@ export default {
               }
             })
           } else {
-            store[props.treeDataOptions?.stateName].list = data
+            store[props.treeDataOptions?.stateName || 'dataSource'].list = data
           }
-        },
+        }
       })
     }
 
@@ -450,9 +450,13 @@ export default {
                       if (searchValue.value && node[props.fieldNames.title].indexOf(searchValue.value) > -1) {
                         return (
                           <span>
-                            {node[props.fieldNames.title].substring(0, node[props.fieldNames.title].indexOf(searchValue.value))}
+                            {node[props.fieldNames.title].substring(
+                              0,
+                              node[props.fieldNames.title].indexOf(searchValue.value)
+                            )}
                             <span style={{ color: 'var(--tg-theme-color-primary)' }}>{searchValue.value}</span>
-                            {node[props.fieldNames.title].substring(node[props.fieldNames.title].indexOf(searchValue.value) + searchValue.value.length)}
+                            {node[props.fieldNames.title].substring(node[props.fieldNames.title].indexOf(searchValue.value) +
+                              searchValue.value.length)}
                           </span>
                         )
                       } else {
