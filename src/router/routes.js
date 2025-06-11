@@ -69,7 +69,6 @@ export default function getBaseRoutes(routes) {
           children: routes,
           meta: {
             title: '后台',
-            keepAlive: false,
             requiresAuth: homePermissions,
             // icon: () => import('@/assets/images/console.svg') // svg 图标方式
             icon: '' // icon-font symbol 方式
@@ -94,7 +93,6 @@ export default function getBaseRoutes(routes) {
         },
         meta: {
           title: '后台',
-          keepAlive: false,
           requiresAuth: homePermissions,
           // icon: () => import('@/assets/images/console.svg') // svg 图标方式
           icon: '' // icon-font symbol 方式
@@ -110,7 +108,6 @@ export default function getBaseRoutes(routes) {
       component: () => Promise.resolve(__TG_APP_LOGIN_COMPONENT__.default),
       meta: {
         title: '登录',
-        keep: false,
         requiresAuth: false
       }
     },
@@ -122,7 +119,6 @@ export default function getBaseRoutes(routes) {
       component: () => import('@/views/NoAccess'),
       meta: {
         title: '无访问权限',
-        keep: false,
         requiresAuth: false
       }
     },
@@ -132,7 +128,6 @@ export default function getBaseRoutes(routes) {
       component: () => import('@/views/NotFound'),
       meta: {
         title: '404',
-        keep: false,
         requiresAuth: false
       }
     },
