@@ -33,9 +33,11 @@ const Navigation = {
     const search = computed(() => store.search)
     const route = useRoute()
     const navs = computed(() => store.dataSource.list || [])
+    const isInitDataSource = props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL ||
+      props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW
 
     const handleMenuClick = route => {
-      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
+      if (isInitDataSource) {
         store.$patch({
           search: {
             pageRoute: route.item.routeInfo,
@@ -48,10 +50,10 @@ const Navigation = {
     }
 
     onBeforeMount(async () => {
-      if (props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL) {
+      if (isInitDataSource) {
         await store.getList({
           apiName: 'getPortalNavs',
-          paramsForGetList: { sceneConfigId: search.value.sceneConfigId }
+          paramsForGetList: { sceneConfigId: search.value.sceneConfigId || route.params.sceneConfigId }
         })
 
         let targetRoute
@@ -96,7 +98,7 @@ const Navigation = {
         {...props}
         {
           ...(
-            props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL
+            isInitDataSource
               ? {
                 dataSource: navs.value,
                 fieldNames: {
@@ -104,7 +106,7 @@ const Navigation = {
                   title: 'navName',
                   disabled: 'disabled'
                 },
-                selectedKeys: [route.params.pageRoute]
+                selectedKeys: [route.params.pageRoute || search.value.pageRoute]
               }
               : undefined
           )

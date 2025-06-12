@@ -68,7 +68,10 @@ export default {
     return () => (
       <div class="tg-preview-wrapper">
         <div
-          class="tg-preview-container"
+          class={{
+            'tg-preview-container': true,
+            'tg-preview-designer-container': !!route.params.sceneConfigId
+          }}
           style={styleWithUnits(schema.value?.canvas?.style ?? {})}
         >
           {schema.value?.components?.map(renderPreviewFromSchema)}

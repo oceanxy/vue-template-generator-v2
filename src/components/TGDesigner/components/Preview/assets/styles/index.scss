@@ -8,8 +8,11 @@
     flex-direction: column;
     box-sizing: border-box;
     width: 100%;
-    //min-height: 100%;
-    //overflow: auto;
+
+    &.tg-preview-designer-container {
+      height: 100%;
+      overflow: auto;
+    }
 
     .tg-designer-layout-container > .ant-btn {
       height: auto;

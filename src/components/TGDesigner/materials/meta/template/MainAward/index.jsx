@@ -157,7 +157,7 @@ export const MainAwardPreview = {
         const res = await store.getDetails({
           apiName: 'getTemplateComponentData',
           params: {
-            sceneConfigId: search.value.sceneConfigId,
+            sceneConfigId: search.value.sceneConfigId || route.params.sceneConfigId,
             param: TG_MATERIAL_TEMPLATE_COMPONENT_ENUM.PZMARK
           },
           setValue(data) {
