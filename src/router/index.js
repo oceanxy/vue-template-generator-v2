@@ -185,8 +185,7 @@ router.afterEach((to, from) => {
   }
 })
 
-router.beforeEach(async (to, from, next) => {
-
+router.beforeEach(async (to, from) => {
   // vue路由跳转时取消上一个页面的http请求
   abortController.abort()
   abortController = createAbortController()
@@ -212,6 +211,7 @@ router.beforeEach(async (to, from, next) => {
 
   document.title = title
 
+  const loginStore = useStore('/login')
   // 从search中获取token
   const searchToken = new URL(window.location.href).searchParams.get(configs.tokenConfig.fieldName)
   // 通过地址栏传递 token 的情况，优先使用地址栏的 token。因为本地存储的 token 可能已过期（上一次页面关闭时未清空）
@@ -230,10 +230,36 @@ router.beforeEach(async (to, from, next) => {
       process.env.TG_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on'
     )
   ) {
+    if (!loginStore.isTokenValid) {
+      try {
+        const res = await Promise.race([
+          loginStore.verifyToken({ token: token || localToken || cookieToken }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('身份验证超时')), configs.tokenConfig.timeout)
+          )
+        ])
+
+        if (!res?.status && !res?.data) {
+          return {
+            name: 'Login',
+            query: {
+              redirect: to.path,
+              ...to.query
+            }
+          }
+        }
+      } catch (e) {
+        console.error(`身份验证失败：${e.message}`)
+        message.error(e.message.includes('超时')
+          ? '网络连接超时，请检查网络设置'
+          : '身份验证失败，请重新登录'
+        )
+      }
+    }
+
     let isLoginInvalid = false
 
     if (!isAppStarted) {
-      const loginStore = useStore('/login')
       const _lastLoginTime = localStorage.getItem(`${appName}-lastLoginTime`) || loginStore.lastLoginTime
 
       isLoginInvalid = !_lastLoginTime || dayjs().diff(dayjs(_lastLoginTime), 'hour') >= 2
@@ -252,7 +278,7 @@ router.beforeEach(async (to, from, next) => {
       // 判断是否为第一次进入应用，如果为第一次进入应用，则判断是否已超过2小时，如果超过2小时，则强制重定向到登录页鉴权
       !isAppStarted && isLoginInvalid
     ) {
-      next({
+      return {
         ...to,
         name: 'Login',
         query: {
@@ -260,8 +286,7 @@ router.beforeEach(async (to, from, next) => {
           redirect: to.path,
           ...to.query
         }
-      })
-      return;
+      }
     }
 
     // 如果地址栏带了 token，且新旧 token 一致，则删除地址栏中的 token，路由正常跳转
@@ -272,17 +297,14 @@ router.beforeEach(async (to, from, next) => {
       }
 
       // 如果 hash 中存在 token，则删除之
-      next({
+      return {
         ...to,
         query: {
           ...to.query,
           [configs.tokenConfig.fieldName]: undefined
         }
-      })
-      return;
+      }
     }
-
-    next()
   } else {
     // 验证进入登录页时是否存在token
     if (to.name === 'Login' && localToken) {
@@ -291,8 +313,7 @@ router.beforeEach(async (to, from, next) => {
       }
 
       if (!token && !cookieToken) {
-        next({ name: 'Home' })
-        return
+        return { name: 'Home' }
       }
 
       if (
@@ -312,12 +333,9 @@ router.beforeEach(async (to, from, next) => {
         toRoute.query.redirect = undefined
         toRoute.query[configs.tokenConfig.fieldName] = undefined
 
-        next(toRoute)
-        return;
+        return toRoute
       }
     }
-
-    next()
   }
 })
 

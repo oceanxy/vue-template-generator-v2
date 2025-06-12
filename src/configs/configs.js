@@ -9,7 +9,7 @@ module.exports = {
   layout: 'TGBackendSystem',
   // mock数据开关。开发模式下生效
   mock: false,
-  // 请求超时时间，默认30秒
+  // 接口请求超时时间，默认30秒
   timeout: 30000,
   // mock请求延迟时间，默认0.4秒
   mockDelay: 400,
@@ -166,7 +166,9 @@ module.exports = {
     // 是否额外在接口的请求url中拼接token（为了适配一些奇葩第三方在 POST 方式的 URL 中携带 token 的要求）
     isInUrl: false,
     // 从其他渠道获取登录令牌的字段，它们通常保存于 URL/cookie/localStorage/sessionStorage 等地方。
-    fieldName: 'token'
+    fieldName: 'token',
+    // TOKEN鉴权超时时间，单位：毫秒
+    timeout: 10000
   },
   /**
    * 生产环境(process.env.NODE_ENV === 'production')是否可配置环境变量，注意：

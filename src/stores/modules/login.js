@@ -13,6 +13,10 @@ export default createStore({
   moduleName: 'login',
   module: {
     state: {
+      // 如果要在APP入口中验证TOKEN有效性，请配合`src/composables/tgAuthentication`使用
+      isTokenValid: false,
+      verifyStatus: 'idle', // 'pending'/'success'/'failed'
+      lastVerifyTime: null,
       // 加载用户信息的状态
       loading: false,
       // 最后一次登录时间，用来判断用户信息的新旧程度，实现前端主动在一个合适的时间重新验证 token 有效性
@@ -33,9 +37,32 @@ export default createStore({
         list: [],
         loading: false
       },
-      unreadMessageCount: false,
+      unreadMessageCount: false
     },
     actions: {
+      async verifyToken(params) {
+        this.verifyStatus = 'pending'
+
+        try {
+          const res = await apis.authentication(params)
+
+          if (res.status) {
+            this.verifyStatus = 'success'
+            this.isTokenValid = true
+          } else {
+            this.verifyStatus = 'failed'
+            this.isTokenValid = false
+          }
+
+          this.lastVerifyTime = dayjs().format()
+
+          return res
+        } catch (e) {
+          this.verifyStatus = 'failed'
+          this.isTokenValid = false
+          throw e
+        }
+      },
       async jumpAfterLogin() {
         const appName = getFirstLetterOfEachWordOfAppName()
 
@@ -107,6 +134,7 @@ export default createStore({
             defaultMenuUrl
           } = response.data
 
+          this.isTokenValid = true
           this.userInfo = userInfo
           this.lastLoginTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
           this.lastLoginToken = token
@@ -134,19 +162,14 @@ export default createStore({
       async trilateralLogin(payload) {
         this.loading = true
 
-
         const response = await apis.trilateralLogin(payload)
 
         const { status } = response
 
         if (status) {
-          const {
-            userInfo,
-            token,
-            menuList,
-            defaultMenuUrl
-          } = response.data
+          const { userInfo, token } = response.data
 
+          this.isTokenValid = true
           this.userInfo = userInfo
           this.lastLoginTime = dayjs().format('YYYY-MM-DD HH:mm:ss')
           this.lastLoginToken = token
@@ -157,7 +180,6 @@ export default createStore({
             // 适配非蓝桥后端框架的用户信息返回体
             const userInfoResponseData = __TG_APP_USER_INFO_MAPPINGS__.mapping(response.data)
 
-
             const menuList = userInfoResponseData.menuList
             const defaultMenuUrl = userInfoResponseData.defaultMenuUrl
             const buttonPermissions = userInfoResponseData.buttonPermissions
@@ -167,7 +189,6 @@ export default createStore({
               localStorage.setItem(`${appName}-menu`, JSON.stringify(menuList))
               localStorage.setItem(`${appName}-buttonPermissions`, JSON.stringify(buttonPermissions))
             }
-
           }
 
           localStorage.setItem(`${appName}-${configs.tokenConfig.fieldName}`, token)
@@ -282,6 +303,7 @@ export default createStore({
         this.userInfo = {}
         this.lastLoginTime = null
         this.lastLoginToken = null
+        this.isTokenValid = false
         localStorage.removeItem(`${appName}-${configs.tokenConfig.fieldName}`)
 
         localStorage.removeItem(`${appName}-defaultRoute`)
@@ -339,7 +361,7 @@ export default createStore({
       // 用户组织切换
       async switchUserOrg() {
         return await apis.switchUserOrg()
-      },
+      }
     }
   },
   excludeFromState: true,
