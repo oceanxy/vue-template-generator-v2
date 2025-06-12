@@ -1,30 +1,43 @@
+import { Button, Layout } from 'ant-design-vue'
 import TGHeader from '@/components/TGHeader'
-import { Button, Layout, Space } from 'ant-design-vue'
 import router from '@/router'
+import useStore from '@/composables/tgStore'
 
-const NoAccess = () => {
-  return (
-    <Layout class={'tg-layout tg-no-access'}>
-      <TGHeader />
-      <Layout class={'tg-not-found-content'}>
-        <Space class={'hint'}>
-          <span>无访问权限~</span>
-          {
-            +router.currentRoute.value.query['no-link'] !== 1 &&
-            (
-              <Button
-                type={'link'}
-                onClick={() => this.$router.replace('/')}
-              >
-                返回首页
-              </Button>
-            )
-          }
-        </Space>
+export default {
+  name: 'NoAccess',
+  setup() {
+    const loginStore = useStore('/login')
+
+    return () => (
+      <Layout class={'tg-layout tg-no-access'}>
+        <TGHeader />
+        <Layout class={'tg-not-found-content'}>
+          <div class={'hint'}>
+            <span>无访问权限~</span>
+            {
+              +router.currentRoute.value.query['no-link'] !== 1 &&
+              <span>
+                <Button
+                  type={'link'}
+                  onClick={() => router.replace('/')}
+                >
+                  返回首页
+                </Button>
+                或
+              </span>
+            }
+            <Button
+              type={'link'}
+              onClick={() => {
+                loginStore.clear()
+                router.replace({ name: 'Login' })
+              }}
+            >
+              重新登录
+            </Button>
+          </div>
+        </Layout>
       </Layout>
-    </Layout>
-  )
+    )
+  }
 }
-// 处理 Component "default" in record with path "/no-access" is a function that does not return a Promise. If you were passing a functional component, make sure to add a "displayName" to the component. This will break in production if not fixed.
-NoAccess.displayName = 'NoAccess'
-export default NoAccess
