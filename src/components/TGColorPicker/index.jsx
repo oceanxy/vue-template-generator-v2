@@ -11,6 +11,10 @@ export default {
     value: {
       type: String,
       default: '#ffffff'
+    },
+    defaultValue: {
+      type: String,
+      default: ''
     }
   },
   setup(props, { attrs }) {
@@ -81,7 +85,7 @@ export default {
             )
           }}
         </Popover>
-        <Button onClick={() => handleColorChange({ hex: '' }, true)}>
+        <Button onClick={() => handleColorChange({ hex: props.defaultValue }, true)}>
           <ClearOutlined title="清空" />
         </Button>
       </InputGroup>

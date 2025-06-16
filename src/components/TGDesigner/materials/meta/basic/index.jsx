@@ -477,8 +477,8 @@ export default [
       size: 160,
       iconSize: 40,
       bordered: false,
-      bgColor: '',
-      color: '#ffffff',
+      bgColor: '#ffffff',
+      color: '#000000',
       status: 'active' // active | expired | loading | scanned
     },
     style: {},
@@ -543,12 +543,18 @@ export default [
             getPropertyField('colorPicker', {
               title: '背景色',
               label: '背景色',
-              prop: 'bgColor'
+              prop: 'bgColor',
+              props: {
+                defaultValue: '#ffffff'
+              }
             }),
             getPropertyField('colorPicker', {
               title: '二维码颜色',
               label: '二维码颜色',
-              prop: 'color'
+              prop: 'color',
+              props: {
+                defaultValue: '#000000'
+              }
             }),
             getPropertyField('select', {
               title: '二维码状态',
