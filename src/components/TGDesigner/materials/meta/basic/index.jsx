@@ -451,7 +451,7 @@ export default [
               prop: 'src',
               props: {
                 placeholder: '图片地址',
-                maxLength: 100,
+                maxLength: 256,
                 allowClear: true
               }
             })
