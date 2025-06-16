@@ -18,6 +18,11 @@ export default {
   name: '奖项动态',
   preview: props => {
     if (props.previewType !== TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
+      if (props.device === 'h5') {
+        props.style.width = '100%'
+        props.style.padding = '2rem 1rem'
+      }
+
       return <AwardDynamics {...props} />
     }
 
@@ -133,7 +138,7 @@ export default {
 export const AwardDynamics = {
   name: 'AwardDynamics',
   props: ['previewType', 'highlightFirstItem'],
-  setup(props) {
+  setup(props, { attrs }) {
     const store = useStore('portal')
     const route = useRoute()
     const router = useRouter()
@@ -258,17 +263,31 @@ export const AwardDynamics = {
       }
     }
 
-    return () => (
-      <div class="tg-designer-award-dynamics">
-        <div class="tg-award-dynamics-header">
-          <div class="tg-award-dynamics-title">
-            <span>{data.value.title}</span>
-            <RenderMoreButton />
+    return () => {
+      if (attrs.device === 'h5') {
+        return (
+          <div class={'tg-designer-award-dynamics-h5'}>
+            <div>
+              <h2>{data.value.title}</h2>
+              <div class="tg-award-dynamics-description">{data.value.abstractDesc}</div>
+            </div>
+            <RenderItems />
           </div>
-          <div class="tg-award-dynamics-description">{data.value.abstractDesc}</div>
+        )
+      }
+
+      return (
+        <div class="tg-designer-award-dynamics">
+          <div class="tg-award-dynamics-header">
+            <div class="tg-award-dynamics-title">
+              <span>{data.value.title}</span>
+              <RenderMoreButton />
+            </div>
+            <div class="tg-award-dynamics-description">{data.value.abstractDesc}</div>
+          </div>
+          <RenderItems />
         </div>
-        <RenderItems />
-      </div>
-    )
+      )
+    }
   }
 }

@@ -16,6 +16,11 @@ export default {
   name: '主奖项',
   preview: props => {
     if (props.previewType !== TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
+      if (props.device === 'h5') {
+        props.style.padding = '2rem 1rem'
+        props.style.width = '100%'
+      }
+
       return <MainAwardPreview {...props} />
     }
 
@@ -118,7 +123,7 @@ export default {
 export const MainAwardPreview = {
   name: 'MainAward',
   props: ['previewType', 'style'],
-  setup(props) {
+  setup(props, { attrs }) {
     const store = useStore('portal')
     const route = useRoute()
     const router = useRouter()
@@ -186,32 +191,48 @@ export const MainAwardPreview = {
       }
     }
 
-    return () => (
-      <div class="tg-designer-main-award" style={style.value}>
-        <div class="tg-main-award-header">
-          <h1>{data.value.title}</h1>
-          <p>创办时间：{data.value.sceneYear}</p>
-          <p>子奖项：{data.value.childrenName}</p>
-          <p>主办单位：{data.value.organizer}</p>
-        </div>
-        <div class="tg-main-award-content">
-          <div class="tg-main-award-description">
-            <h2>简介</h2>
-            <TypographyParagraph
-              content={data.value.abstractDesc}
-              ellipsis={{ rows: 4 }}
-            />
+    return () => {
+      if (attrs.device === 'h5') {
+        return (
+          <div class={'tg-designer-main-award-h5'} style={style.value}>
+            <div class="tg-main-award-header">
+              <h1>{data.value.title}</h1>
+              <p>创办时间：{data.value.sceneYear}</p>
+              <p>子奖项：{data.value.childrenName}</p>
+              <p>主办单位：{data.value.organizer}</p>
+              <p>简介：{data.value.abstractDesc}</p>
+            </div>
           </div>
-          <div class="tg-main-award-button">
-            <Button
-              disabled={!btnTargetRoute.value}
-              onClick={handleToApply}
-            >
-              去申报
-            </Button>
+        )
+      }
+
+      return (
+        <div class="tg-designer-main-award" style={style.value}>
+          <div class="tg-main-award-header">
+            <h1>{data.value.title}</h1>
+            <p>创办时间：{data.value.sceneYear}</p>
+            <p>子奖项：{data.value.childrenName}</p>
+            <p>主办单位：{data.value.organizer}</p>
+          </div>
+          <div class="tg-main-award-content">
+            <div class="tg-main-award-description">
+              <h2>简介</h2>
+              <TypographyParagraph
+                content={data.value.abstractDesc}
+                ellipsis={{ rows: 4 }}
+              />
+            </div>
+            <div class="tg-main-award-button">
+              <Button
+                disabled={!btnTargetRoute.value}
+                onClick={handleToApply}
+              >
+                去申报
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
 }

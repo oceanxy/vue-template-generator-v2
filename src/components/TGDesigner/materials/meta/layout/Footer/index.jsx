@@ -163,37 +163,64 @@ export default {
 export const Footer = {
   name: 'Footer',
   props: ['contentWidth', 'style', 'previewType', 'children'],
-  setup(props) {
+  setup(props, { attrs }) {
     const style = ref({})
 
     watch(() => props.style, val => {
       style.value = styleWithUnits(val)
     }, { immediate: true })
 
-    return () => (
-      <div
-        class="tg-designer-layout-footer"
-        style={style.value}
-      >
-        <div
-          class="tg-designer-layout-footer-content"
-          style={styleWithUnits({ width: props.contentWidth || '100%' })}
-        >
-          <div>
-            <div class="tg-designer-layout-footer-content-title">
-              <img
-                src="https://oss.bj-dx-dzqywjd-hlw-icp.inspurcloudoss.com:6063/tygzt01/upload/cServ/c-serv/5735606129182378245.png"
-                alt=""
-              />
+    return () => {
+      if (attrs.device === 'h5') {
+        return (
+          <div
+            class="tg-designer-layout-footer"
+            style={{
+              ...style.value,
+              'padding': '2rem 1rem',
+            }}
+          >
+            <div class="tg-designer-layout-footer-content">
+              <div>
+                <div class="tg-designer-layout-footer-content-title">
+                  <img
+                    src="https://oss.bj-dx-dzqywjd-hlw-icp.inspurcloudoss.com:6063/tygzt01/upload/cServ/c-serv/5735606129182378245.png"
+                    alt=""
+                  />
+                </div>
+                <div>中国科学技术协会版权所有 京ICP 备 10216604号-4 海淀分局备案 1101084647</div>
+                <div>中国科学技术协会主办</div>
+              </div>
             </div>
-            <div>中国科学技术协会版权所有 京ICP 备 10216604号-4 海淀分局备案 1101084647</div>
-            <div>中国科学技术协会主办</div>
           </div>
-          <div>
-            <QRCode value={''} color={'#ffffff'} />
+        )
+      }
+
+      return (
+        <div
+          class="tg-designer-layout-footer"
+          style={style.value}
+        >
+          <div
+            class="tg-designer-layout-footer-content"
+            style={styleWithUnits({ width: props.contentWidth || '100%' })}
+          >
+            <div>
+              <div class="tg-designer-layout-footer-content-title">
+                <img
+                  src="https://oss.bj-dx-dzqywjd-hlw-icp.inspurcloudoss.com:6063/tygzt01/upload/cServ/c-serv/5735606129182378245.png"
+                  alt=""
+                />
+              </div>
+              <div>中国科学技术协会版权所有 京ICP 备 10216604号-4 海淀分局备案 1101084647</div>
+              <div>中国科学技术协会主办</div>
+            </div>
+            <div>
+              <QRCode value={''} color={'#ffffff'} />
+            </div>
           </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
 }

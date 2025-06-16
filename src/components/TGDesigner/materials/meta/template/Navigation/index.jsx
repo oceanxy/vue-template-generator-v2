@@ -28,7 +28,7 @@ export default {
 const Navigation = {
   name: 'Navigation',
   props: MenuComp.props,
-  setup(props) {
+  setup(props, { attrs }) {
     const store = useStore('portal')
     const search = computed(() => store.search)
     const route = useRoute()
@@ -93,26 +93,32 @@ const Navigation = {
       }
     })
 
-    return () => (
-      <MenuComp
-        {...props}
-        {
-          ...(
-            isInitDataSource
-              ? {
-                dataSource: navs.value,
-                fieldNames: {
-                  key: 'routeInfo',
-                  title: 'navName',
-                  disabled: 'disabled'
-                },
-                selectedKeys: [route.params.pageRoute || search.value.pageRoute]
-              }
-              : undefined
-          )
-        }
-        onMenuClick={handleMenuClick}
-      />
-    )
+    return () => {
+      if (attrs.device === 'h5') {
+        return null
+      }
+
+      return (
+        <MenuComp
+          {...props}
+          {
+            ...(
+              isInitDataSource
+                ? {
+                  dataSource: navs.value,
+                  fieldNames: {
+                    key: 'routeInfo',
+                    title: 'navName',
+                    disabled: 'disabled'
+                  },
+                  selectedKeys: [route.params.pageRoute || search.value.pageRoute]
+                }
+                : undefined
+            )
+          }
+          onMenuClick={handleMenuClick}
+        />
+      )
+    }
   }
 }

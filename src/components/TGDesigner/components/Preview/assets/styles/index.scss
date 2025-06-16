@@ -35,3 +35,19 @@
   }
 }
 
+.tg-preview-wrapper-h5 {
+  width: 100%;
+  height: 100%;
+  flex: auto;
+  background: #ededed;
+
+  .tg-preview-container {
+    width: 480px;
+    height: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    background: #ffffff;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}

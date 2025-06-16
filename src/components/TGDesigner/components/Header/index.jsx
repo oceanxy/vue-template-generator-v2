@@ -123,6 +123,17 @@ export default {
       })
     }
 
+    const handlePreviewH5 = async () => {
+      // 预览之前缓存schema到本地
+      automaticCaching.flush()
+
+      jumpToRoute({
+        name: 'PreviewH5',
+        params: { sceneConfigId: search.value.sceneConfigId },
+        query: { schemaId: search.value.schemaId }
+      })
+    }
+
     const updateSchema = async () => {
       localCacheStatus.value = false
       isSchemaChanged.value = true
@@ -168,6 +179,11 @@ export default {
             </Badge>
             <Button
               onClick={handlePreview}
+              icon={<IconFont type="icon-designer-tool-preview" />}
+              title={'预览'}
+            />
+            <Button
+              onClick={handlePreviewH5}
               icon={<IconFont type="icon-designer-tool-preview" />}
               title={'预览'}
             />
