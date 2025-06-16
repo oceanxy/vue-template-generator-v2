@@ -36,6 +36,7 @@ export const MenuComp = {
       newProps => {
         _props.value = newProps
         style.value = styleWithUnits(newProps.style || {})
+        style.value['--tg-designer-navigation-font-size'] = newProps.fontSize
 
         if (newProps.previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW) {
           if (!style.value.width || style.value.width === '100%') {
@@ -106,6 +107,7 @@ export default {
     width: '100%',
     height: '',
     color: '#000000e0',
+    fontSize: 14,
     paddingTop: 0,
     paddingBottom: 0,
     margin: 0,
@@ -176,6 +178,15 @@ export default {
       {
         label: '前景',
         items: [
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '导航文字字体大小(font-size)',
+            prop: 'fontSize',
+            props: {
+              placeholder: '14px',
+              allowClear: true
+            }
+          }),
           getPropertyField('colorPicker', {
             label: '颜色',
             title: '导航文字正常状态下的颜色(color)',

@@ -8,7 +8,7 @@
 
   .tg-designer-navigation.tg-designer-navigation.ant-menu {
     background: none;
-    font-size: 16px;
+    font-size: var(--tg-designer-navigation-font-size);
 
     &.ant-menu-horizontal {
       line-height: unset;
