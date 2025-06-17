@@ -173,7 +173,8 @@ export default [
       width: '',
       height: '',
       fontSize: 14,
-      lineHeight: ''
+      lineHeight: '',
+      color: ''
     },
     class: '',
     configForm: {
@@ -258,6 +259,11 @@ export default [
                   { label: '失败', value: 'danger' }
                 ]
               }
+            }),
+            getPropertyField('colorPicker', {
+              title: '颜色',
+              label: '颜色',
+              prop: 'color'
             }),
             getPropertyField('switch', {
               title: '加粗',
