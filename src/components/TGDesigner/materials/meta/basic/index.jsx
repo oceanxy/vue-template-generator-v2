@@ -409,14 +409,18 @@ export default [
         return <IconFont type="icon-designer-material-picture" />
       }
 
-      return <Image {...props} />
+      return (
+        <Image
+          {...props}
+          fallback={defaultImg}
+          placeholder={true}
+          preview={false}
+        />
+      )
     },
     defaultProps: {
-      placeholder: true,
-      preview: false,
       // src: 'https://aliyuncdn.antdv.com/vue.png',
-      src: '',
-      fallback: defaultImg
+      src: ''
     },
     style: {
       width: '',
