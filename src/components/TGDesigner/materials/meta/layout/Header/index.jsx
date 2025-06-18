@@ -20,7 +20,8 @@ export default {
     return <IconFont type="icon-designer-header" />
   },
   defaultProps: {
-    contentWidth: '100%'
+    contentWidth: '100%',
+    contentPadding: ''
   },
   style: {
     width: '100%',
@@ -66,10 +67,19 @@ export default {
         items: [
           getPropertyField('input', {
             label: '内容宽度',
-            title: 'Header内展示内容区域容器的宽度',
+            title: 'Header内展示内容区域容器的宽度(width)',
             prop: 'contentWidth',
             props: {
               placeholder: '100%',
+              allowClear: true
+            }
+          }),
+          getPropertyField('input', {
+            label: '内容左右内边距',
+            title: 'Header内展示内容区域容器的左侧和右侧的内边距值(padding-left & padding-right)',
+            prop: 'contentPadding',
+            props: {
+              placeholder: '0px',
               allowClear: true
             }
           }),
@@ -162,7 +172,7 @@ export default {
 
 export const Header = {
   name: 'Header',
-  props: ['contentWidth', 'style', 'previewType', 'children'],
+  props: ['contentWidth', 'contentPadding', 'style', 'previewType', 'children'],
   setup(props) {
     const style = ref({})
     const isDesignPatterns = props.previewType === TG_MATERIAL_PREVIEW_TYPE.CANVAS ||
@@ -176,6 +186,10 @@ export const Header = {
       }
     }, { immediate: true })
 
+    const findChild = cellPosition => {
+      return props.children?.find(child => child.props['data-cell-position'] === cellPosition)
+    }
+
     return () => (
       <div
         class="tg-designer-layout-header"
@@ -183,23 +197,43 @@ export const Header = {
       >
         <div
           class="tg-designer-layout-header-content"
-          style={styleWithUnits({ width: props.contentWidth || '100%' })}
+          style={styleWithUnits({
+            width: props.contentWidth || '100%',
+            'paddingLeft': props.contentPadding || 0,
+            'paddingRight': props.contentPadding || 0
+          })}
         >
           <div class={'tg-designer-layout-header-logo'}>
-            <IconFont type={'icon-logo'} />
-            <div class={'tg-designer-layout-header-title'}>
-              <div>中国科学技术协会</div>
-              <div>China Association for Science and Technology</div>
+            <div
+              data-cell-position="image"
+              class={{
+                'tg-designer-layout-container': true,
+                'tg-designer-layout-image': true,
+                'is-design-patterns': isDesignPatterns
+              }}
+            >
+              {findChild('image')}
+            </div>
+            <div
+              data-cell-position="title"
+              class={{
+                'tg-designer-layout-container': true,
+                'tg-designer-layout-header-title': true,
+                'is-design-patterns': isDesignPatterns
+              }}
+            >
+              {findChild('title')}
             </div>
           </div>
           <div
+            data-cell-position="nav"
             class={{
-              'tg-designer-layout-header-nav': true,
               'tg-designer-layout-container': true,
+              'tg-designer-layout-header-nav': true,
               'is-design-patterns': isDesignPatterns
             }}
           >
-            {props.children?.length ? props.children : ''}
+            {findChild('nav')}
           </div>
         </div>
       </div>
