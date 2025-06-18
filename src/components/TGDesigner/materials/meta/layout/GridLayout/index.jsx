@@ -38,6 +38,8 @@ export default {
     backgroundRepeat: 'no-repeat'
   },
   children: [],
+  canMoveInside: true,
+  canCopyInside: true,
   configForm: {
     fields: [
       {

@@ -111,6 +111,14 @@ export default {
 
       // 添加布局组件的嵌套支持
       if (isLayoutComp) {
+        if (componentDef.canMoveInside) {
+          designerStore.actionBar.canMoveInside[componentSchema.id] = componentDef.canMoveInside
+        }
+
+        if (componentDef.canCopyInside) {
+          designerStore.actionBar.canCopyInside[componentSchema.id] = componentDef.canCopyInside
+        }
+
         if (componentSchema.type === 'tg-layout-flex') {
           // 在画布中时，Flex布局组件的布局方向要应用到拖拽容器上，让画布呈现和预览呈现保持一致。
           dragCompStyle.style.flexDirection = componentSchema.props.vertical ? 'column' : 'row'

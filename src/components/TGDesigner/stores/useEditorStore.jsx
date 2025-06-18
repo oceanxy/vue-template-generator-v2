@@ -32,7 +32,9 @@ export const useEditorStore = defineStore('editor', {
     },
     actionBar: {
       visible: false,
-      position: { x: 0, y: 0 }
+      position: { x: 0, y: 0 },
+      canMoveInside: {}, // 以展平的方式保存所有布局组件的子组件是否能被移动
+      canCopyInside: {} // 以展平的方式保存所有布局组件的子组件是否能被复制
     },
     /**
      * 物料组件注册
@@ -141,6 +143,7 @@ export const useEditorStore = defineStore('editor', {
 
         if (componentDef) {
           componentDef.id = newComponent.id
+          componentDef.parentId = newComponent.parentId
         }
 
         this.selectedComponent = componentDef

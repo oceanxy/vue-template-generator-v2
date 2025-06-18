@@ -35,6 +35,8 @@ export default {
   },
   class: '',
   children: [],
+  canMoveInside: true,
+  canCopyInside: true,
   configForm: {
     fields: [
       {
