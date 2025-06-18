@@ -198,7 +198,7 @@ export default {
                 {{
                   title: () => [
                     localCacheStatus.value !== null &&
-                    <span>本地最新改动{localCacheStatus.value ? '已' : '暂未'}缓存。</span>,
+                    <span>最新改动本地{localCacheStatus.value ? '已' : '暂未'}缓存。</span>,
                     <span>设计器会自动在本地定期缓存所有改动，策略如下：</span>,
                     <span>1、关闭页面会丢失所有缓存；</span>,
                     <span>2、刷新页面不会丢失缓存；</span>,
