@@ -35,10 +35,14 @@ export default {
     })
 
     const handleInput = (e, prop) => {
-      if (prop in componentProps.value) {
-        componentProps.value[prop] = e.target?.value ?? e
-      } else if (prop in componentProps.value.style) {
-        componentProps.value.style[prop] = e.target?.value ?? e
+      const property = Geometry.checkPropertyPath(componentProps.value, prop, e.target?.value ?? e)
+
+      if (!property.exists) {
+        if (prop.includes('.')) {
+          throw new Error(property.operation)
+        } else {
+          componentProps.value.style[prop] = e.target?.value ?? e
+        }
       }
     }
 
@@ -72,9 +76,15 @@ export default {
         const propertyProps = { ...field.props }
 
         if (field.modelProp) {
-          propertyProps[field.modelProp] = field.prop in componentProps.value
-            ? componentProps.value[field.prop]
-            : componentProps.value.style[field.prop]
+          const property = Geometry.checkPropertyPath(componentProps.value, field.prop)
+
+          if (property.exists) {
+            propertyProps[field.modelProp] = property.value
+          } else if (field.prop.includes('.')) {
+            throw new Error(`${field.prop} is not a valid property path`)
+          } else {
+            propertyProps[field.modelProp] = componentProps.value.style[field.prop]
+          }
         }
 
         const getCanvasProperty = () => {

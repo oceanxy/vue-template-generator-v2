@@ -520,5 +520,121 @@ export const Geometry = {
       position: targetPos,
       isEmptyAdjacentLocation: !positionSet.has(targetPos)
     }
+  },
+
+  /**
+   * 属性路径检测与赋值
+   * @param {object} obj - 目标对象
+   * @param {string} path - 属性路径（如 'a.b.c'）
+   * @param {any} [valueToSet] - 可选，要设置的值
+   * @returns {{exists: boolean, value: any, operation?: string}}
+   * - `exists`: 布尔值，表示路径是否存在（在赋值操作中，如果路径存在则赋值成功，否则失败）
+   * - `value`: 在非赋值模式下，返回路径末端值；在赋值模式下，如果成功则返回新设置的值，如果失败则为undefined
+   * - `operation`: 操作类型（'get' 或 'set'）和状态（'success' 或 'fail'）的说明，可选
+   * - 如果赋值成功：`exists` 为 true，`value` 为设置的值。
+   * - 如果赋值失败：`exists` 为 false，`value` 为 undefined。
+   */
+  checkPropertyPath(obj, path, valueToSet) {
+    if (typeof obj !== 'object' || obj === null) {
+      return valueToSet !== undefined
+        ? { exists: false, value: undefined, operation: 'set: failed (invalid root)' }
+        : { exists: false, value: undefined }
+    }
+
+    const keys = path.split('.')
+    const len = keys.length
+
+    // 赋值模式处理
+    if (valueToSet !== undefined) {
+      // 特殊处理单级路径
+      if (len === 1) {
+        const key = keys[0]
+        if (!(key in obj)) {
+          return {
+            exists: false,
+            value: undefined,
+            operation: `set: failed (missing path at root '${key}')`
+          }
+        }
+        obj[key] = valueToSet
+        return {
+          exists: true,
+          value: valueToSet,
+          operation: 'set: success'
+        }
+      }
+
+      // 多级路径处理：遍历到倒数第二级（定位父对象）
+      let current = obj
+
+      for (let i = 0; i < len - 1; i++) {
+        const key = keys[i]
+
+        // 路径不存在直接返回失败
+        if (!(key in current)) {
+          return {
+            exists: false,
+            value: undefined,
+            operation: `set: failed (missing path at '${keys.slice(0, i + 1).join('.')}')`
+          }
+        }
+
+        // 检查中间层级类型
+        const next = current[key]
+        if (typeof next !== 'object' || next === null) {
+          return {
+            exists: false,
+            value: undefined,
+            operation: `set: failed (invalid type at '${keys.slice(0, i + 1).join('.')}')`
+          }
+        }
+
+        current = next
+      }
+
+      // 检查最终属性是否存在
+      const finalKey = keys[len - 1]
+      if (!(finalKey in current)) {
+        return {
+          exists: false,
+          value: undefined,
+          operation: `set: failed (missing final property '${finalKey}')`
+        }
+      }
+
+      // 设置最终属性值
+      current[finalKey] = valueToSet
+      return {
+        exists: true,
+        value: valueToSet,
+        operation: 'set: success'
+      }
+    }
+
+    // 非赋值模式（检测路径是否存在）
+    let current = obj
+    for (let i = 0; i < len; i++) {
+      const key = keys[i]
+
+      if (!(key in current)) {
+        return { exists: false, value: undefined }
+      }
+
+      // 提前访问下一级减少重复操作
+      const next = current[key]
+      // 末级检测直接返回值
+      if (i === len - 1) {
+        return { exists: true, value: next }
+      }
+
+      // 中间层级类型检查
+      if (typeof next !== 'object' || next === null) {
+        return { exists: false, value: undefined }
+      }
+
+      current = next
+    }
+
+    return { exists: false, value: undefined }
   }
 }
