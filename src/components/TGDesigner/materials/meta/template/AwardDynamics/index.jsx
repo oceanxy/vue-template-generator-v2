@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { range } from 'lodash'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
 import './index.scss'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 
 /**
  * 奖项动态模板组件元数据
@@ -29,7 +30,23 @@ export default {
     return <IconFont type="icon-designer-material-award-dynamics" />
   },
   defaultProps: {
-    highlightFirstItem: true
+    highlightFirstItem: true,
+    titleStyle: {
+      color: '#333333',
+      fontSize: 24
+    },
+    textStyle: {
+      color: '#666666',
+      fontSize: 14
+    },
+    itemTitleStyle: {
+      color: '#333333',
+      fontSize: 16
+    },
+    itemTextStyle: {
+      color: '#999999',
+      fontSize: 14
+    }
   },
   style: {
     width: '1200',
@@ -74,6 +91,94 @@ export default {
             title: '突出展示第一条数据',
             prop: 'highlightFirstItem',
             modelProp: 'checked'
+          })
+        ]
+      },
+      {
+        label: '标题',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '颜色(color)',
+            prop: 'titleStyle.color',
+            props: {
+              defaultValue: '#000000'
+            }
+          }),
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '字号(font-size)',
+            prop: 'titleStyle.fontSize',
+            props: {
+              min: 12,
+              max: 50
+            }
+          })
+        ]
+      },
+      {
+        label: '副标题',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '颜色(color)',
+            prop: 'textStyle.color',
+            props: {
+              defaultValue: '#000000'
+            }
+          }),
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '字号(font-size)',
+            prop: 'textStyle.fontSize',
+            props: {
+              min: 12,
+              max: 50
+            }
+          })
+        ]
+      },
+      {
+        label: '次级标题',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '颜色(color)',
+            prop: 'itemTitleStyle.color',
+            props: {
+              defaultValue: '#000000'
+            }
+          }),
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '字号(font-size)',
+            prop: 'itemTitleStyle.fontSize',
+            props: {
+              min: 12,
+              max: 50
+            }
+          })
+        ]
+      },
+      {
+        label: '次级文本',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '颜色(color)',
+            prop: 'itemTextStyle.color',
+            props: {
+              defaultValue: '#000000'
+            }
+          }),
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '字号(font-size)',
+            prop: 'itemTextStyle.fontSize',
+            props: {
+              min: 12,
+              max: 50
+            }
           })
         ]
       },
@@ -137,7 +242,7 @@ export default {
 
 export const AwardDynamics = {
   name: 'AwardDynamics',
-  props: ['previewType', 'highlightFirstItem'],
+  props: ['previewType', 'highlightFirstItem', 'titleStyle', 'textStyle', 'itemTitleStyle', 'itemTextStyle'],
   setup(props, { attrs }) {
     const store = useStore('portal')
     const route = useRoute()
@@ -195,8 +300,8 @@ export const AwardDynamics = {
       }
     }
 
-    function RenderItem(props) {
-      const dataSource = props.dataSource
+    function RenderItem(_props) {
+      const dataSource = _props.dataSource
       let coverImg = dataSource.coverImg || ''
 
       if (coverImg) {
@@ -215,11 +320,17 @@ export const AwardDynamics = {
             fallback={defaultImg}
           />
           <div class="tg-award-dynamics-item-content">
-            <div class="tg-adc-title">{dataSource.title}</div>
+            <div
+              class="tg-adc-title"
+              style={styleWithUnits(props.itemTitleStyle)}
+            >
+              {dataSource.title}
+            </div>
             <TypographyParagraph
               class="tg-adc-content"
               ellipsis={{ rows: 2 }}
               content={dataSource.abstractDesc}
+              style={styleWithUnits(props.itemTextStyle)}
             />
           </div>
         </div>
@@ -250,14 +361,22 @@ export const AwardDynamics = {
           <div class="tg-award-dynamics-content-highlight">
             <RenderItem dataSource={firstItem} class="tg-award-dynamics-item-first" />
             <div class="tg-award-dynamics-items-other">
-              {otherItems.map(item => <RenderItem key={item.id} dataSource={item} />)}
+              {
+                otherItems.map(item =>
+                  <RenderItem key={item.id} dataSource={item} />
+                )
+              }
             </div>
           </div>
         )
       } else {
         return (
           <div class="tg-award-dynamics-content">
-            {data.value.componentSearchRspList?.slice(0, 4).map(item => <RenderItem key={item.id} dataSource={item} />)}
+            {
+              data.value.componentSearchRspList?.slice(0, 4).map(item =>
+                <RenderItem key={item.id} dataSource={item} />
+              )
+            }
           </div>
         )
       }
@@ -280,10 +399,15 @@ export const AwardDynamics = {
         <div class="tg-designer-award-dynamics">
           <div class="tg-award-dynamics-header">
             <div class="tg-award-dynamics-title">
-              <span>{data.value.title}</span>
+              <span style={styleWithUnits(props.titleStyle)}>{data.value.title}</span>
               <RenderMoreButton />
             </div>
-            <div class="tg-award-dynamics-description">{data.value.abstractDesc}</div>
+            <div
+              class="tg-award-dynamics-description"
+              style={styleWithUnits(props.textStyle)}
+            >
+              {data.value.abstractDesc}
+            </div>
           </div>
           <RenderItems />
         </div>
