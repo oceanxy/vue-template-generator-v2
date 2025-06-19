@@ -5,6 +5,8 @@ import { computed, onMounted, ref, watchEffect } from 'vue'
 import useStore from '@/composables/tgStore'
 import { useRoute, useRouter } from 'vue-router'
 import './index.scss'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
+import { omit } from 'lodash'
 
 /**
  * 主奖项名称模板组件元数据
@@ -26,7 +28,30 @@ export default {
 
     return <IconFont type="icon-designer-material-main-award" />
   },
-  defaultProps: {},
+  defaultProps: {
+    textStyle: {
+      color: '#666666',
+      fontSize: 14
+    },
+    titleStyle: {
+      color: '#000000',
+      fontSize: 24
+    },
+    descBackground: {
+      backgroundColor: '#ffffff'
+    },
+    descStyle: {
+      color: '#333333',
+      fontSize: 14,
+      lineHeight: 1.5
+    },
+    buttonStyle: {
+      backgroundColor: '#b3d1ff',
+      backgroundColorHover: '#9dc4ff',
+      color: '#000000',
+      fontSize: 20
+    }
+  },
   style: {
     width: '1200',
     height: '',
@@ -115,6 +140,127 @@ export default {
             }
           })
         ]
+      },
+      {
+        label: '标题',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '颜色(color)',
+            prop: 'titleStyle.color',
+            props: {
+              defaultValue: '#000000'
+            }
+          }),
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '字号(font-size)',
+            prop: 'titleStyle.fontSize',
+            props: {
+              min: 12,
+              max: 50
+            }
+          })
+        ]
+      },
+      {
+        label: '文本',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '颜色(color)',
+            prop: 'textStyle.color',
+            props: {
+              defaultValue: '#000000'
+            }
+          }),
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '字号(font-size)',
+            prop: 'textStyle.fontSize',
+            props: {
+              min: 12,
+              max: 50
+            }
+          })
+        ]
+      },
+      {
+        label: '简介',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '背景颜色',
+            title: '背景颜色(background-color)',
+            prop: 'descBackground.backgroundColor',
+            props: {
+              defaultValue: '#ffffff'
+            }
+          }),
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '颜色(color)',
+            prop: 'descStyle.color',
+            props: {
+              defaultValue: '#333333'
+            }
+          }),
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '字号(font-size)',
+            prop: 'descStyle.fontSize',
+            props: {
+              min: 12,
+              max: 50
+            }
+          }),
+          getPropertyField('input', {
+            label: '行高',
+            title: '行高(line-height)',
+            prop: 'descStyle.lineHeight',
+            props: {
+              placeholder: '默认',
+              allowClear: true
+            }
+          })
+        ]
+      },
+      {
+        label: '按钮',
+        items: [
+          getPropertyField('colorPicker', {
+            label: '背景颜色',
+            title: '背景颜色(background-color)',
+            prop: 'buttonStyle.backgroundColor',
+            props: {
+              defaultValue: '#b3d1ff'
+            }
+          }),
+          getPropertyField('colorPicker', {
+            label: '背景悬浮颜色',
+            title: '鼠标悬浮时的背景颜色(background-color)',
+            prop: 'buttonStyle.backgroundColorHover',
+            props: {
+              defaultValue: '#9dc4ff'
+            }
+          }),
+          getPropertyField('colorPicker', {
+            label: '颜色',
+            title: '颜色(color)',
+            prop: 'buttonStyle.color',
+            props: {
+              defaultValue: '#000000'
+            }
+          }),
+          getPropertyField('inputNumber', {
+            label: '字号',
+            title: '字号(font-size)',
+            prop: 'buttonStyle.fontSize',
+            props: {
+              min: 12,
+              max: 50
+            }
+          })
+        ]
       }
     ]
   }
@@ -122,7 +268,7 @@ export default {
 
 export const MainAwardPreview = {
   name: 'MainAward',
-  props: ['previewType', 'style'],
+  props: ['previewType', 'style', 'textStyle', 'titleStyle', 'descStyle', 'descBackground', 'buttonStyle'],
   setup(props, { attrs }) {
     const store = useStore('portal')
     const route = useRoute()
@@ -200,7 +346,7 @@ export const MainAwardPreview = {
               <p>创办时间：{data.value.sceneYear}</p>
               <p>子奖项：{data.value.childrenName}</p>
               <p>主办单位：{data.value.organizer}</p>
-              <p>简介：{data.value.abstractDesc}</p>
+              <p>简介：{data.value.abstractDesc || '暂无简介'}</p>
             </div>
           </div>
         )
@@ -208,24 +354,37 @@ export const MainAwardPreview = {
 
       return (
         <div class="tg-designer-main-award" style={style.value}>
-          <div class="tg-main-award-header">
-            <h1>{data.value.title}</h1>
+          <div
+            class="tg-main-award-header"
+            style={styleWithUnits(props.textStyle)}
+          >
+            <h1 style={styleWithUnits(props.titleStyle)}>{data.value.title}</h1>
             <p>创办时间：{data.value.sceneYear}</p>
             <p>子奖项：{data.value.childrenName}</p>
             <p>主办单位：{data.value.organizer}</p>
           </div>
           <div class="tg-main-award-content">
-            <div class="tg-main-award-description">
+            <div
+              class="tg-main-award-description"
+              style={styleWithUnits({
+                backgroundColor: props.descBackground.backgroundColor
+              })}
+            >
               <h2>简介</h2>
               <TypographyParagraph
-                content={data.value.abstractDesc}
+                content={data.value.abstractDesc || '暂无简介'}
                 ellipsis={{ rows: 4 }}
+                style={styleWithUnits(props.descStyle)}
               />
             </div>
-            <div class="tg-main-award-button">
+            <div
+              class="tg-main-award-button"
+              style={{ '--tg-designer-main-award-color-hover': props.buttonStyle?.backgroundColorHover }}
+            >
               <Button
                 disabled={!btnTargetRoute.value}
                 onClick={handleToApply}
+                style={styleWithUnits(omit(props.buttonStyle, 'backgroundColorHover'))}
               >
                 去申报
               </Button>
