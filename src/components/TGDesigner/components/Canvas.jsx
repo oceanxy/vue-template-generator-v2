@@ -93,14 +93,26 @@ export default {
 
       const isLayoutComp = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
 
-      // 在画布中时，组件的宽高要应用到拖拽容器上，内部组件默认撑满容器。
+      // ========================================================================
+      // 在画布中时，组件的宽高和外边距要应用到拖拽容器上，内部组件默认撑满容器。
       // 但部分容器除外，这部分组件因为其内部有特殊处理，所以这里需要单独处理。
+
+      let _margin = 0
+      if (component.style.marginLeft || component.style.marginRight) {
+        _margin = (parseInt(component.style.marginLeft) + parseInt(component.style.marginRight)) + 'px'
+      } else {
+        _margin = (parseInt(component.style.margin) * 2) + 'px'
+      }
+
       const dragCompStyle = {
         style: {
-          width: component.style.width,
-          height: component.style.height
+          width: `calc(${component.style.width} - ${_margin})`,
+          height: component.style.height,
+          margin: component.style.margin
         }
       }
+
+      // ========================================================================
 
       if (componentDef.type !== 'a-image') {
         component.style = omit(component.style, ['width', 'height'])
