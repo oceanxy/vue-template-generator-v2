@@ -80,8 +80,8 @@ const Navigation = {
           } else if (navs.value[0]) {
             targetRoute = {
               pageRoute: navs.value[0].routeInfo,
-              pageId: navs.value[0].title,
-              title: navs.value[0].relScenePageId,
+              pageId: navs.value[0].relScenePageId,
+              title: navs.value[0].navName,
               isLoginRequired: navs.value[0].outLoginFlag
             }
           }
