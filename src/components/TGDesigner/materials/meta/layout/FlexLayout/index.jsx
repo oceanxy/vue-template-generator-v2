@@ -37,8 +37,6 @@ export default {
   children: [],
   canMoveInside: true,
   canCopyInside: true,
-  configForm: {
-    fields: [
       {
         label: '尺寸',
         items: [
@@ -180,8 +178,8 @@ export default {
           })
         ]
       }
-    ]
-  }
+  configForm: propertyValues => [
+  ]
 }
 
 export function FlexLayoutPreview(props) {

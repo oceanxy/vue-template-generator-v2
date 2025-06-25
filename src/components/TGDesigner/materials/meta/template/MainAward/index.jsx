@@ -62,208 +62,206 @@ export default {
     backgroundRepeat: 'no-repeat'
   },
   class: '',
-  configForm: {
-    fields: [
-      {
-        label: '尺寸',
-        items: [
-          getPropertyField('input', {
-            label: '宽度',
-            title: '容器宽度（支持百分比和像素单位）',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '高度',
-            title: '容器高度（支持像素单位，默认自适应）',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
-        ]
-      },
-      {
-        label: '背景',
-        items: [
-          getPropertyField('colorPicker', {
-            label: '颜色',
-            title: '背景颜色(background-color)',
-            prop: 'backgroundColor'
-          }),
-          getPropertyField('input', {
-            label: '图片',
-            title: '背景图片(background-image)',
-            prop: 'backgroundImage',
-            props: {
-              placeholder: '请输入图片地址',
-              maxLength: 250,
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '图片尺寸',
-            title: '背景图片尺寸(background-size)',
-            prop: 'backgroundSize',
-            props: {
-              maxLength: 20,
-              placeholder: '自动',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '图片位置',
-            title: '背景图片位置(background-position)',
-            prop: 'backgroundPosition',
-            props: {
-              maxLength: 20,
-              allowClear: true
-            }
-          }),
-          getPropertyField('select', {
-            label: '图片重复',
-            title: '背景图片重复(background-repeat)',
-            prop: 'backgroundRepeat',
-            props: {
-              options: [
-                { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
-                { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
-                { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
-                { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
-                { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
-                { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
-              ]
-            }
-          })
-        ]
-      },
-      {
-        label: '标题',
-        items: [
-          getPropertyField('colorPicker', {
-            label: '颜色',
-            title: '颜色(color)',
-            prop: 'titleStyle.color',
-            props: {
-              defaultValue: '#000000'
-            }
-          }),
-          getPropertyField('inputNumber', {
-            label: '字号',
-            title: '字号(font-size)',
-            prop: 'titleStyle.fontSize',
-            props: {
-              min: 12,
-              max: 50
-            }
-          })
-        ]
-      },
-      {
-        label: '文本',
-        items: [
-          getPropertyField('colorPicker', {
-            label: '颜色',
-            title: '颜色(color)',
-            prop: 'textStyle.color',
-            props: {
-              defaultValue: '#000000'
-            }
-          }),
-          getPropertyField('inputNumber', {
-            label: '字号',
-            title: '字号(font-size)',
-            prop: 'textStyle.fontSize',
-            props: {
-              min: 12,
-              max: 50
-            }
-          })
-        ]
-      },
-      {
-        label: '简介',
-        items: [
-          getPropertyField('colorPicker', {
-            label: '背景颜色',
-            title: '背景颜色(background-color)',
-            prop: 'descBackground.backgroundColor',
-            props: {
-              defaultValue: '#ffffff'
-            }
-          }),
-          getPropertyField('colorPicker', {
-            label: '颜色',
-            title: '颜色(color)',
-            prop: 'descStyle.color',
-            props: {
-              defaultValue: '#333333'
-            }
-          }),
-          getPropertyField('inputNumber', {
-            label: '字号',
-            title: '字号(font-size)',
-            prop: 'descStyle.fontSize',
-            props: {
-              min: 12,
-              max: 50
-            }
-          }),
-          getPropertyField('input', {
-            label: '行高',
-            title: '行高(line-height)',
-            prop: 'descStyle.lineHeight',
-            props: {
-              placeholder: '默认',
-              allowClear: true
-            }
-          })
-        ]
-      },
-      {
-        label: '按钮',
-        items: [
-          getPropertyField('colorPicker', {
-            label: '背景颜色',
-            title: '背景颜色(background-color)',
-            prop: 'buttonStyle.backgroundColor',
-            props: {
-              defaultValue: '#b3d1ff'
-            }
-          }),
-          getPropertyField('colorPicker', {
-            label: '背景悬浮颜色',
-            title: '鼠标悬浮时的背景颜色(background-color)',
-            prop: 'buttonStyle.backgroundColorHover',
-            props: {
-              defaultValue: '#9dc4ff'
-            }
-          }),
-          getPropertyField('colorPicker', {
-            label: '颜色',
-            title: '颜色(color)',
-            prop: 'buttonStyle.color',
-            props: {
-              defaultValue: '#000000'
-            }
-          }),
-          getPropertyField('inputNumber', {
-            label: '字号',
-            title: '字号(font-size)',
-            prop: 'buttonStyle.fontSize',
-            props: {
-              min: 12,
-              max: 50
-            }
-          })
-        ]
-      }
-    ]
-  }
+  configForm: [
+    {
+      label: '尺寸',
+      items: [
+        getPropertyField('input', {
+          label: '宽度',
+          title: '容器宽度（支持百分比和像素单位）',
+          prop: 'width',
+          props: {
+            placeholder: '自适应',
+            allowClear: true
+          }
+        }),
+        getPropertyField('input', {
+          label: '高度',
+          title: '容器高度（支持像素单位，默认自适应）',
+          prop: 'height',
+          props: {
+            placeholder: '自适应',
+            allowClear: true
+          }
+        })
+      ]
+    },
+    {
+      label: '背景',
+      items: [
+        getPropertyField('colorPicker', {
+          label: '颜色',
+          title: '背景颜色(background-color)',
+          prop: 'backgroundColor'
+        }),
+        getPropertyField('input', {
+          label: '图片',
+          title: '背景图片(background-image)',
+          prop: 'backgroundImage',
+          props: {
+            placeholder: '请输入图片地址',
+            maxLength: 250,
+            allowClear: true
+          }
+        }),
+        getPropertyField('input', {
+          label: '图片尺寸',
+          title: '背景图片尺寸(background-size)',
+          prop: 'backgroundSize',
+          props: {
+            maxLength: 20,
+            placeholder: '自动',
+            allowClear: true
+          }
+        }),
+        getPropertyField('input', {
+          label: '图片位置',
+          title: '背景图片位置(background-position)',
+          prop: 'backgroundPosition',
+          props: {
+            maxLength: 20,
+            allowClear: true
+          }
+        }),
+        getPropertyField('select', {
+          label: '图片重复',
+          title: '背景图片重复(background-repeat)',
+          prop: 'backgroundRepeat',
+          props: {
+            options: [
+              { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
+              { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
+              { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
+              { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
+              { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
+              { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
+            ]
+          }
+        })
+      ]
+    },
+    {
+      label: '标题',
+      items: [
+        getPropertyField('colorPicker', {
+          label: '颜色',
+          title: '颜色(color)',
+          prop: 'titleStyle.color',
+          props: {
+            defaultValue: '#000000'
+          }
+        }),
+        getPropertyField('inputNumber', {
+          label: '字号',
+          title: '字号(font-size)',
+          prop: 'titleStyle.fontSize',
+          props: {
+            min: 12,
+            max: 50
+          }
+        })
+      ]
+    },
+    {
+      label: '文本',
+      items: [
+        getPropertyField('colorPicker', {
+          label: '颜色',
+          title: '颜色(color)',
+          prop: 'textStyle.color',
+          props: {
+            defaultValue: '#000000'
+          }
+        }),
+        getPropertyField('inputNumber', {
+          label: '字号',
+          title: '字号(font-size)',
+          prop: 'textStyle.fontSize',
+          props: {
+            min: 12,
+            max: 50
+          }
+        })
+      ]
+    },
+    {
+      label: '简介',
+      items: [
+        getPropertyField('colorPicker', {
+          label: '背景颜色',
+          title: '背景颜色(background-color)',
+          prop: 'descBackground.backgroundColor',
+          props: {
+            defaultValue: '#ffffff'
+          }
+        }),
+        getPropertyField('colorPicker', {
+          label: '颜色',
+          title: '颜色(color)',
+          prop: 'descStyle.color',
+          props: {
+            defaultValue: '#333333'
+          }
+        }),
+        getPropertyField('inputNumber', {
+          label: '字号',
+          title: '字号(font-size)',
+          prop: 'descStyle.fontSize',
+          props: {
+            min: 12,
+            max: 50
+          }
+        }),
+        getPropertyField('input', {
+          label: '行高',
+          title: '行高(line-height)',
+          prop: 'descStyle.lineHeight',
+          props: {
+            placeholder: '默认',
+            allowClear: true
+          }
+        })
+      ]
+    },
+    {
+      label: '按钮',
+      items: [
+        getPropertyField('colorPicker', {
+          label: '背景颜色',
+          title: '背景颜色(background-color)',
+          prop: 'buttonStyle.backgroundColor',
+          props: {
+            defaultValue: '#b3d1ff'
+          }
+        }),
+        getPropertyField('colorPicker', {
+          label: '背景悬浮颜色',
+          title: '鼠标悬浮时的背景颜色(background-color)',
+          prop: 'buttonStyle.backgroundColorHover',
+          props: {
+            defaultValue: '#9dc4ff'
+          }
+        }),
+        getPropertyField('colorPicker', {
+          label: '颜色',
+          title: '颜色(color)',
+          prop: 'buttonStyle.color',
+          props: {
+            defaultValue: '#000000'
+          }
+        }),
+        getPropertyField('inputNumber', {
+          label: '字号',
+          title: '字号(font-size)',
+          prop: 'buttonStyle.fontSize',
+          props: {
+            min: 12,
+            max: 50
+          }
+        })
+      ]
+    }
+  ]
 }
 
 export const MainAwardPreview = {
