@@ -211,6 +211,8 @@ export default function useThemeVars() {
       '--tg-theme-border-radius': token.value.borderRadius + 'px',
       '--tg-theme-control-item-bg-active': token.value.controlItemBgActive,
       '--tg-theme-control-item-bg-hover': token.value.controlItemBgHover,
+      '--tg-theme-margin-xxs': token.value.marginXXS + 'px',
+      '--tg-theme-margin-xs': token.value.marginXS + 'px',
       '--tg-theme-margin-sm': token.value.marginSM + 'px',
       '--tg-theme-margin': token.value.margin + 'px',
       '--tg-theme-margin-md': token.value.marginMD + 'px',
