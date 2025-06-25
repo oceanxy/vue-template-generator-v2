@@ -1,7 +1,7 @@
 import { computed, ref, toRaw } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
-import { styleWithUnits } from '../utils/style'
+import { getMarginValues, styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
@@ -97,19 +97,21 @@ export default {
       // 在画布中时，组件的宽高和外边距要应用到拖拽容器上，内部组件默认撑满容器。
       // 但部分容器除外，这部分组件因为其内部有特殊处理，所以这里需要单独处理。
 
-      let _margin = 0
-      if (component.style.marginLeft || component.style.marginRight) {
-        _margin = (parseInt(component.style.marginLeft) + parseInt(component.style.marginRight)) + 'px'
-      } else {
-        _margin = (parseInt(component.style.margin) * 2) + 'px'
-      }
-
+      const marginObj = getMarginValues(component.style)
       const dragCompStyle = {
         style: {
-          width: `calc(${component.style.width} - ${_margin})`,
+          width: `calc(${component.style.width} - ${marginObj.marginLeft} - ${marginObj.marginRight})`,
           height: component.style.height,
           margin: component.style.margin
         }
+      }
+
+      if ('marginLeft' in component.style) {
+        dragCompStyle.style.marginLeft = component.style.marginLeft
+      }
+
+      if ('marginRight' in component.style) {
+        dragCompStyle.style.marginRight = component.style.marginRight
       }
 
       // ========================================================================
