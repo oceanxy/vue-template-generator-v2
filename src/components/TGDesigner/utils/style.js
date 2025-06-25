@@ -9,6 +9,14 @@ export function styleWithUnits(styleObj) {
   return Object.entries(styleObj).reduce((acc, [key, value]) => {
     if ((typeof value === 'number' || !isNaN(value === '' ? 'unset' : value)) && UNIT_PROPS.includes(key)) {
       acc[key] = `${value}px`
+    } else if (['padding', 'margin'].includes(key) && (typeof value === 'string' && value.includes(' '))) {
+      acc[key] = value.split(' ').map(v => {
+        if (!isNaN(v === '' ? 'unset' : v)) {
+          return `${v}px`
+        }
+
+        return v
+      }).join(' ')
     } else {
       acc[key] = value
     }
