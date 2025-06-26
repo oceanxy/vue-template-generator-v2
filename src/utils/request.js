@@ -127,7 +127,15 @@ export default function getService(conf, router) {
             await useStore('/login').clear()
           }
 
-          await router.replace({ name: 'Login' })
+          showMessage({
+            message: '登录失效，请重新登录!',
+            type: 'error',
+          })
+
+          setTimeout(async () => {
+            await router.replace({ name: 'Login' })
+          }, 1500)
+
         } else if (/*无权限*/+res.code === 40006) {
           await router.replace({ name: 'NoAccess' })
         }
