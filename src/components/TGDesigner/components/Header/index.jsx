@@ -184,7 +184,7 @@ export default {
             />
             <Button
               onClick={handlePreviewH5}
-              icon={<IconFont type="icon-designer-tool-preview" />}
+              icon={<IconFont type="icon-designer-tool-preview-h5" />}
               title={'预览'}
             />
           </div>
