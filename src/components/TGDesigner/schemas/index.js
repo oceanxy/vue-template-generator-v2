@@ -17,6 +17,7 @@
  */
 
 import getPropertyField from '../properties'
+import { markRaw } from 'vue'
 
 /**
  * 默认schema
@@ -45,9 +46,13 @@ export const schema = {
 }
 
 /**
- * @type {TGComponentMeta[]}
+ * canvas属性配置表单
+ * @type {TGComponentMeta[] | {
+ *   label: string;
+ *   items: TGComponentMeta[]
+ * }[]}
  */
-export const canvasConfigForm = [
+export const canvasConfigForm = markRaw([
   {
     label: '尺寸',
     items: [
@@ -156,4 +161,4 @@ export const canvasConfigForm = [
       })
     ]
   }
-]
+])
