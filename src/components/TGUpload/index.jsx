@@ -19,6 +19,16 @@ export default {
       type: Number,
       default: 5
     },
+    /**
+     * 新上传的文件优先。
+     * 当`limit`的值为`1`时：
+     * - 该值设为`false`表示新上传的文件会被舍弃并提示失败（默认）；
+     * - 该值设为`true`表示新上传的文件会覆盖已上传的文件。
+     */
+    prioritizeNewUploads: {
+      type: Boolean,
+      default: false
+    },
     // 默认 configs.uploadPath.common
     action: {
       type: String,
@@ -79,6 +89,12 @@ export default {
     })
 
     watch(() => props.value, val => {
+      if (props.limit === 1 && props.prioritizeNewUploads) {
+        files.value = val
+        fileListBackup.value = []
+        return
+      }
+
       const temp = []
 
       if (val?.length) {
@@ -128,6 +144,10 @@ export default {
         return false
       }
 
+      if (props.limit === 1 && props.prioritizeNewUploads) {
+        return true
+      }
+
       // 非错误状态的文件都纳入计数范围，统计已经上传和正在上传的文件的总数。
       // 超过数量限制的文件的状态将被修改为错误状态，即通知组件不再上传该文件
       const index = files.value.concat(fileList)
@@ -169,8 +189,14 @@ export default {
       previewVisible.value = false
     }
 
-    function handleChange({ fileList }) {
-      let _fileList = [...fileList]
+    function handleChange({ fileList, file }) {
+      let _fileList
+
+      if (props.limit === 1 && props.prioritizeNewUploads) {
+        _fileList = [file]
+      } else {
+        _fileList = [...fileList]
+      }
 
       _fileList = _fileList.map(file => {
         if (file.status === 'done' && 'response' in file) {
@@ -233,7 +259,7 @@ export default {
           }
         >
           {
-            props.limit > files.value.length && (
+            ((props.limit === 1 && props.prioritizeNewUploads) || props.limit > files.value.length) && (
               props.listType === 'picture-card'
                 ? (
                   <div>
