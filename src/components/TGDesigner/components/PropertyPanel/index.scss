@@ -20,27 +20,31 @@
     .tg-designer-field-group {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      // gap: 10px;
       border-bottom: 1px solid var(--tg-theme-color-border-secondary);
-      padding: 15px;
+      padding: 0 15px 15px;
 
       .tg-designer-field-title {
         font-size: 14px;
         color: var(--tg-theme-color-text);
         font-weight: bolder;
-        margin-bottom: 10px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
 
       .tg-designer-field-content {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
-        margin-right: 40px;
+        margin-right: 34px;
       }
     }
   }
 
   .ant-divider {
+
     &.ant-divider-with-text::before,
     &.ant-divider-with-text::after {
       border-block-color: var(--tg-theme-color-border-secondary);
@@ -58,21 +62,21 @@
     align-items: flex-start;
     gap: var(--tg-theme-margin-xxs);
 
-    & > label {
+    &>label {
       flex: none;
       display: flex;
-      font-size: 14px;
+      font-size: 12px;
       gap: 4px;
-      color: var(--tg-theme-color-text-quaternary);
+      color: var(--tg-theme-color-text-tertiary);
       min-width: 74px;
       flex-shrink: 0;
 
       .anticon {
-        color: var(--tg-theme-color-text-quaternary);
+        color: var(--tg-theme-color-text-tertiary);
       }
     }
 
-    & > *:not(label, .ant-switch) {
+    &>*:not(label, .ant-switch) {
       flex: auto;
     }
 
@@ -81,17 +85,15 @@
       flex-grow: 1;
       width: 100%;
 
-      & > :is(.ant-select, .ant-segmented) {
+      &> :is(.ant-select, .ant-segmented) {
         width: 100%;
       }
 
-      & > :is(
-        .ant-input,
+      &> :is(.ant-input,
         .ant-select,
         .ant-input-affix-wrapper,
         .tg-designer-color-picker,
-        .tg-designer-property-comp-upload
-      ),
+        .tg-designer-property-comp-upload),
       :is(.half, .full) .ant-input-affix-wrapper {
         background: #f5f5f5;
         border: 0;
@@ -103,7 +105,15 @@
         }
       }
 
-      & > .ant-select {
+      .ant-input-affix-wrapper {
+        .ant-input-prefix {
+          .anticon {
+            font-size: 0.625rem;
+          }
+        }
+      }
+
+      &>.ant-select {
         padding: 0;
         border-radius: 4px;
       }
@@ -126,6 +136,7 @@
 
             .anticon {
               transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+              font-size: 13px;
 
               &.column {
                 transform: rotate(90deg);
@@ -141,14 +152,14 @@
 
       .tg-designer-property-expend {
         flex: none;
-        margin-right: -40px;
+        margin-right: -36px;
         width: 40px;
         display: flex;
         justify-content: flex-end;
         align-items: flex-start;
 
         .ant-btn {
-          //font-size: 12px;
+          font-size: 12px;
         }
       }
     }
