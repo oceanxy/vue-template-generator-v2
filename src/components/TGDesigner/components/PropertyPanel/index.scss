@@ -1,10 +1,10 @@
 .tg-designer-property-comp-type {
-  height: 40px;
+  height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 15px;
+  padding: 10px 14px;
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bolder;
   border-bottom: 1px solid var(--tg-theme-color-border-secondary);
 }
@@ -30,6 +30,13 @@
         font-weight: bolder;
         margin-bottom: 10px;
       }
+
+      .tg-designer-field-content {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-right: 40px;
+      }
     }
   }
 
@@ -47,15 +54,16 @@
   .tg-designer-form-item {
     width: 100%;
     display: flex;
-    align-items: center;
-    gap: var(--tg-theme-margin-sm);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--tg-theme-margin-xxs);
 
-    label {
+    & > label {
       flex: none;
       display: flex;
       font-size: 14px;
       gap: 4px;
-      color: var(--tg-theme-color-text-secondary);
+      color: var(--tg-theme-color-text-quaternary);
       min-width: 74px;
       flex-shrink: 0;
 
@@ -70,11 +78,78 @@
 
     .tg-designer-form-item-control {
       display: flex;
-      justify-content: flex-end;
       flex-grow: 1;
+      width: 100%;
 
-      > .ant-select {
+      & > :is(.ant-select, .ant-segmented) {
         width: 100%;
+      }
+
+      & > :is(
+        .ant-input,
+        .ant-select,
+        .ant-input-affix-wrapper,
+        .tg-designer-color-picker,
+        .tg-designer-property-comp-upload
+      ),
+      :is(.half, .full) .ant-input-affix-wrapper {
+        background: #f5f5f5;
+        border: 0;
+
+        :is(.ant-input, .ant-select-selector, .ant-input-affix-wrapper) {
+          background: none;
+          color: #333333;
+          border: 0;
+        }
+      }
+
+      & > .ant-select {
+        padding: 0;
+        border-radius: 4px;
+      }
+
+      .ant-segmented .ant-segmented-group {
+        display: flex;
+        gap: 10px;
+
+        .ant-segmented-item {
+          width: 30px;
+
+          &.ant-segmented-item-disabled {
+            opacity: .2;
+          }
+
+          .ant-segmented-item-label {
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0;
+
+            .anticon {
+              transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+
+              &.column {
+                transform: rotate(90deg);
+              }
+
+              &.column2 {
+                transform: rotate(-90deg);
+              }
+            }
+          }
+        }
+      }
+
+      .tg-designer-property-expend {
+        flex: none;
+        margin-right: -40px;
+        width: 40px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-start;
+
+        .ant-btn {
+          //font-size: 12px;
+        }
       }
     }
 
