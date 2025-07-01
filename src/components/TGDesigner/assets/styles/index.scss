@@ -363,7 +363,11 @@
             cursor: move;
             width: 100%;
             height: 100%;
+
+            // 为了配合拖拽容器的呈现，以下属性被强制覆盖，请勿修改。
+            // 具体逻辑位于Canvas组件的renderCanvasFromSchemas函数内。
             margin: 0 !important;
+            overflow: visible !important;
 
             &.ant-image {
               width: auto;
