@@ -208,17 +208,17 @@ export default {
       items: [
         getPropertyField('colorPicker', {
           label: '颜色',
-          title: '容器的背景颜色(background-color)',
+          title: '容器的背景颜色（background-color）',
           prop: 'style.backgroundColor'
         }),
         getPropertyField('upload', {
           label: '图片',
-          title: '容器的背景图片(background-image)',
+          title: '容器的背景图片（background-image）',
           prop: 'style.backgroundImage'
         }),
         getPropertyField('multiInput', {
           label: '图片尺寸',
-          title: '容器背景图片的尺寸(background-size)',
+          title: '容器背景图片的尺寸（background-size）',
           prop: 'style.backgroundSize',
           props: {
             maxLength: 20,
@@ -274,7 +274,7 @@ export default {
         }),
         getPropertyField('segmented', {
           label: '图片重复方式',
-          title: '容器背景图片的重复方式(background-repeat)',
+          title: '容器背景图片的重复方式（background-repeat）',
           prop: 'style.backgroundRepeat',
           props: {
             options: [
@@ -286,27 +286,27 @@ export default {
               {
                 label: () => <IconFont type={'icon-designer-property-br-repeat'} />,
                 value: 'repeat',
-                title: '图像重复显示，但图片可能会被裁剪。（repeat）'
+                title: '图像重复显示，但图片可能会被裁剪（repeat）'
               },
               {
                 label: () => <IconFont type={'icon-designer-property-br-space'} />,
                 value: 'space',
-                title: '图像重复且均匀的显示在容器内，不会裁剪图片，但可能会有间隙。（space）'
+                title: '图像重复且均匀的显示在容器内，不会裁剪图片，但可能会有间隙（space）'
               },
               {
                 label: () => <IconFont type={'icon-designer-property-br-round'} />,
                 value: 'round',
-                title: '图像重复显示，不会裁剪图片，但会自动缩放来消除间隙。（round）'
+                title: '图像重复显示，不会裁剪图片，但会自动缩放来消除间隙（round）'
               },
               {
                 label: () => <IconFont type={'icon-designer-property-br-repeat-x'} />,
                 value: 'repeat-x',
-                title: '图像沿X轴方向重复显示。（repeat-x）'
+                title: '图像沿X轴方向重复显示（repeat-x）'
               },
               {
                 label: () => <IconFont type={'icon-designer-property-br-repeat-y'} />,
                 value: 'repeat-y',
-                title: '图像沿Y轴方向重复显示。（repeat-x）'
+                title: '图像沿Y轴方向重复显示（repeat-x）'
               }
             ]
           }
