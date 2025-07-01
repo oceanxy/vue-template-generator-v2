@@ -1,4 +1,4 @@
-import getPropertyField from '@/components/TGDesigner/properties'
+import getPropertyConfig from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { ref, watch } from 'vue'
@@ -41,7 +41,7 @@ export default {
     {
       label: '尺寸',
       items: [
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '宽度',
           title: '容器宽度（支持百分比和像素单位）',
           prop: 'width',
@@ -50,7 +50,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '高度',
           title: '容器高度（支持像素单位，默认自适应）',
           prop: 'height',
@@ -64,7 +64,7 @@ export default {
     {
       label: '布局',
       items: [
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '内容宽度',
           title: 'Header内展示内容区域容器的宽度(width)',
           prop: 'contentWidth',
@@ -73,7 +73,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '内容左右内边距',
           title: 'Header内展示内容区域容器的左侧和右侧的内边距值(padding-left & padding-right)',
           prop: 'contentPadding',
@@ -82,7 +82,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '上边距',
           title: '头部容器的上边距(padding-top/padding-bottom)',
           prop: 'paddingTop',
@@ -91,7 +91,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '下边距',
           title: '头部容器的下边距(padding-bottom)',
           prop: 'paddingBottom',
@@ -100,7 +100,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '外边距',
           title: '画布的外边距（margin）',
           prop: 'margin',
@@ -114,12 +114,12 @@ export default {
     {
       label: '背景',
       items: [
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '背景颜色(background-color)',
           prop: 'backgroundColor'
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片',
           title: '背景图片(background-image)',
           prop: 'backgroundImage',
@@ -129,7 +129,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片尺寸',
           title: '背景图片尺寸(background-size)',
           prop: 'backgroundSize',
@@ -139,7 +139,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片位置',
           title: '背景图片位置(background-position)',
           prop: 'backgroundPosition',
@@ -148,7 +148,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('select', {
+        getPropertyConfig('select', {
           label: '图片重复',
           title: '背景图片重复(background-repeat)',
           prop: 'backgroundRepeat',

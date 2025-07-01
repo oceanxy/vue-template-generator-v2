@@ -16,7 +16,7 @@
  * @property {TGComponentSchema[]} [children] - 子组件集合（仅布局组件需要）
  */
 
-import getPropertyField from '../properties'
+import getPropertyConfig from '../properties'
 import { markRaw } from 'vue'
 
 /**
@@ -56,12 +56,12 @@ export const canvasConfigForm = markRaw([
   {
     label: '尺寸',
     items: [
-      getPropertyField('input', {
+      getPropertyConfig('input', {
         label: '宽度',
         title: '画布宽度（width）',
         prop: 'width'
       }),
-      getPropertyField('input', {
+      getPropertyConfig('input', {
         label: '高度',
         title: '画布高度（height）',
         prop: 'height',
@@ -74,7 +74,7 @@ export const canvasConfigForm = markRaw([
   {
     label: '布局',
     items: [
-      getPropertyField('input', {
+      getPropertyConfig('input', {
         label: '组件间距',
         title: '组件之间的间隔距离（gap）',
         prop: 'gap',
@@ -82,7 +82,7 @@ export const canvasConfigForm = markRaw([
           placeholder: '0px'
         }
       }),
-      getPropertyField('input', {
+      getPropertyConfig('input', {
         label: '内边距',
         title: '画布的内边距（padding）',
         prop: 'padding',
@@ -90,7 +90,7 @@ export const canvasConfigForm = markRaw([
           placeholder: '0px'
         }
       }),
-      getPropertyField('input', {
+      getPropertyConfig('input', {
         label: '外边距',
         title: '画布的外边距（margin）',
         prop: 'margin',
@@ -98,12 +98,12 @@ export const canvasConfigForm = markRaw([
           placeholder: '0px'
         }
       }),
-      getPropertyField('select', {
+      getPropertyConfig('select', {
         label: '水平',
         title: '水平对齐方式（align-items）',
         prop: 'alignItems'
       }),
-      getPropertyField('select', {
+      getPropertyConfig('select', {
         label: '垂直',
         title: '垂直对齐方式（justify-content）',
         prop: 'justifyContent'
@@ -113,12 +113,12 @@ export const canvasConfigForm = markRaw([
   {
     label: '背景',
     items: [
-      getPropertyField('colorPicker', {
+      getPropertyConfig('colorPicker', {
         label: '颜色',
         title: '背景颜色(background-color)',
         prop: 'backgroundColor'
       }),
-      getPropertyField('input', {
+      getPropertyConfig('input', {
         label: '图片',
         title: '背景图片(background-image)',
         prop: 'backgroundImage',
@@ -127,7 +127,7 @@ export const canvasConfigForm = markRaw([
           maxLength: 250
         }
       }),
-      getPropertyField('input', {
+      getPropertyConfig('input', {
         label: '图片尺寸',
         title: '背景图片尺寸(background-size)',
         prop: 'backgroundSize',
@@ -136,7 +136,7 @@ export const canvasConfigForm = markRaw([
           placeholder: '自动'
         }
       }),
-      getPropertyField('input', {
+      getPropertyConfig('input', {
         label: '图片位置',
         title: '背景图片位置(background-position)',
         prop: 'backgroundPosition',
@@ -144,7 +144,7 @@ export const canvasConfigForm = markRaw([
           maxLength: 20
         }
       }),
-      getPropertyField('select', {
+      getPropertyConfig('select', {
         label: '图片重复',
         title: '背景图片重复(background-repeat)',
         prop: 'backgroundRepeat',

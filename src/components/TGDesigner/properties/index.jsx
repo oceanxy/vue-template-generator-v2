@@ -101,7 +101,7 @@ export function getOptionsOfPropertyField(prop, propertyValues) {
  * @param [propertyValues] - 当前组件的所有可配属性及属性值
  * @returns {TGProperty}
  */
-export default function getPropertyField(componentType, props, propertyValues) {
+export default function getPropertyConfig(componentType, props, propertyValues) {
   const field = {
     label: props.label,
     title: props.title || undefined,

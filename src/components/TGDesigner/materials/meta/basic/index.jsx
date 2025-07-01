@@ -1,6 +1,6 @@
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { Button, Divider, Image, Input, QRCode, TypographyText } from 'ant-design-vue'
-import getPropertyField from '@/components/TGDesigner/properties'
+import getPropertyConfig from '@/components/TGDesigner/properties'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
 import Menu from './Menu'
 
@@ -29,7 +29,7 @@ export default [
       {
         label: '尺寸',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '宽度',
             title: '容器宽度（支持百分比和像素单位）',
             prop: 'width',
@@ -38,7 +38,7 @@ export default [
               allowClear: true
             }
           }),
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '高度',
             title: '容器高度（支持像素单位，默认自适应）',
             prop: 'height',
@@ -52,7 +52,7 @@ export default [
       {
         label: '数据',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             title: '按钮文本，最大限制10个字符',
             label: '按钮文本',
             prop: 'slot',
@@ -67,7 +67,7 @@ export default [
       {
         label: '外观',
         items: [
-          getPropertyField('select', {
+          getPropertyConfig('select', {
             title: '按钮类型',
             label: '按钮类型',
             prop: 'type',
@@ -105,7 +105,7 @@ export default [
       {
         label: '尺寸',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '宽度',
             title: '容器宽度（支持百分比和像素单位）',
             prop: 'width',
@@ -114,7 +114,7 @@ export default [
               allowClear: true
             }
           }),
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '高度',
             title: '容器高度（支持像素单位，默认自适应）',
             prop: 'height',
@@ -128,7 +128,7 @@ export default [
       {
         label: '外观',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             title: '文本框占位符',
             label: '占位符',
             prop: 'placeholder',
@@ -177,7 +177,7 @@ export default [
       {
         label: '尺寸',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '宽度',
             title: '容器宽度（支持百分比和像素单位）',
             prop: 'width',
@@ -186,7 +186,7 @@ export default [
               allowClear: true
             }
           }),
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '高度',
             title: '容器高度（支持像素单位，默认自适应）',
             prop: 'height',
@@ -200,7 +200,7 @@ export default [
       {
         label: '数据',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             title: '文本内容（最大长度限制100）',
             label: '文本内容',
             prop: 'slot',
@@ -215,12 +215,12 @@ export default [
       {
         label: '外观',
         items: [
-          getPropertyField('inputNumber', {
+          getPropertyConfig('inputNumber', {
             title: '字号',
             label: '字号',
             prop: 'fontSize'
           }),
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             title: '行高',
             label: '行高',
             prop: 'lineHeight',
@@ -229,19 +229,19 @@ export default [
               allowClear: true
             }
           }),
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '斜体',
             label: '斜体',
             prop: 'italic',
             modelProp: 'checked'
           }),
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '下划线',
             label: '下划线',
             prop: 'underline',
             modelProp: 'checked'
           }),
-          getPropertyField('select', {
+          getPropertyConfig('select', {
             title: '文本类型',
             label: '文本类型',
             prop: 'type',
@@ -255,30 +255,30 @@ export default [
               ]
             }
           }),
-          getPropertyField('colorPicker', {
+          getPropertyConfig('colorPicker', {
             title: '颜色',
             label: '颜色',
             prop: 'color'
           }),
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '加粗',
             label: '加粗',
             prop: 'strong',
             modelProp: 'checked'
           }),
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '标记',
             label: '标记',
             prop: 'mark',
             modelProp: 'checked'
           }),
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '删除线',
             label: '删除线',
             prop: 'delete',
             modelProp: 'checked'
           }),
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '自动溢出省略（需要配合宽度使用，当文本内容超过设置的宽度后生效）',
             label: '自动溢出省略',
             prop: 'ellipsis',
@@ -315,7 +315,7 @@ export default [
       {
         label: '尺寸',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '宽度',
             title: '容器宽度（支持百分比和像素单位）',
             prop: 'width',
@@ -324,7 +324,7 @@ export default [
               allowClear: true
             }
           }),
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '高度',
             title: '容器高度（支持像素单位，默认自适应）',
             prop: 'height',
@@ -338,7 +338,7 @@ export default [
       {
         label: '数据',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             title: '分割线标题（显示在线条上的文本内容，最大长度限制10）',
             label: '分割线标题',
             prop: 'slot',
@@ -353,13 +353,13 @@ export default [
       {
         label: '外观',
         items: [
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '虚线',
             label: '虚线',
             prop: 'dashed',
             modelProp: 'checked'
           }),
-          getPropertyField('radioGroup', {
+          getPropertyConfig('radioGroup', {
             title: '分割线标题位置',
             label: '标题位置',
             prop: 'orientation',
@@ -371,13 +371,13 @@ export default [
               ]
             }
           }),
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '普通文本',
             label: '普通文本',
             prop: 'plain',
             modelProp: 'checked'
           }),
-          getPropertyField('radioGroup', {
+          getPropertyConfig('radioGroup', {
             title: '分割线的方向',
             label: '方向',
             prop: 'type',
@@ -423,7 +423,7 @@ export default [
       {
         label: '尺寸',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '宽度',
             title: '容器宽度（像素单位或百分比）',
             prop: 'width',
@@ -432,7 +432,7 @@ export default [
               allowClear: true
             }
           }),
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '高度',
             title: '容器高度（像素单位或百分比）',
             prop: 'height',
@@ -446,7 +446,7 @@ export default [
       {
         label: '数据',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '图片地址',
             title: '图片地址（img标签支持的图片格式）',
             prop: 'src',
@@ -487,7 +487,7 @@ export default [
       {
         label: '尺寸',
         items: [
-          getPropertyField('inputNumber', {
+          getPropertyConfig('inputNumber', {
             label: '尺寸',
             title: '二维码的尺寸',
             prop: 'size',
@@ -495,7 +495,7 @@ export default [
               placeholder: '160'
             }
           }),
-          getPropertyField('inputNumber', {
+          getPropertyConfig('inputNumber', {
             label: '图片大小',
             title: '二维码中图片的大小',
             prop: 'iconSize',
@@ -508,7 +508,7 @@ export default [
       {
         label: '数据',
         items: [
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '扫描后的地址',
             title: '扫描后的地址',
             prop: 'value',
@@ -518,7 +518,7 @@ export default [
               allowClear: true
             }
           }),
-          getPropertyField('input', {
+          getPropertyConfig('input', {
             label: '图片地址',
             title: '二维码中图片的地址（目前只支持图片地址）',
             prop: 'icon',
@@ -533,13 +533,13 @@ export default [
       {
         label: '外观',
         items: [
-          getPropertyField('switch', {
+          getPropertyConfig('switch', {
             title: '显示边框',
             label: '显示边框',
             prop: 'bordered',
             modelProp: 'checked'
           }),
-          getPropertyField('colorPicker', {
+          getPropertyConfig('colorPicker', {
             title: '背景色',
             label: '背景色',
             prop: 'bgColor',
@@ -547,7 +547,7 @@ export default [
               defaultValue: '#ffffff'
             }
           }),
-          getPropertyField('colorPicker', {
+          getPropertyConfig('colorPicker', {
             title: '二维码颜色',
             label: '二维码颜色',
             prop: 'color',
@@ -555,7 +555,7 @@ export default [
               defaultValue: '#000000'
             }
           }),
-          getPropertyField('select', {
+          getPropertyConfig('select', {
             title: '二维码状态',
             label: '二维码状态',
             prop: 'status',

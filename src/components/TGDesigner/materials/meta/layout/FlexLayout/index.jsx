@@ -1,6 +1,6 @@
 import { Flex } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
-import getPropertyField from '@/components/TGDesigner/properties'
+import getPropertyConfig from '@/components/TGDesigner/properties'
 import { range } from 'lodash'
 
 /**
@@ -42,7 +42,7 @@ export default {
     {
       label: '尺寸',
       items: [
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '宽度',
           title: '容器宽度：支持填写百分数和数字，填写数字时的单位为屏幕像素（width）',
           prop: 'width',
@@ -55,7 +55,7 @@ export default {
             prefix: () => <IconFont type={'icon-designer-property-width'} />
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '高度',
           title: '容器高度：支持填写百分数和数字，填写数字时的单位为屏幕像素（height）',
           prop: 'height',
@@ -73,7 +73,7 @@ export default {
     {
       label: '布局',
       items: [
-        getPropertyField('segmented', {
+        getPropertyConfig('segmented', {
           label: '排列方向',
           title: '控制容器内元素的排列方向：横向排列或者纵向排列（flex-direction）',
           prop: 'flexDirection',
@@ -85,17 +85,17 @@ export default {
             ]
           }
         }),
-        getPropertyField('segmented', {
+        getPropertyConfig('segmented', {
           label: '组件分布',
           title: '控制容器内组件在设定的排列方向上如何分布：靠拢或分散（justify-content）',
           prop: 'justifyContent'
         }, propertyValues),
-        getPropertyField('segmented', {
+        getPropertyConfig('segmented', {
           label: '组件对齐',
           title: '控制容器内各组件的对齐方式（align-items）',
           prop: 'alignItems'
         }, propertyValues),
-        getPropertyField('select', {
+        getPropertyConfig('select', {
           label: `多${propertyValues?.style?.flexDirection === 'column' ? '列' : '行'}显示`,
           title: `容器内组件的总宽度超过${
             propertyValues?.style?.flexDirection === 'column' ? '容器高度' : '容器宽度'
@@ -111,7 +111,7 @@ export default {
             ]
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '组件间距',
           title: '各组件间的间隔距离（gap）',
           prop: 'gap',
@@ -124,7 +124,7 @@ export default {
             prefix: () => <IconFont type={'icon-designer-property-flex-row-gap'} />
           }
         }),
-        getPropertyField('multiInput', {
+        getPropertyConfig('multiInput', {
           label: '内边距',
           title: '容器的内边距（padding）',
           prop: 'padding',
@@ -143,7 +143,7 @@ export default {
             right: () => <IconFont type={'icon-designer-property-padding-right'} />
           }
         }),
-        getPropertyField('multiInput', {
+        getPropertyConfig('multiInput', {
           label: '外边距',
           title: '容器的外边距（margin）',
           prop: 'margin',
@@ -162,7 +162,7 @@ export default {
             right: () => <IconFont type={'icon-designer-property-margin-right'} />
           }
         }),
-        getPropertyField('segmented', {
+        getPropertyConfig('segmented', {
           label: '容器溢出',
           title: [
             <span>当内容溢出容器设置的宽高时的处理方式（overflow）</span>,
@@ -206,17 +206,17 @@ export default {
     {
       label: '背景',
       items: [
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '容器的背景颜色（background-color）',
           prop: 'style.backgroundColor'
         }),
-        getPropertyField('upload', {
+        getPropertyConfig('upload', {
           label: '图片',
           title: '容器的背景图片（background-image）',
           prop: 'style.backgroundImage'
         }),
-        getPropertyField('multiInput', {
+        getPropertyConfig('multiInput', {
           label: '图片尺寸',
           title: '容器背景图片的尺寸（background-size）',
           prop: 'style.backgroundSize',
@@ -233,7 +233,7 @@ export default {
             lr: () => <IconFont type={'icon-designer-property-height'} />
           }
         }),
-        getPropertyField('segmented', {
+        getPropertyConfig('segmented', {
           label: '图片位置',
           title: '容器背景图片的位置（background-position）',
           prop: 'style.backgroundPosition',
@@ -272,7 +272,7 @@ export default {
             ]
           }
         }),
-        getPropertyField('segmented', {
+        getPropertyConfig('segmented', {
           label: '图片重复方式',
           title: '容器背景图片的重复方式（background-repeat）',
           prop: 'style.backgroundRepeat',

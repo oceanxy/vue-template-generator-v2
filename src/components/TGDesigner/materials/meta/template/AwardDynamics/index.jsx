@@ -1,4 +1,4 @@
-import getPropertyField from '@/components/TGDesigner/properties'
+import getPropertyConfig from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE, TG_MATERIAL_TEMPLATE_COMPONENT_ENUM } from '@/components/TGDesigner/materials'
 import { Button, Image, TypographyParagraph } from 'ant-design-vue'
 import { computed, onMounted, ref } from 'vue'
@@ -62,7 +62,7 @@ export default {
     {
       label: '尺寸',
       items: [
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '宽度',
           title: '容器宽度（支持百分比和像素单位）',
           prop: 'width',
@@ -71,7 +71,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '高度',
           title: '容器高度（支持像素单位，默认自适应）',
           prop: 'height',
@@ -85,7 +85,7 @@ export default {
     {
       label: '布局',
       items: [
-        getPropertyField('switch', {
+        getPropertyConfig('switch', {
           label: '突出第一条数据',
           title: '突出展示第一条数据',
           prop: 'highlightFirstItem',
@@ -96,7 +96,7 @@ export default {
     {
       label: '标题',
       items: [
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '颜色(color)',
           prop: 'titleStyle.color',
@@ -104,7 +104,7 @@ export default {
             defaultValue: '#000000'
           }
         }),
-        getPropertyField('inputNumber', {
+        getPropertyConfig('inputNumber', {
           label: '字号',
           title: '字号(font-size)',
           prop: 'titleStyle.fontSize',
@@ -118,7 +118,7 @@ export default {
     {
       label: '副标题',
       items: [
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '颜色(color)',
           prop: 'textStyle.color',
@@ -126,7 +126,7 @@ export default {
             defaultValue: '#000000'
           }
         }),
-        getPropertyField('inputNumber', {
+        getPropertyConfig('inputNumber', {
           label: '字号',
           title: '字号(font-size)',
           prop: 'textStyle.fontSize',
@@ -140,7 +140,7 @@ export default {
     {
       label: '次级标题',
       items: [
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '颜色(color)',
           prop: 'itemTitleStyle.color',
@@ -148,7 +148,7 @@ export default {
             defaultValue: '#000000'
           }
         }),
-        getPropertyField('inputNumber', {
+        getPropertyConfig('inputNumber', {
           label: '字号',
           title: '字号(font-size)',
           prop: 'itemTitleStyle.fontSize',
@@ -162,7 +162,7 @@ export default {
     {
       label: '次级文本',
       items: [
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '颜色(color)',
           prop: 'itemTextStyle.color',
@@ -170,7 +170,7 @@ export default {
             defaultValue: '#000000'
           }
         }),
-        getPropertyField('inputNumber', {
+        getPropertyConfig('inputNumber', {
           label: '字号',
           title: '字号(font-size)',
           prop: 'itemTextStyle.fontSize',
@@ -184,12 +184,12 @@ export default {
     {
       label: '背景',
       items: [
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '背景颜色(background-color)',
           prop: 'backgroundColor'
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片',
           title: '背景图片(background-image)',
           prop: 'backgroundImage',
@@ -199,7 +199,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片尺寸',
           title: '背景图片尺寸(background-size)',
           prop: 'backgroundSize',
@@ -209,7 +209,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片位置',
           title: '背景图片位置(background-position)',
           prop: 'backgroundPosition',
@@ -218,7 +218,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('select', {
+        getPropertyConfig('select', {
           label: '图片重复',
           title: '背景图片重复(background-repeat)',
           prop: 'backgroundRepeat',

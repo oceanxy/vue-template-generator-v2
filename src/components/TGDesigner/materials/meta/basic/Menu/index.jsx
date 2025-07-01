@@ -1,7 +1,7 @@
 import { Menu } from 'ant-design-vue'
 import { omit, range } from 'lodash'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
-import getPropertyField from '@/components/TGDesigner/properties'
+import getPropertyConfig from '@/components/TGDesigner/properties'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import { ref, watch } from 'vue'
 import './index.scss'
@@ -122,7 +122,7 @@ export default {
     {
       label: '尺寸',
       items: [
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '宽度',
           title: '容器宽度（支持百分比和像素单位）',
           prop: 'width',
@@ -131,7 +131,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '高度',
           title: '容器高度（支持像素单位，默认自适应）',
           prop: 'height',
@@ -145,7 +145,7 @@ export default {
     {
       label: '布局',
       items: [
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '上边距',
           title: '头部容器的上边距(padding-top/padding-bottom)',
           prop: 'paddingTop',
@@ -154,7 +154,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '下边距',
           title: '头部容器的下边距(padding-bottom)',
           prop: 'paddingBottom',
@@ -163,7 +163,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '外边距',
           title: '画布的外边距（margin）',
           prop: 'margin',
@@ -177,7 +177,7 @@ export default {
     {
       label: '前景',
       items: [
-        getPropertyField('inputNumber', {
+        getPropertyConfig('inputNumber', {
           label: '字号',
           title: '导航文字字体大小(font-size)',
           prop: 'fontSize',
@@ -186,17 +186,17 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '导航文字正常状态下的颜色(color)',
           prop: 'color'
         }),
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '悬浮颜色',
           title: '导航文字鼠标悬浮状态下的颜色(color)',
           prop: 'hoverColor'
         }),
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '选中颜色',
           title: '导航文字选中状态下的颜色(color)',
           prop: 'selectedColor'
@@ -206,12 +206,12 @@ export default {
     {
       label: '背景',
       items: [
-        getPropertyField('colorPicker', {
+        getPropertyConfig('colorPicker', {
           label: '颜色',
           title: '背景颜色(background-color)',
           prop: 'backgroundColor'
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片',
           title: '背景图片(background-image)',
           prop: 'backgroundImage',
@@ -221,7 +221,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片尺寸',
           title: '背景图片尺寸(background-size)',
           prop: 'backgroundSize',
@@ -231,7 +231,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('input', {
+        getPropertyConfig('input', {
           label: '图片位置',
           title: '背景图片位置(background-position)',
           prop: 'backgroundPosition',
@@ -240,7 +240,7 @@ export default {
             allowClear: true
           }
         }),
-        getPropertyField('select', {
+        getPropertyConfig('select', {
           label: '图片重复',
           title: '背景图片重复(background-repeat)',
           prop: 'backgroundRepeat',
