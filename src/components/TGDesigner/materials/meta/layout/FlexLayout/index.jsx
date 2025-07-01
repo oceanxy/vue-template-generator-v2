@@ -14,7 +14,6 @@ export default {
   preview: FlexLayoutPreview,
   defaultProps: {
     gap: 8,
-    vertical: false,
     wrap: 'nowrap',
     style: {}
   },
@@ -24,8 +23,10 @@ export default {
     padding: 16,
     margin: 0,
     border: '',
+    flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
+    overflow: 'visible',
     backgroundColor: '',
     // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
     backgroundImage: '',
@@ -37,148 +38,281 @@ export default {
   children: [],
   canMoveInside: true,
   canCopyInside: true,
-      {
-        label: '尺寸',
-        items: [
-          getPropertyField('input', {
-            label: '宽度',
-            title: '容器宽度(支持百分比和像素单位)',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '高度',
-            title: '容器高度(支持像素单位，默认自适应)',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
-        ]
-      },
-      {
-        label: '布局',
-        items: [
-          getPropertyField('radioGroup', {
-            label: '方向',
-            title: '组件排列方向(flex-direction)',
-            prop: 'vertical',
-            props: {
-              options: [
-                { label: '水平排列', value: false },
-                { label: '垂直排列', value: true }
-              ]
-            }
-          }),
-          getPropertyField('radioGroup', {
-            label: '自动换行',
-            title: '自动换行(wrap)',
-            prop: 'wrap',
-            props: {
-              options: [
-                { label: '不换行', value: 'nowrap' },
-                { label: '自动换行', value: 'wrap' }
-              ]
-            }
-          }),
-          getPropertyField('select', {
-            label: '交叉轴',
-            title: '交叉轴对齐方式(align-items)',
-            prop: 'alignItems'
-          }),
-          getPropertyField('select', {
-            label: '主轴',
-            title: '主轴对齐方式(justify-content)',
-            prop: 'justifyContent'
-          }),
-          getPropertyField('input', {
-            label: '组件间距',
-            title: '内部组件间的距离(gap)',
-            prop: 'gap',
-            props: {
-              placeholder: '0px',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '内边距',
-            title: '容器的内边距(padding)',
-            prop: 'padding',
-            props: {
-              placeholder: '0px',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '外边距',
-            title: '画布的外边距（margin）',
-            prop: 'margin',
-            props: {
-              placeholder: '0px',
-              allowClear: true
-            }
-          })
-        ]
-      },
-      {
-        label: '背景',
-        items: [
-          getPropertyField('colorPicker', {
-            label: '颜色',
-            title: '背景颜色(background-color)',
-            prop: 'backgroundColor'
-          }),
-          getPropertyField('input', {
-            label: '图片',
-            title: '背景图片(background-image)',
-            prop: 'backgroundImage',
-            props: {
-              placeholder: '请输入图片地址',
-              maxLength: 250,
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '图片尺寸',
-            title: '背景图片尺寸(background-size)',
-            prop: 'backgroundSize',
-            props: {
-              maxLength: 20,
-              placeholder: '自动',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '图片位置',
-            title: '背景图片位置(background-position)',
-            prop: 'backgroundPosition',
-            props: {
-              maxLength: 20,
-              allowClear: true
-            }
-          }),
-          getPropertyField('select', {
-            label: '图片重复',
-            title: '背景图片重复(background-repeat)',
-            prop: 'backgroundRepeat',
-            props: {
-              options: [
-                { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
-                { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
-                { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
-                { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
-                { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
-                { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
-              ]
-            }
-          })
-        ]
-      }
   configForm: propertyValues => [
+    {
+      label: '尺寸',
+      items: [
+        getPropertyField('input', {
+          label: '宽度',
+          title: '容器宽度：支持填写百分数和数字，填写数字时的单位为屏幕像素（width）',
+          prop: 'width',
+          layout: 'half',
+          props: {
+            placeholder: '自适应',
+            allowClear: true
+          },
+          slots: {
+            prefix: () => <IconFont type={'icon-designer-property-width'} />
+          }
+        }),
+        getPropertyField('input', {
+          label: '高度',
+          title: '容器高度：支持填写百分数和数字，填写数字时的单位为屏幕像素（height）',
+          prop: 'height',
+          layout: 'half',
+          props: {
+            placeholder: '自适应',
+            allowClear: true
+          },
+          slots: {
+            prefix: () => <IconFont type={'icon-designer-property-height'} />
+          }
+        })
+      ]
+    },
+    {
+      label: '布局',
+      items: [
+        getPropertyField('segmented', {
+          label: '排列方向',
+          title: '控制容器内元素的排列方向：横向排列或者纵向排列（flex-direction）',
+          prop: 'flexDirection',
+          props: {
+            block: true,
+            options: [
+              { label: () => <IconFont type={'icon-designer-property-row'} />, value: 'row' },
+              { label: () => <IconFont type={'icon-designer-property-column'} />, value: 'column' }
+            ]
+          }
+        }),
+        getPropertyField('segmented', {
+          label: '组件分布',
+          title: '控制容器内组件在设定的排列方向上如何分布：靠拢或分散（justify-content）',
+          prop: 'justifyContent'
+        }, propertyValues),
+        getPropertyField('segmented', {
+          label: '组件对齐',
+          title: '控制容器内各组件的对齐方式（align-items）',
+          prop: 'alignItems'
+        }, propertyValues),
+        getPropertyField('select', {
+          label: `多${propertyValues?.style?.flexDirection === 'column' ? '列' : '行'}显示`,
+          title: `容器内组件的总宽度超过${
+            propertyValues?.style?.flexDirection === 'column' ? '容器高度' : '容器宽度'
+          }时${
+            propertyValues?.style?.flexDirection === 'column' ? '另起一列' : '另起一行'
+          }（flex-wrap）`,
+          layout: 'half',
+          prop: 'wrap',
+          props: {
+            options: [
+              { label: '否', value: 'nowrap' },
+              { label: '是', value: 'wrap' }
+            ]
+          }
+        }),
+        getPropertyField('input', {
+          label: '组件间距',
+          title: '各组件间的间隔距离（gap）',
+          prop: 'gap',
+          layout: 'half',
+          props: {
+            placeholder: '0px',
+            allowClear: true
+          },
+          slots: {
+            prefix: () => <IconFont type={'icon-designer-property-flex-row-gap'} />
+          }
+        }),
+        getPropertyField('multiInput', {
+          label: '内边距',
+          title: '容器的内边距（padding）',
+          prop: 'padding',
+          props: {
+            layout: 'half',
+            placeholder: '0px',
+            allowClear: true
+          },
+          slots: {
+            all: () => <IconFont type={'icon-designer-property-all'} />,
+            tb: () => <IconFont type={'icon-designer-property-padding-tb'} />,
+            lr: () => <IconFont type={'icon-designer-property-padding-lr'} />,
+            top: () => <IconFont type={'icon-designer-property-padding-top'} />,
+            bottom: () => <IconFont type={'icon-designer-property-padding-bottom'} />,
+            left: () => <IconFont type={'icon-designer-property-padding-left'} />,
+            right: () => <IconFont type={'icon-designer-property-padding-right'} />
+          }
+        }),
+        getPropertyField('multiInput', {
+          label: '外边距',
+          title: '容器的外边距（margin）',
+          prop: 'margin',
+          props: {
+            layout: 'half',
+            placeholder: '0px',
+            allowClear: true
+          },
+          slots: {
+            all: () => <IconFont type={'icon-designer-property-all'} />,
+            tb: () => <IconFont type={'icon-designer-property-margin-tb'} />,
+            lr: () => <IconFont type={'icon-designer-property-margin-lr'} />,
+            top: () => <IconFont type={'icon-designer-property-margin-top'} />,
+            bottom: () => <IconFont type={'icon-designer-property-margin-bottom'} />,
+            left: () => <IconFont type={'icon-designer-property-margin-left'} />,
+            right: () => <IconFont type={'icon-designer-property-margin-right'} />
+          }
+        }),
+        getPropertyField('segmented', {
+          label: '容器溢出',
+          title: [
+            <span>当内容溢出容器设置的宽高时的处理方式（overflow）</span>,
+            <span>注意：此属性会受到容器的“宽度”、“高度”、“排列方向”、“多行显示”、“多列显示”等属性的影响</span>
+          ],
+          prop: 'overflow',
+          props: {
+            options: [
+              {
+                label: () => <IconFont type={'icon-designer-property-of-visible'} />,
+                value: 'visible',
+                title: '默认（visible）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-of-hidden'} />,
+                value: 'hidden',
+                title: '溢出部分隐藏（hidden）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-of-auto'} />,
+                value: 'auto',
+                title: '溢出自动隐藏且显示容器滚动条（auto）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-of-x'} />,
+                value: 'auto hidden',
+                title: '溢出自动隐藏且显示容器X轴滚动条（auto hidden）',
+                disabled: propertyValues?.wrap !== 'nowrap'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-of-y'} />,
+                value: 'hidden auto',
+                title: '溢出自动隐藏且自动显示容器Y轴滚动条（hidden auto）',
+                disabled: propertyValues?.wrap !== 'nowrap'
+              }
+            ]
+          }
+        })
+      ]
+    },
+    {
+      label: '背景',
+      items: [
+        getPropertyField('colorPicker', {
+          label: '颜色',
+          title: '容器的背景颜色(background-color)',
+          prop: 'style.backgroundColor'
+        }),
+        getPropertyField('upload', {
+          label: '图片',
+          title: '容器的背景图片(background-image)',
+          prop: 'style.backgroundImage'
+        }),
+        getPropertyField('multiInput', {
+          label: '图片尺寸',
+          title: '容器背景图片的尺寸(background-size)',
+          prop: 'style.backgroundSize',
+          props: {
+            maxLength: 20,
+            layout: 'half',
+            placeholder: '自动',
+            allowClear: true,
+            modes: ['singleValue', 'dualValue']
+          },
+          slots: {
+            all: () => <IconFont type={'icon-designer-property-all'} />,
+            tb: () => <IconFont type={'icon-designer-property-width'} />,
+            lr: () => <IconFont type={'icon-designer-property-height'} />
+          }
+        }),
+        getPropertyField('segmented', {
+          label: '图片位置',
+          title: '容器背景图片的位置（background-position）',
+          prop: 'style.backgroundPosition',
+          props: {
+            options: [
+              {
+                label: () => <IconFont type={'icon-designer-property-bp-center'} />,
+                value: 'center',
+                title: '容器正中央（center）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-bp-top'} />,
+                value: 'top',
+                title: '紧贴容器顶部（top）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-bp-bottom'} />,
+                value: 'bottom',
+                title: '紧贴容器底部（bottom）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-bp-left'} />,
+                value: 'left',
+                title: '紧贴容器左侧（left）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-bp-right'} />,
+                value: 'right',
+                title: '紧贴容器右侧（right）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-bp-inherit'} />,
+                value: 'inherit',
+                title: '继承（inherit）'
+              }
+            ]
+          }
+        }),
+        getPropertyField('segmented', {
+          label: '图片重复方式',
+          title: '容器背景图片的重复方式(background-repeat)',
+          prop: 'style.backgroundRepeat',
+          props: {
+            options: [
+              {
+                label: () => <IconFont type={'icon-designer-property-br-no-repeat'} />,
+                value: 'no-repeat',
+                title: '仅显示一张背景图片（no-repeat）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-br-repeat'} />,
+                value: 'repeat',
+                title: '图像重复显示，但图片可能会被裁剪。（repeat）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-br-space'} />,
+                value: 'space',
+                title: '图像重复且均匀的显示在容器内，不会裁剪图片，但可能会有间隙。（space）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-br-round'} />,
+                value: 'round',
+                title: '图像重复显示，不会裁剪图片，但会自动缩放来消除间隙。（round）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-br-repeat-x'} />,
+                value: 'repeat-x',
+                title: '图像沿X轴方向重复显示。（repeat-x）'
+              },
+              {
+                label: () => <IconFont type={'icon-designer-property-br-repeat-y'} />,
+                value: 'repeat-y',
+                title: '图像沿Y轴方向重复显示。（repeat-x）'
+              }
+            ]
+          }
+        })
+      ]
+    }
   ]
 }
 
