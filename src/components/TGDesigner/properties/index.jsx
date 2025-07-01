@@ -18,9 +18,10 @@
  * @property {any} [component] - 操作属性的组件
  */
 
-import { Input, InputNumber, Radio, RadioGroup, Segmented, Select, Switch } from 'ant-design-vue'
+import { Checkbox, CheckboxGroup, Input, InputNumber, Radio, RadioGroup, Segmented, Select, Switch } from 'ant-design-vue'
 import TGColorPicker from '@/components/TGColorPicker'
 import MultiInput from './components/MultiInput'
+import Upload from './components/Upload'
 
 export function getOptionsOfPropertyField(prop, propertyValues) {
   if (prop === 'alignItems') {
@@ -28,22 +29,22 @@ export function getOptionsOfPropertyField(prop, propertyValues) {
 
     return [
       {
-        label: () => <IconFont type={'icon-designer-property-ai-center'} class={{ column: isColumn }} />,
+        label: () => <IconFont type={'icon-designer-property-ai-center'} class={{ column2: isColumn }} />,
         value: 'center',
         title: '居中对齐（center）'
       },
       {
-        label: () => <IconFont type={'icon-designer-property-ai-start'} class={{ column: isColumn }} />,
+        label: () => <IconFont type={'icon-designer-property-ai-start'} class={{ column2: isColumn }} />,
         value: 'flex-start',
-        title: `${isColumn ? '左' : '上'}侧对齐（flex-start）`
+        title: `${isColumn ? '左侧' : '顶部'}对齐（flex-start）`
       },
       {
-        label: () => <IconFont type={'icon-designer-property-ai-end'} class={{ column: isColumn }} />,
+        label: () => <IconFont type={'icon-designer-property-ai-end'} class={{ column2: isColumn }} />,
         value: 'flex-end',
-        title: `${isColumn ? '右' : '下'}侧对齐（flex-end）`
+        title: `${isColumn ? '右侧' : '底部'}对齐（flex-end）`
       },
       {
-        label: () => <IconFont type={'icon-designer-property-ai-stretch'} class={{ column: isColumn }} />,
+        label: () => <IconFont type={'icon-designer-property-ai-stretch'} class={{ column2: isColumn }} />,
         value: 'stretch',
         title: '拉伸对齐（stretch）'
       },
@@ -65,17 +66,17 @@ export function getOptionsOfPropertyField(prop, propertyValues) {
       {
         label: () => <IconFont type={'icon-designer-property-jc-start'} class={{ column: isColumn }} />,
         value: 'flex-start',
-        title: `${isColumn ? '上' : '左'}侧靠拢（flex-start）`
+        title: `${isColumn ? '顶部' : '左侧'}靠拢（flex-start）`
       },
       {
         label: () => <IconFont type={'icon-designer-property-jc-end'} class={{ column: isColumn }} />,
         value: 'flex-end',
-        title: `${isColumn ? '下' : '右'}侧靠拢（flex-end）`
+        title: `${isColumn ? '底部' : '右侧'}靠拢（flex-end）`
       },
       {
         label: () => <IconFont type={'icon-designer-property-jc-justify'} class={{ column: isColumn }} />,
         value: 'space-between',
-        title: `${isColumn ? '上下' : '左右'}两侧分散（space-between）`
+        title: '两侧分散（space-between）'
       },
       {
         label: () => <IconFont type={'icon-designer-property-jc-sa'} class={{ column: isColumn }} />,
@@ -102,7 +103,7 @@ export function getOptionsOfPropertyField(prop, propertyValues) {
  */
 export default function getPropertyField(componentType, props, propertyValues) {
   const field = {
-    label: props.label || '字符串',
+    label: props.label,
     title: props.title || undefined,
     prop: props.prop,
     props: props.props,
@@ -110,17 +111,20 @@ export default function getPropertyField(componentType, props, propertyValues) {
     slots: props.slots,
     modelProp: props.modelProp || 'value',
     componentType,
-    component: () => ({
+    component: {
       input: Input,
       inputNumber: InputNumber,
+      checkbox: Checkbox,
+      checkboxGroup: CheckboxGroup,
       radio: Radio,
-      radioGroup: <RadioGroup size="small" optionType="button" />,
-      select: <Select />,
-      switch: <Switch />,
-      colorPicker: TGColorPicker,
+      radioGroup: RadioGroup,
+      select: Select,
+      switch: Switch,
+      colorPicker: <TGColorPicker class={'tg-designer-color-picker'} />,
       segmented: Segmented,
-      multiInput: MultiInput
-    }[componentType])
+      multiInput: MultiInput,
+      upload: Upload
+    }[componentType]
   }
 
   if (!props.props?.options) {
