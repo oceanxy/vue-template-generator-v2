@@ -94,14 +94,15 @@ export default {
       const isLayoutComp = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
 
       // ========================================================================
-      // 在画布中时，组件的宽高和外边距要应用到拖拽容器上，内部组件默认撑满容器。
-      // 但部分容器除外，这部分组件因为其内部有特殊处理，所以这里需要单独处理。
+      // 在画布中时，组件的部分属性要应用到拖拽容器上，以适配画布上的组件显示。
+      // 宽高（内部组件默认撑满容器）、外边距、overflow。
 
       const marginObj = getMarginValues(component.style)
       const dragCompStyle = {
         style: {
           width: `calc(${component.style.width} - ${marginObj.marginLeft} - ${marginObj.marginRight})`,
           height: component.style.height,
+          overflow: component.style.overflow,
           margin: component.style.margin
         }
       }
@@ -114,14 +115,15 @@ export default {
         dragCompStyle.style.marginRight = component.style.marginRight
       }
 
-      // ========================================================================
-
+      // 但部分容器除外，这部分组件因为其内部有特殊处理，所以这里需要单独处理部分属性。
       if (componentDef.type !== 'a-image') {
         component.style = omit(component.style, ['width', 'height'])
       }
 
       // 布局组件需要添加额外的样式
       const canvasCompCategoryClassName = `tg-designer-${componentSchema.category}-component`
+
+      // ========================================================================
 
       // 添加布局组件的嵌套支持
       if (isLayoutComp) {
