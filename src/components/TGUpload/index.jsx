@@ -138,8 +138,8 @@ export default {
       // 文件大小限制
       if (file.size / 1024 / 1024 > props.fileSize) {
         file.status = 'error'
-        file.error = new Error('文件大小超过限制，上传失败。')
-        file.response = '文件大小超过限制，上传失败。'
+        file.error = new Error(`文件大小超过${props.fileSize}M限制，上传失败。`)
+        file.response = `文件大小超过${props.fileSize}M限制，上传失败。`
 
         return false
       }
