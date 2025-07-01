@@ -2,14 +2,17 @@ const UNIT_PROPS = [
   'width', 'height', 'minHeight', 'minWidth', 'top', 'left', 'right', 'bottom',
   'margin', 'marginTop', 'marginLeft', 'marginRight', 'marginBottom',
   'padding', 'paddingTop', 'paddingLeft', 'paddingRight', 'paddingBottom',
-  'fontSize', 'borderRadius', 'gap', 'columnGap', 'rowGap'
+  'fontSize', 'borderRadius', 'gap', 'columnGap', 'rowGap', 'backgroundSize'
 ]
 
 export function styleWithUnits(styleObj) {
   return Object.entries(styleObj).reduce((acc, [key, value]) => {
     if ((typeof value === 'number' || !isNaN(value === '' ? 'unset' : value)) && UNIT_PROPS.includes(key)) {
       acc[key] = `${value}px`
-    } else if (['padding', 'margin'].includes(key) && (typeof value === 'string' && value.includes(' '))) {
+    } else if (
+      ['padding', 'margin', 'backgroundSize'].includes(key) &&
+      (typeof value === 'string' && value.includes(' '))
+    ) {
       acc[key] = value.split(' ').map(v => {
         if (!isNaN(v === '' ? 'unset' : v)) {
           return `${v}px`
