@@ -158,6 +158,7 @@ export default {
       return (
         <Input
           {...restProps}
+          disabled={props.disabled}
           value={valueArr.values[_props.sort]}
           onClick={e => e.currentTarget.select()}
           onInput={e => handleInput(e, _props.sort)}
@@ -200,7 +201,10 @@ export default {
 
     return () => (
       <div
-        class={'tg-designer-property-comp-multi-input'}
+        class={{
+          'tg-designer-property-comp-multi-input': true,
+          'disabled': props.disabled
+        }}
         onChange={e => e.preventDefault = true}
       >
         <div
@@ -218,6 +222,7 @@ export default {
               type={'text'}
               title={`切换为${modeNames[modes[(modes.indexOf(mode.value) + 1) % modes.length]]}模式`}
               icon={<IconFont type={'icon-designer-property-multi-input-expend'} />}
+              disabled={props.disabled}
               onClick={handleModeChange}
             />
           </div>

@@ -2,6 +2,10 @@
   display: flex;
   width: 100%;
 
+  &.disabled .anticon {
+    opacity: .2;
+  }
+
   .tg-designer-property-comp-multi-input-wrapper {
     flex: auto;
     display: flex;
