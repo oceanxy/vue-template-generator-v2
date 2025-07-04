@@ -2,8 +2,8 @@ import { Button, message, Modal, Upload } from 'ant-design-vue'
 import { getBase64, getFirstLetterOfEachWordOfAppName, getUUID } from '@/utils/utilityFunction'
 import { computed, ref, watch } from 'vue'
 import configs from '@/configs'
+import { cloneDeep, omit } from 'lodash'
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons-vue'
-import { cloneDeep } from 'lodash'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 
@@ -76,7 +76,7 @@ export default {
       default: null
     }
   },
-  setup(props, { emit }) {
+  setup(props, { emit, slots }) {
     const files = ref([])
     const fileListBackup = ref([])
     const previewImage = ref('')
@@ -231,6 +231,38 @@ export default {
       emit('update:value', files.value.filter(item => item.status === 'done'))
     }
 
+    const renderSlots = () => {
+      let hasDefaultSlot
+
+      if (slots.default) {
+        const result = slots.default()
+        hasDefaultSlot = Array.isArray(result) && result.some(item => item.type.toString() !== 'Symbol(v-cmt)')
+      }
+
+      return {
+        default: () => ((props.limit === 1 && props.prioritizeNewUploads) || props.limit > files.value.length) && (
+          props.listType === 'picture-card'
+            ? (
+              <div>
+                {hasDefaultSlot ? slots.default() : <PlusOutlined />}
+                <p>{props.placeholder}</p>
+              </div>
+            )
+            : (
+              <Button
+                disabled={props.disabled}
+                type={props.buttonType}
+                size={props.buttonSize}
+              >
+                {hasDefaultSlot ? slots.default() : <UploadOutlined />}
+                {props.placeholder}
+              </Button>
+            )
+        ),
+        ...omit(slots, 'default')
+      }
+    }
+
     return () => (
       <div
         style={{
@@ -258,27 +290,7 @@ export default {
               : null
           }
         >
-          {
-            ((props.limit === 1 && props.prioritizeNewUploads) || props.limit > files.value.length) && (
-              props.listType === 'picture-card'
-                ? (
-                  <div>
-                    <PlusOutlined />
-                    <p>{props.placeholder}</p>
-                  </div>
-                )
-                : (
-                  <Button
-                    disabled={props.disabled}
-                    type={props.buttonType}
-                    size={props.buttonSize}
-                  >
-                    <UploadOutlined />
-                    {props.placeholder}
-                  </Button>
-                )
-            )
-          }
+          {renderSlots()}
         </Upload>
         <Modal
           open={previewVisible.value}
