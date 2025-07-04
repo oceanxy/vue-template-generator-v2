@@ -156,11 +156,13 @@ export default {
           {/*</div>*/}
           <div class={'tg-designer-canvas-functions'}>
             <Button
+              type="text"
               disabled={saveStatus.value === SAVE_STATUS.SAVING}
               icon={<IconFont type="icon-designer-tool-undo" />}
               title={'撤销'}
             />
             <Button
+              type="text"
               disabled={saveStatus.value === SAVE_STATUS.SAVING}
               icon={<IconFont type="icon-designer-tool-redo" />}
               title={'重做'}
@@ -171,21 +173,24 @@ export default {
               status={['error', 'processing', 'success'][saveStatus.value - 1]}
             >
               <Button
+                type="text"
                 disabled={saveStatus.value !== SAVE_STATUS.UNSAVED || !isSchemaChanged.value}
-                onClick={() => handleSchemaSave()}
                 icon={<IconFont type="icon-designer-tool-save" />}
                 title={'保存'}
+                onClick={() => handleSchemaSave()}
               />
             </Badge>
             <Button
-              onClick={handlePreview}
+              type="text"
               icon={<IconFont type="icon-designer-tool-preview" />}
               title={'预览'}
+              onClick={handlePreview}
             />
             <Button
-              onClick={handlePreviewH5}
+              type="text"
               icon={<IconFont type="icon-designer-tool-preview-h5" />}
               title={'预览'}
+              onClick={handlePreviewH5}
             />
           </div>
           <div class="tg-designer-status-indicators">
