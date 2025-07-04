@@ -10,8 +10,8 @@
     & > div {
       margin: 0 !important;
       flex: unset !important;
-      width: 40px !important;
-      padding-left: 8px;
+      width: 32px !important;
+
 
       .ant-upload-wrapper {
         display: block;
@@ -21,10 +21,14 @@
         }
       }
 
-      .ant-btn {
-        padding: 0 8px;
-        background: none;
+      .ant-upload-select .ant-btn.ant-btn-text {
+        padding: 0 10px;
         border: 0;
+        font-size: 14px;
+
+        &:not(&:hover) {
+          background: none;
+        }
       }
     }
   }

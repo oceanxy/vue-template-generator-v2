@@ -1,5 +1,4 @@
-import { Button, Input, Upload } from 'ant-design-vue'
-import { UploadOutlined } from '@ant-design/icons-vue'
+import { Input, Upload } from 'ant-design-vue'
 import { inject, ref, watch } from 'vue'
 import './index.scss'
 
@@ -11,8 +10,8 @@ export default {
       default: ''
     }
   },
-  setup(props, { emit }) {
-    const PropertyUpload = inject('PropertyUpload', null)
+  setup(props, { emit, slots }) {
+    const PropertyUpload = inject('asyncPropertyUpload', null)
     const inputValue = ref(props.value)
     const uploadFiles = ref([])
 
@@ -61,13 +60,15 @@ export default {
               accept={'.png,.jpg,.jpeg'}
               limit={1}
               prioritizeNewUploads={true}
-            />
+            >
+              {slots}
+            </PropertyUpload>
           ) : (
             <Upload
               fileList={uploadFiles.value}
               onChange={({ fileList }) => handleUploadChange(fileList)}
             >
-              <Button type={'text'} icon={<UploadOutlined />} />
+              {slots}
             </Upload>
           )}
         </div>
