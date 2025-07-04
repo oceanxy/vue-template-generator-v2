@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { TG_MATERIAL_CATEGORY } from '../materials'
 import { cloneDeep } from 'lodash'
-import { canvasConfigForm, schema } from '../schemas'
+import { schema } from '../schemas'
 import { getUUID } from '@/utils/utilityFunction'
 import basicMaterials from '../materials/meta/basic'
 import layoutMaterials from '../materials/meta/layout'
@@ -13,7 +13,6 @@ export const useEditorStore = defineStore('editor', {
     saveStatus: SAVE_STATUS.SAVED, // 服务端保存状态
     isSchemaLoaded: false,
     selectedComponent: null,
-    canvasConfigForm,
     schema: cloneDeep(schema),
     selectedPlugin: {
       id: null
