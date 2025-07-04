@@ -22,7 +22,7 @@ export default {
   defaultProps: BasicMenu.defaultProps,
   style: BasicMenu.style,
   class: '',
-  configForm: BasicMenu.configForm
+  propConfigForm: BasicMenu.propConfigForm
 }
 
 const Navigation = {

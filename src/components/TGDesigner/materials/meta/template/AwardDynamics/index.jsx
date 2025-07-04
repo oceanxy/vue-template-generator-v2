@@ -1,4 +1,4 @@
-import getPropertyConfig from '@/components/TGDesigner/properties'
+import getPropertyConfig, { predefinedProperties } from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE, TG_MATERIAL_TEMPLATE_COMPONENT_ENUM } from '@/components/TGDesigner/materials'
 import { Button, Image, TypographyParagraph } from 'ant-design-vue'
 import { computed, onMounted, ref } from 'vue'
@@ -6,8 +6,8 @@ import useStore from '@/composables/tgStore'
 import { useRoute, useRouter } from 'vue-router'
 import { range } from 'lodash'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
-import './index.scss'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
+import './index.scss'
 
 /**
  * 奖项动态模板组件元数据
@@ -58,28 +58,12 @@ export default {
     backgroundRepeat: 'no-repeat'
   },
   class: '',
-  configForm: [
+  propConfigForm: propertyValues => [
     {
       label: '尺寸',
       items: [
-        getPropertyConfig('input', {
-          label: '宽度',
-          title: '容器宽度（支持百分比和像素单位）',
-          prop: 'width',
-          props: {
-            placeholder: '自适应',
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '高度',
-          title: '容器高度（支持像素单位，默认自适应）',
-          prop: 'height',
-          props: {
-            placeholder: '自适应',
-            allowClear: true
-          }
-        })
+        predefinedProperties.width(),
+        predefinedProperties.height()
       ]
     },
     {
@@ -89,28 +73,22 @@ export default {
           label: '突出第一条数据',
           title: '突出展示第一条数据',
           prop: 'highlightFirstItem',
-          modelProp: 'checked'
+          modelProp: 'checked',
+          layout: 'half'
         })
       ]
     },
     {
       label: '标题',
       items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '颜色(color)',
-          prop: 'titleStyle.color',
-          props: {
-            defaultValue: '#000000'
-          }
+        predefinedProperties.color({
+          prop: 'titleStyle.color'
         }),
-        getPropertyConfig('inputNumber', {
-          label: '字号',
-          title: '字号(font-size)',
+        predefinedProperties.fontSize({
           prop: 'titleStyle.fontSize',
+          layout: 'half',
           props: {
-            min: 12,
-            max: 50
+            placeholder: '24px'
           }
         })
       ]
@@ -118,21 +96,13 @@ export default {
     {
       label: '副标题',
       items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '颜色(color)',
-          prop: 'textStyle.color',
-          props: {
-            defaultValue: '#000000'
-          }
+        predefinedProperties.color({
+          prop: 'textStyle.color'
         }),
-        getPropertyConfig('inputNumber', {
-          label: '字号',
-          title: '字号(font-size)',
+        predefinedProperties.fontSize({
           prop: 'textStyle.fontSize',
           props: {
-            min: 12,
-            max: 50
+            placeholder: '14px'
           }
         })
       ]
@@ -140,21 +110,13 @@ export default {
     {
       label: '次级标题',
       items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '颜色(color)',
-          prop: 'itemTitleStyle.color',
-          props: {
-            defaultValue: '#000000'
-          }
+        predefinedProperties.color({
+          prop: 'itemTitleStyle.color'
         }),
-        getPropertyConfig('inputNumber', {
-          label: '字号',
-          title: '字号(font-size)',
+        predefinedProperties.fontSize({
           prop: 'itemTitleStyle.fontSize',
           props: {
-            min: 12,
-            max: 50
+            placeholder: '16px'
           }
         })
       ]
@@ -162,78 +124,20 @@ export default {
     {
       label: '次级文本',
       items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '颜色(color)',
-          prop: 'itemTextStyle.color',
-          props: {
-            defaultValue: '#000000'
-          }
+        predefinedProperties.color({
+          prop: 'itemTextStyle.color'
         }),
-        getPropertyConfig('inputNumber', {
-          label: '字号',
-          title: '字号(font-size)',
+        predefinedProperties.fontSize({
           prop: 'itemTextStyle.fontSize',
           props: {
-            min: 12,
-            max: 50
+            placeholder: '14px'
           }
         })
       ]
     },
     {
       label: '背景',
-      items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '背景颜色(background-color)',
-          prop: 'backgroundColor'
-        }),
-        getPropertyConfig('input', {
-          label: '图片',
-          title: '背景图片(background-image)',
-          prop: 'backgroundImage',
-          props: {
-            placeholder: '请输入图片地址',
-            maxLength: 250,
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '图片尺寸',
-          title: '背景图片尺寸(background-size)',
-          prop: 'backgroundSize',
-          props: {
-            maxLength: 20,
-            placeholder: '自动',
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '图片位置',
-          title: '背景图片位置(background-position)',
-          prop: 'backgroundPosition',
-          props: {
-            maxLength: 20,
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('select', {
-          label: '图片重复',
-          title: '背景图片重复(background-repeat)',
-          prop: 'backgroundRepeat',
-          props: {
-            options: [
-              { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
-              { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
-              { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
-              { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
-              { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
-              { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
-            ]
-          }
-        })
-      ]
+      items: predefinedProperties.background(null, propertyValues)
     }
   ]
 }

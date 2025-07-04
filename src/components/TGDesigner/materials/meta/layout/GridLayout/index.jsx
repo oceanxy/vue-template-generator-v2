@@ -2,7 +2,7 @@ import { Col, Flex, Row } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { range } from 'lodash'
 import { styleWithUnits } from '@/components/TGDesigner/utils/style'
-import getPropertyConfig from '@/components/TGDesigner/properties'
+import getPropertyConfig, { predefinedProperties } from '@/components/TGDesigner/properties'
 import './index.scss'
 
 /**
@@ -40,28 +40,12 @@ export default {
   children: [],
   canMoveInside: true,
   canCopyInside: true,
-  configForm: [
+  propConfigForm: propertyValues => [
     {
       label: '尺寸',
       items: [
-        getPropertyConfig('input', {
-          label: '宽度',
-          title: '容器宽度(支持百分比和像素单位)',
-          prop: 'width',
-          props: {
-            placeholder: '自适应',
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '高度',
-          title: '容器高度(支持像素单位，默认自适应)',
-          prop: 'height',
-          props: {
-            placeholder: '自适应',
-            allowClear: true
-          }
-        })
+        predefinedProperties.width(),
+        predefinedProperties.height()
       ]
     },
     {
@@ -70,17 +54,20 @@ export default {
         getPropertyConfig('inputNumber', {
           title: '水平间距',
           label: '列间距',
-          prop: 'gutterX'
+          prop: 'gutterX',
+          layout: 'half'
         }),
         getPropertyConfig('inputNumber', {
           title: '垂直间距',
           label: '行间距',
-          prop: 'gutterY'
+          prop: 'gutterY',
+          layout: 'half'
         }),
         getPropertyConfig('inputNumber', {
           title: '行数，取值区间 [1,10]',
           label: '行数',
           prop: 'rowCount',
+          layout: 'half',
           props: {
             min: 1,
             max: 10
@@ -90,84 +77,19 @@ export default {
           title: '列数，取值区间 [1,4]',
           label: '列数',
           prop: 'columnCount',
+          layout: 'half',
           props: {
             min: 1,
             max: 4
           }
         }),
-        getPropertyConfig('input', {
-          label: '内边距',
-          title: '容器的内边距(padding)',
-          prop: 'padding',
-          props: {
-            placeholder: '0px',
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '外边距',
-          title: '画布的外边距（margin）',
-          prop: 'margin',
-          props: {
-            placeholder: '0px',
-            allowClear: true
-          }
-        })
+        predefinedProperties.padding(),
+        predefinedProperties.margin()
       ]
     },
     {
       label: '背景',
-      items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '背景颜色(background-color)',
-          prop: 'backgroundColor'
-        }),
-        getPropertyConfig('input', {
-          label: '图片',
-          title: '背景图片(background-image)',
-          prop: 'backgroundImage',
-          props: {
-            placeholder: '请输入图片地址',
-            maxLength: 250,
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '图片尺寸',
-          title: '背景图片尺寸(background-size)',
-          prop: 'backgroundSize',
-          props: {
-            maxLength: 20,
-            placeholder: '自动',
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '图片位置',
-          title: '背景图片位置(background-position)',
-          prop: 'backgroundPosition',
-          props: {
-            maxLength: 20,
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('select', {
-          label: '图片重复',
-          title: '背景图片重复(background-repeat)',
-          prop: 'backgroundRepeat',
-          props: {
-            options: [
-              { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
-              { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
-              { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
-              { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
-              { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
-              { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
-            ]
-          }
-        })
-      ]
+      items: predefinedProperties.background(null, propertyValues)
     }
   ]
 }

@@ -1,4 +1,4 @@
-import getPropertyConfig from '@/components/TGDesigner/properties'
+import { predefinedProperties } from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE, TG_MATERIAL_TEMPLATE_COMPONENT_ENUM } from '@/components/TGDesigner/materials'
 import { Button, TypographyParagraph } from 'ant-design-vue'
 import { computed, onMounted, ref, watchEffect } from 'vue'
@@ -37,10 +37,8 @@ export default {
       color: '#000000',
       fontSize: 24
     },
-    descBackground: {
-      backgroundColor: '#ffffff'
-    },
     descStyle: {
+      backgroundColor: '#ffffff',
       color: '#333333',
       fontSize: 14,
       lineHeight: 1.5
@@ -62,163 +60,55 @@ export default {
     backgroundRepeat: 'no-repeat'
   },
   class: '',
-  configForm: [
+  propConfigForm: propertyValues => [
     {
       label: '尺寸',
       items: [
-        getPropertyConfig('input', {
-          label: '宽度',
-          title: '容器宽度（支持百分比和像素单位）',
-          prop: 'width',
-          props: {
-            placeholder: '自适应',
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '高度',
-          title: '容器高度（支持像素单位，默认自适应）',
-          prop: 'height',
-          props: {
-            placeholder: '自适应',
-            allowClear: true
-          }
-        })
-      ]
-    },
-    {
-      label: '背景',
-      items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '背景颜色(background-color)',
-          prop: 'backgroundColor'
-        }),
-        getPropertyConfig('input', {
-          label: '图片',
-          title: '背景图片(background-image)',
-          prop: 'backgroundImage',
-          props: {
-            placeholder: '请输入图片地址',
-            maxLength: 250,
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '图片尺寸',
-          title: '背景图片尺寸(background-size)',
-          prop: 'backgroundSize',
-          props: {
-            maxLength: 20,
-            placeholder: '自动',
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('input', {
-          label: '图片位置',
-          title: '背景图片位置(background-position)',
-          prop: 'backgroundPosition',
-          props: {
-            maxLength: 20,
-            allowClear: true
-          }
-        }),
-        getPropertyConfig('select', {
-          label: '图片重复',
-          title: '背景图片重复(background-repeat)',
-          prop: 'backgroundRepeat',
-          props: {
-            options: [
-              { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
-              { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
-              { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
-              { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
-              { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
-              { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
-            ]
-          }
-        })
+        predefinedProperties.width(),
+        predefinedProperties.height()
       ]
     },
     {
       label: '标题',
       items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '颜色(color)',
-          prop: 'titleStyle.color',
-          props: {
-            defaultValue: '#000000'
-          }
-        }),
-        getPropertyConfig('inputNumber', {
-          label: '字号',
-          title: '字号(font-size)',
-          prop: 'titleStyle.fontSize',
-          props: {
-            min: 12,
-            max: 50
-          }
-        })
+        predefinedProperties.color({ prop: 'titleStyle.color' }),
+        predefinedProperties.fontSize({ prop: 'titleStyle.fontSize' })
       ]
     },
     {
       label: '文本',
       items: [
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '颜色(color)',
-          prop: 'textStyle.color',
-          props: {
-            defaultValue: '#000000'
-          }
-        }),
-        getPropertyConfig('inputNumber', {
-          label: '字号',
-          title: '字号(font-size)',
-          prop: 'textStyle.fontSize',
-          props: {
-            min: 12,
-            max: 50
-          }
-        })
+        predefinedProperties.color({ prop: 'textStyle.color' }),
+        predefinedProperties.fontSize({ prop: 'textStyle.fontSize' })
       ]
     },
     {
       label: '简介',
       items: [
-        getPropertyConfig('colorPicker', {
+        predefinedProperties.color({
           label: '背景颜色',
-          title: '背景颜色(background-color)',
-          prop: 'descBackground.backgroundColor',
+          title: '背景颜色（background-color）',
+          prop: 'descStyle.backgroundColor',
           props: {
             defaultValue: '#ffffff'
           }
         }),
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '颜色(color)',
+        predefinedProperties.color({
           prop: 'descStyle.color',
           props: {
             defaultValue: '#333333'
           }
         }),
-        getPropertyConfig('inputNumber', {
-          label: '字号',
-          title: '字号(font-size)',
+        predefinedProperties.fontSize({
           prop: 'descStyle.fontSize',
           props: {
-            min: 12,
-            max: 50
+            placeholder: '14px'
           }
         }),
-        getPropertyConfig('input', {
-          label: '行高',
-          title: '行高(line-height)',
+        predefinedProperties.lineHeight({
           prop: 'descStyle.lineHeight',
           props: {
-            placeholder: '默认',
-            allowClear: true
+            placeholder: 1.5
           }
         })
       ]
@@ -226,40 +116,41 @@ export default {
     {
       label: '按钮',
       items: [
-        getPropertyConfig('colorPicker', {
+        predefinedProperties.color({
           label: '背景颜色',
-          title: '背景颜色(background-color)',
+          title: '背景颜色（background-color）',
           prop: 'buttonStyle.backgroundColor',
           props: {
             defaultValue: '#b3d1ff'
           }
         }),
-        getPropertyConfig('colorPicker', {
+        predefinedProperties.color({
           label: '背景悬浮颜色',
-          title: '鼠标悬浮时的背景颜色(background-color)',
+          title: '鼠标悬浮时的背景颜色（background-color）',
           prop: 'buttonStyle.backgroundColorHover',
           props: {
             defaultValue: '#9dc4ff'
           }
         }),
-        getPropertyConfig('colorPicker', {
-          label: '颜色',
-          title: '颜色(color)',
+        predefinedProperties.color({
+          label: '背景悬浮颜色',
+          title: '鼠标悬浮时的背景颜色（background-color）',
           prop: 'buttonStyle.color',
           props: {
             defaultValue: '#000000'
           }
         }),
-        getPropertyConfig('inputNumber', {
-          label: '字号',
-          title: '字号(font-size)',
+        predefinedProperties.fontSize({
           prop: 'buttonStyle.fontSize',
           props: {
-            min: 12,
-            max: 50
+            placeholder: '20px'
           }
         })
       ]
+    },
+    {
+      label: '背景',
+      items: predefinedProperties.background(null, propertyValues)
     }
   ]
 }
@@ -365,7 +256,7 @@ export const MainAwardPreview = {
             <div
               class="tg-main-award-description"
               style={styleWithUnits({
-                backgroundColor: props.descBackground.backgroundColor
+                backgroundColor: props.descStyle.backgroundColor
               })}
             >
               <h2>简介</h2>

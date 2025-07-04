@@ -1,6 +1,6 @@
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { Button, Divider, Image, Input, QRCode, TypographyText } from 'ant-design-vue'
-import getPropertyConfig from '@/components/TGDesigner/properties'
+import getPropertyConfig, { predefinedProperties } from '@/components/TGDesigner/properties'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
 import Menu from './Menu'
 
@@ -25,28 +25,12 @@ export default [
       height: ''
     },
     class: '',
-    configForm: [
+    propConfigForm: [
       {
         label: '尺寸',
         items: [
-          getPropertyConfig('input', {
-            label: '宽度',
-            title: '容器宽度（支持百分比和像素单位）',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyConfig('input', {
-            label: '高度',
-            title: '容器高度（支持像素单位，默认自适应）',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
+          predefinedProperties.width(),
+          predefinedProperties.height()
         ]
       },
       {
@@ -101,28 +85,12 @@ export default [
       width: '100%'
     },
     class: '',
-    configForm: [
+    propConfigForm: [
       {
         label: '尺寸',
         items: [
-          getPropertyConfig('input', {
-            label: '宽度',
-            title: '容器宽度（支持百分比和像素单位）',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyConfig('input', {
-            label: '高度',
-            title: '容器高度（支持像素单位，默认自适应）',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
+          predefinedProperties.width(),
+          predefinedProperties.height()
         ]
       },
       {
@@ -153,7 +121,12 @@ export default [
         props.style.fontStyle = 'italic'
       }
 
-      return <TypographyText {...props}>{props.slot}</TypographyText>
+      return (
+        <TypographyText
+          {...props}
+          content={props.slot}
+        />
+      )
     },
     defaultProps: {
       slot: '文本内容...',
@@ -173,28 +146,12 @@ export default [
       color: ''
     },
     class: '',
-    configForm: [
+    propConfigForm: [
       {
         label: '尺寸',
         items: [
-          getPropertyConfig('input', {
-            label: '宽度',
-            title: '容器宽度（支持百分比和像素单位）',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyConfig('input', {
-            label: '高度',
-            title: '容器高度（支持像素单位，默认自适应）',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
+          predefinedProperties.width(),
+          predefinedProperties.height()
         ]
       },
       {
@@ -218,33 +175,24 @@ export default [
           getPropertyConfig('inputNumber', {
             title: '字号',
             label: '字号',
-            prop: 'fontSize'
+            prop: 'fontSize',
+            layout: 'half'
           }),
           getPropertyConfig('input', {
             title: '行高',
             label: '行高',
             prop: 'lineHeight',
+            layout: 'half',
             props: {
               placeholder: '默认',
               allowClear: true
             }
           }),
-          getPropertyConfig('switch', {
-            title: '斜体',
-            label: '斜体',
-            prop: 'italic',
-            modelProp: 'checked'
-          }),
-          getPropertyConfig('switch', {
-            title: '下划线',
-            label: '下划线',
-            prop: 'underline',
-            modelProp: 'checked'
-          }),
           getPropertyConfig('select', {
             title: '文本类型',
             label: '文本类型',
             prop: 'type',
+            layout: 'half',
             props: {
               options: [
                 { label: '主文本', value: '' },
@@ -256,33 +204,53 @@ export default [
             }
           }),
           getPropertyConfig('colorPicker', {
-            title: '颜色',
             label: '颜色',
-            prop: 'color'
+            title: '文字的颜色（color）',
+            prop: 'color',
+            props: {
+              placeholder: '无',
+              allowClear: true
+            }
           }),
-          getPropertyConfig('switch', {
-            title: '加粗',
-            label: '加粗',
-            prop: 'strong',
-            modelProp: 'checked'
-          }),
-          getPropertyConfig('switch', {
-            title: '标记',
-            label: '标记',
-            prop: 'mark',
-            modelProp: 'checked'
-          }),
-          getPropertyConfig('switch', {
-            title: '删除线',
-            label: '删除线',
-            prop: 'delete',
-            modelProp: 'checked'
-          }),
-          getPropertyConfig('switch', {
-            title: '自动溢出省略（需要配合宽度使用，当文本内容超过设置的宽度后生效）',
-            label: '自动溢出省略',
-            prop: 'ellipsis',
-            modelProp: 'checked'
+          getPropertyConfig('multiSelect', {
+            label: '样式',
+            title: '',
+            prop: '{props}',
+            props: {
+              returnObject: true,
+              options: [
+                {
+                  label: () => <IconFont type={'icon-designer-property-italic'} />,
+                  value: 'italic',
+                  title: '斜体'
+                },
+                {
+                  label: () => <IconFont type={'icon-designer-property-underline'} />,
+                  value: 'underline',
+                  title: '下划线'
+                },
+                {
+                  label: () => <IconFont type={'icon-designer-property-delete'} />,
+                  value: 'delete',
+                  title: '删除线'
+                },
+                {
+                  label: () => <IconFont type={'icon-designer-property-strong'} />,
+                  value: 'strong',
+                  title: '加粗'
+                },
+                {
+                  label: () => <IconFont type={'icon-designer-property-mark'} />,
+                  value: 'mark',
+                  title: '标记'
+                },
+                {
+                  label: () => <IconFont type={'icon-designer-property-ellipsis'} />,
+                  value: 'ellipsis',
+                  title: '文字溢出自动显示省略号。当文本内容超过设置的宽度后生效'
+                }
+              ]
+            }
           })
         ]
       }
@@ -308,31 +276,15 @@ export default [
     },
     style: {
       width: '100%',
-      height: 'auto'
+      height: ''
     },
     class: '',
-    configForm: [
+    propConfigForm: [
       {
         label: '尺寸',
         items: [
-          getPropertyConfig('input', {
-            label: '宽度',
-            title: '容器宽度（支持百分比和像素单位）',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyConfig('input', {
-            label: '高度',
-            title: '容器高度（支持像素单位，默认自适应）',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
+          predefinedProperties.width(),
+          predefinedProperties.height()
         ]
       },
       {
@@ -353,38 +305,50 @@ export default [
       {
         label: '外观',
         items: [
-          getPropertyConfig('switch', {
-            title: '虚线',
-            label: '虚线',
-            prop: 'dashed',
-            modelProp: 'checked'
-          }),
-          getPropertyConfig('radioGroup', {
-            title: '分割线标题位置',
+          getPropertyConfig('segmented', {
             label: '标题位置',
+            title: '分割线标题位置',
             prop: 'orientation',
+            layout: 'half',
             props: {
               options: [
-                { label: '左侧', value: 'left' },
-                { label: '中间', value: 'center' },
-                { label: '右侧', value: 'right' }
+                { label: '左', value: 'left' },
+                { label: '中', value: 'center' },
+                { label: '右', value: 'right' }
               ]
             }
           }),
-          getPropertyConfig('switch', {
-            title: '普通文本',
-            label: '普通文本',
-            prop: 'plain',
-            modelProp: 'checked'
-          }),
-          getPropertyConfig('radioGroup', {
-            title: '分割线的方向',
+          getPropertyConfig('segmented', {
             label: '方向',
+            title: '分割线的方向',
             prop: 'type',
+            layout: 'half',
             props: {
               options: [
                 { label: '水平', value: 'horizontal' },
                 { label: '垂直', value: 'vertical' }
+              ]
+            }
+          }),
+          getPropertyConfig('multiSelect', {
+            label: '样式',
+            title: '',
+            prop: '{props}',
+            layout: 'half',
+            props: {
+              returnObject: true,
+              options: [
+                {
+                  label: '虚',
+                  value: 'dashed',
+                  title: '分割线显示为虚线'
+                },
+                {
+                  label: () => <IconFont type={'icon-designer-property-strong'} />,
+                  value: 'plain',
+                  negate: true,
+                  title: '文字加粗'
+                }
               ]
             }
           })
@@ -419,42 +383,21 @@ export default [
       height: ''
     },
     class: 'tg-designer-basic-image',
-    configForm: [
+    propConfigForm: [
       {
         label: '尺寸',
         items: [
-          getPropertyConfig('input', {
-            label: '宽度',
-            title: '容器宽度（像素单位或百分比）',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyConfig('input', {
-            label: '高度',
-            title: '容器高度（像素单位或百分比）',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
+          predefinedProperties.width(),
+          predefinedProperties.height()
         ]
       },
       {
         label: '数据',
         items: [
-          getPropertyConfig('input', {
-            label: '图片地址',
-            title: '图片地址（img标签支持的图片格式）',
-            prop: 'src',
-            props: {
-              placeholder: '图片地址',
-              maxLength: 256,
-              allowClear: true
-            }
+          predefinedProperties.upload({
+            label: '图片',
+            title: '图片地址（img标签支持的图片地址）',
+            prop: 'src'
           })
         ]
       }
@@ -476,32 +419,21 @@ export default [
       icon: '',
       size: 160,
       iconSize: 40,
-      bordered: false,
       bgColor: '#ffffff',
       color: '#000000',
       status: 'active' // active | expired | loading | scanned
     },
     style: {},
     class: 'tg-designer-basic-qrcode',
-    configForm: [
+    propConfigForm: [
       {
         label: '尺寸',
         items: [
           getPropertyConfig('inputNumber', {
             label: '尺寸',
-            title: '二维码的尺寸',
+            title: '二维码的宽度和高度值（单位为像素）',
             prop: 'size',
-            props: {
-              placeholder: '160'
-            }
-          }),
-          getPropertyConfig('inputNumber', {
-            label: '图片大小',
-            title: '二维码中图片的大小',
-            prop: 'iconSize',
-            props: {
-              placeholder: '40'
-            }
+            layout: 'half'
           })
         ]
       },
@@ -509,23 +441,27 @@ export default [
         label: '数据',
         items: [
           getPropertyConfig('input', {
-            label: '扫描后的地址',
-            title: '扫描后的地址',
+            label: '扫描结果',
+            title: '扫描二维码后得到的数据（最大限制100字符）',
             prop: 'value',
             props: {
-              placeholder: '扫描后的地址',
+              placeholder: '请输入数据',
               maxLength: 100,
               allowClear: true
             }
           }),
-          getPropertyConfig('input', {
-            label: '图片地址',
-            title: '二维码中图片的地址（目前只支持图片地址）',
-            prop: 'icon',
+          getPropertyConfig('select', {
+            title: '二维码状态',
+            label: '二维码状态',
+            prop: 'status',
+            layout: 'half',
             props: {
-              placeholder: '图片地址',
-              maxLength: 100,
-              allowClear: true
+              options: [
+                { label: '正常', value: 'active' },
+                { label: '已过期', value: 'expired' },
+                { label: '加载中', value: 'loading' },
+                { label: '已扫描', value: 'scanned' }
+              ]
             }
           })
         ]
@@ -533,19 +469,10 @@ export default [
       {
         label: '外观',
         items: [
-          getPropertyConfig('switch', {
-            title: '显示边框',
-            label: '显示边框',
-            prop: 'bordered',
-            modelProp: 'checked'
-          }),
-          getPropertyConfig('colorPicker', {
-            title: '背景色',
-            label: '背景色',
-            prop: 'bgColor',
-            props: {
-              defaultValue: '#ffffff'
-            }
+          predefinedProperties.upload({
+            label: '二维码图片',
+            title: '显示在二维码中央的图片的地址',
+            prop: 'icon'
           }),
           getPropertyConfig('colorPicker', {
             title: '二维码颜色',
@@ -555,17 +482,12 @@ export default [
               defaultValue: '#000000'
             }
           }),
-          getPropertyConfig('select', {
-            title: '二维码状态',
-            label: '二维码状态',
-            prop: 'status',
+          getPropertyConfig('colorPicker', {
+            title: '背景色',
+            label: '背景色',
+            prop: 'bgColor',
             props: {
-              options: [
-                { label: '正常', value: 'active' },
-                { label: '已过期', value: 'expired' },
-                { label: '加载中', value: 'loading' },
-                { label: '已扫描', value: 'scanned' }
-              ]
+              defaultValue: '#ffffff'
             }
           })
         ]
