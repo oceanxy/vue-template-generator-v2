@@ -92,3 +92,72 @@ export function getMarginValues(styleObj) {
 
   return { marginLeft, marginRight }
 }
+
+/**
+ * 从样式对象中获取 padding 的值
+ * @param {Object} styleObj - 样式对象，可能包含以下形式：
+ *   1. { paddingLeft: '10px', paddingRight: '20px' }
+ *   2. { padding: '15px' }
+ *   3. { padding: '5px 10px' } 或 { padding: '5px 10px 15px 20px' }
+ * @returns {{
+ *   paddingTop: string,
+ *   paddingRight: string,
+ *   paddingBottom: string,
+ *   paddingLeft: string
+ * }} 包含 paddingTop, paddingRight, paddingBottom, paddingLeft 的对象
+ */
+export function getPaddingValues(styleObj) {
+  // 初始化默认值
+  let paddingLeft = '0px'
+  let paddingRight = '0px'
+  let paddingTop = '0px'
+  let paddingBottom = '0px'
+
+  // 情况1: 直接获取 marginLeft/marginRight
+  if (styleObj.paddingLeft || styleObj.paddingRight || styleObj.paddingTop || styleObj.paddingBottom) {
+    paddingLeft = styleObj.paddingLeft || '0px'
+    paddingRight = styleObj.paddingRight || '0px'
+    paddingTop = styleObj.paddingTop || '0px'
+    paddingBottom = styleObj.paddingBottom || '0px'
+  }
+  // 情况2 & 3: 解析 padding 简写属性
+  else if (styleObj.padding) {
+    const paddings = styleObj.padding.split(/\s+/)
+
+    switch (paddings.length) {
+      // 单值: 所有边距相同
+      case 1:
+        paddingLeft = paddings[0]
+        paddingRight = paddings[0]
+        paddingTop = paddings[0]
+        paddingBottom = paddings[0]
+        break
+
+      // 双值: 上下 | 左右
+      case 2:
+        paddingLeft = paddings[1]
+        paddingRight = paddings[1]
+        paddingTop = paddings[0]
+        paddingBottom = paddings[0]
+        break
+
+      // 三值: 上 | 左右 | 下
+      case 3:
+        paddingTop = paddings[0]
+        paddingLeft = paddings[1]
+        paddingRight = paddings[1]
+        paddingBottom = paddings[2]
+        break
+
+      // 四值: 上 | 右 | 下 | 左
+      case 4:
+        paddingTop = paddings[0]
+        paddingRight = paddings[1]
+        paddingBottom = paddings[2]
+        paddingLeft = paddings[3]
+        break
+    }
+  }
+
+  return { paddingTop, paddingRight, paddingBottom, paddingLeft }
+}

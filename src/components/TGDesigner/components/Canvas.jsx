@@ -1,7 +1,7 @@
 import { computed, markRaw, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
-import { getMarginValues, styleWithUnits } from '../utils/style'
+import { getMarginValues, getPaddingValues, styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
@@ -44,11 +44,16 @@ export default {
       () => schema.value.canvas,
       val => {
         canvasStyle.value = styleWithUnits(val.style)
+        const paddings = getPaddingValues(canvasStyle.value)
 
-        if (canvasStyle.value.width === '100%' && parseInt(canvasStyle.value.padding) < 3) {
-          // 为了给画布的辅助线和指示线留出位置
-          canvasStyle.value.padding = '3px'
-        }
+        // 处理画布的padding，为了给画布的辅助线和指示线留出位置
+        paddings.paddingLeft = parseInt(paddings.paddingLeft) < 3 ? '3px' : paddings.paddingLeft
+        paddings.paddingRight = parseInt(paddings.paddingRight) < 3 ? '3px' : paddings.paddingRight
+        paddings.paddingTop = parseInt(paddings.paddingTop) < 3 ? '3px' : paddings.paddingTop
+        paddings.paddingBottom = parseInt(paddings.paddingBottom) < 3 ? '3px' : paddings.paddingBottom
+
+        canvasStyle.value.padding =
+          `${paddings.paddingTop} ${paddings.paddingRight} ${paddings.paddingBottom} ${paddings.paddingLeft}`
 
         if (canvasStyle.value.backgroundImage && !canvasStyle.value.backgroundImage.startsWith('url(')) {
           canvasStyle.value.backgroundImage = `url(${canvasStyle.value.backgroundImage})`
@@ -126,9 +131,12 @@ export default {
       // 宽高（内部组件默认撑满容器）、外边距、overflow。
 
       const marginObj = getMarginValues(component.style)
+
       const dragCompStyle = {
         style: {
-          width: `calc(${component.style.width} - ${marginObj.marginLeft} - ${marginObj.marginRight})`,
+          width: component.style.width
+            ? `calc(${component.style.width} - ${marginObj.marginLeft} - ${marginObj.marginRight})`
+            : '',
           height: component.style.height,
           overflow: component.style.overflow,
           margin: component.style.margin
@@ -211,7 +219,7 @@ export default {
           ]}
           style={{
             ...canvasStyle.value,
-            '--canvas-padding': canvasStyle.value?.padding || '15px',
+            '--canvas-padding': canvasStyle.value?.padding,
             overflowY: designerStore.indicator.type === 'container' ? 'hidden' : 'auto'
           }}
           onClick={handleCanvasClick}
