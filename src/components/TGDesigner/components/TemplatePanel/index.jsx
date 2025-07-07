@@ -136,6 +136,7 @@ export default {
           <Button
             disabled={isSaving.value || !search.value.templateId}
             type={'primary'}
+            title={'还原为模板原始数据'}
             onClick={restoreTemplate}
           >
             恢复模板
@@ -143,6 +144,7 @@ export default {
           <Button
             disabled={isSaving.value}
             type={'primary'}
+            title={'套用内置模板'}
             onClick={selectTemplate}
           >
             选择模板
