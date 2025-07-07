@@ -11,7 +11,7 @@ import './assets/styles/index.scss'
 export default {
   type: 'tg-layout-header',
   category: TG_MATERIAL_CATEGORY.LAYOUT,
-  name: '页头',
+  name: '页头容器',
   preview: props => {
     if (props.previewType !== TG_MATERIAL_PREVIEW_TYPE.MATERIAL) {
       return <Header {...props} />
@@ -82,13 +82,14 @@ export const Header = {
     watch(() => props.style, val => {
       style.value = styleWithUnits(val)
 
+      // 当未设置背景色时，使用一个默认的内置背景色
       if (!style.value.backgroundColor && !style.value.backgroundImage) {
         style.value.backgroundImage = 'linear-gradient(0deg,#31549c, #253a66, #191b25)'
       }
     }, { immediate: true })
 
     const findChild = cellPosition => {
-      return props.children?.find(child => child.props['data-cell-position'] === cellPosition)
+      return props.children?.find(child => child.props?.['data-cell-position'] === cellPosition)
     }
 
     return () => (

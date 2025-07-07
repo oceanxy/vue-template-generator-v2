@@ -23,16 +23,21 @@
         // 覆盖全局行高（.ant-app内定义）的影响，导致其内的AntImage组件布局错位
         line-height: 0;
         flex: none;
-        width: 40px;
-        height: 40px;
+        width: auto;
+        height: auto;
 
         &.is-design-patterns {
-          &:empty::before {
-            content: 'LOGO\a放置区';
-            white-space: pre;
-            letter-spacing: 0;
-            font-size: 12px;
-            line-height: 1.2;
+          &:empty {
+            min-width: 40px;
+            min-height: 40px;
+
+            &::before {
+              content: 'LOGO\a放置区';
+              white-space: pre;
+              letter-spacing: 0;
+              font-size: 12px;
+              line-height: 1.2;
+            }
           }
         }
 
