@@ -1,4 +1,4 @@
-import { Badge, Button, message, Tag, Tooltip } from 'ant-design-vue'
+import { Badge, Button, Divider, message, Tag, Tooltip } from 'ant-design-vue'
 import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import { computed, inject, onMounted, onUnmounted, ref, toRaw, watch } from 'vue'
@@ -142,6 +142,13 @@ export default {
       await handleSchemaSave(true)
     }
 
+    const handleClearCanvas = () => {
+      if (schema.value.components?.length) {
+        store.schema.components = []
+        store.saveStatus = SAVE_STATUS.UNSAVED
+      }
+    }
+
     expose({ updateSchema })
 
     return () => (
@@ -156,17 +163,28 @@ export default {
           {/*</div>*/}
           <div class={'tg-designer-canvas-functions'}>
             <Button
+              danger
               type="text"
-              disabled={saveStatus.value === SAVE_STATUS.SAVING}
-              icon={<IconFont type="icon-designer-tool-undo" />}
-              title={'撤销'}
+              disabled={!schema.value.components?.length}
+              icon={<IconFont type="icon-designer-tool-clear-canvas" />}
+              title={'清空画布'}
+              onClick={handleClearCanvas}
             />
             <Button
               type="text"
-              disabled={saveStatus.value === SAVE_STATUS.SAVING}
-              icon={<IconFont type="icon-designer-tool-redo" />}
-              title={'重做'}
+              // disabled={saveStatus.value === SAVE_STATUS.SAVING}
+              disabled={true}
+              icon={<IconFont type="icon-designer-tool-undo" />}
+              title={'撤销（建设中）'}
             />
+            <Button
+              type="text"
+              // disabled={saveStatus.value === SAVE_STATUS.SAVING}
+              disabled={true}
+              icon={<IconFont type="icon-designer-tool-redo" />}
+              title={'重做（建设中）'}
+            />
+            <Divider type="vertical" />
             <Badge
               dot={isSchemaChanged.value}
               offset={[-6, 4]}
@@ -183,13 +201,13 @@ export default {
             <Button
               type="text"
               icon={<IconFont type="icon-designer-tool-preview" />}
-              title={'预览'}
+              title={'PC预览'}
               onClick={handlePreview}
             />
             <Button
               type="text"
               icon={<IconFont type="icon-designer-tool-preview-h5" />}
-              title={'预览'}
+              title={'H5预览'}
               onClick={handlePreviewH5}
             />
           </div>
