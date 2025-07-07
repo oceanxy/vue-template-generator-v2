@@ -33,6 +33,7 @@ export default {
      *  treeDataOptions.apiName: API名称
      *  treeDataOptions.storeName: 存放树的数据的 store 名称，默认树所在页面对应的模块
      *  treeDataOptions.stateName: 存放树的数据的字段名，默认`dataSource`
+     *  treeDataOptions.paramsForGetList: 接口请求的参数 paramsForGetList目前只支持对象
      */
     treeDataOptions: {
       type: Object,
@@ -197,6 +198,9 @@ export default {
       return await treeStore.getList({
         stateName: props.treeDataOptions?.stateName,
         apiName: props.treeDataOptions.apiName,
+        paramsForGetList: {
+          ...props.treeDataOptions.paramsForGetList
+        },
         setValueToStateName(data, store) {
           if (props.loadData) {
             key.value += 1
