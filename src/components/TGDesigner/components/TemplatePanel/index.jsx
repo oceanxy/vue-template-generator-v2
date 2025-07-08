@@ -39,7 +39,7 @@ export default {
               async () => {
                 if (search.value.templateId) {
                   const res = await Promise.all([
-                    // 保存选择的模版ID
+                    // 保存选择的模板ID
                     tgStore.fetch({
                       location,
                       apiName: search.value.pageType === 13 ? 'setTemplateId' : 'setTemplateIdOfHF',

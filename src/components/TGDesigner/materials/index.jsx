@@ -31,7 +31,7 @@ export const TG_MATERIAL_CATEGORY = {
 }
 
 export const TG_MATERIAL_CATEGORY_LABEL = {
-  template: '模版部件',
+  template: '模板部件',
   basic: '基础部件',
   layout: '布局部件'
 }
