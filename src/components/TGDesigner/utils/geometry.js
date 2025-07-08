@@ -435,23 +435,32 @@ export const Geometry = {
     }
 
     // 清理函数
+    let cleaned = false
     const cleanup = () => {
-      document.removeEventListener('dragover', handleDrag)
+      if (cleaned) return
+      cleaned = true
+
+      // 移除所有事件监听器
+      window.removeEventListener('dragover', handleDrag)
+      window.removeEventListener('drop', cleanup)
+      window.removeEventListener('dragend', cleanup)
+
+      // 清除超时定时器
+      clearTimeout(safetyTimer)
+
+      // 移除预览元素
       if (dragPreview.parentNode) {
         dragPreview.parentNode.removeChild(dragPreview)
       }
     }
 
-    // 添加事件监听（使用兼容性方法）
-    document.addEventListener('dragover', handleDrag)
+    // 添加事件监听
+    window.addEventListener('dragover', handleDrag)
+    window.addEventListener('drop', cleanup)
+    window.addEventListener('dragend', cleanup)
 
-    // Safari兼容：监听正确的拖拽结束事件
-    const dragEndHandler = () => {
-      cleanup()
-      document.removeEventListener('dragend', dragEndHandler)
-    }
-
-    document.addEventListener('dragend', dragEndHandler)
+    // 安全超时机制
+    const safetyTimer = setTimeout(cleanup, 10000)
   },
 
   /**
