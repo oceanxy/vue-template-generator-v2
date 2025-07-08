@@ -402,38 +402,56 @@ export const Geometry = {
    * @param e {DragEvent}
    */
   createDragPreviewImage(e) {
-    const el = e.currentTarget.cloneNode(true) // 克隆当前元素
+    // Safari兼容：使用透明图像作为拖拽源
+    const transparentImg = new Image()
+    transparentImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+
+    // 设置拖拽图像为透明像素
+    e.dataTransfer.setDragImage(transparentImg, 0, 0)
+
+    // 创建预览元素（克隆当前元素）
+    const el = e.currentTarget.cloneNode(true)
     const rect = e.currentTarget.getBoundingClientRect()
 
-    // 创建拖拽预览容器
     const dragPreview = document.createElement('div')
-    dragPreview.style.width = `${rect.width}px`
-    dragPreview.style.height = `${rect.height}px`
-    dragPreview.style.position = 'fixed'
-    dragPreview.style.pointerEvents = 'none'
-    dragPreview.style.zIndex = '9999'
-    dragPreview.style.opacity = '0.8'
+    dragPreview.style.cssText = `
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.8;
+      width: ${rect.width}px;
+      height: ${rect.height}px;
+      left: ${e.clientX + 20}px;
+      top: ${e.clientY + 30}px;
+      transform: translateZ(0); /* 启用GPU加速 */
+    `
     dragPreview.appendChild(el)
     document.body.appendChild(dragPreview)
 
-    // 设置拖拽图像和偏移补偿
-    const ghost = document.createElement('div')
-    e.dataTransfer.setDragImage(ghost, 0, 0)
-
-    // 实时更新预览位置
-    const handleDrag = moveEvent => {
+    // 更新预览位置的处理函数
+    const handleDrag = (moveEvent) => {
       dragPreview.style.left = `${moveEvent.clientX + 20}px`
       dragPreview.style.top = `${moveEvent.clientY + 30}px`
     }
 
+    // 清理函数
     const cleanup = () => {
       document.removeEventListener('dragover', handleDrag)
-      e.target.removeEventListener('dragend', cleanup)
-      dragPreview.remove()
+      if (dragPreview.parentNode) {
+        dragPreview.parentNode.removeChild(dragPreview)
+      }
     }
 
+    // 添加事件监听（使用兼容性方法）
     document.addEventListener('dragover', handleDrag)
-    e.target.addEventListener('dragend', cleanup)
+
+    // Safari兼容：监听正确的拖拽结束事件
+    const dragEndHandler = () => {
+      cleanup()
+      document.removeEventListener('dragend', dragEndHandler)
+    }
+
+    document.addEventListener('dragend', dragEndHandler)
   },
 
   /**
