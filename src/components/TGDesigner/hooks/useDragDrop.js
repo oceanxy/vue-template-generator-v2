@@ -34,13 +34,17 @@ export default function useDragDrop() {
 
     store.selectedComponent = null
 
-    e.dataTransfer.effectAllowed = componentSchema.id ? 'move' : 'copy'
-    e.dataTransfer.setData('application/json', JSON.stringify({
+    const dragData = JSON.stringify({
       id: componentSchema.id,
       type: componentSchema.id ? 'MOVE' : 'ADD',
       data: componentSchema
-    }))
+    })
 
+    e.dataTransfer.setData('application/json', dragData)
+    // Safari需要纯文本格式
+    e.dataTransfer.setData('text/plain', dragData)
+
+    e.dataTransfer.effectAllowed = componentSchema.id ? 'move' : 'copy'
     e.currentTarget.classList.add('dragging')
   }
 
@@ -76,6 +80,15 @@ export default function useDragDrop() {
   const handleDragOver = (e, containerRef) => {
     e.preventDefault()
 
+    // Safari需要明确的dropEffect
+    if (e.dataTransfer) {
+      try {
+        e.dataTransfer.dropEffect = 'copy'
+      } catch (error) {
+        // Safari可能会抛出异常，忽略即可
+      }
+    }
+
     if (rafId.value) return
 
     rafId.value = requestAnimationFrame(() => {
@@ -93,7 +106,9 @@ export default function useDragDrop() {
     e.preventDefault()
 
     // 处理数据转换
-    const raw = e.dataTransfer.getData('application/json')
+    const raw = e.dataTransfer.getData('application/json') ||
+      e.dataTransfer.getData('text/plain') // Safari数据获取兼容
+
     if (!raw) return
 
     const { type, data } = JSON.parse(raw)

@@ -95,7 +95,21 @@ export const Geometry = {
   findDropContainer(e, componentSchemas) {
     // ========================== 注意此处有坑，浏览器兼容性问题 =============================
     // 在某些浏览器环境下（特别是使用Vue的合成事件系统时），`e.composedPath()`可能无法正确获取事件路径。
-    let path = e.composedPath()
+    let path = []
+
+    try {
+      // Safari可能需要特殊处理
+      if (typeof e.composedPath === 'function') {
+        path = e.composedPath()
+      }
+    } catch (error) {
+      console.warn('composedPath error:', error)
+    }
+
+    // Safari备用方案
+    if (!path.length) {
+      path = this.getEventPath(e)
+    }
 
     if (!path?.length) path = this.getEventPath(e)
 
@@ -402,6 +416,17 @@ export const Geometry = {
    * @param e {DragEvent}
    */
   createDragPreviewImage(e) {
+    // Safari需要明确的dragImage
+    if (/^((?!chrome).)*safari/i.test(navigator.userAgent)) {
+      let ghost = document.createElement('div')
+      ghost.style.width = '1px'
+      ghost.style.height = '1px'
+      document.body.appendChild(ghost)
+      e.dataTransfer.setDragImage(ghost, 0, 0)
+      setTimeout(() => ghost.remove(), 0)
+      return
+    }
+
     const el = e.currentTarget.cloneNode(true) // 克隆当前元素
     const rect = e.currentTarget.getBoundingClientRect()
 
