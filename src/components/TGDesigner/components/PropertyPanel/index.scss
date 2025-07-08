@@ -113,13 +113,13 @@
         background: none;
       }
 
-      .ant-input-affix-wrapper {
-        .ant-input-prefix {
-          .anticon {
-            font-size: 0.625rem;
-          }
-        }
-      }
+      //.ant-input-affix-wrapper {
+      //  .ant-input-prefix {
+      //    .anticon {
+      //      font-size: 0.625rem;
+      //    }
+      //  }
+      //}
 
       & > .ant-select {
         padding: 0;
@@ -144,7 +144,7 @@
 
             .anticon {
               transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
-              font-size: 13px;
+              //font-size: 13px;
 
               &.column {
                 transform: rotate(90deg);
@@ -167,7 +167,7 @@
         align-items: flex-start;
 
         .ant-btn {
-          font-size: 12px;
+          //font-size: 12px;
         }
       }
     }
