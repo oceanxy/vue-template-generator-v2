@@ -133,23 +133,23 @@ export default {
       const marginObj = getMarginValues(component.style)
 
       const dragCompStyle = {
-        style: {
-          width: component.style.width
-            ? `calc(${component.style.width} - ${marginObj.marginLeft} - ${marginObj.marginRight})`
-            : '',
-          height: component.style.height,
-          overflow: component.style.overflow,
-          margin: component.style.margin
-        }
+        width: component.style.width
+          ? `calc(${component.style.width} - ${marginObj.marginLeft} - ${marginObj.marginRight})`
+          : '',
+        height: component.style.height,
+        overflow: component.style.overflow,
+        margin: component.style.margin
       }
 
       if ('marginLeft' in component.style) {
-        dragCompStyle.style.marginLeft = component.style.marginLeft
+        dragCompStyle.marginLeft = component.style.marginLeft
       }
 
       if ('marginRight' in component.style) {
-        dragCompStyle.style.marginRight = component.style.marginRight
+        dragCompStyle.marginRight = component.style.marginRight
       }
+
+      component.style = omit(component.style, ['margin', 'overflow'])
 
       // 但部分容器除外，这部分组件因为其内部有特殊处理，所以这里需要单独处理部分属性。
       if (componentDef.type !== 'a-image') {
@@ -173,7 +173,7 @@ export default {
 
         if (componentSchema.type === 'tg-layout-flex') {
           // 在画布中时，Flex布局组件的布局方向要应用到拖拽容器上，让画布呈现和预览呈现保持一致。
-          dragCompStyle.style.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
+          dragCompStyle.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
         }
 
         component.children = componentSchema.children?.map(childSchema =>
@@ -197,7 +197,7 @@ export default {
             'component-enter-active': componentSchema.__animating && !componentSchema.__initialized,
             'component-leave-active': componentSchema.__animating && componentSchema.__initialized
           }}
-          {...dragCompStyle}
+          style={dragCompStyle}
           onClick={e => handleCompClick(e, componentSchema, componentDef)}
           onDragstart={e => handleCompDragStart(e, componentSchema)}
           onDragend={e => handleCompDragEnd(e, componentSchema)}
