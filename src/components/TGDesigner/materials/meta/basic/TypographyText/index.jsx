@@ -1,6 +1,7 @@
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import getPropertyConfig, { predefinedProperties } from '@/components/TGDesigner/properties'
 import { TypographyText } from 'ant-design-vue'
+import './index.scss'
 
 export default {
   type: 'a-typography-text',
@@ -39,7 +40,7 @@ export default {
     lineHeight: '',
     color: ''
   },
-  class: '',
+  class: 'tg-designer-typography-text',
   propConfigForm: [
     {
       label: '尺寸',
