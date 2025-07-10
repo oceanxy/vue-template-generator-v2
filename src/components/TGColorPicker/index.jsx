@@ -46,7 +46,6 @@ export default {
     }
   },
   setup(props, { attrs }) {
-    const visible = ref(false)
     const colorValue = ref(props.value)
     const colorChanged = ref(false)
     let colorValidator = null
@@ -86,29 +85,18 @@ export default {
         colorChanged.value = true
         colorValue.value = finalColor
         attrs.onChange?.(finalColor)
-
-        // 弹窗显示状态检查
-        if (!visible.value) {
-          colorValue.value = finalColor
-        }
+        colorValue.value = finalColor
       } else if (colorValidator?.isValid(rawColor)) {
         // 原始格式验证通过（非HEX格式）
         colorChanged.value = true
         colorValue.value = rawColor
         attrs.onChange?.(rawColor)
-
-        if (!visible.value) {
-          colorValue.value = rawColor
-        }
+        colorValue.value = rawColor
       }
     }, 200)
 
     const handleCompleteColorSelection = async () => {
       setTimeout(() => {
-        if (colorChanged.value) {
-          visible.value = false
-        }
-
         colorChanged.value = false
       }, 200)
     }
@@ -116,7 +104,6 @@ export default {
     return () => (
       <InputGroup class={'tg-color-picker-preview'}>
         <Popover
-          vModel:open={visible.value}
           trigger="click"
           overlayClassName="tg-color-picker-popover"
         >
