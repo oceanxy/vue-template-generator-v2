@@ -1,7 +1,7 @@
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 const inquirer = require('inquirer')
-const { readdirSync, statSync } = require('node:fs')
+const { readdirSync, statSync, existsSync } = require('node:fs')
 const args = require('minimist')(process.argv.slice(2))
 const { resolve, join } = require('node:path')
 const AppNameInjectionPlugin = require('./plugins/AppNameInjectionPlugin')
@@ -10,13 +10,13 @@ const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const dotenv = require('dotenv')
 const dotenvExpand = require('dotenv-expand')
+const { exec } = require('child_process')
 
 const appNames = readdirSync(resolve(join(__dirname, `../src/apps`)))
   .filter(file => statSync(resolve(join(__dirname, '../src/apps', file))).isDirectory())
 
 let appName = null
 const { NODE_ENV, BASE_ENV } = process.env
-const ENV_TEXT = NODE_ENV === 'development' ? '启动' : '编译'
 
 // 检测命令行是否传递了项目名称或项目简称，且是否存在。例如：--app=project-name 或者 --app project-name
 if (args.app) {
@@ -36,7 +36,11 @@ if (args.app) {
 }
 
 if (appName) {
-  getConfig(appName)
+  if (args.cleanAppCache) {
+    cleanAppCache(appName)
+  } else {
+    getConfig(appName)
+  }
 } else {
   // 定义项目选项
   const options = appNames.map(item => ({ name: item, value: item }))
@@ -46,11 +50,41 @@ if (appName) {
     {
       type: 'list',
       name: 'choice',
-      message: `请选择要${ENV_TEXT}的项目名称：`,
+      message: `请选择执行项目：`,
       choices: options
     }
   ]).then(answers => {
-    getConfig(answers.choice)
+    if (args.cleanAppCache) {
+      cleanAppCache(answers.choice)
+    } else {
+      getConfig(answers.choice)
+    }
+  })
+}
+
+function cleanAppCache(appName) {
+  const cacheDir = resolve(__dirname, '../node_modules/.cache/webpack', appName)
+
+  if (!existsSync(cacheDir)) {
+    console.warn(`指定项目（${appName}）没有缓存。`)
+    process.exit(0)
+  }
+
+  exec(`rimraf "${cacheDir}"`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`执行失败: ${error.message}`)
+      return
+    }
+
+    if (stderr) {
+      console.error(`脚本错误: ${stderr}`)
+      return
+    }
+
+    stdout && console.log(stdout)
+
+    console.log(`指定项目（${appName}）的缓存已清除。`)
+    process.exit(0)
   })
 }
 

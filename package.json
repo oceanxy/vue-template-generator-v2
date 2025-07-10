@@ -8,10 +8,8 @@
     "stage": "cross-env NODE_ENV=production BASE_ENV=stage node ./scripts",
     "analy": "cross-env NODE_ENV=production BASE_ENV=analysis node ./scripts",
     "lint": "eslint . --ext .vue,.js,.jsx --fix",
-    "clean:nm": "rimraf node_modules",
     "clean:cache": "rimraf node_modules/.cache/webpack",
-    "clean:app-cache": "cross-env-shell rimraf node_modules/.cache/webpack/$APP",
-    "clean:app": "cross-env-shell npm run clean:app-cache && rm -rf dist/$APP"
+    "clean:app-cache": "node ./scripts --cleanAppCache"
   },
   "license": "ISC",
   "devDependencies": {
