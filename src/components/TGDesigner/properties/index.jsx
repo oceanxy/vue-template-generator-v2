@@ -20,7 +20,7 @@
 
 import { markRaw } from 'vue'
 import { Checkbox, CheckboxGroup, Input, InputNumber, Radio, RadioGroup, Segmented, Select, Switch } from 'ant-design-vue'
-import TGColorPicker from '@/components/TGColorPicker'
+import ColorPicker from './components/ColorPicker'
 import MultiInput from './components/MultiInput'
 import Upload from './components/Upload'
 import MultiSelect from './components/MultiSelect'
@@ -474,7 +474,7 @@ const getComponent = (componentType) => {
     radioGroup: RadioGroup,
     select: Select,
     switch: Switch,
-    colorPicker: <TGColorPicker class={'tg-designer-color-picker'} />,
+    colorPicker: ColorPicker,
     segmented: Segmented,
     multiInput: MultiInput,
     upload: Upload,

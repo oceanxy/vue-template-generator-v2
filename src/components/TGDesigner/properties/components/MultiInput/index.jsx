@@ -202,6 +202,7 @@ export default {
     return () => (
       <div
         class={{
+          'tg-designer-property-comp': true,
           'tg-designer-property-comp-multi-input': true,
           'disabled': props.disabled
         }}
@@ -221,10 +222,11 @@ export default {
             <Button
               type={'text'}
               title={`切换为${modeNames[modes[(modes.indexOf(mode.value) + 1) % modes.length]]}模式`}
-              icon={<IconFont type={'icon-designer-property-multi-input-expend'} />}
               disabled={props.disabled}
               onClick={handleModeChange}
-            />
+            >
+              <IconFont type={'icon-designer-property-multi-input-expend'} />
+            </Button>
           </div>
         )}
       </div>

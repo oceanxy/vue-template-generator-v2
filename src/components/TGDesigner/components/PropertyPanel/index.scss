@@ -45,7 +45,6 @@
   }
 
   .ant-divider {
-
     &.ant-divider-with-text::before,
     &.ant-divider-with-text::after {
       border-block-color: var(--tg-theme-color-border-secondary);
@@ -85,6 +84,29 @@
       flex-grow: 1;
       width: 100%;
 
+      .tg-designer-property-comp {
+        display: flex;
+        width: 100%;
+
+        & > *:not(.tg-designer-property-expend) {
+          flex: auto;
+        }
+
+        & > .tg-designer-property-expend {
+          flex: none;
+          margin-right: -36px;
+          width: 36px;
+          display: flex;
+          justify-content: flex-end;
+          align-items: flex-start;
+
+          .ant-btn {
+            padding-left: 8px;
+            padding-right: 8px;
+          }
+        }
+      }
+
       & > :is(.ant-select, .ant-segmented, .ant-input-number) {
         width: 100%;
       }
@@ -94,7 +116,7 @@
         .ant-input-number,
         .ant-select,
         .ant-input-affix-wrapper,
-        .tg-designer-color-picker,
+        .tg-designer-property-comp-color-picker,
         .tg-designer-property-comp-upload
       ),
       :is(.half, .full) .ant-input-affix-wrapper {
@@ -112,13 +134,13 @@
         background: none;
       }
 
-      //.ant-input-affix-wrapper {
-      //  .ant-input-prefix {
-      //    .anticon {
-      //      font-size: 0.625rem;
-      //    }
-      //  }
-      //}
+      .ant-input-affix-wrapper {
+        .ant-input-prefix {
+          .anticon {
+            font-size: 12px;
+          }
+        }
+      }
 
       & > .ant-select {
         padding: 0;
@@ -154,19 +176,6 @@
               }
             }
           }
-        }
-      }
-
-      .tg-designer-property-expend {
-        flex: none;
-        margin-right: -36px;
-        width: 36px;
-        display: flex;
-        justify-content: flex-end;
-        align-items: flex-start;
-
-        .ant-btn {
-          //font-size: 12px;
         }
       }
     }
