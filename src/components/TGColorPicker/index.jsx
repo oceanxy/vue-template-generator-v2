@@ -35,6 +35,7 @@ const isPotentialHex = (str) => {
 
 export default {
   name: 'TGColorPicker',
+  emits: ['change', 'update:value'],
   props: {
     value: {
       type: String,
@@ -43,9 +44,13 @@ export default {
     defaultValue: {
       type: String,
       default: ''
+    },
+    placeholder: {
+      type: String,
+      default: '请输入颜色值'
     }
   },
-  setup(props, { attrs }) {
+  setup(props, { attrs, emit }) {
     const colorValue = ref(props.value)
     const colorChanged = ref(false)
     const isEyeDropperSupported = ref(false) // 吸管功能支持状态
@@ -97,12 +102,14 @@ export default {
       if (colorValidator?.isValid(finalColor)) {
         colorChanged.value = true
         colorValue.value = finalColor
-        attrs.onChange?.(finalColor)
+        emit('update:value', finalColor)
+        emit('change', finalColor)
       } else if (colorValidator?.isValid(rawColor)) {
         // 原始格式验证通过（非HEX格式）
         colorChanged.value = true
         colorValue.value = rawColor
-        attrs.onChange?.(rawColor)
+        emit('update:value', rawColor)
+        emit('change', rawColor)
       }
     }, 200)
 
@@ -117,7 +124,7 @@ export default {
             default: () => (
               <Input
                 allowClear
-                placeholder="请输入颜色值"
+                placeholder={props.placeholder}
                 value={colorValue.value}
                 onClick={e => e.currentTarget.select()}
                 onInput={e => handleColorChange(e.target.value)}
