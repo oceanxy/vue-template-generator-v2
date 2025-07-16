@@ -55,8 +55,17 @@ export default {
         canvasStyle.value.padding =
           `${paddings.paddingTop} ${paddings.paddingRight} ${paddings.paddingBottom} ${paddings.paddingLeft}`
 
-        if (canvasStyle.value.backgroundImage && !canvasStyle.value.backgroundImage.startsWith('url(')) {
-          canvasStyle.value.backgroundImage = `url(${canvasStyle.value.backgroundImage})`
+        if (canvasStyle.value.backgroundImage) {
+          const bgImage = canvasStyle.value.backgroundImage.trim()
+
+          // 处理渐变色（包含gradient关键字）
+          if (/gradient\(/i.test(bgImage)) {
+            canvasStyle.value.backgroundImage = bgImage
+          }
+          // 处理图片路径（非url格式）
+          else if (!/^url\(/i.test(bgImage)) {
+            canvasStyle.value.backgroundImage = `url(${bgImage})`
+          }
         }
       }, { deep: true }
     )
