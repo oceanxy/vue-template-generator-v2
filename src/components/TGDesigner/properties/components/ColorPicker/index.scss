@@ -1,0 +1,104 @@
+.tg-designer-property-comp-color-picker {
+  .tg-designer-property-comp-gradient-picker-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .tg-designer-property-comp-gradient-bar {
+    position: relative;
+    height: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 14px 10px 8px;
+    z-index: 0;
+
+    &.drag-target {
+      box-shadow: inset 0 0 0 2px #1890ff;
+    }
+
+    &.dragover {
+      box-shadow: inset 0 0 0 2px #1890ff;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      pointer-events: none;
+      width: calc(100% + 16px);
+      left: -8px;
+      height: 100%;
+      background-image: linear-gradient(45deg, #dcdcdc 25%, transparent 25%, transparent 75%, #dcdcdc 75%),
+      linear-gradient(45deg, #dcdcdc 25%, transparent 25%, transparent 75%, #dcdcdc 75%);
+      background-size: 8px 8px;
+      background-position: 0 0, 4px 4px;
+    }
+
+    &::after {
+      position: absolute;
+      content: '';
+      pointer-events: none;
+      width: calc(100% + 16px);
+      left: -8px;
+      height: 100%;
+      border-radius: 4px;
+      background: var(--background-image);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .tg-designer-property-comp-gradient-color-tag {
+    position: absolute;
+    top: -3px;
+    transform: translateX(-50%);
+    cursor: pointer;
+    z-index: 1;
+    pointer-events: auto;
+
+    &:hover .tag-indicator {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px white, 0 0 0 3px #1890ff;
+    }
+
+    &.active .tag-indicator {
+      box-shadow: 0 0 0 2px white, 0 0 0 3px #1890ff;
+    }
+
+    &.dragging {
+      pointer-events: none;
+      user-select: none;
+      display: none;
+
+      .tag-indicator {
+        opacity: 0.9;
+        transition: none;
+        box-shadow: 0 0 0 3px white, 0 0 0 4px #1890ff;
+        z-index: 1000;
+      }
+    }
+
+    .tag-indicator {
+      position: relative;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #ededed;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+      pointer-events: auto;
+
+      &::before {
+        content: attr(data-offset);
+        position: absolute;
+        top: -20px;
+        color: #333333;
+        width: 30px;
+        text-align: center;
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        transform: translate(-10px);
+      }
+    }
+  }
+}
