@@ -125,7 +125,7 @@ export default {
               <Input
                 allowClear
                 placeholder={props.placeholder}
-                value={colorValue.value}
+                value={colorValue.value === 'transparent' ? props.defaultValue : colorValue.value}
                 onClick={e => e.currentTarget.select()}
                 onInput={e => handleColorChange(e.target.value)}
                 prefix={
