@@ -115,6 +115,7 @@ export default {
         <div class={'tg-designer-property-expend'}>
           <Button
             type={'text'}
+            title={`切换为${mode.value === 'image' ? '渐变色' : '图片'}模式`}
             disabled={props.disabled}
             onClick={handleModeChange}
           >
