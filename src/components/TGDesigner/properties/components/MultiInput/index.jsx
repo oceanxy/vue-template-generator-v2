@@ -11,6 +11,10 @@ export default {
       type: [String, Number],
       default: 0
     },
+    defaultValue: {
+      type: [String, Number],
+      default: 0
+    },
     // 可选值：CSS中支持单值、双值、四值写法的属性
     prop: {
       type: String,
@@ -107,7 +111,7 @@ export default {
     )
 
     const handleInput = (e, sort) => {
-      const newValue = e?.target?.value || 0
+      const newValue = e?.target?.value || props.defaultValue
 
       // 单值模式：更新所有方向的值
       if (mode.value === 'singleValue') {
