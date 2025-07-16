@@ -24,6 +24,7 @@ import ColorPicker from './components/ColorPicker'
 import MultiInput from './components/MultiInput'
 import Upload from './components/Upload'
 import MultiSelect from './components/MultiSelect'
+import BackgroundImage from './components/BackgroundImage'
 
 export const predefinedProperties = {
   width(props) {
@@ -249,13 +250,17 @@ export const predefinedProperties = {
 
     return [
       getPropertyConfig('colorPicker', {
-        label: '颜色',
+        label: '底色',
         title: '容器的背景颜色（background-color）',
         prop: 'style.backgroundColor'
       }),
-      predefinedProperties.upload({
-        title: '容器的背景图片（background-image）',
-        prop: 'style.backgroundImage'
+      getPropertyConfig('backgroundImage', {
+        label: '图片/渐变色',
+        title: '设置容器的背景图片或背景渐变色（background-image）。注意：此属性会处于背景底色的上层。',
+        prop: 'style.backgroundImage',
+        props: {
+          placeholder: '透明'
+        }
       }),
       getPropertyConfig('multiInput', {
         label: '图片尺寸',
@@ -267,6 +272,7 @@ export const predefinedProperties = {
           layout: 'half',
           placeholder: '自动',
           allowClear: true,
+          defaultValue: '',
           modes: ['singleValue', 'dualValue']
         },
         slots: {
@@ -478,7 +484,8 @@ const getComponent = (componentType) => {
     segmented: Segmented,
     multiInput: MultiInput,
     upload: Upload,
-    multiSelect: MultiSelect
+    multiSelect: MultiSelect,
+    backgroundImage: BackgroundImage
   }[componentType]
 }
 
