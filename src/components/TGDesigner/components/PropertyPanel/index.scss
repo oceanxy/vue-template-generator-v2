@@ -115,11 +115,12 @@
         .ant-input,
         .ant-input-number,
         .ant-select,
-        .ant-input-affix-wrapper,
-        .tg-designer-property-comp-color-picker,
-        .tg-designer-property-comp-upload
+        .ant-input-affix-wrapper
       ),
-      :is(.half, .full) .ant-input-affix-wrapper {
+      :is(.half, .full) .ant-input-affix-wrapper,
+      .tg-designer-property-comp-color-picker:not(:has(.tg-designer-property-comp-gradient-picker-compact)),
+      .tg-designer-property-comp-color-picker .ant-input-group,
+      .tg-designer-property-comp-upload {
         background: #f5f5f5;
         border: 0;
 
