@@ -161,3 +161,23 @@ export function getPaddingValues(styleObj) {
 
   return { paddingTop, paddingRight, paddingBottom, paddingLeft }
 }
+
+/**
+ * 处理样`backgroundImage`属性，未包裹`url()`时自动包裹
+ * @param value
+ * @returns {*|string}
+ */
+export function formatBackgroundImage(value) {
+  if (value) {
+    const bgImage = value.trim()
+
+    // 处理图片路径（非url格式）
+    if (!/gradient\(/i.test(bgImage) && !/^url\(/i.test(bgImage)) {
+      return `url(${bgImage})`
+    }
+
+    return bgImage
+  }
+
+  return value
+}
