@@ -60,6 +60,7 @@ export default {
     const lastClickedWasTag = ref(false)
     const isTagMoved = ref(false)
     const open = ref(false)
+    const tagIndexLastClicked = ref(-1)
 
     // 初始化色标
     const initColorStops = () => {
@@ -78,12 +79,12 @@ export default {
           colorStops.value = [...props.value.stops]
         } else {
           colorStops.value = [
-            { color: 'transparent', offset: 0 },
-            { color: 'transparent', offset: 100 }
+            { color: '#ffffff', offset: 0 },
+            { color: '#000000', offset: 100 }
           ]
         }
       } else {
-        colorStops.value = [{ color: props.value || 'transparent', offset: 0 }]
+        colorStops.value = [{ color: props.value || '#ffffff', offset: 0 }]
       }
     }
 
@@ -119,7 +120,7 @@ export default {
       if (!props.gradient) return ''
 
       const stops = colorStops.value
-        .map(stop => `${stop.color || 'transparent'} ${stop.offset}%`)
+        .map(stop => `${stop.color || '#ffffff'} ${stop.offset}%`)
         .join(', ')
 
       return `linear-gradient(to right, ${stops})`
@@ -145,11 +146,15 @@ export default {
       e.stopPropagation()
 
       lastClickedWasTag.value = true
-      open.value = !open.value
+
+      if (tagIndexLastClicked.value === index || !open.value) {
+        open.value = !open.value
+      }
 
       // 添加延迟重置，确保渐变条双击能捕获
       setTimeout(() => {
         lastClickedWasTag.value = false
+        tagIndexLastClicked.value = index
       }, 200)
     }
 
@@ -271,7 +276,7 @@ export default {
       if (props.gradient) {
         value = gradientBarStyle.value
       } else {
-        value = colorStops.value[0]?.color || 'transparent'
+        value = colorStops.value[0]?.color || '#ffffff'
       }
 
       emit('update:value', value)

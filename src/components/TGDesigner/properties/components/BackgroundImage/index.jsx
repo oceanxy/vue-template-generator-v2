@@ -53,7 +53,7 @@ export default {
       isUserSwitching.value = true
 
       if (state.value.mode === 'image') {
-        state.value.bgi = 'linear-gradient(to right, transparent, transparent)'
+        state.value.bgi = 'linear-gradient(to right, #ffffff, #000000)'
         state.value.mode = 'color'
       } else {
         state.value.bgi = ''
