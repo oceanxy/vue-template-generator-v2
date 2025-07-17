@@ -35,8 +35,12 @@ const isPotentialHex = (str) => {
 
 export default {
   name: 'TGColorPicker',
-  emits: ['change', 'update:value'],
+  emits: ['change', 'update:value', 'update:open'],
   props: {
+    open: {
+      type: Boolean,
+      default: false
+    },
     value: {
       type: String,
       default: '#ffffff'
@@ -54,6 +58,7 @@ export default {
     const colorValue = ref(props.value)
     const colorChanged = ref(false)
     const isEyeDropperSupported = ref(false) // 吸管功能支持状态
+    const open = ref(props.open)
     let colorValidator = null
 
     onMounted(() => {
@@ -67,6 +72,9 @@ export default {
     })
 
     watch(() => props.value, val => colorValue.value = val)
+    watch(() => props.open, val => {
+      open.value = val
+    }, { immediate: true })
 
     const handleEyeDropper = async () => {
       try {
@@ -116,9 +124,14 @@ export default {
     return () => (
       <InputGroup class={'tg-color-picker-preview'}>
         <Tooltip
+          open={open.value}
           color={'#ffffff'}
           trigger="click"
           overlayClassName="tg-color-picker-popover"
+          onOpenChange={val => {
+            open.value = val
+            emit('update:open', val)
+          }}
         >
           {{
             default: () => (

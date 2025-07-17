@@ -28,9 +28,13 @@ const parseGradientString = (gradientStr) => {
     const lastIndex = stops.length - 1
     stops.forEach((stop, i) => {
       if (stop.offset === undefined) {
-        if (i === 0) stop.offset = 0
-        else if (i === lastIndex) stop.offset = 100
-        else stop.offset = (i / lastIndex) * 100
+        if (i === 0) {
+          stop.offset = 0
+        } else if (i === lastIndex) {
+          stop.offset = 100
+        } else {
+          stop.offset = (i / lastIndex) * 100
+        }
       }
     })
   }
@@ -55,6 +59,7 @@ export default {
     const gradientBarRef = ref(null) // 渐变条DOM引用
     const lastClickedWasTag = ref(false)
     const isTagMoved = ref(false)
+    const open = ref(false)
 
     // 初始化色标
     const initColorStops = () => {
@@ -73,12 +78,12 @@ export default {
           colorStops.value = [...props.value.stops]
         } else {
           colorStops.value = [
-            { color: '#ffffff', offset: 0 },
-            { color: '#000000', offset: 100 }
+            { color: 'transparent', offset: 0 },
+            { color: 'transparent', offset: 100 }
           ]
         }
       } else {
-        colorStops.value = [{ color: props.value || '#ffffff', offset: 0 }]
+        colorStops.value = [{ color: props.value || 'transparent', offset: 0 }]
       }
     }
 
@@ -139,8 +144,8 @@ export default {
 
       e.stopPropagation()
 
-      activeIndex.value = index
       lastClickedWasTag.value = true
+      open.value = !open.value
 
       // 添加延迟重置，确保渐变条双击能捕获
       setTimeout(() => {
@@ -266,10 +271,8 @@ export default {
       if (props.gradient) {
         value = gradientBarStyle.value
       } else {
-        value = colorStops.value[0]?.color || '#ffffff'
+        value = colorStops.value[0]?.color || 'transparent'
       }
-
-      console.log(value)
 
       emit('update:value', value)
       emit('change', value)
@@ -284,6 +287,7 @@ export default {
                 <TGColorPicker
                   {...props}
                   {...attrs}
+                  vModel:open={open.value}
                   value={colorStops.value[activeIndex.value]?.color}
                   defaultValue={props.defaultValue}
                   onChange={updateColor}
@@ -323,6 +327,7 @@ export default {
                 <TGColorPicker
                   {...props}
                   {...attrs}
+                  vModel:open={open.value}
                   value={props.value}
                   defaultValue={props.defaultValue}
                   onChange={updateColor}

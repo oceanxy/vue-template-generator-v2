@@ -1,4 +1,4 @@
-import { ref, watchEffect } from 'vue'
+import { ref, watch } from 'vue'
 import Upload from '../Upload'
 import ColorPicker from '../ColorPicker'
 import { Button } from 'ant-design-vue'
@@ -19,73 +19,45 @@ export default {
   },
   setup(props, { emit }) {
     const mode = ref('image')
-    const cachedImageValue = ref('')
-    const cachedColorValue = ref('')
     const isUserSwitching = ref(false)
+    const value = ref(props.value)
 
-    watchEffect(() => {
+    watch(() => props.value, val => {
       if (isUserSwitching.value) return
 
       if (
-        !props.value ||
-        props.value.startsWith('url(') ||
-        props.value.startsWith('http://') ||
-        props.value.startsWith('https://') ||
-        props.value.startsWith('data:image')
+        !val ||
+        val.startsWith('url(') ||
+        val.startsWith('http://') ||
+        val.startsWith('https://')
       ) {
         mode.value = 'image'
-        cachedImageValue.value = props.value
       } else {
         mode.value = 'color'
-        cachedColorValue.value = props.value
       }
-    })
+
+      value.value = val
+    }, { immediate: true })
 
     const handleModeChange = () => {
-      const currentMode = mode.value
-      const newMode = currentMode === 'image' ? 'color' : 'image'
-
       isUserSwitching.value = true
 
-      // 缓存当前值
-      if (currentMode === 'image') {
-        cachedImageValue.value = props.value
+      if (mode.value === 'image') {
+        value.value = 'linear-gradient(to right, transparent, transparent)'
+        mode.value = 'color'
       } else {
-        cachedColorValue.value = props.value
+        value.value = ''
+        mode.value = 'image'
       }
 
-      // 设置新值（如果缓存值为空，使用默认值）
-      let newValue = newMode === 'image'
-        ? cachedImageValue.value
-        : cachedColorValue.value
-
-      // 如果切换到颜色模式且缓存值为空，使用默认渐变值
-      if (newMode === 'color' && !newValue) {
-        newValue = 'linear-gradient(to right, #ffffff, #000000)'
-        cachedColorValue.value = newValue
-      }
-
-      // 更新模式并触发值变化
-      mode.value = newMode
-      emit('change', newValue)
-      emit('update:value', newValue)
-
-      // 重置标志（使用 setTimeout 确保在 watchEffect 执行后重置）
-      setTimeout(() => {
-        isUserSwitching.value = false
-      }, 0)
+      emit('change', value.value)
+      emit('update:value', value.value)
     }
 
-    const handleChange = (value) => {
-      emit('change', value)
-      emit('update:value', value)
-
-      // 更新缓存值
-      if (mode.value === 'image') {
-        cachedImageValue.value = value
-      } else {
-        cachedColorValue.value = value
-      }
+    const handleChange = val => {
+      value.value = val
+      emit('change', val)
+      emit('update:value', val)
     }
 
     return () => (
@@ -95,7 +67,7 @@ export default {
             mode.value === 'image'
               ? (
                 <Upload
-                  value={props.value}
+                  value={value.value}
                   onChange={handleChange}
                   {...props}
                 >
@@ -104,7 +76,7 @@ export default {
               )
               : (
                 <ColorPicker
-                  value={props.value}
+                  value={value.value}
                   gradient
                   onChange={handleChange}
                   {...props}
