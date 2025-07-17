@@ -1,7 +1,7 @@
 import { computed, markRaw, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
-import { getMarginValues, getPaddingValues, styleWithUnits } from '../utils/style'
+import { formatBackgroundImage, getMarginValues, getPaddingValues, styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
@@ -55,18 +55,7 @@ export default {
         canvasStyle.value.padding =
           `${paddings.paddingTop} ${paddings.paddingRight} ${paddings.paddingBottom} ${paddings.paddingLeft}`
 
-        if (canvasStyle.value.backgroundImage) {
-          const bgImage = canvasStyle.value.backgroundImage.trim()
-
-          // 处理渐变色（包含gradient关键字）
-          if (/gradient\(/i.test(bgImage)) {
-            canvasStyle.value.backgroundImage = bgImage
-          }
-          // 处理图片路径（非url格式）
-          else if (!/^url\(/i.test(bgImage)) {
-            canvasStyle.value.backgroundImage = `url(${bgImage})`
-          }
-        }
+        canvasStyle.value.backgroundImage = formatBackgroundImage(canvasStyle.value.backgroundImage)
       }, { deep: true }
     )
 

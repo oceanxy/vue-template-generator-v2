@@ -1,7 +1,7 @@
 import { Col, Flex, Row } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { range } from 'lodash'
-import { styleWithUnits } from '@/components/TGDesigner/utils/style'
+import { formatBackgroundImage, styleWithUnits } from '@/components/TGDesigner/utils/style'
 import getPropertyConfig, { predefinedProperties } from '@/components/TGDesigner/properties'
 import './index.scss'
 
@@ -109,9 +109,7 @@ export function GridLayoutPreview(props) {
 
   const style = styleWithUnits(props.style)
 
-  if (style.backgroundImage && !style.backgroundImage.startsWith('url(')) {
-    style.backgroundImage = `url(${style.backgroundImage})`
-  }
+  style.backgroundImage = formatBackgroundImage(style.backgroundImage)
 
   if (isInMaterial) {
     rowCount = 2
