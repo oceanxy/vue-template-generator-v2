@@ -18,44 +18,54 @@ export default {
     }
   },
   setup(props, { emit }) {
-    const mode = ref('image')
     const isUserSwitching = ref(false)
-    const value = ref(props.value)
 
-    watch(() => props.value, val => {
-      if (isUserSwitching.value) return
+    const state = ref({
+      mode: 'image',
+      bgi: props.value
+    })
 
-      if (
-        !val ||
-        val.startsWith('url(') ||
-        val.startsWith('http://') ||
-        val.startsWith('https://')
-      ) {
-        mode.value = 'image'
-      } else {
-        mode.value = 'color'
-      }
+    watch(
+      () => props.value,
+      val => {
+        if (isUserSwitching.value) {
+          isUserSwitching.value = false
+          return
+        }
 
-      value.value = val
-    }, { immediate: true })
+        if (
+          !val ||
+          val.startsWith('url(') ||
+          val.startsWith('http://') ||
+          val.startsWith('https://')
+        ) {
+          state.value.mode = 'image'
+        } else {
+          state.value.mode = 'color'
+        }
+
+        state.value.bgi = val
+      },
+      { immediate: true }
+    )
 
     const handleModeChange = () => {
       isUserSwitching.value = true
 
-      if (mode.value === 'image') {
-        value.value = 'linear-gradient(to right, transparent, transparent)'
-        mode.value = 'color'
+      if (state.value.mode === 'image') {
+        state.value.bgi = 'linear-gradient(to right, transparent, transparent)'
+        state.value.mode = 'color'
       } else {
-        value.value = ''
-        mode.value = 'image'
+        state.value.bgi = ''
+        state.value.mode = 'image'
       }
 
-      emit('change', value.value)
-      emit('update:value', value.value)
+      emit('change', state.value.bgi)
+      emit('update:value', state.value.bgi)
     }
 
     const handleChange = val => {
-      value.value = val
+      state.value.bgi = val
       emit('change', val)
       emit('update:value', val)
     }
@@ -64,10 +74,10 @@ export default {
       <div class={'tg-designer-property-comp tg-designer-property-background-image'}>
         <div class={'tg-designer-property-background-image-wrapper'}>
           {
-            mode.value === 'image'
+            state.value.mode === 'image'
               ? (
                 <Upload
-                  value={value.value}
+                  value={state.value.bgi}
                   onChange={handleChange}
                   {...props}
                 >
@@ -76,7 +86,7 @@ export default {
               )
               : (
                 <ColorPicker
-                  value={value.value}
+                  value={state.value.bgi}
                   gradient
                   onChange={handleChange}
                   {...props}
@@ -87,7 +97,7 @@ export default {
         <div class={'tg-designer-property-expend'}>
           <Button
             type={'text'}
-            title={`切换为${mode.value === 'image' ? '渐变色' : '图片'}模式`}
+            title={`切换为${state.value.mode === 'image' ? '渐变色' : '图片'}模式`}
             disabled={props.disabled}
             onClick={handleModeChange}
           >
