@@ -84,7 +84,7 @@ export default {
           ]
         }
       } else {
-        colorStops.value = [{ color: props.value || '#ffffff', offset: 0 }]
+        colorStops.value = [{ color: props.value || 'transparent', offset: 0 }]
       }
     }
 
@@ -120,7 +120,7 @@ export default {
       if (!props.gradient) return ''
 
       const stops = colorStops.value
-        .map(stop => `${stop.color || '#ffffff'} ${stop.offset}%`)
+        .map(stop => `${stop.color || 'transparent'} ${stop.offset}%`)
         .join(', ')
 
       return `linear-gradient(to right, ${stops})`
@@ -185,6 +185,8 @@ export default {
 
       activeIndex.value = insertIndex
       emitUpdate()
+
+      open.value = true
     }
 
     // 混合颜色
@@ -276,7 +278,7 @@ export default {
       if (props.gradient) {
         value = gradientBarStyle.value
       } else {
-        value = colorStops.value[0]?.color || '#ffffff'
+        value = colorStops.value[0]?.color || 'transparent'
       }
 
       emit('update:value', value)
