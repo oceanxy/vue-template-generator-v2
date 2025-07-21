@@ -144,6 +144,13 @@ export default function useTGTable({
     dataSource: [],
     columns: columns.value,
     loading,
+    bordered: false,
+    tableLayout: 'fixed',
+    size: commonStore.componentSize,
+    rowClassName(record, index) {
+      return index % 2 === 1 ? 'tg-table-striped' : ''
+    },
+    ...props,
     rowSelection: props.rowSelection
       ? {
         selections: true,
@@ -167,12 +174,6 @@ export default function useTGTable({
     // 具体信息可以参考：https://juejin.cn/post/7262623363700981797
     // scroll: { x: '100%', y: 500 },
     scroll: { x: 'max-content' },
-    tableLayout: 'fixed',
-    size: commonStore.componentSize,
-    bordered: false,
-    // rowClassName(record, index) {
-    //   return index % 2 === 1 ? 'tg-table-striped' : ''
-    // },
     onChange: handleChange
   })
 
