@@ -174,7 +174,8 @@ export default function useTGTable({
     // 具体信息可以参考：https://juejin.cn/post/7262623363700981797
     // scroll: { x: '100%', y: 500 },
     scroll: { x: 'max-content' },
-    onChange: handleChange
+    onChange: handleChange,
+    onExpand: handleExpand
   })
 
   watch(columns, val => {
@@ -632,6 +633,14 @@ export default function useTGTable({
       isMergeParam: true,
       isPagination: true
     })
+  }
+
+  async function handleExpand() {
+    if (typeof props.onExpand === 'function') {
+      await props.onExpand()
+    }
+
+    await resize()
   }
 
   /**

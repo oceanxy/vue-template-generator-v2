@@ -26,6 +26,13 @@
         overflow: hidden;
         flex: auto;
 
+        &.ant-table-bordered {
+          .ant-table-content {
+            border-inline-start: 1px solid var(--tg-theme-color-border-reset);
+            border-radius: var(--tg-theme-border-radius);
+          }
+        }
+
         .ant-table-container {
           height: 100%;
           display: flex;
