@@ -203,6 +203,11 @@ export default {
         },
         setValueToStateName(data, store) {
           if (props.loadData) {
+            // 处理动态加载数据时，默认展开第一级
+            if (key.value == 1) {
+              onExpand([data?.[0]?.[props.fieldNames.key]], { expanded: true })
+            }
+
             key.value += 1
             store[props.treeDataOptions?.stateName].list = data.map(item => {
               return {
