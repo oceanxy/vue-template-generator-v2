@@ -8,6 +8,7 @@ import './index.scss'
 
 export const MenuComp = {
   name: 'MenuComp',
+  emits: ['menuClick'],
   props: {
     previewType: { type: String, required: true },
     style: { type: Object, default: () => ({}) },

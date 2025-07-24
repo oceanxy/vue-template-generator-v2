@@ -40,7 +40,7 @@ export default {
     }
 
     return () => (
-      <div class={'tg-designer-property-comp-upload'}>
+      <div class={'tg-designer-property-comp tg-designer-property-comp-upload'}>
         <div class={'tg-designer-property-comp-upload-wrapper'}>
           <Input
             value={inputValue.value}
@@ -48,29 +48,34 @@ export default {
             allowClear
             maxLength={250}
             placeholder={'请输入图片地址'}
-          />
-        </div>
-        <div class={'tg-designer-property-expend'} title={'上传图片'}>
-          {PropertyUpload ? (
-            <PropertyUpload
-              value={uploadFiles.value}
-              onPathChange={handleUploadChange}
-              buttonType={'text'}
-              placeholder={null}
-              accept={'.png,.jpg,.jpeg'}
-              limit={1}
-              prioritizeNewUploads={true}
-            >
-              {slots}
-            </PropertyUpload>
-          ) : (
-            <Upload
-              fileList={uploadFiles.value}
-              onChange={({ fileList }) => handleUploadChange(fileList)}
-            >
-              {slots}
-            </Upload>
-          )}
+          >
+            {{
+              addonAfter: () => PropertyUpload
+                ? (
+                  <PropertyUpload
+                    value={uploadFiles.value}
+                    onPathChange={handleUploadChange}
+                    buttonType={'text'}
+                    placeholder={null}
+                    accept={'.png,.jpg,.jpeg'}
+                    limit={1}
+                    title={'上传图片'}
+                    prioritizeNewUploads={true}
+                  >
+                    {slots}
+                  </PropertyUpload>
+                )
+                : (
+                  <Upload
+                    title={'上传图片'}
+                    fileList={uploadFiles.value}
+                    onChange={({ fileList }) => handleUploadChange(fileList)}
+                  >
+                    {slots}
+                  </Upload>
+                )
+            }}
+          </Input>
         </div>
       </div>
     )

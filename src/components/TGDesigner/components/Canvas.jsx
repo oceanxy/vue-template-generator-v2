@@ -1,7 +1,7 @@
 import { computed, markRaw, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
-import { getMarginValues, getPaddingValues, styleWithUnits } from '../utils/style'
+import { formatBackgroundImage, getMarginValues, getPaddingValues, styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
@@ -55,9 +55,7 @@ export default {
         canvasStyle.value.padding =
           `${paddings.paddingTop} ${paddings.paddingRight} ${paddings.paddingBottom} ${paddings.paddingLeft}`
 
-        if (canvasStyle.value.backgroundImage && !canvasStyle.value.backgroundImage.startsWith('url(')) {
-          canvasStyle.value.backgroundImage = `url(${canvasStyle.value.backgroundImage})`
-        }
+        canvasStyle.value.backgroundImage = formatBackgroundImage(canvasStyle.value.backgroundImage)
       }, { deep: true }
     )
 

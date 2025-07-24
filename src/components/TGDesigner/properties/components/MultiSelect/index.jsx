@@ -136,6 +136,7 @@ export default {
       return (
         <div
           class={{
+            'tg-designer-property-comp': true,
             'tg-designer-multi-select': true,
             'tg-designer-multi-select-disabled': props.disabled,
             [sizeClass.value]: true

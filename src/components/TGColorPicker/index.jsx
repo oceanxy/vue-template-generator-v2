@@ -1,8 +1,8 @@
-import './index.scss'
 import { Sketch } from '@ckpack/vue-color'
-import { Input, InputGroup, Popover } from 'ant-design-vue'
+import { Button, Input, InputGroup, Tooltip } from 'ant-design-vue'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { debounce } from 'lodash'
+import './index.scss'
 
 // 创建全局颜色验证工具
 const createColorValidator = () => {
@@ -35,7 +35,12 @@ const isPotentialHex = (str) => {
 
 export default {
   name: 'TGColorPicker',
+  emits: ['change', 'update:value', 'update:open'],
   props: {
+    open: {
+      type: Boolean,
+      default: false
+    },
     value: {
       type: String,
       default: '#ffffff'
@@ -43,16 +48,23 @@ export default {
     defaultValue: {
       type: String,
       default: ''
+    },
+    placeholder: {
+      type: String,
+      default: '请输入颜色值'
     }
   },
-  setup(props, { attrs }) {
-    const visible = ref(false)
+  setup(props, { attrs, emit }) {
     const colorValue = ref(props.value)
     const colorChanged = ref(false)
+    const isEyeDropperSupported = ref(false) // 吸管功能支持状态
+    const open = ref(props.open)
     let colorValidator = null
 
     onMounted(() => {
       colorValidator = createColorValidator()
+      // 检测浏览器是否支持 EyeDropper API
+      isEyeDropperSupported.value = !!window.EyeDropper
     })
 
     onUnmounted(() => {
@@ -60,6 +72,19 @@ export default {
     })
 
     watch(() => props.value, val => colorValue.value = val)
+    watch(() => props.open, val => {
+      open.value = val
+    }, { immediate: true })
+
+    const handleEyeDropper = async () => {
+      try {
+        const eyeDropper = new window.EyeDropper()
+        const { sRGBHex } = await eyeDropper.open()
+        handleColorChange(sRGBHex)
+      } catch (err) {
+        console.error('吸管操作失败:', err)
+      }
+    }
 
     // 重构颜色变更处理逻辑
     const handleColorChange = debounce(input => {
@@ -85,47 +110,35 @@ export default {
       if (colorValidator?.isValid(finalColor)) {
         colorChanged.value = true
         colorValue.value = finalColor
-        attrs.onChange?.(finalColor)
-
-        // 弹窗显示状态检查
-        if (!visible.value) {
-          colorValue.value = finalColor
-        }
+        emit('update:value', finalColor)
+        emit('change', finalColor)
       } else if (colorValidator?.isValid(rawColor)) {
         // 原始格式验证通过（非HEX格式）
         colorChanged.value = true
         colorValue.value = rawColor
-        attrs.onChange?.(rawColor)
-
-        if (!visible.value) {
-          colorValue.value = rawColor
-        }
+        emit('update:value', rawColor)
+        emit('change', rawColor)
       }
     }, 200)
 
-    const handleCompleteColorSelection = async () => {
-      setTimeout(() => {
-        if (colorChanged.value) {
-          visible.value = false
-        }
-
-        colorChanged.value = false
-      }, 200)
-    }
-
     return () => (
       <InputGroup class={'tg-color-picker-preview'}>
-        <Popover
-          vModel:open={visible.value}
+        <Tooltip
+          open={open.value}
+          color={'#ffffff'}
           trigger="click"
           overlayClassName="tg-color-picker-popover"
+          onOpenChange={val => {
+            open.value = val
+            emit('update:open', val)
+          }}
         >
           {{
             default: () => (
               <Input
                 allowClear
-                placeholder="请输入颜色值"
-                value={colorValue.value}
+                placeholder={props.placeholder}
+                value={colorValue.value === 'transparent' ? props.defaultValue : colorValue.value}
                 onClick={e => e.currentTarget.select()}
                 onInput={e => handleColorChange(e.target.value)}
                 prefix={
@@ -144,17 +157,53 @@ export default {
                     }}
                   />
                 }
-              />),
-            content: () => (
+                addonAfter={
+                  isEyeDropperSupported.value && (
+                    <Button
+                      type="text"
+                      onClick={e => {
+                        e.stopPropagation()
+                        handleEyeDropper()
+                      }}
+                      title="使用吸管取色"
+                    >
+                      <IconFont type={'icon-color-picker'} />
+                    </Button>
+                  )
+                }
+              />
+            ),
+            title: () => (
               <Sketch
                 modelValue={colorValue.value}
                 onUpdate:modelValue={handleColorChange}
-                presetColors={[]}
-                onMouseup={() => handleCompleteColorSelection()}
+                onDragstart={(e) => {
+                  // 解决Sketch Bug：在色板上首次点选颜色后，如果下一次操作为拖动选择颜色，则会出现禁用符号，
+                  // 且松开鼠标后，没有释放dragover或mouseUp事件
+                  e.preventDefault()
+                }}
+                presetColors={[
+                  '#ffffff',
+                  '#ededed',
+                  '#999999',
+                  'gray',
+                  '#666666',
+                  '#333333',
+                  '#000000',
+                  'pink',
+                  'red',
+                  'blue',
+                  '#92d826',
+                  'green',
+                  'yellow',
+                  'orange',
+                  'cyan',
+                  'purple'
+                ]}
               />
             )
           }}
-        </Popover>
+        </Tooltip>
       </InputGroup>
     )
   }

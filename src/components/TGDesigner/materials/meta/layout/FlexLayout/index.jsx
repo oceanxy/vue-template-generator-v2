@@ -2,6 +2,7 @@ import { Flex } from 'ant-design-vue'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import getPropertyConfig, { predefinedProperties } from '@/components/TGDesigner/properties'
 import { range } from 'lodash'
+import { formatBackgroundImage } from '@/components/TGDesigner/utils/style'
 
 /**
  * 组件元数据
@@ -80,9 +81,7 @@ export default {
 export function FlexLayoutPreview(props) {
   const { previewType, children, ...restProps } = props
 
-  if (restProps.style.backgroundImage && !restProps.style.backgroundImage.startsWith('url(')) {
-    restProps.style.backgroundImage = `url(${restProps.style.backgroundImage})`
-  }
+  restProps.style.backgroundImage = formatBackgroundImage(restProps.style.backgroundImage)
 
   if (previewType === TG_MATERIAL_PREVIEW_TYPE.MATERIAL_PREVIEW) {
     restProps.style.backgroundImage = 'unset'
