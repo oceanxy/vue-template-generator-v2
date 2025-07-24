@@ -23,6 +23,9 @@ import dayjs from 'dayjs'
  * - 表格列配置。
  * @param [showSerialNumberColumn=true] {boolean} - 是否显示序号列，默认 true。
  * @param [optionsOfGetList={}] {Object} - getList 函数参数，默认`{}`。
+ * @param [handleExpand] {() => void} - 表格行展开/折叠时的回调。
+ * @param [handleSortChange] {(sorter) => Object} - 表格排序时触发的回调。
+ * sorter 为 Table 组件回传的当前排序对象，返回值为需要传递给接口的排序参数。
  * @returns {{}|string}
  */
 export default function useTGTable({
@@ -35,7 +38,9 @@ export default function useTGTable({
   getDataSource,
   props = {},
   showSerialNumberColumn = true,
-  optionsOfGetList = {}
+  optionsOfGetList = {},
+  handleExpand,
+  handleSortChange
 } = {}) {
   if (isStaticTable && !stateName) {
     console.warn('静态表格需要 stateName 的值来确定数据源！')
@@ -106,6 +111,11 @@ export default function useTGTable({
     sortFieldList = computed(() => store[location].sortFieldList)
   }
 
+  const _isPagination = computed(() => {
+    return props?.pagination !== false && Object.prototype.toString.call(pagination.value) ===
+      '[object Object]'
+  })
+
   const serialNumberColumn = [
     {
       title: '序号',
@@ -161,7 +171,7 @@ export default function useTGTable({
         ...props.rowSelection
       }
       : null,
-    pagination: props?.pagination !== false && typeof pagination.value === 'object'
+    pagination: _isPagination.value
       ? {
         showQuickJumper: true,
         showTotal: total => `共 ${total} 条数据`,
@@ -174,8 +184,8 @@ export default function useTGTable({
     // 具体信息可以参考：https://juejin.cn/post/7262623363700981797
     // scroll: { x: '100%', y: 500 },
     scroll: { x: 'max-content' },
-    onChange: handleChange,
-    onExpand: handleExpand
+    onChange: _handleChange,
+    onExpand: _handleExpand
   })
 
   watch(columns, val => {
@@ -190,7 +200,10 @@ export default function useTGTable({
 
   watch(() => commonStore.componentSize, val => {
     defaultTableProps.size = val
-    defaultTableProps.pagination.size = val
+
+    if ('size' in defaultTableProps.pagination) {
+      defaultTableProps.pagination.size = val
+    }
   })
 
   // 监听排序集合，根据后端返回的值初始化表头
@@ -293,6 +306,7 @@ export default function useTGTable({
         isMergeParam: isInjectRouterQuery || typeof isMergeParam !== 'boolean'
           ? optionsOfGetList.isMergeParam
           : isMergeParam,
+        // 先从外部传递的参数中获取，外部参数优先级高于本组件参数。
         isPagination: typeof optionsOfGetList.isPagination === 'boolean' ? optionsOfGetList.isPagination : isPagination
       })
     } else {
@@ -602,44 +616,58 @@ export default function useTGTable({
   }
 
   /**
-   * antd vue Table 组件的 change 事件（分页、排序、筛选变化时触发）
+   * ant-design-vue Table 组件的 change 事件（分页、排序、筛选变化时触发）
    * @param pagination
    * @param filters
    * @param sorter
    * @returns {Promise<void>}
    */
-  async function handleChange(pagination, filters, sorter) {
-    let getListParams = {
-      pagination: {
-        pageIndex: pagination.current - 1,
-        pageSize: pagination.pageSize
-      },
-      // 排序变了，序号也重新计算了，所以需要清空已选择的行数据
-      selectedRows: []
+  async function _handleChange(pagination, filters, sorter) {
+    let state = {}
+
+    if (Object.keys(sorter)) {
+      // 排序变化后，序号会也重新计算，所以需要清空已选择的行数据
+      state.selectedRows = []
+
+      if (typeof handleSortChange === 'function') {
+        state = {
+          ...state,
+          sorter: handleSortChange(sorter)
+        }
+      } else {
+        state = {
+          ...state,
+          sorter: {
+            sortField: sorter.order ? sorter.field : undefined,
+            sortType: sorter.order ? sorter.order.replace('end', '') : undefined
+          }
+        }
+      }
     }
 
-    if (location) {
-      getListParams = { [location]: getListParams }
+    if (_isPagination.value && Object.keys(pagination).length) {
+      state = {
+        ...state,
+        pagination: {
+          pageIndex: pagination.current - 1,
+          pageSize: pagination.pageSize
+        }
+      }
     }
 
-    store.$patch(getListParams)
+    // 请求接口之前，将排序、分页、过滤参数保存到 store 中
+    if (location) state = { [location]: state }
+    store.$patch(state)
 
     await fetchList({
       // 组装后端接收的排序参数
-      paramsForGetList: {
-        sortField: sorter.order ? sorter.field : undefined,
-        sortType: sorter.order ? sorter.order.replace('end', '') : undefined
-      },
       isMergeParam: true,
-      isPagination: true
+      isPagination: _isPagination.value
     })
   }
 
-  async function handleExpand() {
-    if (typeof props.onExpand === 'function') {
-      await props.onExpand()
-    }
-
+  async function _handleExpand() {
+    if (typeof handleExpand === 'function') await handleExpand()
     await resize()
   }
 
@@ -659,14 +687,16 @@ export default function useTGTable({
 
       const TABLE_CONTAINER = TABLE_WRAPPER.querySelector('.ant-table .ant-table-container')
       const TABLE_CONTENT = TABLE_CONTAINER.querySelector('.ant-table-content')
+      let TABLE_HEADER,
+        TABLE_BODY
 
       if (TABLE_CONTENT) {
         if (TABLE_CONTENT.offsetHeight >= TABLE_CONTAINER.clientHeight) {
           scroll.y = TABLE_CONTAINER.clientHeight
         }
       } else {
-        const TABLE_HEADER = TABLE_CONTAINER.querySelector('.ant-table-header')
-        const TABLE_BODY = TABLE_CONTAINER.querySelector('.ant-table-body')
+        TABLE_HEADER = TABLE_CONTAINER.querySelector('.ant-table-header')
+        TABLE_BODY = TABLE_CONTAINER.querySelector('.ant-table-body')
 
         if (TABLE_HEADER.clientHeight + TABLE_BODY.offsetHeight >= TABLE_CONTAINER.clientHeight) {
           scroll.y = TABLE_HEADER.clientHeight + TABLE_BODY.offsetHeight
@@ -674,6 +704,22 @@ export default function useTGTable({
       }
 
       defaultTableProps.scroll = scroll
+
+      await nextTick()
+
+      // 修补antdv的bug：当表格每列都设置宽度，且所有列宽总和小于表格宽度，且出现纵向滚动条时，表格HEADER和BODY的列宽不一致导致错位，
+      // 修复逻辑：在表格渲染完成后，将HEADER的<col>的宽度重置为BODY的<col>的宽度，一一对应，实现表格对齐。
+      const TABLE_HEADER_COL = TABLE_CONTAINER.querySelector('.ant-table-header table colgroup')
+      const TABLE_BODY_COL = TABLE_CONTAINER.querySelector('.ant-table-body table colgroup')
+
+      if (TABLE_HEADER_COL && TABLE_BODY_COL) {
+        Array.prototype.forEach.call(TABLE_BODY_COL.children, (col, index) => {
+          setTimeout(() => {
+            TABLE_HEADER_COL.children[index].style.width
+              = TABLE_BODY_COL.children[index].getBoundingClientRect().width + 'px'
+          })
+        })
+      }
     }
   }
 
@@ -759,7 +805,7 @@ export default function useTGTable({
     currentItem,
     dataSource,
     exportButtonDisabled,
-    handleChange,
+    handleChange: _handleChange,
     handleAdd,
     handleEdit,
     handleDelete,
