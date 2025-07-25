@@ -860,7 +860,7 @@ export function createStore({
        * @param [isRefreshTable] {boolean} - 成功后，是否刷新表格数据，默认 false。
        * @param [isClearSelectedRows] {boolean} - 成功后，是否清除表格已选行，默认 false。
        * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作成功后关闭指定弹窗。
-       * @param optionsOfGetList
+       * @param [optionsOfGetList] {Object} - 自定义调用 store.getList 的参数。
        * @returns {Promise<Object>}
        */
       async fetch({
@@ -920,8 +920,8 @@ export function createStore({
 
           if (isRefreshTable) {
             await this.getList({
-              ...optionsOfGetList,
-              isPagination: true
+              isPagination: true,
+              ...optionsOfGetList
             })
           }
 
