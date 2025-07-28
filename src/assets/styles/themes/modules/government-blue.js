@@ -5,8 +5,6 @@ const colorPrimary = '#144BB5'
 export default {
   name: '政务蓝',
   token: {
-    // 字号
-    fontSize: 14,
     // 主题色
     colorPrimary,
     motionBase: 0,

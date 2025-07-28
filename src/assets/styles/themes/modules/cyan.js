@@ -5,8 +5,6 @@ const colorPrimary = '#13c2c2'
 export default {
   name: '明青',
   token: {
-    // 字号
-    fontSize: 14,
     // 主题色
     colorPrimary,
     motionBase: 0,
