@@ -86,6 +86,7 @@ export default function useTGTable({
   let selectedRows
   let sortFieldList
   let rowKey
+  let expandedRowKeys
 
   if (!location) {
     /** 主表格逻辑 **/
@@ -98,6 +99,7 @@ export default function useTGTable({
     selectedRowKeys = computed(() => store.selectedRowKeys)
     selectedRows = computed(() => store.selectedRows)
     sortFieldList = computed(() => store.sortFieldList)
+    expandedRowKeys = computed(() => store.expandedRowKeys)
   } else {
     /** 弹窗内表格等副表格逻辑 **/
     rowKey = computed(() => store[location].rowKey)
@@ -109,6 +111,7 @@ export default function useTGTable({
     selectedRowKeys = computed(() => store[location].selectedRowKeys)
     selectedRows = computed(() => store[location].selectedRows)
     sortFieldList = computed(() => store[location].sortFieldList)
+    expandedRowKeys = computed(() => store[location].expandedRowKeys)
   }
 
   const _isPagination = computed(() => {
@@ -161,6 +164,7 @@ export default function useTGTable({
       return index % 2 === 1 ? 'tg-table-striped' : ''
     },
     ...props,
+    expandedRowKeys: expandedRowKeys.value,
     rowSelection: props.rowSelection
       ? {
         selections: true,
@@ -666,7 +670,30 @@ export default function useTGTable({
     })
   }
 
-  async function _handleExpand() {
+  async function _handleExpand(expanded, record) {
+    let newExpandedRowKeys
+
+    if (expanded) {
+      // 展开行：添加到展开键数组中（避免重复）
+      newExpandedRowKeys = [...new Set([...expandedRowKeys.value, record[rowKey.value]])]
+    } else {
+      // 折叠行：从展开键数组中移除
+      newExpandedRowKeys = expandedRowKeys.value.filter(key => key !== record[rowKey.value])
+    }
+
+    // 更新 store 中的 expandedRowKeys
+    if (location) {
+      store.$patch({
+        [location]: {
+          expandedRowKeys: newExpandedRowKeys
+        }
+      })
+    } else {
+      store.expandedRowKeys = newExpandedRowKeys
+    }
+
+    defaultTableProps.expandedRowKeys = newExpandedRowKeys
+
     if (typeof handleExpand === 'function') await handleExpand()
     await resize()
   }
