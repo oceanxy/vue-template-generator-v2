@@ -12,6 +12,7 @@ import configs from '@/configs'
 export default {
   name: 'TGContainerWithTreeSider',
   props: {
+    ...Tree.props,
     /**
      * 获取自定义图标
      * @param treeNode {Tree.TreeNode} 树节点
@@ -101,16 +102,9 @@ export default {
         title: 'name',
         key: 'id'
       })
-    },
-    /**
-     * 异步加载数据
-     */
-    loadData: {
-      type: Function,
-      default: undefined
     }
   },
-  setup(props, { slots }) {
+  setup(props, { slots, expose }) {
     const initSearchParameters = inject('initSearchParameters')
 
     const store = useStore()
@@ -136,12 +130,11 @@ export default {
     const status = ref(false)
     const defaultExpandedTreeIds = ref([])
     const searchValue = ref('')
-    const key = ref(1)
     const expandedKeysFormEvent = ref([])
     // 上一次设置的用于保存树选中值的字段名，
     // （通常用于 treeIdField 会发生变化的时候。如点击树的不同层级，传递的字段名不一样的情况）
     const oldTreeIdField = ref('')
-    // 是否是手动折叠树默。仅当触发onExpand事件为折叠状态时，给isCollapsedManually赋值为true
+    // 是否是手动折叠树。仅当触发handleExpand事件为折叠状态时，给isCollapsedManually赋值为true
     const isCollapsedManually = ref(false)
     const treeIdField = computed(() => store.treeIdField)
     const treeId = computed(() => [store.search[treeIdField.value]])
@@ -187,7 +180,7 @@ export default {
     provide('refreshTree', getTree)
 
     watch(searchValue, value => {
-      _dataSource.value = filter(dataSource.value, value)
+      _dataSource.value = handleFilter(dataSource.value, value)
     })
 
     /**
@@ -198,28 +191,7 @@ export default {
       return await treeStore.getList({
         stateName: props.treeDataOptions?.stateName,
         apiName: props.treeDataOptions.apiName,
-        paramsForGetList: {
-          ...props.treeDataOptions.paramsForGetList
-        },
-        setValueToStateName(data, store) {
-          if (props.loadData) {
-            // 处理动态加载数据时，默认展开第一级
-            if (key.value == 1) {
-              onExpand([data?.[0]?.[props.fieldNames.key]], { expanded: true })
-            }
-
-            key.value += 1
-            store[props.treeDataOptions?.stateName].list = data.map(item => {
-              return {
-                ...item,
-                isLeaf: false,
-                key: item.id
-              }
-            })
-          } else {
-            store[props.treeDataOptions?.stateName || 'dataSource'].list = data
-          }
-        }
+        ...props.treeDataOptions
       })
     }
 
@@ -258,7 +230,7 @@ export default {
      * @param searchValue {string} 搜索关键字
      * @returns {*[]}
      */
-    function filter(dataSource, searchValue) {
+    function handleFilter(dataSource, searchValue) {
       if (!Array.isArray(dataSource) || typeof searchValue !== 'string') return []
       if (searchValue === '') return []
 
@@ -271,7 +243,7 @@ export default {
         if (item[titleField].includes(searchValue)) {
           temp.push(item)
         } else if (Array.isArray(item[childrenField]) && item[childrenField].length) {
-          item[childrenField] = filter(item[childrenField], searchValue)
+          item[childrenField] = handleFilter(item[childrenField], searchValue)
 
           if (item[childrenField].length) {
             temp.push(item)
@@ -287,7 +259,7 @@ export default {
      * @param selectedKeys {array} 当前选中的 keys
      * @param e {Object} 当前是否有被选中的结点
      */
-    async function onSelect(selectedKeys, e) {
+    async function handleSelect(selectedKeys, e) {
       if (Object.keys(router.currentRoute.value.query).length) {
         /**
          * #2 （一个书签，与本组件的 #1 配合）
@@ -342,7 +314,7 @@ export default {
     /**
      * 收缩/展开树所在侧边栏时的回调函数
      */
-    function onSidebarSwitch() {
+    function handleSidebarSwitch() {
       // tableRef.value?.$parent?.resize()
     }
 
@@ -350,7 +322,7 @@ export default {
      * 搜索树
      * @param e
      */
-    function onTreeSearch(e) {
+    function handleTreeSearch(e) {
       expandedKeysFormEvent.value = []
       searchValue.value = e.target.value
     }
@@ -359,7 +331,7 @@ export default {
      * 展开树
      * @param expandedKeys
      */
-    function onExpand(expandedKeys, { expanded }) {
+    function handleExpand(expandedKeys, { expanded }) {
       isCollapsedManually.value = !expanded
       expandedKeysFormEvent.value = expandedKeys
     }
@@ -420,13 +392,19 @@ export default {
       store.taskQueues.treeNode = [initSearchParams()]
     }
 
+    expose({
+      treeExpand(keys) {
+        handleExpand(keys, { expanded: true })
+      }
+    })
+
     return () => (
       <TGContainerWithSider
         class="tg-container-with-tree-sider"
         siderClass="tg-container-with-tree-sider--sider"
         contentClass={`tg-container-with-tree-sider--content${props.contentClass ? ` ${props.contentClass}` : ''}`}
         siderOnLeft
-        onSidebarSwitch={onSidebarSwitch}
+        onSidebarSwitch={handleSidebarSwitch}
         showSiderTrigger={configs.siderTree.showTrigger}
       >
         {{
@@ -437,21 +415,19 @@ export default {
                 prefix={<SearchOutlined />}
                 allowClear
                 placeholder={props.placeholder}
-                onChange={debounce(onTreeSearch, 300)}
+                onChange={debounce(handleTreeSearch, 300)}
               />
               <Spin spinning={loading.value}>
                 <Tree
-                  key={key.value}
+                  {...props}
                   showLine
                   showIcon
                   blockNode
                   selectedKeys={treeId.value}
-                  onSelect={onSelect}
+                  onSelect={handleSelect}
                   expandedKeys={expandedKeys.value}
-                  onExpand={onExpand}
+                  onExpand={handleExpand}
                   treeData={_dataSource.value.length ? _dataSource.value : dataSource.value}
-                  loadData={props.loadData}
-                  fieldNames={props.fieldNames}
                 >
                   {{
                     switcherIcon: ({ switcherCls }) => <CaretDownOutlined class={switcherCls} />,

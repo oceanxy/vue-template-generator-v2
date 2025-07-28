@@ -71,14 +71,14 @@ export default function useInquiryForm({
   // const loading = computed(() => store.dataSource.loading)
   // const search = computed(() => store.search)
   const loading = computed(() => {
-    if (Object.keys(optionsOfGetList).length) {
-      return store[optionsOfGetList?.location].dataSource.loading
+    if (optionsOfGetList?.location) {
+      return store[optionsOfGetList.location].dataSource.loading
     } else {
       return store.dataSource.loading
     }
   })
   const search = computed(() => {
-    if (Object.keys(optionsOfGetList).length) {
+    if (optionsOfGetList.location) {
       return store[optionsOfGetList?.location].form
     } else {
       return store.search
