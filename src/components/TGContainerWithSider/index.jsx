@@ -62,13 +62,27 @@ export default {
     }
 
     return () => (
-      <div class={`tg-container-with-sider${treeCollapsed.value ? ' tree-collapsed' : ''}`}>
-        <div class={`tg-container-with-sider--content${props.contentClass ? ` ${props.contentClass}` : ''}`}>
+      <div
+        class={{
+          'tg-container-with-sider': true,
+          'tree-collapsed': treeCollapsed.value
+        }}
+      >
+        <div
+          class={{
+            'tg-container-with-sider--content': true,
+            [props.contentClass]: !!props.contentClass
+          }}
+        >
           {slots.default?.()}
         </div>
         <div
           style={{ order: props.siderOnLeft ? -1 : 1 }}
-          class={`tg-container-with-sider--sider${siderClassName.value}${!treeCollapsed.value ? '' : ' hide'}`}
+          class={{
+            'tg-container-with-sider--sider': true,
+            [siderClassName.value]: !!siderClassName.value,
+            'hide': treeCollapsed.value
+          }}
         >
           {slots.sider?.()}
           {

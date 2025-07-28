@@ -252,7 +252,12 @@ export default {
     }
 
     return () => (
-      <div class={`tg-container${attrs.class ? ` ${attrs.class}` : ''}`}>
+      <div
+        class={{
+          'tg-container': true,
+          [attrs.class]: !!attrs.class
+        }}
+      >
         {
           (showPageTitle || slots.function) && (
             <div class={'tg-container-title'}>

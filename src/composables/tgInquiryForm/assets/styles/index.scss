@@ -11,7 +11,7 @@
     row-gap: 10px;
     column-gap: 10px;
     background: var(--tg-theme-color-bg-container);
-    padding: 20px;
+    padding: 16px;
     overflow: auto;
     border-radius: var(--tg-theme-border-radius);
 
@@ -25,6 +25,7 @@
       flex-wrap: wrap;
       align-items: center;
       row-gap: 12px;
+      min-width: 790px;
 
       .tg-inquiry-row-for-buttons {
         flex-wrap: wrap;
@@ -59,6 +60,14 @@
         }
       }
     }
+
+    @media screen and (max-width: 1366px) {
+      padding: var(--tg-theme-padding-sm);
+    }
+
+    @media screen and (min-width: 1920px) {
+      padding: var(--tg-theme-padding);
+    }
   }
 
   &:not(.fixed) {
@@ -84,11 +93,24 @@
         border: unset;
         border-top-left-radius: 0;
         border-top-right-radius: 0;
+
+        @media screen and (max-width: 1366px) {
+          width: 42px;
+          height: 14px;
+          font-size: 8px;
+        }
+
+        @media screen and (min-width: 1920px) {
+          width: 52px;
+          height: 18px;
+        }
       }
     }
 
     .tg-inquiry-form-content {
-      overflow: hidden;
+      width: 100%;
+      overflow-y: hidden;
+      overflow-x: auto;
       transition: height .2s ease-out;
 
       .tg-inquiry-row-for-fields {

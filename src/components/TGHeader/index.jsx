@@ -1,6 +1,5 @@
-import './assets/styles/index.scss'
 import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref, watch } from 'vue'
-import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme, Select, Badge } from 'ant-design-vue'
+import { Avatar, Badge, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Select, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
@@ -12,6 +11,8 @@ import './assets/images/svgComp/moon.svg'
 import './assets/images/svgComp/sun.svg'
 import useThemeVars from '@/composables/themeVars'
 import { COMPONENT_SIZE } from '@/configs/enums'
+import { getScreenInfo } from '@/stores/modules/common'
+import './assets/styles/index.scss'
 
 export default {
   name: 'TGLayoutHeader',
@@ -30,6 +31,7 @@ export default {
     const showMenu = computed(() => commonStore.showMenu)
     const loading = computed(() => loginStore.loading)
     const userInfo = computed(() => loginStore.userInfo)
+    const fontSize = computed(() => commonStore.fontSize)
     const avatarForLetter = computed(() => {
       const name = userInfo.value.nickName || userInfo.value.fullName
 
@@ -54,7 +56,6 @@ export default {
     const localStorageHeaderId = computed(() => {
       return commonStore.headerId || localStorage.getItem(`${appName}-headerId`)
     })
-    const fontSize = ref(commonStore.fontSize)
     const currentThemeName = ref(
       localStorage.getItem(`${appName}-theme`) ||
       loginStore?.userInfo?.themeFileName ||
@@ -187,14 +188,15 @@ export default {
     }
 
     async function resetFontSize() {
+      const screenInfo = getScreenInfo()
+
       await updateThemeConfig({
-        componentSize: 'middle',
-        fontSize: 14
+        componentSize: screenInfo.componentSize,
+        fontSize: screenInfo.fontSize
       })
 
-      commonStore.componentSize = 'middle'
-      commonStore.fontSize = 14
-      fontSize.value = 14
+      commonStore.componentSize = screenInfo.componentSize
+      commonStore.fontSize = screenInfo.fontSize
     }
 
     async function updateFontSize(val) {
@@ -248,7 +250,8 @@ export default {
             <div class="tg-header-user-content">
               <Spin
                 spinning={loading.value}
-                wrapperClassName={`tg-header-user-spin-content${loading.value ? ' blur' : ''}`}>
+                wrapperClassName={`tg-header-user-spin-content${loading.value ? ' blur' : ''}`}
+              >
                 {
                   configs.header?.params?.show
                     ? [
@@ -263,7 +266,8 @@ export default {
                           commonStore.organListForHeader.list?.map(item => (
                             <Select.Option
                               value={item.orgId}
-                              title={item.orgName}>
+                              title={item.orgName}
+                            >
                               {item.orgName || '暂无组织名称'}
                             </Select.Option>
                           ))
@@ -432,7 +436,10 @@ export default {
                             <Radio value={'large'}>大</Radio>
                           </RadioGroup>
                           {
-                            (commonStore.componentSize !== 'middle' || commonStore.fontSize !== 14) && (
+                            (
+                              commonStore.componentSize !== getScreenInfo().componentSize ||
+                              commonStore.fontSize !== getScreenInfo().fontSize
+                            ) && (
                               <div style={{ marginTop: '10px' }}>
                                 <Button
                                   type={'primary'}

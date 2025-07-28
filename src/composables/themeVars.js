@@ -135,29 +135,29 @@ export default function useThemeVars() {
    */
   function adjustHexBrightness(hex, percent) {
     // 移除#号并统一为6位格式
-    hex = hex.replace(/^#/, '');
+    hex = hex.replace(/^#/, '')
     if (hex.length === 3) {
-      hex = hex.split('').map(c => c + c).join('');
+      hex = hex.split('').map(c => c + c).join('')
     }
 
     // 解析RGB分量
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
+    const r = parseInt(hex.slice(0, 2), 16)
+    const g = parseInt(hex.slice(2, 4), 16)
+    const b = parseInt(hex.slice(4, 6), 16)
 
     // 转换为HSL空间
-    const [h, s, l] = rgbToHsl(r, g, b);
+    const [h, s, l] = rgbToHsl(r, g, b)
 
     // 调整亮度（限制在0-1范围内）
-    const newLightness = Math.min(Math.max(l + (l * percent / 100), 0), 1);
+    const newLightness = Math.min(Math.max(l + (l * percent / 100), 0), 1)
 
     // 转换回RGB
-    const [newR, newG, newB] = hslToRgb(h, s, newLightness);
+    const [newR, newG, newB] = hslToRgb(h, s, newLightness)
 
     // 返回十六进制格式
     return '#' + [newR, newG, newB]
       .map(v => Math.round(v).toString(16).padStart(2, '0'))
-      .join('');
+      .join('')
   }
 
   async function updateCssVars(mode) {
@@ -216,7 +216,13 @@ export default function useThemeVars() {
       '--tg-theme-margin-sm': token.value.marginSM + 'px',
       '--tg-theme-margin': token.value.margin + 'px',
       '--tg-theme-margin-md': token.value.marginMD + 'px',
-      '--tg-theme-margin-lg': token.value.marginLG + 'px'
+      '--tg-theme-margin-lg': token.value.marginLG + 'px',
+      '--tg-theme-padding-xxs': token.value.paddingXXS + 'px',
+      '--tg-theme-padding-xs': token.value.paddingXS + 'px',
+      '--tg-theme-padding-sm': token.value.paddingSM + 'px',
+      '--tg-theme-padding': token.value.padding + 'px',
+      '--tg-theme-padding-md': token.value.paddingMD + 'px',
+      '--tg-theme-padding-lg': token.value.paddingLG + 'px'
     }
   }
 
