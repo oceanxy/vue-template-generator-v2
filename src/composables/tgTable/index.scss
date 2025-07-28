@@ -44,12 +44,6 @@
             transition: width 0.1s ease-in-out; // 防止计算宽度时出现抖动
           }
 
-          .ant-table-content,
-          .ant-table-header {
-            border-inline-start: 1px solid var(--tg-theme-color-border-reset);
-            border-start-start-radius: var(--tg-theme-border-radius);
-          }
-
           .ant-table-header {
             flex: none;
           }
