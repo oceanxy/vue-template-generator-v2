@@ -25,8 +25,8 @@ export default {
       type: Boolean,
       default: true
     },
-    // 自定义容器的额外样式表
-    contentClassName: {
+    // 自定义默认容器的包裹容器的样式表名称
+    contentWrapperClassName: {
       type: String,
       default: ''
     },
@@ -58,7 +58,7 @@ export default {
     const {
       isInitTable,
       showTree,
-      contentClassName,
+      contentWrapperClassName,
       showPageTitle,
       isPagination,
       optionsOfGetList,
@@ -113,9 +113,12 @@ export default {
           for (const _payload of result) {
             payload = { ...payload, ..._payload }
           }
+
+          // 先执行一次参数注入。适配拥有侧边树，但没有搜索栏和表格的页面
+          store.setSearchParams(payload)
         }
 
-        // 注入额外的搜索参数，注意：侧边树的搜索参数注入不在此组件内执行
+        // 注入额外的表格搜索参数，注意：侧边树的搜索参数注入不在此组件内执行
         if (!showTree && typeof injectSearchParamsOfTable === 'function') {
           payload = injectSearchParamsOfTable({})
         }
@@ -230,14 +233,13 @@ export default {
           )
           : slots.default &&
           (
-            <div class={'tg-container-content-wrapper'}>
-              <div
-                class={
-                  `tg-container-others-content${contentClassName
-                    ? ` ${contentClassName}`
-                    : ''}`
-                }
-              >
+            <div
+              class={{
+                'tg-container-content-wrapper': true,
+                [contentWrapperClassName]: !!contentWrapperClassName
+              }}
+            >
+              <div class={'tg-container-content-main'}>
                 {slots.default()}
               </div>
               {

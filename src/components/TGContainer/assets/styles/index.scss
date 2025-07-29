@@ -81,7 +81,7 @@
         flex: auto;
         height: 0;
 
-        .tg-container-others-content {
+        .tg-container-content-main {
           flex: auto;
           width: 100%;
           overflow: hidden;
@@ -92,15 +92,18 @@
       }
 
       &.tg-container-table-wrapper {
+        display: flex;
+        flex-direction: column;
         height: 100%;
       }
 
       &.tg-container-content-wrapper {
+        flex: auto;
         display: flex;
         flex-direction: column;
         gap: 10px;
 
-        .tg-container-others-content {
+        .tg-container-content-main {
           overflow: auto;
         }
 
