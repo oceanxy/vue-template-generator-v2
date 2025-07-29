@@ -858,9 +858,9 @@ export function createStore({
        * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值(store.search)合并，默认为 false。
        * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
        * @param [isRefreshTable] {boolean} - 成功后，是否刷新表格数据，默认 false。
+       * @param [optionsOfGetList] {Object} - 自定义调用 store.getList 的参数。isRefreshTable 为 true 时生效。
        * @param [isClearSelectedRows] {boolean} - 成功后，是否清除表格已选行，默认 false。
        * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作成功后关闭指定弹窗。
-       * @param [optionsOfGetList] {Object} - 自定义调用 store.getList 的参数。
        * @returns {Promise<Object>}
        */
       async fetch({
