@@ -39,7 +39,7 @@ export default {
               async () => {
                 if (search.value.templateId) {
                   const res = await Promise.all([
-                    // 保存选择的模版ID
+                    // 保存选择的模板ID
                     tgStore.fetch({
                       location,
                       apiName: search.value.pageType === 13 ? 'setTemplateId' : 'setTemplateIdOfHF',
@@ -136,6 +136,7 @@ export default {
           <Button
             disabled={isSaving.value || !search.value.templateId}
             type={'primary'}
+            title={'还原为模板原始数据'}
             onClick={restoreTemplate}
           >
             恢复模板
@@ -143,6 +144,7 @@ export default {
           <Button
             disabled={isSaving.value}
             type={'primary'}
+            title={'套用内置模板'}
             onClick={selectTemplate}
           >
             选择模板

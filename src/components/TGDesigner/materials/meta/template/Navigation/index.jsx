@@ -22,7 +22,7 @@ export default {
   defaultProps: BasicMenu.defaultProps,
   style: BasicMenu.style,
   class: '',
-  configForm: BasicMenu.configForm
+  propConfigForm: BasicMenu.propConfigForm
 }
 
 const Navigation = {
@@ -43,7 +43,9 @@ const Navigation = {
             pageRoute: route.item.routeInfo,
             pageId: route.item.relScenePageId,
             title: route.item.navName,
-            isLoginRequired: route.item.outLoginFlag
+            isLoginRequired: route.item.outLoginFlag,
+            linkWay: route.item.linkWay,
+            jumpOutPageUrl: route.item.jumpOutPageUrl
           }
         })
       }
@@ -65,7 +67,9 @@ const Navigation = {
             pageRoute: currentRoute.routeInfo,
             pageId: currentRoute.relScenePageId,
             title: currentRoute.navName,
-            isLoginRequired: currentRoute.outLoginFlag
+            isLoginRequired: currentRoute.outLoginFlag,
+            linkWay: currentRoute.linkWay,
+            jumpOutPageUrl: currentRoute.jumpOutPageUrl
           }
         } else {
           const home = navs.value.find(nav => nav.homeFlag === 1)
@@ -75,14 +79,18 @@ const Navigation = {
               pageRoute: home.routeInfo,
               pageId: home.relScenePageId,
               title: home.navName,
-              isLoginRequired: home.outLoginFlag
+              isLoginRequired: home.outLoginFlag,
+              linkWay: home.linkWay,
+              jumpOutPageUrl: home.jumpOutPageUrl
             }
           } else if (navs.value[0]) {
             targetRoute = {
               pageRoute: navs.value[0].routeInfo,
-              pageId: navs.value[0].title,
-              title: navs.value[0].relScenePageId,
-              isLoginRequired: navs.value[0].outLoginFlag
+              pageId: navs.value[0].relScenePageId,
+              title: navs.value[0].navName,
+              isLoginRequired: navs.value[0].outLoginFlag,
+              linkWay: navs.value[0].linkWay,
+              jumpOutPageUrl: navs.value[0].jumpOutPageUrl
             }
           }
         }

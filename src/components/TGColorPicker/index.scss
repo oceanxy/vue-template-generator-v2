@@ -1,5 +1,12 @@
-.tg-color-picker-popover .ant-popover-inner-content {
-  padding: 0 !important;
+.tg-color-picker-popover {
+  .ant-tooltip-content {
+    padding: 0 !important;
+
+    .ant-tooltip-inner {
+      padding: 0;
+      color: #000000;
+    }
+  }
 }
 
 .tg-color-picker-preview.ant-input-group {
@@ -20,6 +27,15 @@
         background-size: 8px 8px;
         background-position: 0 0, 4px 4px;
       }
+    }
+  }
+
+  .ant-input-group-addon {
+    padding: 0;
+    border: none;
+
+    & > .ant-btn {
+      padding: 0 8px;
     }
   }
 

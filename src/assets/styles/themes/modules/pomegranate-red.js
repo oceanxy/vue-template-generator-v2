@@ -5,8 +5,6 @@ const colorPrimary = '#E03E3F'
 export default {
   name: '石榴红',
   token: {
-    // 字号
-    fontSize: 14,
     // 主题色
     colorPrimary,
     motionBase: 0,

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { TG_MATERIAL_CATEGORY } from '../materials'
 import { cloneDeep } from 'lodash'
-import { canvasConfigForm, schema } from '../schemas'
+import { schema } from '../schemas'
 import { getUUID } from '@/utils/utilityFunction'
 import basicMaterials from '../materials/meta/basic'
 import layoutMaterials from '../materials/meta/layout'
@@ -13,7 +13,6 @@ export const useEditorStore = defineStore('editor', {
     saveStatus: SAVE_STATUS.SAVED, // 服务端保存状态
     isSchemaLoaded: false,
     selectedComponent: null,
-    canvasConfigForm,
     schema: cloneDeep(schema),
     selectedPlugin: {
       id: null
@@ -32,7 +31,9 @@ export const useEditorStore = defineStore('editor', {
     },
     actionBar: {
       visible: false,
-      position: { x: 0, y: 0 }
+      position: { x: 0, y: 0 },
+      canMoveInside: {}, // 以展平的方式保存所有布局组件的子组件是否能被移动
+      canCopyInside: {} // 以展平的方式保存所有布局组件的子组件是否能被复制
     },
     /**
      * 物料组件注册
@@ -141,6 +142,7 @@ export const useEditorStore = defineStore('editor', {
 
         if (componentDef) {
           componentDef.id = newComponent.id
+          componentDef.parentId = newComponent.parentId
         }
 
         this.selectedComponent = componentDef

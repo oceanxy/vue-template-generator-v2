@@ -7,14 +7,14 @@
 ### 拉取项目
 
 ```bash
-cd project-dir
+cd [项目目录]
 git clone [本项目GIT仓库地址]
 cd [本项目GIT仓库名称]/src/apps
 git clone [子项目仓库地址]
-cd ../..
+cd ../../..
 ```
 
-### 安装依赖/运行/打包/清缓存
+### 安装依赖包/启动本地环境/打包/清缓存
 
 #### 使用NPM包管理器：
 
@@ -26,7 +26,8 @@ npm run build -- --app demo # 生产环境打包
 npm run test -- --app demo # 测试环境打包
 npm run stage -- --app demo # 预发布环境打包
 #############################################
-npm run clean:cache # 清除缓存
+npm run clean:cache # 清除缓存目录
+npm run clean:app-cache -- --app demo # 清除指定子项目缓存
 ```
 
 #### 使用yarn包管理器：
@@ -40,9 +41,10 @@ yarn test --app demo
 yarn stage --app demo
 #############################################
 yarn clean:cache
+yarn clean:app-cache --app demo
 ```
 
-如要修改**本地/生产/测试/预发布**的运行/打包参数，请修改 `project-dir/[本项目GIT仓库名称]/src/apps/[子项目仓库名称]/configs` 目录下对应的环境变量文件：
+如要修改**本地/生产/测试/预发布**的运行/打包参数，请修改 `[项目目录]/[本项目GIT仓库名称]/src/apps/[子项目仓库名称]/configs` 目录下对应的环境变量文件：
 
 - .env.development
 - .env.production
@@ -51,7 +53,8 @@ yarn clean:cache
 
 > 注意：
 > - 更新代码或修改环境变量之后启动任意一个环境，遇到代码不生效的问题，请先清除本地缓存后再次执行相应命令。
-> - 打包好的文件位于 `project-dir/[本项目GIT仓库名称]/dist/[子项目仓库名称]`。
+> - 打包好的文件位于 `[项目目录]/[本项目GIT仓库名称]/dist/[子项目仓库名称]`。
+> - 执行命令期间报错，请重新安装依赖包（node_modules）。
 
 
 ## 开发问题排查

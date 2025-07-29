@@ -5,8 +5,6 @@ const colorPrimary = '#B8170C'
 export default {
   name: '党政红',
   token: {
-    // 字号
-    fontSize: 14,
     // 主题色
     colorPrimary,
     motionBase: 0,

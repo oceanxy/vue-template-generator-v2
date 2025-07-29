@@ -2,8 +2,8 @@ import { Button, message, Modal, Upload } from 'ant-design-vue'
 import { getBase64, getFirstLetterOfEachWordOfAppName, getUUID } from '@/utils/utilityFunction'
 import { computed, ref, watch } from 'vue'
 import configs from '@/configs'
+import { cloneDeep, omit } from 'lodash'
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons-vue'
-import { cloneDeep } from 'lodash'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 
@@ -18,6 +18,16 @@ export default {
     limit: {
       type: Number,
       default: 5
+    },
+    /**
+     * 新上传的文件优先。
+     * 当`limit`的值为`1`时：
+     * - 该值设为`false`表示新上传的文件会被舍弃并提示失败（默认）；
+     * - 该值设为`true`表示新上传的文件会覆盖已上传的文件。
+     */
+    prioritizeNewUploads: {
+      type: Boolean,
+      default: false
     },
     // 默认 configs.uploadPath.common
     action: {
@@ -66,7 +76,7 @@ export default {
       default: null
     }
   },
-  setup(props, { emit }) {
+  setup(props, { emit, slots }) {
     const files = ref([])
     const fileListBackup = ref([])
     const previewImage = ref('')
@@ -79,6 +89,12 @@ export default {
     })
 
     watch(() => props.value, val => {
+      if (props.limit === 1 && props.prioritizeNewUploads) {
+        files.value = val
+        fileListBackup.value = []
+        return
+      }
+
       const temp = []
 
       if (val?.length) {
@@ -122,10 +138,14 @@ export default {
       // 文件大小限制
       if (file.size / 1024 / 1024 > props.fileSize) {
         file.status = 'error'
-        file.error = new Error('文件大小超过限制，上传失败。')
-        file.response = '文件大小超过限制，上传失败。'
+        file.error = new Error(`文件大小超过${props.fileSize}M限制，上传失败。`)
+        file.response = `文件大小超过${props.fileSize}M限制，上传失败。`
 
         return false
+      }
+
+      if (props.limit === 1 && props.prioritizeNewUploads) {
+        return true
       }
 
       // 非错误状态的文件都纳入计数范围，统计已经上传和正在上传的文件的总数。
@@ -169,8 +189,14 @@ export default {
       previewVisible.value = false
     }
 
-    function handleChange({ fileList }) {
-      let _fileList = [...fileList]
+    function handleChange({ fileList, file }) {
+      let _fileList
+
+      if (props.limit === 1 && props.prioritizeNewUploads) {
+        _fileList = [file]
+      } else {
+        _fileList = [...fileList]
+      }
 
       _fileList = _fileList.map(file => {
         if (file.status === 'done' && 'response' in file) {
@@ -205,6 +231,38 @@ export default {
       emit('update:value', files.value.filter(item => item.status === 'done'))
     }
 
+    const renderSlots = () => {
+      let hasDefaultSlot
+
+      if (slots.default) {
+        const result = slots.default()
+        hasDefaultSlot = Array.isArray(result) && result.some(item => item.type.toString() !== 'Symbol(v-cmt)')
+      }
+
+      return {
+        default: () => ((props.limit === 1 && props.prioritizeNewUploads) || props.limit > files.value.length) && (
+          props.listType === 'picture-card'
+            ? (
+              <div>
+                {hasDefaultSlot ? slots.default() : <PlusOutlined />}
+                <p>{props.placeholder}</p>
+              </div>
+            )
+            : (
+              <Button
+                disabled={props.disabled}
+                type={props.buttonType}
+                size={props.buttonSize}
+              >
+                {hasDefaultSlot ? slots.default() : <UploadOutlined />}
+                {props.placeholder}
+              </Button>
+            )
+        ),
+        ...omit(slots, 'default')
+      }
+    }
+
     return () => (
       <div
         style={{
@@ -232,27 +290,7 @@ export default {
               : null
           }
         >
-          {
-            props.limit > files.value.length && (
-              props.listType === 'picture-card'
-                ? (
-                  <div>
-                    <PlusOutlined />
-                    <p>{props.placeholder}</p>
-                  </div>
-                )
-                : (
-                  <Button
-                    disabled={props.disabled}
-                    type={props.buttonType}
-                    size={props.buttonSize}
-                  >
-                    <UploadOutlined />
-                    {props.placeholder}
-                  </Button>
-                )
-            )
-          }
+          {renderSlots()}
         </Upload>
         <Modal
           open={previewVisible.value}

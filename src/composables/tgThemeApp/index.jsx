@@ -1,7 +1,7 @@
 import useStore from '@/composables/tgStore'
 import themeFiles from '@/assets/styles/themes'
 import useThemeVars from '@/composables/themeVars'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { App, ConfigProvider, Empty, StyleProvider, theme } from 'ant-design-vue'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
@@ -36,6 +36,14 @@ export default function useThemeApp() {
       await updateCssVars(val[0])
     }
   )
+
+  onMounted(() => window.addEventListener('resize', handleResize))
+  onUnmounted(() => window.removeEventListener('resize', handleResize))
+
+  // 监听屏幕尺寸变化
+  const handleResize = () => {
+    commonStore.updateScreenInfo()
+  }
 
   const themeForConfigProvider = computed(() => {
     const algorithm = [theme[commonStore.algorithm || customTheme.value.algorithm]]

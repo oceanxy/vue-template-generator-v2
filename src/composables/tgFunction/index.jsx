@@ -214,6 +214,7 @@ export default function useFunction({
 
     await store.exportData({
       params: { ...router.currentRoute.value.query, ...payload },
+      addSortParams: true,
       apiName,
       fileName: `${fileName && isTimeName ? getDateTime() : ''}${fileName}`
     })

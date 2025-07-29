@@ -15,7 +15,14 @@ export default function useStore(storeName) {
   let store
 
   if (!storeName) {
-    store = require(`@/apps/${appName}/stores/modules/${toLowercase(router.currentRoute.value.name)}`)
+    let name = router.currentRoute.value.name
+
+    // 如果第二个字母是大写，说明store名称的开始是由几个单词首字母缩写而成的，此时的store名称保持大写
+    if (/[a-z]/.test(name.charAt(1))) {
+      name = toLowercase(router.currentRoute.value.name)
+    }
+
+    store = require(`@/apps/${appName}/stores/modules/${name}`)
   } else {
     const _storeName = storeName.split('/').at(-1)
 

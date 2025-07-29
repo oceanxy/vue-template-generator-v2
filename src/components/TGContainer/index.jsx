@@ -2,7 +2,7 @@ import './assets/styles/index.scss'
 import TGContainerWithTreeSider from '@/components/TGContainerWithTreeSider'
 import { message, Space } from 'ant-design-vue'
 import router from '@/router'
-import { computed, nextTick, onMounted, provide } from 'vue'
+import { computed, nextTick, onMounted, provide, ref } from 'vue'
 import useStore from '@/composables/tgStore'
 
 export default {
@@ -43,18 +43,20 @@ export default {
       type: Object,
       default: () => ({})
     },
-    ...TGContainerWithTreeSider.props,
     injectSearchParamsOfTable: {
       type: Function,
       default: undefined
-    }
+    },
+    ...TGContainerWithTreeSider.props
   },
-  setup(props, { slots, attrs }) {
+  setup(props, { slots, attrs, expose }) {
+    const treeRef = ref(null)
     const store = useStore()
 
     const taskQueues = computed(() => store.taskQueues)
 
     const {
+      isInitTable,
       showTree,
       contentClassName,
       showPageTitle,
@@ -65,7 +67,7 @@ export default {
     } = props
 
     const _isInitTable = computed(() => {
-      return props.isInitTable && !!slots.table && 'dataSource' in store.$state
+      return isInitTable && !!slots.table && 'dataSource' in store.$state
     })
 
     provide('initSearchParameters', initSearchParameters)
@@ -251,8 +253,19 @@ export default {
       ]
     }
 
+    expose(props.showTree ? {
+      treeExpand(keys) {
+        treeRef.value.treeExpand(keys)
+      }
+    } : undefined)
+
     return () => (
-      <div class={`tg-container${attrs.class ? ` ${attrs.class}` : ''}`}>
+      <div
+        class={{
+          'tg-container': true,
+          [attrs.class]: !!attrs.class
+        }}
+      >
         {
           (showPageTitle || slots.function) && (
             <div class={'tg-container-title'}>
@@ -282,6 +295,7 @@ export default {
           showTree
             ? (
               <TGContainerWithTreeSider
+                ref={treeRef}
                 class={'tg-container-content'}
                 injectSearchParamsOfTable={injectSearchParamsOfTable}
                 {...treeProps}

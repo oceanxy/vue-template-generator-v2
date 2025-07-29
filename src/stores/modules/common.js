@@ -1,6 +1,19 @@
 import { createStore } from '@/stores/createStore'
 import configs from '@/configs'
 
+// 统一的屏幕检测函数
+export function getScreenInfo() {
+  const width = window.innerWidth
+
+  if (width <= 1366) {
+    return { fontSize: 12, componentSize: 'small' }
+  } else if (width <= 1920) {
+    return { fontSize: 14, componentSize: 'middle' }
+  } else {
+    return { fontSize: 16, componentSize: 'large' }
+  }
+}
+
 export default createStore({
   moduleName: 'common',
   module: {
@@ -15,21 +28,21 @@ export default createStore({
       inquiryFormCollapsed: true,
       // 主题配置，默认科技蓝
       themeName: 'tech-blue',
-      // 字号设置，默认14
-      fontSize: 14,
+      // 字号设置，根据屏幕尺寸自动设置默认值
+      fontSize: getScreenInfo().fontSize,
       // 默认算法 defaultAlgorithm 暗色算法 darkAlgorithm
       algorithm: 'defaultAlgorithm',
       // 是否紧凑模式，默认 false。启用后，会在 antd 组件的布局算法中加入 'compactAlgorithm'。
       isCompactAlgorithm: false,
-      // 组件大小，默认 middle，可选 small | middle | large
-      componentSize: 'middle',
+      // 组件大小，根据屏幕尺寸自动设置默认值，可选 small | middle | large
+      componentSize: getScreenInfo().componentSize,
       // header 内的当前选中站点
-      headerId: "",
+      headerId: '',
       // header 内的站点切换数据源
       organListForHeader: {
         loading: false,
         list: []
-      },
+      }
     },
     actions: {
       setCollapsed() {
@@ -51,6 +64,11 @@ export default createStore({
         localStorage.setItem(`${appName}-theme`, state.themeName)
 
         this.$patch(state)
+      },
+      updateScreenInfo() {
+        const { fontSize, componentSize } = getScreenInfo()
+        this.fontSize = fontSize
+        this.componentSize = componentSize
       }
     }
   },

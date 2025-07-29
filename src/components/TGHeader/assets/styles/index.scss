@@ -106,24 +106,27 @@
         justify-content: center;
         align-items: center;
 
-        .tg-header-params{
-          .ant-select-selector{
+        .tg-header-params {
+          .ant-select-selector {
             background: none;
             border: none;
             font-size: var(--tg-theme-font-size-lg);
             font-weight: 400;
             line-height: var(--tg-theme-font-size);
             color: var(--tg-theme-color-white) !important;
-            .ant-select-selection-placeholder{
+
+            .ant-select-selection-placeholder {
               color: var(--tg-theme-color-white) !important;
             }
           }
+
           &.ant-select-open {
-            .ant-select-selection-item{
+            .ant-select-selection-item {
               color: var(--tg-theme-color-white) !important;
             }
           }
-          .ant-select-arrow{
+
+          .ant-select-arrow {
             font-size: var(--tg-theme-font-size);
             color: var(--tg-theme-color-white) !important;
           }
@@ -205,11 +208,115 @@
         }
       }
     }
+
+    // 适配 1366*768 屏幕
+    @media screen and (max-width: 1366px) and (max-height: 768px) {
+      height: 45px;
+
+      .tg-layout-header-content {
+        padding: 0 16px;
+        min-width: 200px;
+
+        .tg-layout-header-search {
+          width: 200px;
+
+          .tg-search-input {
+            .ant-input-group {
+              .ant-input {
+                height: 26px;
+                line-height: 26px;
+              }
+            }
+          }
+        }
+
+        .tg-header-info {
+          .tg-user-info {
+            padding-left: 8px;
+            padding-right: 12px;
+
+            .tg-header-username {
+              font-size: var(--tg-theme-font-size);
+            }
+
+            .tg-header-tel {
+              font-size: var(--tg-theme-font-size-sm);
+            }
+          }
+        }
+      }
+    }
+
+    // 适配 1920*1080 屏幕
+    @media screen and (min-width: 1920px) and (min-height: 1080px) {
+      height: 56px;
+
+      .tg-layout-header-content {
+        padding: 0 32px;
+
+        .tg-layout-header-search {
+          width: 360px;
+
+          .tg-search-input {
+            .ant-input-group {
+              .ant-input {
+                height: 32px;
+                line-height: 32px;
+                font-size: var(--tg-theme-font-size-lg);
+              }
+
+              .ant-input-group-addon {
+                .anticon {
+                  font-size: 1.4em;
+                }
+              }
+            }
+          }
+        }
+
+        .tg-header-info {
+          .tg-user-info {
+            padding-left: 16px;
+            padding-right: 20px;
+
+            .tg-header-username {
+              font-size: var(--tg-theme-font-size-lg);
+            }
+
+            .tg-header-tel {
+              font-size: var(--tg-theme-font-size);
+            }
+          }
+
+          .tg-header-functions {
+            svg {
+              width: 1.6em;
+              height: 1.6em;
+            }
+          }
+        }
+      }
+    }
   }
 
   .tg-header-user-overlay {
     padding: 0;
     top: 52px !important;
+  }
+
+  // 对于弹出层也进行适配
+  @media screen and (max-width: 1366px) and (max-height: 768px) {
+    .tg-header-user-overlay,
+    .tg-header-news-overlay {
+      top: 47px !important;
+    }
+  }
+
+  @media screen and (min-width: 1920px) and (min-height: 1080px) {
+    .tg-header-user-overlay,
+    .tg-header-news-overlay {
+      top: 58px !important;
+    }
   }
 
   .tg-header-news-overlay {

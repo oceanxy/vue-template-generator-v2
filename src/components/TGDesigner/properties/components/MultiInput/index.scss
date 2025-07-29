@@ -1,0 +1,25 @@
+.tg-designer-property-comp-multi-input {
+  display: flex;
+  width: 100%;
+
+  &.disabled .anticon {
+    opacity: .2;
+  }
+
+  .tg-designer-property-comp-multi-input-wrapper {
+    flex: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    &.half > .ant-input,
+    &.half > .ant-input-affix-wrapper {
+      width: calc((100% - 10px) / 2);
+    }
+
+    &.full .ant-input,
+    &.full .ant-input-affix-wrapper {
+      width: 100%;
+    }
+  }
+}

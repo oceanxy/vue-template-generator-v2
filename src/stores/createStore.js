@@ -118,6 +118,10 @@ export function createStore({
          * 执行查询时是否通过 params 传递分页参数，默认 false
          */
         paginationByParams: false,
+        // 排序对象
+        sorter: {},
+        // 执行查询时是否通过 params 传递排序参数，默认 false
+        sorterByParams: false,
         /**
          * 当前项
          * @type {Object}
@@ -305,6 +309,7 @@ export function createStore({
 
         const pagination = (location ? store[location].pagination : store.pagination) || {}
         const _pagination = {}
+        const sorter = (location ? store[location].sorter : store.sorter)
 
         if (isPagination) {
           _pagination.pageIndex = pagination?.pageIndex
@@ -312,13 +317,19 @@ export function createStore({
         }
 
         const paginationByParams = location ? this[location].paginationByParams : this.paginationByParams
+        const sorterByParams = location ? this[location].sorterByParams : this.sorterByParams
         const searchRO = location ? this[location].searchRO : this.searchRO
         const requestObject = {
           ...(!paginationByParams ? _pagination : undefined),
+          ...(!sorterByParams ? sorter : undefined),
           ...(searchRO ? { [searchRO]: _paramsForGetList } : _paramsForGetList)
         }
+        const params = {
+          ...(paginationByParams ? _pagination : undefined),
+          ...(sorterByParams ? sorter : undefined)
+        }
 
-        const response = await apis[apiName](requestObject, paginationByParams ? _pagination : undefined)
+        const response = await apis[apiName](requestObject, params)
 
         if (response.status) {
           if (!response.data) response.data = {}
@@ -758,6 +769,7 @@ export function createStore({
       /**
        * 导出表格数据
        * @param {Object} [params] - 参数，默认为 store.state.search 的值。
+       * @param {boolean} [addSortParams] - 是否添加排序参数。
        * @param [isMergeParam] {boolean} - 是否将参数与search合并, 默认true，`location=true`时，与`store[location].form`合并。
        * @param {string} [fileName] - 不包含后缀名
        * @param {string} [apiName] - 导出接口的名字
@@ -767,6 +779,7 @@ export function createStore({
        */
       async exportData({
         params,
+        addSortParams,
         isMergeParam = true,
         fileName,
         apiName,
@@ -782,9 +795,23 @@ export function createStore({
             if (isMergeParam) {
               search = { ...this.search, ...params }
             }
+
+            if (addSortParams) {
+              search = {
+                ...search,
+                ...this.sorter
+              }
+            }
           } else {
             if (isMergeParam) {
               search = { ...this.$state[location].form, ...params }
+            }
+
+            if (addSortParams) {
+              search = {
+                ...search,
+                ...this.$state[location].sorter
+              }
             }
           }
 
@@ -833,7 +860,7 @@ export function createStore({
        * @param [isRefreshTable] {boolean} - 成功后，是否刷新表格数据，默认 false。
        * @param [isClearSelectedRows] {boolean} - 成功后，是否清除表格已选行，默认 false。
        * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作成功后关闭指定弹窗。
-       * @param optionsOfGetList
+       * @param [optionsOfGetList] {Object} - 自定义调用 store.getList 的参数。
        * @returns {Promise<Object>}
        */
       async fetch({
@@ -893,8 +920,8 @@ export function createStore({
 
           if (isRefreshTable) {
             await this.getList({
-              ...optionsOfGetList,
-              isPagination: true
+              isPagination: true,
+              ...optionsOfGetList
             })
           }
 

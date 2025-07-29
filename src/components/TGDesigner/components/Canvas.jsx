@@ -1,20 +1,31 @@
-import { computed, ref, toRaw } from 'vue'
+import { computed, markRaw, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '../stores/useEditorStore'
 import { omit } from 'lodash'
-import { styleWithUnits } from '../utils/style'
+import { formatBackgroundImage, getMarginValues, getPaddingValues, styleWithUnits } from '../utils/style'
 import ComponentsActionBar from './ComponentsActionBar'
 import DragPlaceholder from './DragPlaceholder'
 import useDragDrop from '../hooks/useDragDrop'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE } from '@/components/TGDesigner/materials'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
+import { canvasPropConfigForm } from '@/components/TGDesigner/schemas'
 
 /**
  * @global
  * @typedef {Object} TGCanvas
- * @property {number} width - 画布宽度
- * @property {string} backgroundColor - 画布背景色
- * @property {string} layoutType - 布局类型，flex | grid
- * @property {{[key in keyof CSSStyleDeclaration]?: string}} style - 布局样式
+ * @property {string} [class] - 画布样式类名
+ * @property {Object} style - 画布样式
+ * @property {number|string} style.width - 画布宽度
+ * @property {number|string} style.height - 画布高度
+ * @property {number|string} style.padding
+ * @property {number|string} style.margin
+ * @property {number|string} style.gap
+ * @property {string} style.alignItems
+ * @property {string} style.justifyContent
+ * @property {string} style.backgroundColor
+ * @property {string} style.backgroundImage
+ * @property {string} style.backgroundSize
+ * @property {string} style.backgroundPosition
+ * @property {string} style.backgroundRepeat
  */
 
 export default {
@@ -27,6 +38,26 @@ export default {
     const indicatorRef = ref(null)
     const dragHandlers = useDragDrop()
     const selectedComponent = computed(() => designerStore.selectedComponent)
+    const canvasStyle = ref(schema.value.canvas.style)
+
+    watch(
+      () => schema.value.canvas,
+      val => {
+        canvasStyle.value = styleWithUnits(val.style)
+        const paddings = getPaddingValues(canvasStyle.value)
+
+        // 处理画布的padding，为了给画布的辅助线和指示线留出位置
+        paddings.paddingLeft = parseInt(paddings.paddingLeft) < 3 ? '3px' : paddings.paddingLeft
+        paddings.paddingRight = parseInt(paddings.paddingRight) < 3 ? '3px' : paddings.paddingRight
+        paddings.paddingTop = parseInt(paddings.paddingTop) < 3 ? '3px' : paddings.paddingTop
+        paddings.paddingBottom = parseInt(paddings.paddingBottom) < 3 ? '3px' : paddings.paddingBottom
+
+        canvasStyle.value.padding =
+          `${paddings.paddingTop} ${paddings.paddingRight} ${paddings.paddingBottom} ${paddings.paddingLeft}`
+
+        canvasStyle.value.backgroundImage = formatBackgroundImage(canvasStyle.value.backgroundImage)
+      }, { deep: true }
+    )
 
     const handleCanvasClick = (e) => {
       if (e.target === e.currentTarget) {
@@ -37,7 +68,7 @@ export default {
             type: 'canvas',
             id: 'canvas-root',
             name: '画布',
-            configForm: designerStore.canvasConfigForm
+            propConfigForm: canvasPropConfigForm
           })
         }
       }
@@ -51,7 +82,7 @@ export default {
       } else {
         designerStore.updateComponent({
           ...toRaw(componentSchema),
-          configForm: componentDef.configForm
+          propConfigForm: componentDef.propConfigForm
         })
       }
     }
@@ -76,10 +107,10 @@ export default {
     }
 
     const renderCanvasFromSchemas = (componentSchema, parentId = null) => {
-      const componentDef = designerStore.getComponentByType(
+      const componentDef = markRaw(designerStore.getComponentByType(
         componentSchema.type,
         componentSchema.category
-      )
+      ))
 
       if (!componentDef) return null
 
@@ -93,15 +124,32 @@ export default {
 
       const isLayoutComp = componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT
 
-      // 在画布中时，组件的宽高要应用到拖拽容器上，内部组件默认撑满容器。
-      // 但部分容器除外，这部分组件因为其内部有特殊处理，所以这里需要单独处理。
+      // ========================================================================
+      // 在画布中时，组件的部分属性要应用到拖拽容器上，以适配画布上的组件显示。
+      // 宽高（内部组件默认撑满容器）、外边距、overflow。
+
+      const marginObj = getMarginValues(component.style)
+
       const dragCompStyle = {
-        style: {
-          width: component.style.width,
-          height: component.style.height
-        }
+        width: component.style.width
+          ? `calc(${component.style.width} - ${marginObj.marginLeft} - ${marginObj.marginRight})`
+          : '',
+        height: component.style.height,
+        overflow: component.style.overflow,
+        margin: component.style.margin
       }
 
+      if ('marginLeft' in component.style) {
+        dragCompStyle.marginLeft = component.style.marginLeft
+      }
+
+      if ('marginRight' in component.style) {
+        dragCompStyle.marginRight = component.style.marginRight
+      }
+
+      component.style = omit(component.style, ['margin', 'overflow'])
+
+      // 但部分容器除外，这部分组件因为其内部有特殊处理，所以这里需要单独处理部分属性。
       if (componentDef.type !== 'a-image') {
         component.style = omit(component.style, ['width', 'height'])
       }
@@ -109,11 +157,21 @@ export default {
       // 布局组件需要添加额外的样式
       const canvasCompCategoryClassName = `tg-designer-${componentSchema.category}-component`
 
+      // ========================================================================
+
       // 添加布局组件的嵌套支持
       if (isLayoutComp) {
+        if (componentDef.canMoveInside) {
+          designerStore.actionBar.canMoveInside[componentSchema.id] = componentDef.canMoveInside
+        }
+
+        if (componentDef.canCopyInside) {
+          designerStore.actionBar.canCopyInside[componentSchema.id] = componentDef.canCopyInside
+        }
+
         if (componentSchema.type === 'tg-layout-flex') {
           // 在画布中时，Flex布局组件的布局方向要应用到拖拽容器上，让画布呈现和预览呈现保持一致。
-          dragCompStyle.style.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
+          dragCompStyle.flexDirection = componentSchema.props.vertical ? 'column' : 'row'
         }
 
         component.children = componentSchema.children?.map(childSchema =>
@@ -137,7 +195,7 @@ export default {
             'component-enter-active': componentSchema.__animating && !componentSchema.__initialized,
             'component-leave-active': componentSchema.__animating && componentSchema.__initialized
           }}
-          {...dragCompStyle}
+          style={dragCompStyle}
           onClick={e => handleCompClick(e, componentSchema, componentDef)}
           onDragstart={e => handleCompDragStart(e, componentSchema)}
           onDragend={e => handleCompDragEnd(e, componentSchema)}
@@ -147,41 +205,32 @@ export default {
       )
     }
 
-    return () => {
-      const canvasStyle = styleWithUnits(schema.value.canvas.style)
-
-      if (canvasStyle.width === '100%' && parseInt(canvasStyle.padding) < 3) {
-        // 为了给画布的辅助线和指示线留出位置
-        canvasStyle.padding = '3px'
-      }
-
-      return (
-        <div class={'tg-designer-canvas-layout'}>
-          <div
-            ref={containerRef}
-            {...omit(schema.value.canvas, ['class', 'style'])}
-            data-selected={selectedComponent.value?.type === 'canvas'}
-            class={[
-              'tg-designer-canvas-container',
-              { [schema.value.canvas.class]: true }
-            ]}
-            style={{
-              ...canvasStyle,
-              '--canvas-padding': canvasStyle?.padding || '15px',
-              overflowY: designerStore.indicator.type === 'container' ? 'hidden' : 'auto'
-            }}
-            onClick={handleCanvasClick}
-            onDrop={e => dragHandlers.handleDrop(e, containerRef)}
-            onDragover={e => dragHandlers.handleDragOver(e, containerRef)}
-            onDragend={dragHandlers.handleDragEnd}
-            onDragleave={dragHandlers.handleDragLeave}
-          >
-            {componentSchemas.value.map(renderCanvasFromSchemas)}
-            <ComponentsActionBar containerRef={containerRef} />
-            <DragPlaceholder ref={el => indicatorRef.value = el.$el} />
-          </div>
+    return () => (
+      <div class={'tg-designer-canvas-layout'}>
+        <div
+          ref={containerRef}
+          {...omit(schema.value.canvas, ['class', 'style'])}
+          data-selected={selectedComponent.value?.type === 'canvas'}
+          class={[
+            'tg-designer-canvas-container',
+            { [schema.value.canvas.class]: true }
+          ]}
+          style={{
+            ...canvasStyle.value,
+            '--canvas-padding': canvasStyle.value?.padding,
+            overflowY: designerStore.indicator.type === 'container' ? 'hidden' : 'auto'
+          }}
+          onClick={handleCanvasClick}
+          onDrop={e => dragHandlers.handleDrop(e, containerRef)}
+          onDragover={e => dragHandlers.handleDragOver(e, containerRef)}
+          onDragend={dragHandlers.handleDragEnd}
+          onDragleave={dragHandlers.handleDragLeave}
+        >
+          {componentSchemas.value.map(renderCanvasFromSchemas)}
+          <ComponentsActionBar containerRef={containerRef} />
+          <DragPlaceholder ref={el => indicatorRef.value = el.$el} />
         </div>
-      )
-    }
+      </div>
+    )
   }
 }

@@ -5,8 +5,6 @@ const colorPrimary = '#fe7325'
 export default {
   name: '电商橙',
   token: {
-    // 字号
-    fontSize: 14,
     // 主题色
     colorPrimary,
     motionBase: 0,

@@ -16,7 +16,8 @@
  * @property {TGComponentSchema[]} [children] - 子组件集合（仅布局组件需要）
  */
 
-import getPropertyField from '../properties'
+import { predefinedProperties } from '../properties'
+import { markRaw } from 'vue'
 
 /**
  * 默认schema
@@ -45,117 +46,41 @@ export const schema = {
 }
 
 /**
- * @type {TGComponentMeta[]}
+ * canvas属性配置表单
+ * @type {(propertyValues: Object) => (TGPropertyConfig|TGPropertyConfigGroup)[]}
  */
-export const canvasConfigForm = {
-  fields: [
-    {
-      label: '尺寸',
-      items: [
-        getPropertyField('input', {
-          label: '宽度',
-          title: '画布宽度（width）',
-          prop: 'width'
-        }),
-        getPropertyField('input', {
-          label: '高度',
-          title: '画布高度（height）',
-          prop: 'height',
-          props: {
-            placeholder: '自适应'
-          }
-        })
-      ]
-    },
-    {
-      label: '布局',
-      items: [
-        getPropertyField('input', {
-          label: '组件间距',
-          title: '组件之间的间隔距离（gap）',
-          prop: 'gap',
-          props: {
-            placeholder: '0px'
-          }
-        }),
-        getPropertyField('input', {
-          label: '内边距',
-          title: '画布的内边距（padding）',
-          prop: 'padding',
-          props: {
-            placeholder: '0px'
-          }
-        }),
-        getPropertyField('input', {
-          label: '外边距',
-          title: '画布的外边距（margin）',
-          prop: 'margin',
-          props: {
-            placeholder: '0px'
-          }
-        }),
-        getPropertyField('select', {
-          label: '水平',
-          title: '水平对齐方式（align-items）',
-          prop: 'alignItems'
-        }),
-        getPropertyField('select', {
-          label: '垂直',
-          title: '垂直对齐方式（justify-content）',
-          prop: 'justifyContent'
-        })
-      ]
-    },
-    {
-      label: '背景',
-      items: [
-        getPropertyField('colorPicker', {
-          label: '颜色',
-          title: '背景颜色(background-color)',
-          prop: 'backgroundColor'
-        }),
-        getPropertyField('input', {
-          label: '图片',
-          title: '背景图片(background-image)',
-          prop: 'backgroundImage',
-          props: {
-            placeholder: '请输入图片地址',
-            maxLength: 250
-          }
-        }),
-        getPropertyField('input', {
-          label: '图片尺寸',
-          title: '背景图片尺寸(background-size)',
-          prop: 'backgroundSize',
-          props: {
-            maxLength: 20,
-            placeholder: '自动'
-          }
-        }),
-        getPropertyField('input', {
-          label: '图片位置',
-          title: '背景图片位置(background-position)',
-          prop: 'backgroundPosition',
-          props: {
-            maxLength: 20
-          }
-        }),
-        getPropertyField('select', {
-          label: '图片重复',
-          title: '背景图片重复(background-repeat)',
-          prop: 'backgroundRepeat',
-          props: {
-            options: [
-              { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
-              { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
-              { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
-              { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
-              { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
-              { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
-            ]
-          }
-        })
-      ]
-    }
-  ]
-}
+export const canvasPropConfigForm = propertyValues => markRaw([
+  {
+    label: '尺寸',
+    items: [
+      predefinedProperties.width(),
+      predefinedProperties.height()
+    ]
+  },
+  {
+    label: '布局',
+    items: [
+      predefinedProperties.gap(),
+      predefinedProperties.padding(),
+      predefinedProperties.margin(),
+      predefinedProperties.justifyContent(
+        {
+          label: '垂直分布方式',
+          title: '控制画布内各部件在垂直方向上如何分布：靠拢或分散（justify-content）'
+        },
+        { style: { flexDirection: 'column' } }
+      ),
+      predefinedProperties.alignItems(
+        {
+          label: '水平对齐方式',
+          title: '控制画布内各部件在水平方向上的对齐方式（align-items）'
+        },
+        { style: { flexDirection: 'column' } }
+      )
+    ]
+  },
+  {
+    label: '背景',
+    items: predefinedProperties.background(null, propertyValues)
+  }
+])

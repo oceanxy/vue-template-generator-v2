@@ -7,14 +7,10 @@
     margin-bottom: 20px;
 
     h1 {
-      font-size: 24px;
       margin: 0 0 10px;
-      color: #1890ff;
     }
 
     p {
-      font-size: 14px;
-      color: #666666;
       margin: 5px 0;
     }
   }
@@ -25,7 +21,6 @@
     align-items: stretch;
 
     .tg-main-award-description {
-      background: #ffffff;
       padding: 20px;
       flex: 1;
       margin-right: 10px;
@@ -49,9 +44,6 @@
       }
 
       .ant-typography {
-        font-size: 14px;
-        color: #333333;
-        line-height: 1.5;
         white-space: break-spaces;
         word-break: break-word;
       }
@@ -65,16 +57,13 @@
       .ant-btn {
         padding: 10px 20px;
         border: none;
-        background: linear-gradient(0deg, #e6f7ff 0%, #b3d1ff 100%);
-        color: #1890ff;
         border-radius: 4px;
         cursor: pointer;
-        font-size: 20px;
         width: 100%;
         height: 100%;
 
         &:hover {
-          background: linear-gradient(0deg, #b3d1ff 0%, #87c8ff 100%);
+          background-color: var(--tg-designer-main-award-color-hover) !important;
         }
       }
     }

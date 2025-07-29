@@ -9,56 +9,68 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
 
     .tg-designer-layout-header-logo {
       display: flex;
+      gap: 6px;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       color: #ffffff;
       flex: none;
 
-      .anticon {
-        font-size: 40px;
-        display: inline-block;
-        width: 1em;
-        height: 1em;
-        margin-inline: 0.5em 0.3em;
-        background: url(../images/logo.png) no-repeat center 100% / 100%;
-      }
+      .tg-designer-layout-container.tg-designer-layout-image {
+        // 覆盖全局行高（.ant-app内定义）的影响，导致其内的AntImage组件布局错位
+        line-height: 0;
+        flex: none;
+        width: auto;
+        height: auto;
 
-      .tg-designer-layout-header-title {
-        & > div:first-child {
-          font-size: 20px;
+        &.is-design-patterns {
+          &:empty {
+            min-width: 40px;
+            min-height: 40px;
+
+            &::before {
+              content: 'LOGO\a放置区';
+              white-space: pre;
+              letter-spacing: 0;
+              font-size: 12px;
+              line-height: 1.2;
+            }
+          }
         }
 
-        & > div:last-child {
-          font-size: 12px;
+        & > * {
+          // 严格控制子元素（.tg-designer-drag-component）的宽高
+          width: 100% !important;
+          height: 100% !important;
+        }
+      }
+
+      .tg-designer-layout-container.tg-designer-layout-header-title {
+        &.is-design-patterns {
+          min-width: 150px;
+
+          &:empty::before {
+            content: '标题放置区';
+          }
         }
       }
     }
 
-    .tg-designer-layout-header-nav {
+    .tg-designer-layout-container.tg-designer-layout-header-nav {
       flex: auto;
-      margin: 0 20px;
       display: flex;
       flex-direction: column;
       justify-content: stretch;
       align-items: stretch;
 
       &.is-design-patterns {
+        min-width: 300px;
+
         &:empty::before {
-          content: '导航放置区' !important;
-          font-size: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: rgba(255, 255, 255, 0.9);
-          text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-          transform: translateZ(0);
-          background: linear-gradient(145deg, rgba(194, 194, 194, 0.3) 0%, rgba(224, 224, 224, 0.3) 100%);
-          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-          border-radius: 4px;
-          padding: 0 20px;
+          content: '导航放置区';
         }
       }
     }

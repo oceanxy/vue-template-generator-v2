@@ -48,13 +48,17 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * @param {()=>boolean} [buttonDisabledFn] - 禁用查询和重置按钮的方法。
  * @param {Object} [rules={}] - 验证规则，参考 ant-design-vue 的 Form.Item。
  * @param [formattingParameters] {(state: Object) => Object} - 格式化搜索接口的参数，返回值将与`store.search`合并后传递给接口。
+ * @param [showResetButton=true] {boolean} - 是否显示默认的重置按钮。
+ * @param [buttonText={query:'查询', reset:'重置'}] {Object} - 自定义默认按钮的文本。
  * @returns {{}}
  */
 export default function useInquiryForm({
   searchParamOptions,
   buttonDisabledFn,
   rules = {},
-  formattingParameters
+  formattingParameters,
+  showResetButton = true,
+  buttonText = { query: '查询', reset: '重置' }
 } = {}) {
   const isInitTable = inject('isInitTable', true)
   const optionsOfGetList = inject('optionsOfGetList', {})
@@ -67,14 +71,14 @@ export default function useInquiryForm({
   // const loading = computed(() => store.dataSource.loading)
   // const search = computed(() => store.search)
   const loading = computed(() => {
-    if (Object.keys(optionsOfGetList).length) {
-      return store[optionsOfGetList?.location].dataSource.loading
+    if (optionsOfGetList?.location) {
+      return store[optionsOfGetList.location].dataSource.loading
     } else {
       return store.dataSource.loading
     }
   })
   const search = computed(() => {
-    if (Object.keys(optionsOfGetList).length) {
+    if (optionsOfGetList.location) {
       return store[optionsOfGetList?.location].form
     } else {
       return store.search
@@ -348,18 +352,20 @@ export default function useInquiryForm({
                             identification={props.buttonPermissionIdentification}
                             onClick={handleFinish}
                           >
-                            查询
+                            {buttonText?.query || '查询'}
                           </TGPermissionsButton>,
-                          <TGPermissionsButton
-                            key={'reset-1'}
-                            icon={<ReloadOutlined />}
-                            disabledType={disabledType.DISABLE}
-                            disabled={loading.value}
-                            identification={props.buttonPermissionIdentification}
-                            onClick={handleClear}
-                          >
-                            {resetParams.value || buttonDisabled.value ? '重置参数' : '重置'}
-                          </TGPermissionsButton>
+                          showResetButton && (
+                            <TGPermissionsButton
+                              key={'reset-1'}
+                              icon={<ReloadOutlined />}
+                              disabledType={disabledType.DISABLE}
+                              disabled={loading.value}
+                              identification={props.buttonPermissionIdentification}
+                              onClick={handleClear}
+                            >
+                              {resetParams.value || buttonDisabled.value ? '重置参数' : (buttonText?.reset || '重置')}
+                            </TGPermissionsButton>
+                          )
                         ]
                         : [
                           <Button
@@ -370,16 +376,18 @@ export default function useInquiryForm({
                             loading={loading.value}
                             onClick={handleFinish}
                           >
-                            查询
+                            {buttonText?.query || '查询'}
                           </Button>,
-                          <Button
-                            key={'reset-2'}
-                            icon={<ReloadOutlined />}
-                            disabled={loading.value}
-                            onClick={handleClear}
-                          >
-                            {resetParams.value || buttonDisabled.value ? '重置参数' : '重置'}
-                          </Button>
+                          showResetButton && (
+                            <Button
+                              key={'reset-2'}
+                              icon={<ReloadOutlined />}
+                              disabled={loading.value}
+                              onClick={handleClear}
+                            >
+                              {resetParams.value || buttonDisabled.value ? '重置参数' : (buttonText?.reset || '重置')}
+                            </Button>
+                          )
                         ]
                     }
                   </Space>

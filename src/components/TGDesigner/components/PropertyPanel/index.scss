@@ -1,10 +1,10 @@
 .tg-designer-property-comp-type {
-  height: 40px;
+  height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 15px;
+  padding: 10px 14px;
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bolder;
   border-bottom: 1px solid var(--tg-theme-color-border-secondary);
 }
@@ -16,19 +16,30 @@
 
   .tg-designer-property-scrollable {
     overflow-x: hidden;
+    padding-bottom: 20px;
 
     .tg-designer-field-group {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      // gap: 10px;
       border-bottom: 1px solid var(--tg-theme-color-border-secondary);
-      padding: 15px;
+      padding: 0 15px 15px;
 
       .tg-designer-field-title {
         font-size: 14px;
         color: var(--tg-theme-color-text);
         font-weight: bolder;
-        margin-bottom: 10px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .tg-designer-field-content {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-right: 34px;
       }
     }
   }
@@ -47,20 +58,20 @@
   .tg-designer-form-item {
     width: 100%;
     display: flex;
-    align-items: center;
-    gap: var(--tg-theme-margin-sm);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--tg-theme-margin-xxs);
 
-    label {
+    & > label {
       flex: none;
       display: flex;
-      font-size: 14px;
-      gap: 4px;
+      gap: 8px;
       color: var(--tg-theme-color-text-secondary);
       min-width: 74px;
       flex-shrink: 0;
 
       .anticon {
-        color: var(--tg-theme-color-text-quaternary);
+        color: var(--tg-theme-color-text-tertiary);
       }
     }
 
@@ -70,11 +81,103 @@
 
     .tg-designer-form-item-control {
       display: flex;
-      justify-content: flex-end;
       flex-grow: 1;
+      width: 100%;
 
-      > .ant-select {
+      .tg-designer-property-comp {
+        display: flex;
         width: 100%;
+
+        & > *:not(.tg-designer-property-expend) {
+          flex: auto;
+        }
+
+        & > .tg-designer-property-expend {
+          flex: none;
+          margin-right: -36px;
+          width: 36px;
+          display: flex;
+          justify-content: flex-end;
+          align-items: flex-start;
+
+          .ant-btn {
+            padding-left: 8px;
+            padding-right: 8px;
+          }
+        }
+      }
+
+      & > :is(.ant-select, .ant-segmented, .ant-input-number) {
+        width: 100%;
+      }
+
+      & > :is(
+        .ant-input,
+        .ant-input-number,
+        .ant-select,
+        .ant-input-affix-wrapper
+      ),
+      :is(.half, .full) .ant-input-affix-wrapper,
+      .tg-designer-property-comp-color-picker:not(:has(.tg-designer-property-comp-gradient-picker-compact)),
+      .tg-designer-property-comp-color-picker .ant-input-group,
+      .tg-designer-property-comp-upload {
+        background: #f5f5f5;
+        border: 0;
+
+        :is(.ant-input:not(.ant-input-disabled), .ant-input-number, .ant-select-selector, .ant-input-affix-wrapper) {
+          background: none;
+          color: #333333;
+          border: 0;
+        }
+      }
+
+      .ant-input-number-handler-wrap {
+        background: none;
+      }
+
+      .ant-input-affix-wrapper {
+        .ant-input-prefix {
+          .anticon {
+            font-size: 12px;
+          }
+        }
+      }
+
+      & > .ant-select {
+        padding: 0;
+        border-radius: 4px;
+      }
+
+      .ant-segmented .ant-segmented-group {
+        display: flex;
+        gap: 8px;
+
+        .ant-segmented-item {
+          width: 32px;
+
+          &.ant-segmented-item-disabled {
+            opacity: .2;
+          }
+
+          .ant-segmented-item-label {
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0;
+
+            .anticon {
+              transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+              //font-size: 13px;
+
+              &.column {
+                transform: rotate(90deg);
+              }
+
+              &.column2 {
+                transform: rotate(-90deg);
+              }
+            }
+          }
+        }
       }
     }
 

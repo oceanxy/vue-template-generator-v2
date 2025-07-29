@@ -1,0 +1,36 @@
+.tg-designer-property-comp-upload {
+  .ant-input-group {
+    .ant-input-group-addon {
+      padding: 0;
+      border: 0;
+
+      & > div {
+        margin: 0 !important;
+        flex: unset !important;
+        width: 32px !important;
+
+        .ant-upload-wrapper {
+          display: block;
+
+          .ant-upload-list {
+            display: none;
+          }
+        }
+
+        .ant-upload-select .ant-btn.ant-btn-text {
+          padding: 0 9px;
+          border: 0;
+          font-size: 14px;
+
+          &:not(&:hover) {
+            background: none;
+          }
+        }
+      }
+    }
+  }
+
+  .tg-designer-property-expend {
+
+  }
+}

@@ -43,7 +43,13 @@ export default {
       }
 
       if (componentSchema.category === TG_MATERIAL_CATEGORY.LAYOUT) {
-        component.style.padding = 0
+        // 处footer以外的组件全部去掉容器的padding值
+        if (componentSchema.type !== 'tg-layout-footer') {
+          component.style.padding = 0
+        } else {
+          component.style.padding = '1rem'
+        }
+
         component.style.backgroundSize = 'auto 100%'
       }
 

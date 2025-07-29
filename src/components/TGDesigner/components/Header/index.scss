@@ -115,21 +115,3 @@
     }
   }
 }
-
-.tg-designer-status-tooltip-inner {
-  .ant-tooltip-inner {
-    display: flex;
-    flex-direction: column;
-
-    & > span:first-child {
-      font-weight: bolder;
-      padding: 10px 0;
-      font-size: 16px;
-      opacity: 1;
-    }
-
-    & > span {
-      opacity: .8;
-    }
-  }
-}

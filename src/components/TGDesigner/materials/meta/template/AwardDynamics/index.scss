@@ -7,20 +7,15 @@
     margin-bottom: 20px;
 
     .tg-award-dynamics-title {
-      color: #333333;
       display: flex;
       justify-content: space-between;
 
       & > span:first-child {
-        font-size: 24px;
         font-weight: bolder;
       }
     }
 
-    .tg-award-dynamics-description {
-      font-size: 14px;
-      color: #666666;
-    }
+    .tg-award-dynamics-description {}
   }
 
   .tg-award-dynamics-item {
@@ -59,7 +54,6 @@
 
       .tg-adc-title {
         padding-top: 4px;
-        font-size: 16px;
         font-weight: 600;
       }
 

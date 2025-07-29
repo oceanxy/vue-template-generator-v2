@@ -1,4 +1,4 @@
-import getPropertyField from '@/components/TGDesigner/properties'
+import getPropertyConfig, { predefinedProperties } from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE, TG_MATERIAL_TEMPLATE_COMPONENT_ENUM } from '@/components/TGDesigner/materials'
 import { Button, Image, TypographyParagraph } from 'ant-design-vue'
 import { computed, onMounted, ref } from 'vue'
@@ -6,6 +6,7 @@ import useStore from '@/composables/tgStore'
 import { useRoute, useRouter } from 'vue-router'
 import { range } from 'lodash'
 import { defaultImg } from '@/components/TGDesigner/assets/defaultImg'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
 import './index.scss'
 
 /**
@@ -29,7 +30,23 @@ export default {
     return <IconFont type="icon-designer-material-award-dynamics" />
   },
   defaultProps: {
-    highlightFirstItem: true
+    highlightFirstItem: true,
+    titleStyle: {
+      color: '#333333',
+      fontSize: 24
+    },
+    textStyle: {
+      color: '#666666',
+      fontSize: 14
+    },
+    itemTitleStyle: {
+      color: '#333333',
+      fontSize: 16
+    },
+    itemTextStyle: {
+      color: '#999999',
+      fontSize: 14
+    }
   },
   style: {
     width: '1200',
@@ -41,103 +58,93 @@ export default {
     backgroundRepeat: 'no-repeat'
   },
   class: '',
-  configForm: {
-    fields: [
-      {
-        label: '尺寸',
-        items: [
-          getPropertyField('input', {
-            label: '宽度',
-            title: '容器宽度（支持百分比和像素单位）',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '高度',
-            title: '容器高度（支持像素单位，默认自适应）',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
-        ]
-      },
-      {
-        label: '布局',
-        items: [
-          getPropertyField('switch', {
-            label: '突出第一条数据',
-            title: '突出展示第一条数据',
-            prop: 'highlightFirstItem',
-            modelProp: 'checked'
-          })
-        ]
-      },
-      {
-        label: '背景',
-        items: [
-          getPropertyField('colorPicker', {
-            label: '颜色',
-            title: '背景颜色(background-color)',
-            prop: 'backgroundColor'
-          }),
-          getPropertyField('input', {
-            label: '图片',
-            title: '背景图片(background-image)',
-            prop: 'backgroundImage',
-            props: {
-              placeholder: '请输入图片地址',
-              maxLength: 250,
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '图片尺寸',
-            title: '背景图片尺寸(background-size)',
-            prop: 'backgroundSize',
-            props: {
-              maxLength: 20,
-              placeholder: '自动',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '图片位置',
-            title: '背景图片位置(background-position)',
-            prop: 'backgroundPosition',
-            props: {
-              maxLength: 20,
-              allowClear: true
-            }
-          }),
-          getPropertyField('select', {
-            label: '图片重复',
-            title: '背景图片重复(background-repeat)',
-            prop: 'backgroundRepeat',
-            props: {
-              options: [
-                { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
-                { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
-                { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
-                { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
-                { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
-                { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
-              ]
-            }
-          })
-        ]
-      }
-    ]
-  }
+  propConfigForm: propertyValues => [
+    {
+      label: '尺寸',
+      items: [
+        predefinedProperties.width(),
+        predefinedProperties.height()
+      ]
+    },
+    {
+      label: '布局',
+      items: [
+        getPropertyConfig('switch', {
+          label: '突出第一条数据',
+          title: '突出展示第一条数据',
+          prop: 'highlightFirstItem',
+          modelProp: 'checked',
+          layout: 'half'
+        })
+      ]
+    },
+    {
+      label: '标题',
+      items: [
+        predefinedProperties.color({
+          prop: 'titleStyle.color'
+        }),
+        predefinedProperties.fontSize({
+          prop: 'titleStyle.fontSize',
+          layout: 'half',
+          props: {
+            placeholder: '24px'
+          }
+        })
+      ]
+    },
+    {
+      label: '副标题',
+      items: [
+        predefinedProperties.color({
+          prop: 'textStyle.color'
+        }),
+        predefinedProperties.fontSize({
+          prop: 'textStyle.fontSize',
+          props: {
+            placeholder: '14px'
+          }
+        })
+      ]
+    },
+    {
+      label: '次级标题',
+      items: [
+        predefinedProperties.color({
+          prop: 'itemTitleStyle.color'
+        }),
+        predefinedProperties.fontSize({
+          prop: 'itemTitleStyle.fontSize',
+          props: {
+            placeholder: '16px'
+          }
+        })
+      ]
+    },
+    {
+      label: '次级文本',
+      items: [
+        predefinedProperties.color({
+          prop: 'itemTextStyle.color'
+        }),
+        predefinedProperties.fontSize({
+          prop: 'itemTextStyle.fontSize',
+          props: {
+            placeholder: '14px'
+          }
+        })
+      ]
+    },
+    {
+      label: '背景',
+      items: predefinedProperties.background(null, propertyValues)
+    }
+  ]
 }
 
 export const AwardDynamics = {
   name: 'AwardDynamics',
-  props: ['previewType', 'highlightFirstItem'],
+  props: ['previewType', 'highlightFirstItem', 'titleStyle', 'textStyle', 'itemTitleStyle', 'itemTextStyle'],
   setup(props, { attrs }) {
     const store = useStore('portal')
     const route = useRoute()
@@ -195,8 +202,8 @@ export const AwardDynamics = {
       }
     }
 
-    function RenderItem(props) {
-      const dataSource = props.dataSource
+    function RenderItem(_props) {
+      const dataSource = _props.dataSource
       let coverImg = dataSource.coverImg || ''
 
       if (coverImg) {
@@ -215,11 +222,17 @@ export const AwardDynamics = {
             fallback={defaultImg}
           />
           <div class="tg-award-dynamics-item-content">
-            <div class="tg-adc-title">{dataSource.title}</div>
+            <div
+              class="tg-adc-title"
+              style={styleWithUnits(props.itemTitleStyle)}
+            >
+              {dataSource.title}
+            </div>
             <TypographyParagraph
               class="tg-adc-content"
               ellipsis={{ rows: 2 }}
               content={dataSource.abstractDesc}
+              style={styleWithUnits(props.itemTextStyle)}
             />
           </div>
         </div>
@@ -250,14 +263,22 @@ export const AwardDynamics = {
           <div class="tg-award-dynamics-content-highlight">
             <RenderItem dataSource={firstItem} class="tg-award-dynamics-item-first" />
             <div class="tg-award-dynamics-items-other">
-              {otherItems.map(item => <RenderItem key={item.id} dataSource={item} />)}
+              {
+                otherItems.map(item =>
+                  <RenderItem key={item.id} dataSource={item} />
+                )
+              }
             </div>
           </div>
         )
       } else {
         return (
           <div class="tg-award-dynamics-content">
-            {data.value.componentSearchRspList?.slice(0, 4).map(item => <RenderItem key={item.id} dataSource={item} />)}
+            {
+              data.value.componentSearchRspList?.slice(0, 4).map(item =>
+                <RenderItem key={item.id} dataSource={item} />
+              )
+            }
           </div>
         )
       }
@@ -280,10 +301,15 @@ export const AwardDynamics = {
         <div class="tg-designer-award-dynamics">
           <div class="tg-award-dynamics-header">
             <div class="tg-award-dynamics-title">
-              <span>{data.value.title}</span>
+              <span style={styleWithUnits(props.titleStyle)}>{data.value.title}</span>
               <RenderMoreButton />
             </div>
-            <div class="tg-award-dynamics-description">{data.value.abstractDesc}</div>
+            <div
+              class="tg-award-dynamics-description"
+              style={styleWithUnits(props.textStyle)}
+            >
+              {data.value.abstractDesc}
+            </div>
           </div>
           <RenderItems />
         </div>

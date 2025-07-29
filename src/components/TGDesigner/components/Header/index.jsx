@@ -1,4 +1,4 @@
-import { Badge, Button, message, Tag, Tooltip } from 'ant-design-vue'
+import { Badge, Button, Divider, message, Tag, Tooltip } from 'ant-design-vue'
 import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
 import { computed, inject, onMounted, onUnmounted, ref, toRaw, watch } from 'vue'
@@ -142,6 +142,13 @@ export default {
       await handleSchemaSave(true)
     }
 
+    const handleClearCanvas = () => {
+      if (schema.value.components?.length) {
+        store.schema.components = []
+        store.saveStatus = SAVE_STATUS.UNSAVED
+      }
+    }
+
     expose({ updateSchema })
 
     return () => (
@@ -156,36 +163,52 @@ export default {
           {/*</div>*/}
           <div class={'tg-designer-canvas-functions'}>
             <Button
-              disabled={saveStatus.value === SAVE_STATUS.SAVING}
-              icon={<IconFont type="icon-designer-tool-undo" />}
-              title={'撤销'}
+              danger
+              type="text"
+              disabled={!schema.value.components?.length}
+              icon={<IconFont type="icon-designer-tool-clear-canvas" />}
+              title={'清空画布'}
+              onClick={handleClearCanvas}
             />
             <Button
-              disabled={saveStatus.value === SAVE_STATUS.SAVING}
-              icon={<IconFont type="icon-designer-tool-redo" />}
-              title={'重做'}
+              type="text"
+              // disabled={saveStatus.value === SAVE_STATUS.SAVING}
+              disabled={true}
+              icon={<IconFont type="icon-designer-tool-undo" />}
+              title={'撤销（建设中）'}
             />
+            <Button
+              type="text"
+              // disabled={saveStatus.value === SAVE_STATUS.SAVING}
+              disabled={true}
+              icon={<IconFont type="icon-designer-tool-redo" />}
+              title={'重做（建设中）'}
+            />
+            <Divider type="vertical" />
             <Badge
               dot={isSchemaChanged.value}
               offset={[-6, 4]}
               status={['error', 'processing', 'success'][saveStatus.value - 1]}
             >
               <Button
+                type="text"
                 disabled={saveStatus.value !== SAVE_STATUS.UNSAVED || !isSchemaChanged.value}
-                onClick={() => handleSchemaSave()}
                 icon={<IconFont type="icon-designer-tool-save" />}
                 title={'保存'}
+                onClick={() => handleSchemaSave()}
               />
             </Badge>
             <Button
-              onClick={handlePreview}
+              type="text"
               icon={<IconFont type="icon-designer-tool-preview" />}
-              title={'预览'}
+              title={'PC预览'}
+              onClick={handlePreview}
             />
             <Button
+              type="text"
+              icon={<IconFont type="icon-designer-tool-preview-h5" />}
+              title={'H5预览'}
               onClick={handlePreviewH5}
-              icon={<IconFont type="icon-designer-tool-preview" />}
-              title={'预览'}
             />
           </div>
           <div class="tg-designer-status-indicators">
@@ -194,11 +217,11 @@ export default {
               offset={[-6, 10]}
               status={localCacheStatus.value ? 'success' : 'error'}
             >
-              <Tooltip placement={'topRight'} overlayClassName="tg-designer-status-tooltip-inner">
+              <Tooltip placement={'topRight'} overlayClassName="tg-tooltip-format">
                 {{
                   title: () => [
                     localCacheStatus.value !== null &&
-                    <span>本地最新改动{localCacheStatus.value ? '已' : '暂未'}缓存。</span>,
+                    <p>最新改动本地{localCacheStatus.value ? '已' : '暂未'}缓存。</p>,
                     <span>设计器会自动在本地定期缓存所有改动，策略如下：</span>,
                     <span>1、关闭页面会丢失所有缓存；</span>,
                     <span>2、刷新页面不会丢失缓存；</span>,

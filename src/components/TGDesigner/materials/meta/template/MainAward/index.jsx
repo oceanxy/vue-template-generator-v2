@@ -1,10 +1,12 @@
-import getPropertyField from '@/components/TGDesigner/properties'
+import { predefinedProperties } from '@/components/TGDesigner/properties'
 import { TG_MATERIAL_CATEGORY, TG_MATERIAL_PREVIEW_TYPE, TG_MATERIAL_TEMPLATE_COMPONENT_ENUM } from '@/components/TGDesigner/materials'
 import { Button, TypographyParagraph } from 'ant-design-vue'
 import { computed, onMounted, ref, watchEffect } from 'vue'
 import useStore from '@/composables/tgStore'
 import { useRoute, useRouter } from 'vue-router'
 import './index.scss'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
+import { omit } from 'lodash'
 
 /**
  * 主奖项名称模板组件元数据
@@ -26,7 +28,28 @@ export default {
 
     return <IconFont type="icon-designer-material-main-award" />
   },
-  defaultProps: {},
+  defaultProps: {
+    textStyle: {
+      color: '#666666',
+      fontSize: 14
+    },
+    titleStyle: {
+      color: '#000000',
+      fontSize: 24
+    },
+    descStyle: {
+      backgroundColor: '#ffffff',
+      color: '#333333',
+      fontSize: 14,
+      lineHeight: 1.5
+    },
+    buttonStyle: {
+      backgroundColor: '#b3d1ff',
+      backgroundColorHover: '#9dc4ff',
+      color: '#000000',
+      fontSize: 20
+    }
+  },
   style: {
     width: '1200',
     height: '',
@@ -37,92 +60,104 @@ export default {
     backgroundRepeat: 'no-repeat'
   },
   class: '',
-  configForm: {
-    fields: [
-      {
-        label: '尺寸',
-        items: [
-          getPropertyField('input', {
-            label: '宽度',
-            title: '容器宽度（支持百分比和像素单位）',
-            prop: 'width',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '高度',
-            title: '容器高度（支持像素单位，默认自适应）',
-            prop: 'height',
-            props: {
-              placeholder: '自适应',
-              allowClear: true
-            }
-          })
-        ]
-      },
-      {
-        label: '背景',
-        items: [
-          getPropertyField('colorPicker', {
-            label: '颜色',
-            title: '背景颜色(background-color)',
-            prop: 'backgroundColor'
-          }),
-          getPropertyField('input', {
-            label: '图片',
-            title: '背景图片(background-image)',
-            prop: 'backgroundImage',
-            props: {
-              placeholder: '请输入图片地址',
-              maxLength: 250,
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '图片尺寸',
-            title: '背景图片尺寸(background-size)',
-            prop: 'backgroundSize',
-            props: {
-              maxLength: 20,
-              placeholder: '自动',
-              allowClear: true
-            }
-          }),
-          getPropertyField('input', {
-            label: '图片位置',
-            title: '背景图片位置(background-position)',
-            prop: 'backgroundPosition',
-            props: {
-              maxLength: 20,
-              allowClear: true
-            }
-          }),
-          getPropertyField('select', {
-            label: '图片重复',
-            title: '背景图片重复(background-repeat)',
-            prop: 'backgroundRepeat',
-            props: {
-              options: [
-                { label: '不重复', value: 'no-repeat', title: 'no-repeat' },
-                { label: '重复(裁剪&全覆盖)', value: 'repeat', title: 'repeat' },
-                { label: '重复(不裁剪&非全覆盖)', value: 'space', title: 'space' },
-                { label: '重复(伸缩铺满)', value: 'round', title: 'round' },
-                { label: '沿X轴重复', value: 'repeat-x', title: 'repeat-x' },
-                { label: '沿Y轴重复', value: 'repeat-y', title: 'repeat-y' }
-              ]
-            }
-          })
-        ]
-      }
-    ]
-  }
+  propConfigForm: propertyValues => [
+    {
+      label: '尺寸',
+      items: [
+        predefinedProperties.width(),
+        predefinedProperties.height()
+      ]
+    },
+    {
+      label: '标题',
+      items: [
+        predefinedProperties.color({ prop: 'titleStyle.color' }),
+        predefinedProperties.fontSize({ prop: 'titleStyle.fontSize' })
+      ]
+    },
+    {
+      label: '文本',
+      items: [
+        predefinedProperties.color({ prop: 'textStyle.color' }),
+        predefinedProperties.fontSize({ prop: 'textStyle.fontSize' })
+      ]
+    },
+    {
+      label: '简介',
+      items: [
+        predefinedProperties.color({
+          label: '背景颜色',
+          title: '背景颜色（background-color）',
+          prop: 'descStyle.backgroundColor',
+          props: {
+            defaultValue: '#ffffff'
+          }
+        }),
+        predefinedProperties.color({
+          prop: 'descStyle.color',
+          props: {
+            defaultValue: '#333333'
+          }
+        }),
+        predefinedProperties.fontSize({
+          prop: 'descStyle.fontSize',
+          props: {
+            placeholder: '14px'
+          }
+        }),
+        predefinedProperties.lineHeight({
+          prop: 'descStyle.lineHeight',
+          props: {
+            placeholder: 1.5
+          }
+        })
+      ]
+    },
+    {
+      label: '按钮',
+      items: [
+        predefinedProperties.color({
+          label: '背景颜色',
+          title: '背景颜色（background-color）',
+          prop: 'buttonStyle.backgroundColor',
+          props: {
+            defaultValue: '#b3d1ff'
+          }
+        }),
+        predefinedProperties.color({
+          label: '背景悬浮颜色',
+          title: '鼠标悬浮时的背景颜色（background-color）',
+          prop: 'buttonStyle.backgroundColorHover',
+          props: {
+            defaultValue: '#9dc4ff'
+          }
+        }),
+        predefinedProperties.color({
+          label: '背景悬浮颜色',
+          title: '鼠标悬浮时的背景颜色（background-color）',
+          prop: 'buttonStyle.color',
+          props: {
+            defaultValue: '#000000'
+          }
+        }),
+        predefinedProperties.fontSize({
+          prop: 'buttonStyle.fontSize',
+          props: {
+            placeholder: '20px'
+          }
+        })
+      ]
+    },
+    {
+      label: '背景',
+      items: predefinedProperties.background(null, propertyValues)
+    }
+  ]
 }
 
 export const MainAwardPreview = {
   name: 'MainAward',
-  props: ['previewType', 'style'],
+  props: ['previewType', 'style', 'textStyle', 'titleStyle', 'descStyle', 'descBackground', 'buttonStyle'],
   setup(props, { attrs }) {
     const store = useStore('portal')
     const route = useRoute()
@@ -200,7 +235,7 @@ export const MainAwardPreview = {
               <p>创办时间：{data.value.sceneYear}</p>
               <p>子奖项：{data.value.childrenName}</p>
               <p>主办单位：{data.value.organizer}</p>
-              <p>简介：{data.value.abstractDesc}</p>
+              <p>简介：{data.value.abstractDesc || '暂无简介'}</p>
             </div>
           </div>
         )
@@ -208,24 +243,37 @@ export const MainAwardPreview = {
 
       return (
         <div class="tg-designer-main-award" style={style.value}>
-          <div class="tg-main-award-header">
-            <h1>{data.value.title}</h1>
+          <div
+            class="tg-main-award-header"
+            style={styleWithUnits(props.textStyle)}
+          >
+            <h1 style={styleWithUnits(props.titleStyle)}>{data.value.title}</h1>
             <p>创办时间：{data.value.sceneYear}</p>
             <p>子奖项：{data.value.childrenName}</p>
             <p>主办单位：{data.value.organizer}</p>
           </div>
           <div class="tg-main-award-content">
-            <div class="tg-main-award-description">
+            <div
+              class="tg-main-award-description"
+              style={styleWithUnits({
+                backgroundColor: props.descStyle.backgroundColor
+              })}
+            >
               <h2>简介</h2>
               <TypographyParagraph
-                content={data.value.abstractDesc}
+                content={data.value.abstractDesc || '暂无简介'}
                 ellipsis={{ rows: 4 }}
+                style={styleWithUnits(props.descStyle)}
               />
             </div>
-            <div class="tg-main-award-button">
+            <div
+              class="tg-main-award-button"
+              style={{ '--tg-designer-main-award-color-hover': props.buttonStyle?.backgroundColorHover }}
+            >
               <Button
                 disabled={!btnTargetRoute.value}
                 onClick={handleToApply}
+                style={styleWithUnits(omit(props.buttonStyle, 'backgroundColorHover'))}
               >
                 去申报
               </Button>

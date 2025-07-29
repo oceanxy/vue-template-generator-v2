@@ -22,7 +22,7 @@
   & > .tg-container-with-sider--sider {
     flex: none;
     position: relative;
-    width: 320px;
+    width: 300px;
     height: 100%;
     flex: none;
     border-radius: var(--tg-theme-border-radius);
@@ -30,6 +30,14 @@
     flex-direction: column;
     gap: 10px;
     transition: width .15s;
+
+    @media screen and (max-width: 1366px) {
+      width: 200px;
+    }
+
+    @media screen and (min-width: 1920px) {
+      width: 300px;
+    }
 
     & > .tg-container-trigger {
       position: absolute;
@@ -45,6 +53,12 @@
       cursor: pointer;
       color: #bfbfbf;
 
+      &.ant-btn-sm {
+        width: 14px;
+        height: 40px;
+        top: calc(50% - 20px);
+      }
+
       &:hover {
         color: var(--tg-theme-color-primary);
       }
@@ -59,6 +73,10 @@
         border-radius: 0 var(--tg-theme-border-radius) var(--tg-theme-border-radius) 0;
         right: -16px;
         background: var(--tg-theme-color-bg-container);
+
+        &.ant-btn-sm {
+          right: -13px;
+        }
       }
 
       & > *:not(.tg-container-trigger) {

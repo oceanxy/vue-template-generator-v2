@@ -11,7 +11,9 @@
  * 注意 defaultProps.style 为组件默认样式，不可通过属性面板修改，仅能被 TGComponentMeta.style 同名样式覆盖
  * @property {{[key in keyof CSSStyleDeclaration]?: string}} [style] - 组件样式。此对象内的样式可在属性面板中进行修改
  * @property {string} [class] - 组件样式表名称
- * @property {{ fields: TGPropertyField[] | TGPropertyFieldGroup[] }} configForm - 右侧属性面板配置
+ * @property {TGPropertyConfig[] | TGPropertyConfigGroup[]} propConfigForm - 右侧属性面板配置
+ * @property {boolean} [canMoveInside] - 【布局组件可用】是否允许内部组件之间相互移动换位
+ * @property {boolean} [canCopyInside] - 【布局组件可用】是否允许内部组件被复制
  */
 
 /**
@@ -29,7 +31,7 @@ export const TG_MATERIAL_CATEGORY = {
 }
 
 export const TG_MATERIAL_CATEGORY_LABEL = {
-  template: '模版部件',
+  template: '模板部件',
   basic: '基础部件',
   layout: '布局部件'
 }

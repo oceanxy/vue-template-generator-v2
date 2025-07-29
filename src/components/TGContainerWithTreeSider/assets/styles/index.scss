@@ -32,8 +32,6 @@
 
   & > .tg-container-with-sider--sider.tg-container-with-tree-sider--sider {
     flex: none;
-    // min-width: 220px;
-    width: 310px;
     background: var(--tg-theme-color-bg-container);
     border-radius: var(--tg-theme-border-radius);
 
@@ -45,9 +43,19 @@
       gap: 10px;
 
       .ant-input {
-        font-size: 14px;
+        font-size: var(--tg-theme-font-size);
         flex: auto;
       }
+
+      @media screen and (max-width: 1366px) {
+        padding: var(--tg-theme-padding-sm) var(--tg-theme-padding-md) var(--tg-theme-padding-sm) var(--tg-theme-padding-sm);
+      }
+
+      @media screen and (min-width: 1920px) {
+        padding: var(--tg-theme-padding-md);
+      }
+
+
 
       & > .ant-spin-nested-loading {
         flex: auto;

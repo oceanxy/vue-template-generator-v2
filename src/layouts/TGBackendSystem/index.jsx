@@ -1,4 +1,3 @@
-import './assets/styles/index.scss'
 import { Layout, Spin } from 'ant-design-vue'
 import TGHeader from '@/components/TGHeader'
 import { RouterView } from 'vue-router'
@@ -8,12 +7,30 @@ import configs from '@/configs'
 import TGBreadcrumb from '@/components/TGBreadcrumb'
 import router from '@/router'
 import useStore from '@/composables/tgStore'
+import './assets/styles/index.scss'
 
 export default {
   name: 'TGBackendSystemLayout',
   setup() {
     const store = useStore('/common')
     const showMenu = computed(() => store.showMenu)
+    const siderWidth = computed(() => {
+      if (store.componentSize === 'small') {
+        return 180
+      } else if (store.componentSize === 'large') {
+        return 230
+      } else {
+        return 200
+      }
+    })
+
+    const collapsedWidth = computed(() => {
+      if (store.componentSize === 'small') {
+        return 60
+      }
+
+      return 90
+    })
 
     return () => (
       <Layout id="tg-responsive-layout" class={'tg-layout'}>
@@ -24,11 +41,15 @@ export default {
             theme={'light'}
             collapsible
             trigger={null}
-            width={235}
-            class={`tg-responsive-layout-sider${showMenu.value
-              ? store.collapsed ? ' collapsed' : ' normal'
-              : ''
-            }`}
+            width={siderWidth.value}
+            collapsedWidth={collapsedWidth.value}
+            class={[
+              'tg-responsive-layout-sider',
+              {
+                collapsed: showMenu.value && store.collapsed,
+                normal: showMenu.value && !store.collapsed
+              }
+            ]}
           >
             {showMenu.value ? <TGMenu /> : null}
           </Layout.Sider>

@@ -30,22 +30,41 @@ export default {
     const actionBar = computed(() => store.actionBar)
     const { updatePosition } = useActionBar()
     const actions = computed(() => {
+      const _actions = [actionButtons.delete]
+      let canMove = true
+      let canCopy = true
+
+      if (selectedComponent.value?.parentId) {
+        canMove = actionBar.value.canMoveInside[selectedComponent.value.parentId]
+        canCopy = actionBar.value.canCopyInside[selectedComponent.value.parentId]
+      }
+
       if (layoutInfo.isInGridLayout) {
-        return [
-          actionButtons.delete,
-          actionButtons.up,
-          actionButtons.down,
-          actionButtons.left,
-          actionButtons.right,
-          actionButtons.copy
-        ]
+        if (canMove) {
+          _actions.push(...[
+            actionButtons.up,
+            actionButtons.down,
+            actionButtons.left,
+            actionButtons.right
+          ])
+        }
       } else {
         if (layoutInfo.layoutDirection === 'horizontal') {
-          return [actionButtons.delete, actionButtons.left, actionButtons.right, actionButtons.copy]
+          if (canMove) {
+            _actions.push(...[actionButtons.left, actionButtons.right])
+          }
         } else {
-          return [actionButtons.delete, actionButtons.up, actionButtons.down, actionButtons.copy]
+          if (canMove) {
+            _actions.push(...[actionButtons.up, actionButtons.down])
+          }
         }
       }
+
+      if (canCopy) {
+        _actions.push(actionButtons.copy)
+      }
+
+      return _actions
     })
 
     // 监听选中组件变化

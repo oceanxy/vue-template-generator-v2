@@ -1,10 +1,11 @@
-import { computed } from 'vue'
+import { computed, markRaw, toRaw } from 'vue'
 import { debounce } from 'lodash'
 import { useEditorStore } from '../../stores/useEditorStore'
 import { Empty, Tooltip } from 'ant-design-vue'
 import { Geometry } from '@/components/TGDesigner/utils/geometry'
-import { QuestionCircleOutlined } from '@ant-design/icons-vue'
 import { TG_MATERIAL_CATEGORY_LABEL } from '@/components/TGDesigner/materials'
+import { styleWithUnits } from '@/components/TGDesigner/utils/style'
+import { QuestionCircleOutlined } from '@ant-design/icons-vue'
 import './index.scss'
 
 export default {
@@ -34,11 +35,22 @@ export default {
       }
     })
 
-    const handleInput = (e, prop) => {
-      if (prop in componentProps.value) {
-        componentProps.value[prop] = e.target?.value ?? e
-      } else if (prop in componentProps.value.style) {
-        componentProps.value.style[prop] = e.target?.value ?? e
+    const handleInput = (e, prop, modelProp) => {
+      const value = modelProp && modelProp !== 'value' ? e.target?.[modelProp] ?? e : e.target?.value ?? e
+
+      // 批量处理组件元数据（TGComponentMeta）中的多个属性（props）
+      if (prop === '{props}' && Object.prototype.toString.call(value) === '[object Object]') {
+        Object.assign(componentProps.value, value)
+      } else {
+        const property = Geometry.checkPropertyPath(componentProps.value, prop, value)
+
+        if (!property.exists) {
+          if (prop.includes('.')) {
+            throw new Error(property.operation)
+          } else {
+            componentProps.value.style[prop] = value
+          }
+        }
       }
     }
 
@@ -52,63 +64,134 @@ export default {
       }
     }, 200)
 
-    const handlePropertyChange = (e, prop) => {
-      handleInput(e, prop)
+    const handlePropertyChange = (e, prop, modelProp) => {
+      handleInput(e, prop, modelProp)
       updateSchema()
     }
 
-    const renderPropertyFields = (fields) => {
-      return fields.map(field => {
-        if ('items' in field) {
+    /**
+     * 删除对象中 _ 开头的属性
+     * @param obj
+     * @returns {{}}
+     */
+    const filterUnderscoreKeys = (obj) => {
+      const result = {}
+
+      for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key) && !key.includes('_')) {
+          result[key] = obj[key]
+        }
+      }
+
+      return result
+    }
+
+    const renderPropertyConfigForm = propConfigForm => {
+      if (typeof propConfigForm === 'function') {
+        propConfigForm = propConfigForm(componentProps.value)
+      }
+
+      return propConfigForm.map(property => {
+        if ('items' in property) {
           return (
             <div class="tg-designer-field-group">
-              <div class="tg-designer-field-title">{field.label}</div>
-              {renderPropertyFields(field.items)}
+              <div class="tg-designer-field-title">{property.label}</div>
+              <div class="tg-designer-field-content">
+                {renderPropertyConfigForm(property.items)}
+              </div>
             </div>
           )
         }
 
-        const CanvasProperty = field.component()
-        const propertyProps = { ...field.props }
+        const CanvasProperty = markRaw(property.component)
+        const propertyProps = { ...property.props }
 
-        if (field.modelProp) {
-          propertyProps[field.modelProp] = field.prop in componentProps.value
-            ? componentProps.value[field.prop]
-            : componentProps.value.style[field.prop]
+        if (property.modelProp) {
+          if (property.prop === '{props}') {
+            propertyProps[property.modelProp] = componentProps.value
+          } else {
+            const propertyByPath = Geometry.checkPropertyPath(componentProps.value, property.prop)
+
+            if (propertyByPath.exists) {
+              propertyProps[property.modelProp] = propertyByPath.value
+            } else if (property.prop.includes('.')) {
+              throw new Error(`${property.prop} is not a valid property path`)
+            } else {
+              propertyProps[property.modelProp] = componentProps.value.style[property.prop]
+            }
+          }
         }
 
         const getCanvasProperty = () => {
-          if (field.componentType === 'input') {
+          let slots = null
+
+          if (property.slots) {
+            slots = filterUnderscoreKeys(toRaw(property.slots))
+          }
+
+          if (property.componentType === 'input') {
             return (
               <CanvasProperty
                 {...propertyProps}
-                onInput={e => handleInput(e, field.prop)}
+                onClick={e => e.currentTarget.select()}
+                onInput={e => handleInput(e, property.prop, property.modelProp)}
                 onChange={updateSchema}
                 onCompositionstart={e => e.target.composing = true}
                 onCompositionend={e => {
                   e.target.composing = false
                   e.target.dispatchEvent(new Event('input'))
                 }}
-              />
+              >
+                {slots}
+              </CanvasProperty>
             )
           } else {
+            if (property.componentType === 'multiInput') {
+              propertyProps.prop = property.prop
+            }
+
             return (
               <CanvasProperty
                 {...propertyProps}
-                onChange={value => handlePropertyChange(value, field.prop)}
-              />
+                onChange={e => {
+                  // 防止动态组件内部子组件的change事件冒泡
+                  if (!e.preventDefault) {
+                    handlePropertyChange(e, property.prop, property.modelProp)
+                  }
+                }}
+              >
+                {slots}
+              </CanvasProperty>
             )
           }
         }
 
+        const style = styleWithUnits({
+          width: property.layout === 'full' ? '100%' : 'calc((100% - 10px) / 2)'
+        })
+
         return (
-          <div key={field.prop} class="tg-designer-form-item">
-            <label>
-              {field.label}
-              <Tooltip placement="topLeft" title={field.title}>
-                <QuestionCircleOutlined />
-              </Tooltip>
-            </label>
+          <div
+            key={property.prop}
+            class="tg-designer-form-item"
+            style={style}
+          >
+            {
+              property.label && (
+                <label>
+                  {property.label}
+                  {property.title && (
+                    <Tooltip
+                      placement="topLeft"
+                      title={property.title}
+                      overlayClassName="tg-tooltip-format"
+                    >
+                      <QuestionCircleOutlined />
+                    </Tooltip>
+                  )}
+                </label>
+              )
+            }
             <div class="tg-designer-form-item-control">
               {getCanvasProperty()}
             </div>
@@ -118,7 +201,7 @@ export default {
     }
 
     return () => {
-      if (!selectedComponent.value?.configForm?.fields) {
+      if (!selectedComponent.value?.propConfigForm) {
         return (
           <div class="tg-designer-property-container">
             <Empty description="未选中任何组件" image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -134,7 +217,7 @@ export default {
             {selectedComponent.value.name}
           </div>
           <div class="tg-designer-property-scrollable tg-designer-scrollable">
-            {renderPropertyFields(selectedComponent.value.configForm.fields)}
+            {renderPropertyConfigForm(toRaw(selectedComponent.value.propConfigForm))}
           </div>
         </div>
       )

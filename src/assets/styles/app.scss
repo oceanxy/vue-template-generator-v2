@@ -107,3 +107,22 @@ body,
     //background-image: url('~@/assets/images/notFound.png');
   }
 }
+
+.tg-tooltip-format {
+  .ant-tooltip-inner {
+    display: flex;
+    flex-direction: column;
+
+    & > p {
+      font-weight: bolder;
+      padding: 10px 0;
+      font-size: 16px;
+      opacity: 1;
+      margin: 0;
+    }
+
+    & > span {
+      opacity: .8;
+    }
+  }
+}
