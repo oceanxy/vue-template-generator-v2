@@ -57,7 +57,8 @@ export default {
       default: false
     },
     /**
-     * 选中树后用于搜索列表的字段名，默认 'treeId'，可能改为 'parentId'
+     * 选中树后用于搜索列表的字段名（一般是唯一键字段，类似 id 等字段），
+     * 默认 'treeId'。此参数会自动注入到 store.state.search 中。
      * @param hierarchy {number} 树节点层级
      * @returns {string}
      */
@@ -66,11 +67,11 @@ export default {
       default: hierarchy => 'treeId'
     },
     /**
-     * 向 store.state.search 对象注入其他参数。
-     * 注意一般不需要此操作，仅使用 props.getFieldNameForTreeId 参数即可，但是在某些特殊场景，
-     * 比如在操作树时需要传递多个字段给查询接口时，可以使用该prop来配置其余参数。
-     * @param dataSource {Object} 用于渲染树节点的数据对象
-     * @returns {Object} 需要合并注入到 search 的对象
+     * 向 store.state.search 对象注入自定义参数。
+     * - 此参数是 props.getFieldNameForTreeId 的补充。
+     * - 在操作树时如果需要传递更多字段给查询接口，可以使用该配置来自定义其余参数。
+     * @param dataSource {Object} 用于渲染树节点的数据对象。
+     * @returns {Object} 需要合并注入到 search 的对象。
      */
     injectSearchParamsOfTable: {
       type: Function,
@@ -113,7 +114,7 @@ export default {
     const storeName = props.treeDataOptions?.storeName ?? router.currentRoute.value.name
     const stateName = props.treeDataOptions?.stateName ?? 'dataSource'
 
-    if (storeName.value === router.currentRoute.value.name) {
+    if (storeName === router.currentRoute.value.name) {
       if (stateName === 'dataSource') {
         console.warn(`${router.currentRoute.value.name} 页面的筛选树数据将覆盖本页面的表格数据（store.state.dataSource），可能发生意料之外的问题！`)
       }
@@ -281,7 +282,7 @@ export default {
           // 清空 search 内上一次树操作的键与值
           if (oldTreeIdField.value) {
             store.setSearchParams({
-              ...props.injectSearchParamsOfTable({}),
+              ...props.injectSearchParamsOfTable(e.node.dataRef),
               [oldTreeIdField.value]: undefined
             })
           }
