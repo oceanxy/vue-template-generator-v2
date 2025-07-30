@@ -12,7 +12,7 @@ import { set } from 'lodash/object'
  * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
  * @param [location='modalForEditing'] {string}
  * @param [rules] {Object} - 表单验证规则
- * @param [isGetDetails] {boolean} - 是否在打开编辑弹窗时获取详情数据。
+ * @param [isGetDetails] {boolean} - 是否在打开编辑弹窗时获取详情数据，默认false。
  * @param [apiName] {string} - 自定义获取详情的接口名称，依赖`isGetDetails`，默认为`getDetailsOf{route.name}`。
  * @param [getParams] {((currentItem:Object) => Object) | Object} - 自定义获取详情的参数，默认为`store.state.currentItem.id`。
  * @param [setDetails] {(data: any, store: import('pinia').defineStore) => void} - 获取到详细
