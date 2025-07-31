@@ -31,13 +31,7 @@ export default createStore({
       currentItem: {},
       // 全局修改密码弹窗的显示状态
       showModalForChangePassword: false,
-      modalForChangePassword: {},
-      // 待办事项
-      messageList: {
-        list: [],
-        loading: false
-      },
-      unreadMessageCount: false
+      modalForChangePassword: {}
     },
     actions: {
       async verifyToken(params) {
@@ -158,7 +152,7 @@ export default createStore({
 
         return Promise.resolve(response)
       },
-      // 从第三方获取到token 后，进行登录操作
+      // 从第三方获取到 token 后，进行登录操作
       async trilateralLogin(payload) {
         this.loading = true
 
@@ -339,28 +333,6 @@ export default createStore({
         } else {
           this.codeKey = ''
         }
-      },
-      // 获取header上的代办信息暂时先放在login文件
-      // 获取代办消息列表
-      async getMessageList() {
-        this.messageList.loading = true
-        const payload = {
-          pageSize: 20,
-          pageIndex: 0,
-          readStatus: '0'
-        }
-
-        const res = await apis.getMessageList(payload)
-
-        if (res.status) {
-          this.unreadMessageCount = res.data.totalNum ? true : false
-        }
-
-        this.messageList.loading = false
-      },
-      // 用户组织切换
-      async switchUserOrg() {
-        return await apis.switchUserOrg()
       }
     }
   },
