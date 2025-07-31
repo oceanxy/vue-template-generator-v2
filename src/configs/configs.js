@@ -2,6 +2,39 @@
  * 该配置文件作为基准配置的默认值，所有子项目的配置文件都是基于这个文件做配置合并。
  */
 
+/**
+ * 要加载的第三方文件信息
+ * @global
+ * @typedef LoadFiles
+ * @property {string} host - 资源文件的默认host，也可使用 '{环境变量}' 的方式加载指定的环境变量的值
+ * @property {string} filePath - 文件地址
+ * @property {string} filename - 文件备注
+ */
+
+/**
+ * 生产环境(process.env.NODE_ENV === 'production')是否可配置环境变量，注意：
+ * - 该配置开发环境下无效。
+ * - 该配置生产环境下运行时有效，编译时无效。
+ * @global
+ * @typedef ProdEnvVar
+ * @property {boolean} configurable - 打包后是否生成一个配置文件，该文件位于打包目录的根路径下（一般是`dist/`）。
+ * 注意：该配置值为`true`时，
+ * - 会将`loadFiles`中使用到的环境变量同步生成到打包后的配置文件中，不管`prodEnvVar.envVars`中是否配置了该环境变量。
+ * - 获取环境变量的方式为`utils/env.js`内的`getEnvVar`方法，该方法可传递一个参数`envName`，默认为`BASE_ENV`。
+ *
+ * @property {string[]} envVars - 需要同步到打包后的配置文件中的环境变量名，`prodEnvVar.configurable`值为`true`时生效。默认值/固定值（不需要手动配置）：
+ * - `BASE_ENV`：生产环境不同阶段的变量。
+ * - `loadFiles`中使用到的环境变量。
+ *
+ * 注意并不是所有配置的环境变量都会生效，注意区分运行时环境变量（生效）和编译时环境变量（不生效）。比如：
+ *
+ * - `webpack`打包需要的公共资源路径（`TG_APP_PUBLIC_PATH`）属于编译时环境变量，所以不会生效。
+ * - 网关地址前缀/接口地址前缀（`TG_APP_BASE_API`）属于运行时环境变量，所以会生效。
+ *
+ * @property {string} filename - 打包后生成的配置文件的名称，默认`.env.production`，注意：文件名命名规范及其内容请遵循 dotenv 规则。
+ * 文件内用于保存网关地址的字段名同环境变量文件（`.env.*`）中的网关字段名
+ */
+
 module.exports = {
   // 打包后生成压缩包的名称（默认为子项目仓库名）
   zipName: '',
@@ -84,33 +117,12 @@ module.exports = {
     },
     // TGHeader 组件内右上角功能区的按钮配置
     buttons: {
-      // 重置密码
-      resetPwd: {
-        // 是否显示修改密码按钮，默认 false。此功能需要配合 src/extend 和子项目的 extend 使用
-        show: false,
-        // 按钮文本，默认“重置密码”
-        text: '重置密码'
-      },
-      // 消息（暂未实现）
-      news: {
-        // 是否显示消息通知按钮，默认 false。
-        show: false,
-        // 按钮文本，默认“消息”
-        text: '消息'
-      },
       // 注销
       logout: {
         // 是否显示消息通知按钮，默认 true。
         show: true,
         // 按钮文本，默认“退出登录”
         text: '退出登录'
-      },
-      // 网站指引（暂未实现）
-      guide: {
-        // 是否显示网站指引，默认 false。
-        show: false,
-        // 按钮文本，默认“网站指引”
-        text: '网站指引'
       },
       // 主题
       theme: {
@@ -122,43 +134,22 @@ module.exports = {
         default: 'tech-blue',
         // 可用的主题文件 （位于 @/assets/styles/theme）
         availableThemes: [
-          { name: '科技蓝', fileName: 'tech-blue' }
+          { name: '健康绿', fileName: 'healthy-green' },
+          { name: '明 青', fileName: 'cyan' },
+          { name: '科技蓝', fileName: 'tech-blue' },
+          { name: '政务蓝', fileName: 'government-blue' },
+          { name: '石榴红', fileName: 'pomegranate-red' },
+          { name: '党政红', fileName: 'party-red' },
+          { name: '电商橙', fileName: 'e-commerce-orange' }
         ]
       },
       algorithm: {
-        show: true,
-
+        show: true
       },
       fontSize: {
         show: true,
         text: '全局文字配置'
-      },
-      /**
-       * 自定义按钮对象
-       * @global
-       * @typedef HeaderExtarButtons
-       * @property {string} text - 按钮显示文本
-       * @property {string} icon - 按钮图标名称
-       * @property {string} iconType - icon 图标来源
-       * - font：来自项目加载的 iconfont 文件
-       * - antd：来自 ant-design-vue 的内置图标
-       * @property {string} event - eventHandlerName（按钮事件处理函数名称）。
-       *  此配置中的所有事件 handler 需要在该子项目中定义映射文件：config/eventMapping.js，
-       *  该文件采用 CommonJS 模块规范编写。例如：
-       *
-       *  ```
-       *    module.exports = {
-       *      [eventHandlerName]: function() {
-       *        // 在这里处理对应按钮的事件
-       *      }
-       *    }
-       *  ```
-       */
-      /**
-       * 需要显示的额外按钮
-       * @type HeaderExtarButtons[]
-       */
-      extraButtons: []
+      }
     }
   },
   // 登录令牌相关设置
@@ -171,29 +162,6 @@ module.exports = {
     timeout: 10000
   },
   /**
-   * 生产环境(process.env.NODE_ENV === 'production')是否可配置环境变量，注意：
-   * - 该配置开发环境下无效。
-   * - 该配置生产环境下运行时有效，编译时无效。
-   * @global
-   * @typedef ProdEnvVar
-   * @property {boolean} configurable - 打包后是否生成一个配置文件，该文件位于打包目录的根路径下（一般是`dist/`）。
-   * 注意：该配置值为`true`时，
-   * - 会将`loadFiles`中使用到的环境变量同步生成到打包后的配置文件中，不管`prodEnvVar.envVars`中是否配置了该环境变量。
-   * - 获取环境变量的方式为`utils/env.js`内的`getEnvVar`方法，该方法可传递一个参数`envName`，默认为`BASE_ENV`。
-   *
-   * @property {string[]} envVars - 需要同步到打包后的配置文件中的环境变量名，`prodEnvVar.configurable`值为`true`时生效。默认值/固定值（不需要手动配置）：
-   * - `BASE_ENV`：生产环境不同阶段的变量。
-   * - `loadFiles`中使用到的环境变量。
-   *
-   * 注意并不是所有配置的环境变量都会生效，注意区分运行时环境变量（生效）和编译时环境变量（不生效）。比如：
-   *
-   * - `webpack`打包需要的公共资源路径（`TG_APP_PUBLIC_PATH`）属于编译时环境变量，所以不会生效。
-   * - 网关地址前缀/接口地址前缀（`TG_APP_BASE_API`）属于运行时环境变量，所以会生效。
-   *
-   * @property {string} filename - 打包后生成的配置文件的名称，默认`.env.production`，注意：文件名命名规范及其内容请遵循 dotenv 规则。
-   * 文件内用于保存网关地址的字段名同环境变量文件（`.env.*`）中的网关字段名
-   */
-  /**
    * 生产环境是否可配置环境变量
    * @type ProdEnvVar
    */
@@ -202,14 +170,6 @@ module.exports = {
     envVars: [],
     filename: '.env.production'
   },
-  /**
-   * 要加载的第三方文件信息
-   * @global
-   * @typedef LoadFiles
-   * @property {string} host - 资源文件的默认host，也可使用 '{环境变量}' 的方式加载指定的环境变量的值
-   * @property {string} filePath - 文件地址
-   * @property {string} filename - 文件备注
-   */
   /**
    * 加载第三方文件集合
    * @type LoadFiles[]
