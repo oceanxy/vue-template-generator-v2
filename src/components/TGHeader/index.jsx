@@ -303,7 +303,7 @@ export default {
                 ),
                 overlay: () => (
                   <Menu>
-                    <UserFunctions />
+                    {!!UserFunctions && <UserFunctions />}
                     {
                       configs.header?.buttons?.logout?.show && (
                         <Menu.Item key={'2'} onClick={onLogOutClick}>
@@ -315,7 +315,7 @@ export default {
                 )
               }}
             </Dropdown>
-            <GlobalFunctions />
+            {!!GlobalFunctions && <GlobalFunctions />}
             {
               (
                 configs.header?.buttons?.algorithm?.show ||
