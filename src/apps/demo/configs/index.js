@@ -9,24 +9,6 @@ module.exports = {
   defaultRouteName: 'Console',
 
   // 以下配置为非必须的，具体见：src/config 注释
-  header: {
-    buttons: {
-      resetPwd: {
-        show: true
-      },
-      theme: {
-        availableThemes: [
-          { name: '健康绿', fileName: 'healthy-green' },
-          { name: '明 青', fileName: 'cyan' },
-          { name: '科技蓝', fileName: 'tech-blue' },
-          { name: '政务蓝', fileName: 'government-blue' },
-          { name: '石榴红', fileName: 'pomegranate-red' },
-          { name: '党政红', fileName: 'party-red' },
-          { name: '电商橙', fileName: 'e-commerce-orange' }
-        ]
-      }
-    }
-  },
   enableTabPage: true,
   hideBreadCrumb: true,
   enableLoginVerification: false,
