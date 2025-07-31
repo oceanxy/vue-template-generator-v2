@@ -1,5 +1,5 @@
 import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref, watch } from 'vue'
-import { Avatar, Badge, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Select, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
+import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Select, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
@@ -62,20 +62,8 @@ export default {
       configs.header?.buttons?.theme.default
     )
 
-    watch(userInfo, async (val) => {
-      if (Object.keys(val).length) {
-        // 获取header上的代办信息暂时先放在login文件
-        if (proxy.GlobalShowNewDrawerPopup) {
-          // 判断config配置中buttons里的extraButtons text为消息的配置
-          const isNewBtn = configs.header?.buttons?.extraButtons?.some(item => item.text == '消息')
-          if (isNewBtn) {
-            loginStore.getMessageList()
-          }
-        } else {
-          console.warn('未找到可用的全局注册组件：GlobalShowNewDrawerPopup')
-        }
-      }
-    }, { immediate: true })
+    const GlobalFunctions = proxy.globalFunctions
+    const UserFunctions = proxy.userFunctions
 
     watch(() => localStorageHeaderId, async value => {
       if (value) {
@@ -315,13 +303,7 @@ export default {
                 ),
                 overlay: () => (
                   <Menu>
-                    {
-                      configs.header?.buttons?.resetPwd?.show && (
-                        <Menu.Item key={'1'} onClick={resetPwd}>
-                          {configs.header?.buttons?.resetPwd?.text}
-                        </Menu.Item>
-                      )
-                    }
+                    <UserFunctions />
                     {
                       configs.header?.buttons?.logout?.show && (
                         <Menu.Item key={'2'} onClick={onLogOutClick}>
@@ -333,31 +315,22 @@ export default {
                 )
               }}
             </Dropdown>
-            <Divider
-              type={'vertical'}
-              class={'tg-header-divider'}
-              style={{ background: themeToken.value.colorSplit }}
-            />
+            <GlobalFunctions />
+            {
+              (
+                configs.header?.buttons?.algorithm?.show ||
+                configs.header?.buttons?.fontSize?.show ||
+                configs.header?.buttons?.theme?.show
+              ) && (
+                <Divider
+                  type={'vertical'}
+                  class={'tg-header-divider'}
+                  style={{ background: themeToken.value.colorSplit }}
+                />
+              )
+            }
+            {/* 主题/皮肤/字号/布局等设置区域 */}
             <Space class={'tg-header-functions'} size={themeToken.value.fontSizeSM}>
-              {
-                configs.header?.buttons?.extraButtons?.map(button => (
-                  <Badge dot={loginStore[button.BadgeDot]} offset={[-4, 2]}>
-                    <Button
-                      shape="circle"
-                      type={'link'}
-                      title={button.text}
-                      class={'tg-header-icon'}
-                      onClick={e => { __TG_APP_EVENT_MAPPINGS__?.[button.event]?.call(this, proxy, e) }}
-                    >
-                      {
-                        button.iconType === 'antd'
-                          ? <Icon style={{ fontSize: '0.84em' }} type={button.icon} />
-                          : <IconFont type={button.icon} />
-                      }
-                    </Button>
-                  </Badge>
-                ))
-              }
               {
                 configs.header?.buttons?.algorithm?.show && (
                   <Popover
