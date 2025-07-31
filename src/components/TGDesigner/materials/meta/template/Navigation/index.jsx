@@ -33,6 +33,7 @@ const Navigation = {
     const search = computed(() => store.search)
     const route = useRoute()
     const navs = computed(() => store.dataSource.list || [])
+    // 是否初始化菜单数据源。在某些情况下（如画布、物料面板），不需要初始化菜单数据源
     const isInitDataSource = props.previewType === TG_MATERIAL_PREVIEW_TYPE.PORTAL ||
       props.previewType === TG_MATERIAL_PREVIEW_TYPE.PREVIEW
 
