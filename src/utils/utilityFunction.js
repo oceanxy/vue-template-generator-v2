@@ -1,4 +1,5 @@
 import { message } from 'ant-design-vue'
+
 /**
  * 连字符转小驼峰
  * @example `my-profile` => `myProfile` 或者 `my_profile` => `myProfile`
@@ -11,12 +12,16 @@ export function toLowerCamelCase(name) {
 
 /**
  * 驼峰转连字符
- * @example `myProfile` => `my-profile`
+ * @example
+ * 'myProfile' -> 'my-profile'
+ * 'MyProfile' -> 'my-profile'
  * @param {string} field - 目标字段
  * @returns {string}
  */
 export function toLowerCase(field) {
-  return field.replace(/([A-Z])/g, '-$1').toLowerCase()
+  return field.replace(/([A-Z])/g, (s, b, c) => {
+    return (c === 0 ? '' : '-') + s.toLowerCase()
+  })
 }
 
 /**
@@ -74,7 +79,7 @@ export function downloadFile(blobOrUrl, fileName) {
     tmp.click() // 模拟点击实现下载
     body.removeChild(tmp)
 
-    setTimeout(function () {
+    setTimeout(function() {
       // 延时释放
       URL.revokeObjectURL(urlObj)
     }, 1000)
@@ -271,30 +276,30 @@ export function getArrayFromEnum(enumeration, options = {}) {
 
 export const copyText = async (text) => {
   if (!navigator.clipboard) {
-    const input = document.createElement("input");
-    input.setAttribute("value", text);
-    document.body.appendChild(input);
-    input.select();
+    const input = document.createElement('input')
+    input.setAttribute('value', text)
+    document.body.appendChild(input)
+    input.select()
 
     try {
-      if (document.execCommand("copy")) {
-        message.success('复制成功');
+      if (document.execCommand('copy')) {
+        message.success('复制成功')
       } else {
-        message.error('复制失败');
+        message.error('复制失败')
       }
     } catch (err) {
-      message.error('复制失败');
+      message.error('复制失败')
     } finally {
-      document.body.removeChild(input);
+      document.body.removeChild(input)
     }
-    return;
+    return
   }
 
   try {
-    await navigator.clipboard.writeText(text);
-    message.success('复制成功');
+    await navigator.clipboard.writeText(text)
+    message.success('复制成功')
   } catch (err) {
-    message.error('复制失败');
+    message.error('复制失败')
   }
-};
+}
 
