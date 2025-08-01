@@ -6,7 +6,6 @@ import useStore from '@/composables/tgStore'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
 import dayjs from 'dayjs'
-import { dynamicCompMount } from '@/utils/dynamicCompMount'
 import './assets/images/svgComp/moon.svg'
 import './assets/images/svgComp/sun.svg'
 import useThemeVars from '@/composables/themeVars'
@@ -151,20 +150,6 @@ export default {
       })
     }
 
-    async function resetPwd() {
-      if (proxy.GlobalUpdatePassword) {
-        instance = await dynamicCompMount(proxy.GlobalUpdatePassword, { type: 'global' })
-
-        loginStore.setVisibilityOfModal({
-          modalStatusFieldName: 'showModalForChangePassword',
-          location: 'modalForChangePassword',
-          value: true
-        })
-      } else {
-        console.warn('未找到可用的全局注册组件：GlobalUpdatePassword')
-      }
-    }
-
     async function updateAlgorithm(algorithm, isCompactAlgorithm) {
       await updateThemeConfig({
         algorithm,
@@ -306,7 +291,7 @@ export default {
                     {!!UserFunctions && <UserFunctions />}
                     {
                       configs.header?.buttons?.logout?.show && (
-                        <Menu.Item key={'2'} onClick={onLogOutClick}>
+                        <Menu.Item onClick={onLogOutClick}>
                           {configs.header?.buttons?.logout?.text}
                         </Menu.Item>
                       )
