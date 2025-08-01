@@ -1,31 +1,29 @@
 import { createApp, h } from 'vue'
+import { toLowerCase } from '@/utils/utilityFunction'
 
-const cache = {}
+const appCache = {}
 
 export async function dynamicCompMount(Component, props) {
-  if (!cache[Component.name]) {
-    cache[Component.name] = Component
+  const id = toLowerCase(Component.name)
+  const targetDom = document.querySelector('#tg-global-modals') || document.body
+  const isExistDom = !!Array.prototype.some.call(targetDom.children, child => child.id === id)
 
-    return new Promise(resolve => {
-      const container = document.createElement('div')
-      const targetDom = document.querySelector('#tg-global-modals') || document.body
-      targetDom.appendChild(container)
+  if (isExistDom) return
 
-      const app = createApp({
-        render: () => h(Component, {
-          ...props,
-          onDestroy: () => {
-            app.unmount()
-            cache[Component.name] = null
-          }
-        })
-      })
+  appCache[id]?.unmount()
 
-      app.mount(container)
+  return new Promise(resolve => {
+    const container = document.createElement('div')
+    container.id = id
+    targetDom.appendChild(container)
 
-      resolve(app)
+    const app = createApp({
+      render: () => h(Component, props)
     })
-  }
 
-  return cache[Component.name]
+    appCache[id] = app
+    app.mount(container)
+
+    resolve()
+  })
 }
