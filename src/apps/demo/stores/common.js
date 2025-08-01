@@ -4,7 +4,9 @@ export default createStore({
   moduleName: 'common',
   module: {
     state: {
-      visibilityOfResetPwd: false
+      // 全局修改密码弹窗的显示状态
+      showModalForChangePassword: false,
+      modalForChangePassword: {}
     }
   },
   excludeFromState: true

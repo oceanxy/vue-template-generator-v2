@@ -1,10 +1,10 @@
-import '../assets/styles/index.scss'
 import { Form, InputPassword } from 'ant-design-vue'
 import useTGFormModal from '@/composables/tgFormModal'
 import { message } from 'ant-design-vue/es/components'
 import { computed } from 'vue'
 import useStore from '@/composables/tgStore'
 import { set } from 'lodash/object'
+import '../assets/styles/index.scss'
 
 export default {
   name: 'ModalForChangePassword',
@@ -16,6 +16,7 @@ export default {
   },
   setup(props, { attrs }) {
     const loginStore = useStore('/login')
+    const commonStore = useStore('./common')
     const userInfo = computed(() => loginStore.userInfo)
     const location = 'modalForChangePassword'
     const modalStatusFieldName = 'showModalForChangePassword'
@@ -56,8 +57,8 @@ export default {
       ]
     }
 
-    // 为 login store 内的修改密码表单初始化字段。因为该弹窗可能被全局调用，所以不能在框架级的store内定义项目级的字段。
-    set(loginStore, `${location}.form.pwd`, undefined)
+    // 为 store 内的修改密码表单初始化字段。因为该弹窗可能被全局调用，所以不能在框架级的store内定义项目级的字段。
+    set(commonStore, `${location}.form.pwd`, undefined)
 
     const {
       TGFormModal,
@@ -66,7 +67,7 @@ export default {
       validateInfos,
       currentItem
     } = useTGFormModal({
-      storeName: props.type === 'global' ? '/login' : undefined,
+      storeName: props.type === 'global' ? './common' : undefined,
       modalProps,
       modalStatusFieldName,
       rules,
