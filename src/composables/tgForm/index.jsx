@@ -2,7 +2,6 @@ import './assets/styles/index.scss'
 import useStore from '@/composables/tgStore'
 import { computed, inject, nextTick, onUnmounted, reactive, ref, toRaw, watch } from 'vue'
 import { Button, Form } from 'ant-design-vue'
-import { useRoute } from 'vue-router'
 
 /**
  * TGForm 组件
@@ -57,9 +56,14 @@ export default function useTGForm({
   const hasTree = inject('hasTree', false)
   const refreshTree = inject('refreshTree', undefined)
   const optionsOfGetList = inject('optionsOfGetList', null)
+  let commonStore
 
   const store = useStore(storeName)
-  const commonStore = useStore('./common')
+  if (storeName === './common') {
+    commonStore = store
+  } else {
+    commonStore = useStore('./common')
+  }
 
   if (location && !store[location].form) {
     store[location].form = {}
@@ -74,7 +78,6 @@ export default function useTGForm({
   const formRules = reactive(rules)
   const initSearchParamResult = ref(searchParamOptions?.length <= 0)
   const hasRequiredEnum = searchParamOptions?.some(_enum => _enum.isRequired === true)
-  const route = useRoute()
 
   const {
     text,
@@ -100,7 +103,13 @@ export default function useTGForm({
   // 处理`formModel`的次数。isGetDetails 为 true 时，最大为2次，为 false 时为1次。
   const count = ref(0)
   // 用于区分当前弹窗的编辑模式：新增数据/编辑数据
-  const isNewModal = computed(() => !((store[location]?.rowKey ?? store.rowKey) in currentItem.value))
+  const isNewModal = computed(() => {
+    if ((store[location]?.rowKey ?? store.rowKey) && currentItem.value) {
+      return !((store[location]?.rowKey ?? store.rowKey) in currentItem.value)
+    } else {
+      return true
+    }
+  })
 
   if (location) {
     if (location !== 'modalForEditing' && !modalStatusFieldName) {
@@ -121,7 +130,7 @@ export default function useTGForm({
           // 检测对应store[location].form是否预定义了与页面弹窗内表单对应的字段，将影响表单字段的收集
           // formModel 字段数量，排除编辑模式下自动注入的 [rowKey]
           if ((!isNewModal.value && formModelLength <= 1) || (isNewModal.value && !formModelLength)) {
-            console.warn(`TGForm：${route.name}.store.${location}.form 未预定义与页面弹窗内表单对应的字段，这会导致编辑表单时无法回填数据！`)
+            console.warn(`TGForm：${store.$id}.store.${location}.form 未预定义与页面弹窗内表单对应的字段，这会导致编辑表单时无法回填数据！`)
           }
         }
       })
