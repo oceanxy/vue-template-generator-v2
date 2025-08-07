@@ -38,16 +38,12 @@ export default function getService(conf, router) {
         }
       }
 
-      if (conf.header?.params?.show) {
-        if (conf.header.params.fieldName) {
-          config.headers[conf.header.params.fieldName] = localStorage.getItem(`${appName}-headerId`)
-        } else {
-          throw new Error('未在 src/config/index.js 中配置 header.params.fieldName 字段。')
-        }
-      }
-
       if (__TG_APP_INTERFACE_MAPPINGS__) {
         config.data = __TG_APP_INTERFACE_MAPPINGS__?.request(config.data, qs)
+      }
+
+      if (__TG_APP_USER_INFO_MAPPINGS__) {
+        config.headers = __TG_APP_USER_INFO_MAPPINGS__.injectParamsForRequest(config.headers)
       }
 
       return config
@@ -76,6 +72,15 @@ export default function getService(conf, router) {
 
       if (response.config.responseType !== 'blob' && __TG_APP_INTERFACE_MAPPINGS__) {
         res = __TG_APP_INTERFACE_MAPPINGS__.response(response.data)
+      }
+
+      if (
+        response.config.responseType !== 'blob' &&
+        response.config.shouldMapResponseData &&
+        __TG_APP_USER_INFO_MAPPINGS__ &&
+        res.status
+      ) {
+        res.data = __TG_APP_USER_INFO_MAPPINGS__.mapping(res.data)
       }
 
       if (response.config.responseType === 'blob') {
@@ -129,13 +134,8 @@ export default function getService(conf, router) {
 
           showMessage({
             message: '登录失效，请重新登录!',
-            type: 'error',
+            type: 'error'
           })
-
-          setTimeout(async () => {
-            await router.replace({ name: 'Login' })
-          }, 1500)
-
         } else if (/*无权限*/+res.code === 40006) {
           await router.replace({ name: 'NoAccess' })
         }
