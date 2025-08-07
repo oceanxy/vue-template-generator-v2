@@ -17,7 +17,7 @@ export default {
   setup(props, { attrs }) {
     const loginStore = useStore('/login')
     const commonStore = useStore('./common')
-    const userInfo = computed(() => loginStore.userInfo)
+    const userInfo = computed(() => loginStore.details.userInfo)
     const location = 'modalForChangePassword'
     const modalStatusFieldName = 'showModalForChangePassword'
     const modalProps = {
