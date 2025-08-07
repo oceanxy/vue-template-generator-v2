@@ -7,19 +7,20 @@ import useStore from '@/composables/tgStore'
 
 export default {
   name: 'TGLoginForm',
-  setup() {
+  props: { formattingParameters: Function },
+  setup(props) {
     const isDev = process.env.NODE_ENV === 'development'
 
     const hint = ref(false)
-    const picCodePath = ref('')
+    const captchaPath = ref('')
     const loginFormState = reactive({
       username: isDev ? process.env.TG_APP_DEV_DEFAULT_ACCOUNT : '',
       password: isDev ? process.env.TG_APP_DEV_DEFAULT_PASSWORD : '',
-      picCode: isDev && configs.enableLoginVerification ? 'LANJOR' : ''
+      captcha: isDev && configs.enableLoginVerification ? 'LANJOR' : ''
     })
 
     const loginStore = useStore('/login')
-    const codeKey = computed(() => loginStore.codeKey)
+    const captcha = computed(() => loginStore.captcha)
     const loading = computed(() => loginStore.loading)
     const disabled = computed(() => !loginFormState.username || !loginFormState.password)
 
@@ -28,12 +29,16 @@ export default {
      * @returns {Promise<void>}
      */
     async function onCodeKeyClick() {
-      await loginStore.getCodeKey()
-      picCodePath.value = `${getEnvVar('TG_APP_BASE_API')}/auth/verifyCode/loginImg?verifyCodeKey=${codeKey.value}`
+      await loginStore.getCaptcha()
+      captchaPath.value = `${getEnvVar('TG_APP_BASE_API')}/auth/verifyCode/loginImg?verifyCodeKey=${captcha.value}`
     }
 
-    async function onFinish(values) {
-      const { status } = await loginStore.login({ payload: values })
+    async function onFinish(payload) {
+      if (typeof props.formattingParameters === 'function') {
+        payload = props.formattingParameters(payload)
+      }
+
+      const { status } = await loginStore.login(payload)
 
       if (!status) {
         if (configs.enableLoginVerification) {
@@ -61,26 +66,45 @@ export default {
         name={'login_form'}
         onFinish={onFinish}
       >
-        <Form.Item name={'username'} rules={[{ required: true, message: '请输入用户名！' }]}>
-          <Input vModel:value={loginFormState.username} placeholder="请输入用户名">
+        <Form.Item
+          name={'username'}
+          rules={[{ required: true, message: '请输入用户名！' }]}
+        >
+          <Input
+            vModel:value={loginFormState.username}
+            placeholder="请输入用户名"
+          >
             {{ prefix: () => <IconFont type={'icon-login-user'} /> }}
           </Input>
         </Form.Item>
-        <Form.Item name={'password'} rules={[{ required: true, message: '请输入密码！' }]}>
-          <Input.Password vModel:value={loginFormState.password} placeholder="请输入密码">
+        <Form.Item
+          name={'password'}
+          rules={[{ required: true, message: '请输入密码！' }]}
+        >
+          <Input.Password
+            vModel:value={loginFormState.password}
+            placeholder="请输入密码"
+          >
             {{ prefix: () => <IconFont type={'icon-login-pwd'} /> }}
           </Input.Password>
         </Form.Item>
         {
           configs.enableLoginVerification
             ? (
-              <Form.Item name={'picCode'} rules={[{ required: true, message: '请输入验证码！' }]}>
-                <Input value={loginFormState.picCode} placeholder="请输入验证码" loading={true}>
+              <Form.Item
+                name={'captcha'}
+                rules={[{ required: true, message: '请输入验证码！' }]}
+              >
+                <Input
+                  vModel:value={loginFormState.captcha}
+                  placeholder="请输入验证码"
+                  loading={true}
+                >
                   {{
                     prefix: () => <IconFont type={'icon-login-captcha'} />,
                     suffix: () => (
                       <img
-                        src={picCodePath.value}
+                        src={captchaPath.value}
                         alt="captcha"
                         onClick={onCodeKeyClick}
                       />
