@@ -1,16 +1,16 @@
-import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref, watch } from 'vue'
-import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Select, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
+import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref } from 'vue'
+import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
 import useStore from '@/composables/tgStore'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import configs from '@/configs'
-import dayjs from 'dayjs'
-import './assets/images/svgComp/moon.svg'
-import './assets/images/svgComp/sun.svg'
 import useThemeVars from '@/composables/themeVars'
 import { COMPONENT_SIZE } from '@/configs/enums'
 import { getScreenInfo } from '@/stores/modules/common'
+import { LoadingOutlined } from '@ant-design/icons-vue'
+import './assets/images/svgComp/moon.svg'
+import './assets/images/svgComp/sun.svg'
 import './assets/styles/index.scss'
 
 export default {
@@ -25,11 +25,9 @@ export default {
     const loginStore = useStore('/login')
     const { adjustHexBrightness } = useThemeVars()
     const collapsed = computed(() => commonStore.collapsed)
-    const lastLoginTime = computed(() => loginStore.lastLoginTime)
-    const lastLoginToken = computed(() => loginStore.lastLoginToken)
     const showMenu = computed(() => commonStore.showMenu)
     const loading = computed(() => loginStore.loading)
-    const userInfo = computed(() => loginStore.userInfo)
+    const userInfo = computed(() => loginStore.details.userInfo || {})
     const fontSize = computed(() => commonStore.fontSize)
     const avatarForLetter = computed(() => {
       const name = userInfo.value.nickName || userInfo.value.fullName
@@ -52,39 +50,19 @@ export default {
           fontSize: themeToken.value.fontSizeLG
         }
     })
-    const localStorageHeaderId = computed(() => {
-      return commonStore.headerId || localStorage.getItem(`${appName}-headerId`)
-    })
+
     const currentThemeName = ref(
       localStorage.getItem(`${appName}-theme`) ||
       loginStore?.userInfo?.themeFileName ||
       configs.header?.buttons?.theme.default
     )
 
+    const BodyFunctions = proxy.headerBodyFunctions
     const GlobalFunctions = proxy.globalFunctions
     const UserFunctions = proxy.userFunctions
 
-    watch(() => localStorageHeaderId, async value => {
-      if (value) {
-        // 当用户切换组织成功之后 后端保存当前组织信息
-        const res = await loginStore.switchUserOrg()
-
-        if (res.status) {
-          const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
-
-          await loginStore.trilateralLogin({ token })
-          if (document.querySelector('#root')) {
-            document.querySelector('#root').style.display = 'none'
-          }
-          await loginStore.jumpAfterLogin()
-
-          window.location.reload()
-        }
-      }
-    }, { deep: true })
-
     onBeforeMount(async () => {
-      await verifyUserInfo()
+      // await verifyUserInfo()
     })
 
     onUnmounted(() => {
@@ -98,8 +76,6 @@ export default {
     async function verifyUserInfo() {
       if (!loading.value) {
         const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
-        const loginTime = localStorage.getItem(`${appName}-lastLoginTime`) || lastLoginTime.value
-        const loginTimeDiff = dayjs().diff(dayjs(loginTime), 'hour')
         const {
           NODE_ENV,
           VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS
@@ -111,12 +87,7 @@ export default {
             token ||
             // 验证开发环境是否开启跳过权限
             (NODE_ENV === 'development' && VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on')
-          ) &&
-          (
-            token !== lastLoginToken.value || // 兼容第三方携带token登录的方式
-            loginTimeDiff >= 2 || // 与上一次登录时间间隔大于2小时之后刷新一下用户信息
-            !Object.keys(userInfo.value).length
-          )
+          ) && !Object.keys(userInfo.value).length
         ) {
           await loginStore.getUserInfo({ token })
         }
@@ -182,7 +153,7 @@ export default {
 
       currentThemeName.value = themeFileName
       localStorage.setItem(`${appName}-theme`, themeFileName)
-      loginStore.userInfo.themeFileName = themeFileName
+      loginStore.details.userInfo.themeFileName = themeFileName
       commonStore.themeName = themeFileName
     }
 
@@ -194,64 +165,41 @@ export default {
       })
     }
 
-    async function onOrgSelectChange(val) {
-      localStorage.setItem(`${appName}-headerId`, val)
-      localStorage.removeItem(`${appName}-selectedKey`)
-      localStorage.removeItem(`${appName}-menu`)
-    }
-
     return () => (
       <Layout.Header class={'tg-layout-header'} style={headerTheme.value}>
         <TGLogo style={`font-size: ${themeToken.value.fontSizeLG}px`} />
-        <Space class={'tg-layout-header-content'}>
+        <div class={'tg-layout-header-content'}>
           {
             showMenu.value && (
               <IconFont
                 type={'icon-global-sq'}
-                class={`tg-layout-header-menu-btn menu-btn-fold${collapsed.value ? ' reverse' : ''}`}
+                class={
+                  [
+                    'tg-header-layout-menu-toggle',
+                    'menu-btn-fold',
+                    { 'reverse': collapsed.value }
+                  ]
+                }
                 onClick={commonStore.setCollapsed}
                 title={!collapsed.value ? '折叠菜单' : '展开菜单'}
               />
             )
           }
-          {/*<div class={'tg-layout-header-search'}>*/}
-          {/*  <Input placeholder={'搜功能'} class={'tg-search-input'}>*/}
-          {/*    <IconFont type={'icon-global-search'} slot={'addonAfter'} />*/}
-          {/*  </Input>*/}
-          {/*</div>*/}
+          <div class="tg-header-body">
+            {
+              !!BodyFunctions && <BodyFunctions />
+            }
+          </div>
           <div class={'tg-header-info'}>
-            <div class="tg-header-user-content">
-              <Spin
-                spinning={loading.value}
-                wrapperClassName={`tg-header-user-spin-content${loading.value ? ' blur' : ''}`}
-              >
-                {
-                  configs.header?.params?.show
-                    ? [
-                      <Select
-                        vModel:value={commonStore.headerId}
-                        placeholder={configs.header?.params?.placeholder ?? '请选择'}
-                        class={'tg-header-params'}
-                        suffixIcon={<IconFont type={'icon-global-down'} />}
-                        onChange={onOrgSelectChange}
-                      >
-                        {
-                          commonStore.organListForHeader.list?.map(item => (
-                            <Select.Option
-                              value={item.orgId}
-                              title={item.orgName}
-                            >
-                              {item.orgName || '暂无组织名称'}
-                            </Select.Option>
-                          ))
-                        }
-                      </Select>,
-                      <Divider type={'vertical'} class={'tg-header-divider'} />
-                    ]
-                    : null
-                }
-              </Spin>
-            </div>
+            {
+              !!BodyFunctions && (
+                <Divider
+                  type={'vertical'}
+                  class={'tg-header-divider'}
+                  style={{ background: themeToken.value.colorSplit }}
+                />
+              )
+            }
             <Dropdown
               overlayClassName={'tg-header-user-overlay'}
               arrow={{ pointAtCenter: true }}
@@ -261,6 +209,7 @@ export default {
                   <div class={'tg-header-user-content'}>
                     <Spin
                       spinning={loading.value}
+                      indicator={<LoadingOutlined />}
                       wrapperClassName={`tg-header-user-spin-content${loading.value ? ' blur' : ''}`}
                     >
                       <Avatar
@@ -444,7 +393,7 @@ export default {
               }
             </Space>
           </div>
-        </Space>
+        </div>
       </Layout.Header>
     )
   }

@@ -3,6 +3,7 @@
     display: flex;
     padding-inline: 0;
     height: 50px;
+    line-height: inherit;
 
     .ant-space,
     .ant-space-item {
@@ -16,18 +17,11 @@
       padding: 0 24px;
       flex: auto;
       min-width: 300px;
+      width: 100%;
+      gap: var(--tg-theme-padding);
 
-      & > .ant-space-item {
-        display: inline-flex;
-        align-items: center;
-        justify-content: flex-start;
-      }
-
-      & > .ant-space-item:last-child {
-        margin-left: auto;
-      }
-
-      .tg-layout-header-menu-btn {
+      .tg-header-layout-menu-toggle {
+        //flex: none;
         border: none;
         transition: all 0.2s var(--tg-theme-motion-ease-in-out);
         opacity: 0.6;
@@ -46,131 +40,57 @@
         }
       }
 
-      .tg-layout-header-search {
-        width: 300px;
+      .tg-header-body {
+        flex: auto;
         display: flex;
         align-items: center;
-        gap: 12px;
-
-        .tg-search-input {
-          .ant-input-group {
-            transition: all .2s var(--tg-theme-motion-ease-in-out);
-
-            &:hover {
-              //border-radius: $border-radius-base;
-              box-shadow: 0 0 0 2px rgb(#ffffff, 20%);
-            }
-
-            .ant-input {
-              //background: $primary-color-hover;
-              height: 29px;
-              line-height: 29px;
-              color: #ffffff;
-              border: none;
-
-              &:focus {
-                box-shadow: unset;
-              }
-
-              &::placeholder {
-                //color: $input-placeholder-color-light;
-              }
-            }
-
-            .ant-input-group-addon {
-              border: none;
-              //background: $primary-color-hover;
-
-              .anticon {
-                //color: $white;
-                font-size: 1.2em;
-                opacity: 0.6;
-                transition: opacity .2s var(--tg-theme-motion-ease-in-out);
-                cursor: pointer;
-              }
-
-              &:hover {
-                .anticon {
-                  opacity: 1;
-                }
-              }
-            }
-          }
-        }
       }
 
       .tg-header-info {
+        flex: none;
         height: 100%;
-        margin-left: auto;
         display: flex;
         justify-content: center;
         align-items: center;
 
-        .tg-header-params {
-          .ant-select-selector {
-            background: none;
-            border: none;
-            font-size: var(--tg-theme-font-size-lg);
-            font-weight: 400;
-            line-height: var(--tg-theme-font-size);
-            color: var(--tg-theme-color-white) !important;
-
-            .ant-select-selection-placeholder {
-              color: var(--tg-theme-color-white) !important;
-            }
-          }
-
-          &.ant-select-open {
-            .ant-select-selection-item {
-              color: var(--tg-theme-color-white) !important;
-            }
-          }
-
-          .ant-select-arrow {
-            font-size: var(--tg-theme-font-size);
-            color: var(--tg-theme-color-white) !important;
-          }
-
-        }
-
         .tg-header-user-content {
-          .tg-header-user-spin-content.blur .ant-spin-container {
-            filter: blur(2px);
-          }
-
-          .ant-spin-container {
-            display: flex;
-            align-items: center;
-            transition: all .2s var(--tg-theme-motion-ease-in-out);
-
-            &.ant-spin-blur::after {
-              opacity: 0;
-              pointer-events: auto;
+          .tg-header-user-spin-content {
+            .ant-spin {
+              color: var(--tg-theme-color-bg-container);
             }
 
-            .tg-user-info {
-              padding-left: 12px;
-              padding-right: 16px;
+            &.blur .ant-spin-container {
+              filter: blur(2px);
+            }
 
-              .tg-header-username {
-                font-weight: 600;
-                line-height: calc(var(--tg-theme-font-size) + 2px);
+            .ant-spin-container {
+              display: flex;
+              align-items: center;
+              transition: all .2s var(--tg-theme-motion-ease-in-out);
+
+              &.ant-spin-blur::after {
+                opacity: 0;
+                pointer-events: auto;
               }
 
-              .tg-header-tel {
-                font-size: var(--tg-theme-font-size-sm);
-                font-weight: 400;
-                line-height: var(--tg-theme-font-size);
-                color: var(--tg-theme-color-header-text);
+              .tg-user-info {
+                padding-left: 12px;
+                padding-right: 16px;
+
+                .tg-header-username {
+                  font-weight: 600;
+                  line-height: calc(var(--tg-theme-font-size) + 2px);
+                }
+
+                .tg-header-tel {
+                  font-size: var(--tg-theme-font-size-sm);
+                  font-weight: 400;
+                  line-height: var(--tg-theme-font-size);
+                  color: var(--tg-theme-color-header-text);
+                }
               }
             }
           }
-        }
-
-        .tg-header-divider {
-          height: 24px;
-          opacity: 0.5;
-          margin: var(--tg-theme-margin);
         }
 
         .tg-header-functions {
@@ -207,6 +127,12 @@
           }
         }
       }
+
+      .tg-header-divider {
+        height: 24px;
+        opacity: 0.5;
+        margin: var(--tg-theme-padding);
+      }
     }
 
     // 适配 1366*768 屏幕
@@ -216,19 +142,6 @@
       .tg-layout-header-content {
         padding: 0 16px;
         min-width: 200px;
-
-        .tg-layout-header-search {
-          width: 200px;
-
-          .tg-search-input {
-            .ant-input-group {
-              .ant-input {
-                height: 26px;
-                line-height: 26px;
-              }
-            }
-          }
-        }
 
         .tg-header-info {
           .tg-user-info {
@@ -254,26 +167,6 @@
       .tg-layout-header-content {
         padding: 0 32px;
 
-        .tg-layout-header-search {
-          width: 360px;
-
-          .tg-search-input {
-            .ant-input-group {
-              .ant-input {
-                height: 32px;
-                line-height: 32px;
-                font-size: var(--tg-theme-font-size-lg);
-              }
-
-              .ant-input-group-addon {
-                .anticon {
-                  font-size: 1.4em;
-                }
-              }
-            }
-          }
-        }
-
         .tg-header-info {
           .tg-user-info {
             padding-left: 16px;
@@ -293,84 +186,6 @@
               width: 1.6em;
               height: 1.6em;
             }
-          }
-        }
-      }
-    }
-  }
-
-  .tg-header-user-overlay {
-    padding: 0;
-    top: 52px !important;
-  }
-
-  // 对于弹出层也进行适配
-  @media screen and (max-width: 1366px) and (max-height: 768px) {
-    .tg-header-user-overlay,
-    .tg-header-news-overlay {
-      top: 47px !important;
-    }
-  }
-
-  @media screen and (min-width: 1920px) and (min-height: 1080px) {
-    .tg-header-user-overlay,
-    .tg-header-news-overlay {
-      top: 58px !important;
-    }
-  }
-
-  .tg-header-news-overlay {
-    padding: 0;
-    top: 52px !important;
-
-    .ant-popover-inner-content {
-      padding: 0;
-
-      .tg-header-news {
-        width: 240px;
-        //background: $white;
-        border-right: 0;
-
-        //.ant-tabs-nav-container {
-        //  line-height: 42px;
-        //
-        //  .ant-badge {
-        //    // font-size: 14px; // 全局默认字号为14号
-        //    font-weight: 700;
-        //    color: $primary-color-active;
-        //  }
-        //}
-
-        //.ant-tabs-ink-bar {
-        //  height: 1px;
-        //}
-
-        .ant-menu-item {
-          padding: 12px 16px;
-          margin: 0;
-          height: auto;
-          line-height: initial;
-          overflow: hidden;
-          white-space: break-spaces;
-          transition: background .2s var(--tg-theme-motion-ease-in-out);
-          //border-bottom: 1px solid $box-shadow-base;
-
-          &:hover {
-            color: inherit;
-            //background: $primary-color-light-hover;
-          }
-
-          div:first-child {
-            // font-size: 14px; // 全局默认字号为14号
-            font-weight: 400;
-            //color: $text-color;
-            padding-bottom: 8px;
-          }
-
-          div:last-child {
-            // font-size: 14px; // 全局默认字号为14号
-            font-weight: 400;
-            //color: $text-color-secondary;
           }
         }
       }
