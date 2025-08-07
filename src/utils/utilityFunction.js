@@ -45,7 +45,7 @@ export function getBase64(file) {
  * @returns {string}
  */
 export function firstLetterToUppercase(str) {
-  return str.replace(/^\S/, s => s.toUpperCase())
+  return str?.replace(/^\S/, s => s.toUpperCase())
 }
 
 /**
@@ -54,7 +54,7 @@ export function firstLetterToUppercase(str) {
  * @returns {string}
  */
 export function firstLetterToLowercase(str) {
-  return str.replace(/^\S/, s => s.toLowerCase())
+  return str?.replace(/^\S/, s => s.toLowerCase())
 }
 
 /**
