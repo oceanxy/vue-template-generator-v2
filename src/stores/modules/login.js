@@ -19,12 +19,10 @@ export default createStore({
       lastVerifyTime: null,
       // 加载用户信息的状态
       loading: false,
-      // 最后一次登录时间，用来判断用户信息的新旧程度，实现前端主动在一个合适的时间重新验证 token 有效性
-      lastLoginTime: null,
-      // 最后一次登录 token，用来比较是否刷新用户信息
-      lastLoginToken: '',
-      // 用户信息
-      userInfo: {},
+      loadingMessage: {
+        title: '',
+        content: ''
+      },
       // 验证码
       codeKey: '',
       // 用于保存当前页面内弹窗可能用到的临时数据
