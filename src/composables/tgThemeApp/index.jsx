@@ -1,12 +1,14 @@
 import useStore from '@/composables/tgStore'
 import themeFiles from '@/assets/styles/themes'
 import useThemeVars from '@/composables/themeVars'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onBeforeMount, onMounted, onUnmounted, ref, Suspense, watch } from 'vue'
 import { App, ConfigProvider, Empty, StyleProvider, theme } from 'ant-design-vue'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
-import { useRoute } from 'vue-router'
-import { range } from 'lodash'
+import { RouterView } from 'vue-router'
+import TGGlobalSpinner from '@/components/TGGlobalSpinner'
+import { app } from '@/main'
+import GlobalComponents from '@app/plugins/globalComponents'
 
 /**
  * 仅供 App 组件使用的主题配置，其他地方请使用 useThemeVars
@@ -15,12 +17,13 @@ import { range } from 'lodash'
 export default function useThemeApp() {
   const appName = getFirstLetterOfEachWordOfAppName()
   const commonStore = useStore('/common')
+  const loginStore = useStore('/login')
   const { cssVars, updateCssVars } = useThemeVars()
   const localTheme = localStorage.getItem(`${appName}-theme`)
   const customTheme = ref(themeFiles[localTheme || commonStore.themeName])
   const store = useStore('/login')
-  const isTokenValid = computed(() => store.isTokenValid)
-  const route = useRoute()
+  const verifyStatus = computed(() => store.verifyStatus)
+  const message = computed(() => loginStore.loadingMessage)
 
   // 影响布局和主题的变量变动后，更新CSS变量
   watch(
@@ -36,6 +39,11 @@ export default function useThemeApp() {
       await updateCssVars(val[0])
     }
   )
+
+  onBeforeMount(() => {
+    // 注册插件
+    app.use(GlobalComponents)
+  })
 
   onMounted(() => window.addEventListener('resize', handleResize))
   onUnmounted(() => window.removeEventListener('resize', handleResize))
@@ -75,15 +83,17 @@ export default function useThemeApp() {
             style={cssVars.value}
             data-doc-theme={commonStore.algorithm === 'darkAlgorithm' ? 'dark' : 'light'}
           >
-            {
-              !isTokenValid.value && route.meta.requiresAuth !== false
-                ? (
-                  <div id="loading">
-                    <div>{range(5).map(() => <span></span>)}</div>
-                  </div>
-                )
-                : slots.default()
-            }
+            <Suspense>
+              {{
+                default: () => (<>{
+                  verifyStatus.value === 'pending'
+                    ? <TGGlobalSpinner message={message.value.title} content={message.value.content} />
+                    : <RouterView />
+                }</>),
+                fallback: () => <TGGlobalSpinner message={message.value.title} content={message.value.content} />
+              }}
+            </Suspense>
+            <div id="tg-global-modals" />
           </App>
         </StyleProvider>
       </ConfigProvider>
