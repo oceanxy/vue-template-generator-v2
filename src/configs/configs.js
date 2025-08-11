@@ -56,8 +56,6 @@ module.exports = {
   defaultRouteName: null,
   // 根路由（"/"）的访问权限。默认true，代表根路由需要权限才能访问。注意当后端返回的菜单数据中包含了根路由时，根路由的访问权限以后端返回的为准。
   homePermissions: true,
-  // VUE 的 KeepAlive 组件最大缓存数量，当缓存的数量超过该值时，会优先清空最久未被激活的页面，默认值：3
-  keepAliveMaxCount: 3,
   // iconfont在线图标链接，请从 https://www.iconfont.cn/ 获取。
   // 为空时将按照优先级从大到小自动调用本地文件：src/apps/{appName}/assets/iconfont.js 或 src/assets/iconfont.js
   iconFontSymbol: '',
@@ -72,7 +70,7 @@ module.exports = {
   enableLoginVerification: true,
   // 是否隐藏面包屑
   hideBreadCrumb: false,
-  // 启用标签页
+  // 启用标签页（未实现）
   enableTabPage: false,
   // 面包屑分隔符，如：首页 / 首页
   breadCrumbSeparator: '/',
@@ -92,6 +90,12 @@ module.exports = {
    * - background 背景颜色
    */
   menuStyle: 'bordered',
+  // 生产模式下是否抽离网关地址（接口地址）成单独的配置文件，位于打包后的根目录（通常是 dist/）下的 env.production.json 文件。
+  configurableGateways: false,
+  // 全局消息最大显示个数
+  maxMessageCount: 1,
+  // 是否开启水印 在需要加水印APP项目的app.jsx文件混淆全局的watermark
+  isWatermark: false,
   // 页面筛选树配置（如果存在筛选树）
   siderTree: {
     // 是否显示筛选树折叠按钮，当不显示该按钮时，可以通过 store.state.common.treeCollapsed 自定义展开/折叠逻辑。
@@ -105,16 +109,6 @@ module.exports = {
   },
   // HEADER 相关设置
   header: {
-    // HTTP Request HEADER 内传递的额外参数配置
-    params: {
-      // 是否需要在 HTTP Request HEADER 内携带额外参数。启用时会自动在 TGHeader 组件内注入一个下拉选择列表，作为选取额外参数的入口。
-      // 注意：本框架会始终在 HTTP Request HEADER 中携带 token 字段，不受此处配置影响。
-      show: false,
-      // 下拉列表的占位符提示语
-      placeholder: '请选择',
-      // 需要在 HTTP Request HEADER 内携带额外参数的名称，其值为下拉列表选取的值
-      fieldName: ''
-    },
     // TGHeader 组件内右上角功能区的按钮配置
     buttons: {
       // 注销
@@ -174,13 +168,5 @@ module.exports = {
    * 加载第三方文件集合
    * @type LoadFiles[]
    */
-  loadFiles: [],
-  // 生产模式下是否抽离网关地址（接口地址）成单独的配置文件，位于打包后的根目录（通常是 dist/）下的 env.production.json 文件。
-  configurableGateways: false,
-  // 全局消息最大显示个数
-  maxMessageCount: 1,
-  // 是开启水印 在需要加水印APP项目的app.jsx文件混淆全局的watermark
-  isWatermark: false,
-  // 账号密码加密key
-  publicKey: ''
+  loadFiles: []
 }
