@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, onBeforeMount, onUnmounted, ref } from 'vue'
+import { computed, getCurrentInstance, onUnmounted, ref } from 'vue'
 import { Avatar, Button, Checkbox, Divider, Dropdown, Layout, Menu, Popover, Radio, RadioGroup, Slider, Space, Spin, Switch, theme } from 'ant-design-vue'
 import TGLogo from '@/components/TGLogo'
 import { useRouter } from '@/router'
@@ -61,38 +61,9 @@ export default {
     const GlobalFunctions = proxy.globalFunctions
     const UserFunctions = proxy.userFunctions
 
-    onBeforeMount(async () => {
-      // await verifyUserInfo()
-    })
-
     onUnmounted(() => {
       instance?.unmount?.()
     })
-
-    /**
-     * 预防页面刷新丢失用户信息
-     * @returns {Promise<void>}
-     */
-    async function verifyUserInfo() {
-      if (!loading.value) {
-        const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
-        const {
-          NODE_ENV,
-          VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS
-        } = process.env.NODE_ENV !== 'production'
-
-        if (
-          (
-            // 验证token是否存在
-            token ||
-            // 验证开发环境是否开启跳过权限
-            (NODE_ENV === 'development' && VUE_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on')
-          ) && !Object.keys(userInfo.value).length
-        ) {
-          await loginStore.getUserInfo({ token })
-        }
-      }
-    }
 
     /**
      * 注销
