@@ -12,12 +12,10 @@ import { getFirstLetterOfEachWordOfAppName } from '@/utils/utilityFunction'
 import getBaseRoutes from '@/router/routes'
 import { message } from 'ant-design-vue'
 import { getEnvVar } from '@/utils/env'
-import dayjs from 'dayjs'
 import useStore from '@/composables/tgStore'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 let abortController = createAbortController()
-let isAppStarted = false
 
 __TG_APP_ROUTES__.default?.forEach(route => {
   if (route.path.startsWith('{appName}')) {
@@ -178,15 +176,8 @@ async function resetRouter() {
 
 const router = createRouter()
 
-router.afterEach((to, from) => {
-  // 应用启动，首次加载
-  if (!isAppStarted) {
-    isAppStarted = true
-  }
-})
-
 router.beforeEach(async (to, from) => {
-  // vue路由跳转时取消上一个页面的http请求
+  // vue路由跳转时取消上一个页面未完成的HTTP请求
   abortController.abort()
   abortController = createAbortController()
 
@@ -240,13 +231,7 @@ router.beforeEach(async (to, from) => {
         ])
 
         if (!res?.status && !res?.data) {
-          return {
-            name: 'Login',
-            query: {
-              redirect: to.path,
-              ...to.query
-            }
-          }
+          throw new Error(res.message)
         }
       } catch (e) {
         console.error(`身份验证失败：${e.message}`)
@@ -254,18 +239,17 @@ router.beforeEach(async (to, from) => {
           ? '网络连接超时，请检查网络设置'
           : '身份验证失败，请重新登录'
         )
-      }
-    }
 
-    let isLoginInvalid = false
+        await loginStore.clear()
 
-    if (!isAppStarted) {
-      const _lastLoginTime = localStorage.getItem(`${appName}-lastLoginTime`) || loginStore.lastLoginTime
-
-      isLoginInvalid = !_lastLoginTime || dayjs().diff(dayjs(_lastLoginTime), 'hour') >= 2
-
-      if (isLoginInvalid) {
-        loginStore.clear()
+        return {
+          name: 'Login',
+          query: {
+            redirect: to.path,
+            ...to.query,
+            token: undefined // 清除地址栏上的token，避免跳转到登录页后继续去验证token，而是直接处理无效token的情况。
+          }
+        }
       }
     }
 
@@ -274,9 +258,7 @@ router.beforeEach(async (to, from) => {
       // 如果地址栏带了 token，且与本地存储的 token 不一致，强制重定向到登录页鉴权
       (token && token !== localToken) ||
       // 处理某些第三方不通过地址栏传递 token，而通过 cookie 的方式传递 token 的情况
-      (cookieToken && cookieToken !== localToken) ||
-      // 判断是否为第一次进入应用，如果为第一次进入应用，则判断是否已超过2小时，如果超过2小时，则强制重定向到登录页鉴权
-      !isAppStarted && isLoginInvalid
+      (cookieToken && cookieToken !== localToken)
     ) {
       return {
         ...to,

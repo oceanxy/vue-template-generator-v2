@@ -22,14 +22,6 @@ export default function getBaseRoutes(routes) {
   }) ?? []
 
   if (Array.isArray(routes) && routes.length) {
-    // 查询子项目路由中是否存在静态路由，如果有就把静态路由插入到 rootRoutes 中
-    // __TG_APP_ROUTES__.staticRoutes?.forEach(staticRoute => {
-    // 筛除重复的路由
-    // if (routes.findIndex(route => route.name === staticRoute.name) === -1) {
-    //   routes.unshift(staticRoute)
-    // }
-    // })
-
     // 查找根路由
     const homeIndex = routes.findIndex(route => route.path === '/')
 
@@ -55,12 +47,11 @@ export default function getBaseRoutes(routes) {
         {
           path: '/',
           name: 'Home',
-          component: () => import('@/layouts/TGBackendSystem'),
-          // component: resolve => require.ensure(
-          //   [],
-          //   () => resolve(require('@/layouts/' + _config.layout)),
-          //   'chunk-home'
-          // ),
+          component: () => import(
+            /* webpackChunkName: "core-layout" */
+            /* webpackPrefetch: true */
+            '@/layouts/TGBackendSystem'
+            ),
           redirect: {
             name: configs.dynamicRouting
               ? localStorage.getItem(`${appName}-defaultRoute`) || configs.defaultRouteName
