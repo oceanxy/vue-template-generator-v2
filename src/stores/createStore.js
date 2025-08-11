@@ -933,6 +933,7 @@ export function createStore({
         return res
       },
       ...module.actions
-    }
+    },
+    persist: module.persist
   })
 }

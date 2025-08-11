@@ -12,12 +12,18 @@ import useStore from '@/composables/tgStore'
 export default createStore({
   moduleName: 'login',
   module: {
+    persist: {
+      enabled: true,
+      key: `${appName}-login-state`,
+      storage: localStorage,
+      pick: ['currentItem', 'details']
+    },
     state: {
       // 如果要在APP入口中验证TOKEN有效性，请配合`src/composables/tgAuthentication`使用
       isTokenValid: false,
       verifyStatus: 'idle', // 'pending'/'success'/'failed'
       lastVerifyTime: null,
-      // 加载用户信息的状态
+      // 登录页面加载数据的状态
       loading: false,
       loadingMessage: {
         title: '',
