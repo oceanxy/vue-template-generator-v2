@@ -1,5 +1,6 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import TGColorPicker from '@/components/TGColorPicker'
+import { Button, Tooltip } from 'ant-design-vue'
 import './index.scss'
 
 const parseGradientString = (gradientStr) => {
@@ -53,6 +54,8 @@ export default {
   },
   emits: ['change', 'update:value'],
   setup(props, { attrs, emit }) {
+    const angle = ref(90)
+    const isAngleDragging = ref(false)
     const colorStops = ref([])
     const activeIndex = ref(0)
     const isDragging = ref(false)
@@ -60,7 +63,39 @@ export default {
     const lastClickedWasTag = ref(false)
     const isTagMoved = ref(false)
     const open = ref(false)
+    const colorPaletteOpen = ref(false)
     const tagIndexLastClicked = ref(-1)
+
+    const handleAngleMouseDown = (e) => {
+      e.preventDefault()
+      isAngleDragging.value = true
+      document.addEventListener('mousemove', handleAngleMouseMove)
+      document.addEventListener('mouseup', handleAngleMouseUp)
+    }
+
+    const handleAngleMouseMove = (e) => {
+      if (!isAngleDragging.value) return
+
+      const angleSelector = document.querySelector('.angle-selector')
+      const rect = angleSelector.getBoundingClientRect()
+      const centerX = rect.left + rect.width / 2
+      const centerY = rect.top + rect.height / 2
+
+      const deltaX = e.clientX - centerX
+      const deltaY = e.clientY - centerY
+
+      let newAngle = (Math.atan2(deltaY, deltaX) * 180) / Math.PI + 90 // +90：角度补偿，数学上的0度位置与浏览器的0度位置不同
+      if (newAngle < 0) newAngle += 360
+
+      angle.value = newAngle
+      emitUpdate()
+    }
+
+    const handleAngleMouseUp = () => {
+      isAngleDragging.value = false
+      document.removeEventListener('mousemove', handleAngleMouseMove)
+      document.removeEventListener('mouseup', handleAngleMouseUp)
+    }
 
     // 初始化色标
     const initColorStops = () => {
@@ -123,7 +158,10 @@ export default {
         .map(stop => `${stop.color || 'transparent'} ${stop.offset}%`)
         .join(', ')
 
-      return `linear-gradient(to right, ${stops})`
+      return [
+        `linear-gradient(to right, ${stops})`, // 渐变条不设置角度（为了便于选取颜色）
+        `linear-gradient(${angle.value}deg, ${stops})` // 角度盘按照正常逻辑渲染
+      ]
     })
 
     // 开始拖动色标
@@ -139,7 +177,7 @@ export default {
       document.addEventListener('mouseup', handleGlobalEndDrag)
     }
 
-    // 修改色标的点击处理
+    // 色标的点击处理
     const handleTagClick = (index, e) => {
       if (isDragging.value) return
 
@@ -150,6 +188,9 @@ export default {
       if (tagIndexLastClicked.value === index || !open.value) {
         open.value = !open.value
       }
+
+      // 处理色盘的显示
+      colorPaletteOpen.value = false
 
       // 添加延迟重置，确保渐变条双击能捕获
       setTimeout(() => {
@@ -276,7 +317,7 @@ export default {
       let value
 
       if (props.gradient) {
-        value = gradientBarStyle.value
+        value = gradientBarStyle.value[1]
       } else {
         value = colorStops.value[0]?.color || 'transparent'
       }
@@ -299,33 +340,83 @@ export default {
                   defaultValue={props.defaultValue}
                   onChange={updateColor}
                 />
-                <div
-                  ref={gradientBarRef} // 绑定DOM引用
-                  class="tg-designer-property-comp-gradient-bar"
-                  style={{ '--background-image': gradientBarStyle.value }}
-                  onClick={addColorStop}
-                >
-                  {
-                    colorStops.value.map((stop, index) => (
-                      <div
-                        key={index}
-                        class={[
-                          'tg-designer-property-comp-gradient-color-tag',
-                          { active: index === activeIndex.value }
-                        ]}
-                        style={{ left: `${stop.offset}%` }}
-                        onClick={e => handleTagClick(index, e)}
-                        onDblclick={(e) => removeColorStop(index, e)}
-                        onMousedown={(e) => handleTagMouseDown(index, e)}
-                      >
+                <div class={'tg-designer-property-comp-gradient-wrapper'}>
+                  <div
+                    ref={gradientBarRef} // 绑定DOM引用
+                    class="tg-designer-property-comp-gradient-bar"
+                    style={{ '--background-image': gradientBarStyle.value[0] }}
+                    onClick={addColorStop}
+                  >
+                    {
+                      colorStops.value.map((stop, index) => (
                         <div
-                          class={'tag-indicator'}
-                          style={{ backgroundColor: stop.color }}
-                          data-offset={`${stop.offset}%`}
-                        />
-                      </div>
-                    ))
-                  }
+                          key={index}
+                          class={[
+                            'tg-designer-property-comp-gradient-color-tag',
+                            { active: index === activeIndex.value }
+                          ]}
+                          style={{ left: `${stop.offset}%` }}
+                          onClick={e => handleTagClick(index, e)}
+                          onDblclick={(e) => removeColorStop(index, e)}
+                          onMousedown={(e) => handleTagMouseDown(index, e)}
+                        >
+                          <div
+                            class={'tag-indicator'}
+                            style={{ backgroundColor: stop.color }}
+                            data-offset={`${stop.offset}%`}
+                          />
+                        </div>
+                      ))
+                    }
+                  </div>
+                  <Tooltip
+                    vModel:open={colorPaletteOpen.value}
+                    color={'#ffffff'}
+                    trigger="click"
+                    placement={'bottomRight'}
+                  >
+                    {{
+                      default: () => (
+                        <div
+                          class="tg-designer-property-comp-gradient-angle-selector-trigger"
+                          data-angle={`${angle.value}°`}
+                          title={'选择渐变角度'}
+                        >
+                          <Button
+                            type={'text'}
+                            icon={
+                              <div
+                                class={'gradient-angle-selector-trigger-icon'}
+                                style={{ transform: `rotate(${angle.value}deg)` }}
+                              >
+                                <div class="indicator-line" />
+                              </div>
+                            }
+                          />
+                        </div>
+                      ),
+                      title: () => (
+                        <div class="tg-designer-property-comp-gradient-angle-selector">
+                          <div class="angle-selector-label">角度：{(+angle.value).toFixed(0)}°</div>
+                          <div class="angle-selector-foundation">
+                            <div
+                              class="angle-selector"
+                              onMousedown={handleAngleMouseDown}
+                              style={{ 'background-image': gradientBarStyle.value[1] }}
+                            >
+                              <div
+                                class="angle-indicator"
+                                style={{ transform: `rotate(${angle.value}deg)` }}
+                              >
+                                <div class="angle-indicator-line" />
+                                <div class="angle-handle" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    }}
+                  </Tooltip>
                 </div>
               </div>
             )
