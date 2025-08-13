@@ -133,9 +133,11 @@ export default function getService(conf, router) {
           }
 
           showMessage({
-            message: '登录失效，请重新登录!',
+            message: '登录失效，请重新登录！',
             type: 'error'
           })
+
+          await router.replace({ name: 'Login' })
         } else if (/*无权限*/+res.code === 40006) {
           await router.replace({ name: 'NoAccess' })
         }
