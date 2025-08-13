@@ -741,10 +741,12 @@ export default function useTGTable({
 
       if (TABLE_HEADER_COL && TABLE_BODY_COL) {
         Array.prototype.forEach.call(TABLE_BODY_COL.children, (col, index) => {
-          setTimeout(() => {
-            TABLE_HEADER_COL.children[index].style.width
-              = TABLE_BODY_COL.children[index].getBoundingClientRect().width + 'px'
-          })
+          if (TABLE_HEADER_COL.children[index]) {
+            setTimeout(() => {
+              TABLE_HEADER_COL.children[index].style.width
+                = TABLE_BODY_COL.children[index].getBoundingClientRect().width + 'px'
+            })
+          }
         })
       }
     }
