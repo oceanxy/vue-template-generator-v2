@@ -100,5 +100,5 @@ export default function useThemeApp() {
     )
   }
 
-  return { ThemeApp }
+  return { ThemeApp, app }
 }
