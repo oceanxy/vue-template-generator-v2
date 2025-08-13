@@ -19,6 +19,8 @@ export default {
   },
   setup(props, { emit }) {
     const isUserSwitching = ref(false)
+    // 首次读取值时，根据值判断模式。（首次的值为回填值）
+    const isModeInitializationCompleted = ref(false)
 
     const state = ref({
       mode: 'image',
@@ -33,15 +35,19 @@ export default {
           return
         }
 
-        if (
-          !val ||
-          val.startsWith('url(') ||
-          val.startsWith('http://') ||
-          val.startsWith('https://')
-        ) {
-          state.value.mode = 'image'
-        } else {
-          state.value.mode = 'color'
+        if (!isModeInitializationCompleted.value) {
+          if (
+            !val ||
+            val.startsWith('url(') ||
+            val.startsWith('http://') ||
+            val.startsWith('https://')
+          ) {
+            state.value.mode = 'image'
+          } else {
+            state.value.mode = 'color'
+          }
+
+          isModeInitializationCompleted.value = true
         }
 
         state.value.bgi = val
