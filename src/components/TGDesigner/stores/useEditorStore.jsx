@@ -47,6 +47,23 @@ export const useEditorStore = defineStore('editor', {
   }),
   actions: {
     /**
+     * 注册物料组件
+     * @param materials {Array} - 物料组件
+     * @param [category=TG_MATERIAL_CATEGORY.TEMPLATE] {TG_MATERIAL_CATEGORY} - 物料类型。默认注册到模板组件
+     */
+    registerMaterialComponents(materials, category = TG_MATERIAL_CATEGORY.TEMPLATE) {
+      if (Array.isArray(materials)) {
+        this.$patch({
+          components: {
+            [category]: [
+              ...this.components[category],
+              ...materials
+            ]
+          }
+        })
+      }
+    },
+    /**
      * 创建schema
      * @param componentMeta {TGComponentMeta} - 用来复制props的组件元数据
      * @param parentId {string} - 父组件ID
