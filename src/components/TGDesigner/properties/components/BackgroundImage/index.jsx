@@ -2,6 +2,7 @@ import { ref, watch } from 'vue'
 import Upload from '../Upload'
 import ColorPicker from '../ColorPicker'
 import { Button } from 'ant-design-vue'
+import { debounce } from 'lodash'
 import './index.scss'
 
 export default {
@@ -59,7 +60,7 @@ export default {
       isUserSwitching.value = true
 
       if (state.value.mode === 'image') {
-        state.value.bgi = 'linear-gradient(to right, #ffffff, #000000)'
+        state.value.bgi = 'linear-gradient(90deg, #ffffff, #000000)'
         state.value.mode = 'color'
       } else {
         state.value.bgi = ''
@@ -70,10 +71,51 @@ export default {
       emit('update:value', state.value.bgi)
     }
 
-    const handleChange = val => {
+    /**
+     * 检查给定的URL是否是有效的图片地址
+     * @param {string} url - 待检测的URL字符串
+     * @returns {boolean} - 如果是有效图片地址返回true，否则返回false
+     */
+    function isValidImageUrl(url) {
+      try {
+        const parsed = new URL(url)
+
+        // 检查协议
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          return false
+        }
+
+        // 检查域名是否有效（至少包含两个部分）
+        const domainParts = parsed.hostname.split('.')
+        if (domainParts.length < 2 || domainParts.some(part => !part)) {
+          return false
+        }
+
+        // 检查路径是否以图片扩展名结尾
+        const path = parsed.pathname
+        const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp']
+        const lastSegment = path.split('/').pop() || ''
+        const extension = lastSegment.split('.').pop() || ''
+
+        return lastSegment.includes('.') &&
+          imageExtensions.includes(extension.toLowerCase())
+      } catch (e) {
+        return false // URL解析失败
+      }
+    }
+
+    const debouncedHandleChange = debounce((val) => {
       state.value.bgi = val
-      emit('change', val)
-      emit('update:value', val)
+
+      // 当为图片模式时，检测值是否为合法图片值。非图片模式直接emit。
+      if (!val || state.value.mode !== 'image' || isValidImageUrl(val)) {
+        emit('change', val)
+        emit('update:value', val)
+      }
+    }, 300)
+
+    const handleChange = val => {
+      debouncedHandleChange(val)
     }
 
     return () => (
