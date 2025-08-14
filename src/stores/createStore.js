@@ -238,7 +238,7 @@ export function createStore({
        * @param {string} [apiName] - 请求接口的名称，默认为 `get${router.currentRoute.value.name}`。
        * @param {string} [stateName='dataSource'] - 用以保存请求数据的字段名（store.state 中的字段名），默认为 dataSource。
        * @param {string} [storeName] - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
-       * @param {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象，参数为`store.state`。
+       * @param {((state: Object) => Object) | Object} [paramsForGetList={}] - 接口请求时的参数，默认为空对象。当为函数时，函数入参为`store.state`。
        * @param {boolean} [isMergeParam] - 请求接口时，是否将 paramsForGetList 参数与 store.state.search 合并，
        * 默认 false，不合并，但是如果 paramsForGetList 参数的值不是对象或是一个空对象，则强制使用`store.state.search`的值作为参数。
        * 注意，当值为true时，不会改变`store.state.search`的值，仅仅是在调用接口处传递给接口。如果有同名参数，paramsForGetList 的优先级更高。
@@ -640,6 +640,29 @@ export function createStore({
         }
       },
       /**
+       * 处理需要从`search`传递到`form`的值。以`store.state[location].form`内定义的字段为准
+       * @private
+       */
+      _initLocationParameter(injectSearchParams) {
+        this.$patch({
+          [location]: {
+            ['form' in this.$state[location] ? 'form' : 'search']: injectSearchParams.reduce((acc, cur) => {
+              if (typeof cur === 'function') {
+                const patch = cur(this.search)
+
+                Object.entries(patch).forEach(([key, value]) => {
+                  acc[key] = value
+                })
+              } else {
+                acc[cur] = this.search[cur]
+              }
+
+              return acc
+            }, {})
+          }
+        })
+      },
+      /**
        * 设置模态框的显示状态
        * @param [beforeOpen] {() => void} - 打开弹窗前的逻辑。
        * @param [modalStatusFieldName='showModalForEditing'] {string} - 模态框的显示状态字段名，默认为 showModalForEditing。
@@ -692,7 +715,7 @@ export function createStore({
 
           const rowKey = this[location]?.rowKey || this.rowKey
 
-          // 无感化处理`form`的唯一标识符，用于弹窗的编辑等功能
+          // 无感化处理`form`的唯一标识符（由`store.state.rowKey`指定），用于弹窗的编辑等功能
           if (rowKey in this.currentItem && 'form' in (this.$state[location] || {})) {
             this.$state[location].form[rowKey] = this.currentItem[rowKey]
           } else {
@@ -702,30 +725,14 @@ export function createStore({
           }
         }
 
-        // 处理需要从`search`传递到`form`的值
+        // 处理需要从`search`传递到`form`的值。以`store.state[location].form`内定义的字段为准
         if (
           modalStatusValue &&
           Array.isArray(injectSearchParams) &&
           injectSearchParams.length &&
           location
         ) {
-          this.$patch({
-            [location]: {
-              ['form' in this.$state[location] ? 'form' : 'search']: injectSearchParams.reduce((acc, cur) => {
-                if (typeof cur === 'function') {
-                  const patch = cur(this.search)
-
-                  Object.entries(patch).forEach(([key, value]) => {
-                    acc[key] = value
-                  })
-                } else {
-                  acc[cur] = this.search[cur]
-                }
-
-                return acc
-              }, {})
-            }
-          })
+          this._initLocationParameter(injectSearchParams)
         }
 
         if (typeof beforeOpen === 'function') beforeOpen()
