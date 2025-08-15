@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue'
-import Upload from '../Upload'
+import Image from '../Image'
 import ColorPicker from '../ColorPicker'
 import { Button } from 'ant-design-vue'
 import { debounce } from 'lodash'
@@ -124,13 +124,13 @@ export default {
           {
             state.value.mode === 'image'
               ? (
-                <Upload
+                <Image
                   value={state.value.bgi}
                   onChange={handleChange}
                   {...props}
                 >
                   {{ default: () => <IconFont type={'icon-designer-property-upload'} /> }}
-                </Upload>
+                </Image>
               )
               : (
                 <ColorPicker

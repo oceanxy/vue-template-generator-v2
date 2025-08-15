@@ -15,9 +15,20 @@ export default {
     tgStore: {
       required: true,
       type: Object
-    }
+    },
+    // 自定义属性面板上传图片组件
+    propPanelCustomUpload: {
+      /**
+       * 属性面板上传图片专用的上传组件
+       * @type {import('vue').PropType<import('vue').Component>}
+       */
+      type: Object,
+      default: () => null
+    },
+    ...Plugins.props
   },
   setup(props) {
+    provide('propPanelCustomUpload', props.propPanelCustomUpload)
     provide('tgStore', props.tgStore)
 
     let CurrentPluginComponent = ref(<div>加载中...</div>)

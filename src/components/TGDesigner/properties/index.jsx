@@ -22,7 +22,7 @@ import { markRaw } from 'vue'
 import { Checkbox, CheckboxGroup, Input, InputNumber, Radio, RadioGroup, Segmented, Select, Switch } from 'ant-design-vue'
 import ColorPicker from './components/ColorPicker'
 import MultiInput from './components/MultiInput'
-import Upload from './components/Upload'
+import Image from './components/Image'
 import MultiSelect from './components/MultiSelect'
 import BackgroundImage from './components/BackgroundImage'
 
@@ -232,7 +232,7 @@ export const predefinedProperties = {
       throw new Error('propConfigForm配置错误：属性面板中使用上传功能时，prop为必传属性。')
     }
 
-    return getPropertyConfig('upload', {
+    return getPropertyConfig('image', {
       label: '图片',
       title: '图片地址（可以输入一个完整的图片地址或上传一张图片）',
       ...props,
@@ -483,7 +483,7 @@ const getComponent = (componentType) => {
     colorPicker: ColorPicker,
     segmented: Segmented,
     multiInput: MultiInput,
-    upload: Upload,
+    image: Image,
     multiSelect: MultiSelect,
     backgroundImage: BackgroundImage
   }[componentType]
