@@ -13,7 +13,7 @@
       width: 100%;
       gap: 30px;
 
-      .tg-designer-logo {
+      :where(.tg-designer-logo) {
         width: 260px;
         background: linear-gradient(90deg, #d4faff, #dbe4fa, #e6edfb, #ffffff);
         display: flex;
@@ -29,28 +29,10 @@
           font-style: oblique;
         }
 
-        .tg-designer-logo-version {
+        .tg-designer-logo-sub-text {
           font-size: 14px;
           font-weight: 600;
           line-height: 1;
-
-          .ant-tag {
-            border-radius: 10px;
-            transform: scale(.8);
-          }
-        }
-      }
-
-      .tg-designer-page-name {
-        display: flex;
-        align-items: center;
-
-        .ant-input-affix-wrapper {
-          background: #ededed;
-
-          .ant-input {
-            background: none;
-          }
         }
       }
 

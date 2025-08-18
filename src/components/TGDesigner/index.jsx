@@ -5,16 +5,27 @@ import Header from './components/Header'
 import Plugins, { PLUGIN_KEY } from './components/Plugins'
 import { computed, markRaw, onMounted, provide, ref, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
-import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
+import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
 import './assets/styles/index.scss'
 
 export default {
   name: 'TGDesigner',
   props: {
-    tgStore: {
-      required: true,
-      type: Object
+    schemaId: {
+      /**
+       * schema id
+       * @type {import('vue').PropType<string>}
+       */
+      type: [String, null]
+    },
+    loading: {
+      /**
+       * 是否正在加载中
+       * @type {import('vue').PropType<boolean>}
+       */
+      type: Boolean,
+      default: false
     },
     // 自定义属性面板上传图片组件
     propPanelCustomUpload: {
@@ -25,100 +36,118 @@ export default {
       type: Object,
       default: () => null
     },
-    ...Plugins.props
+    getSchema: {
+      /**
+       * 获取schema
+       * @type {import('vue').PropType<() => Promise<{id: string, schema: any}>>}
+       */
+      type: Function,
+      required: true
+    },
+    updateSchema: {
+      /**
+       * 更新schema
+       * @type {import('vue').PropType<(schema: any) => Promise<{status: boolean}>>}
+       */
+      type: Function,
+      required: true
+    },
+    plugins: {
+      /**
+       * 插件配置（支持对象或工厂函数）
+       * @type {
+       *  import('vue').PropType<
+       *    DesignerPluginsAndTools |
+       *    ((builtInPlugins: BuiltInPlugins) => DesignerPluginsAndTools)
+       *  >
+       * }
+       */
+      type: [Object, Function],
+      default: () => ({})
+    }
   },
-  setup(props) {
+  setup(props, { slots }) {
     provide('propPanelCustomUpload', props.propPanelCustomUpload)
-    provide('tgStore', props.tgStore)
 
     let CurrentPluginComponent = ref(<div>加载中...</div>)
 
     const pluginRef = ref(null)
     const headerRef = ref(null)
     const asyncComponentProps = ref({})
-    const designerStore = useEditorStore()
-    const { tgStore } = props
-    const schema = computed(() => designerStore.schema)
-    const loading = computed(() => tgStore.loading)
-    const pluginId = computed(() => designerStore.selectedPlugin.id)
-    const search = computed(() => tgStore.search)
+    const store = useEditorStore()
+    const pluginId = computed(() => store.selectedPlugin.key)
+
+    let tools = {}
+    let plugins = typeof props.plugins === 'function'
+      ? props.plugins(PLUGIN_KEY)
+      : props.plugins
+
+    // 确认插件列表的结构
+    if (Reflect.ownKeys(plugins).some(key => typeof key !== 'symbol')) {
+      tools = plugins.tools || {}
+      plugins = plugins.plugins || {}
+    }
 
     // 动态加载插件组件
     watch(pluginId, val => {
       if (val) {
-        if (val === PLUGIN_KEY.TEMPLATES) {
+        // 为插件准备props
+        if (val === PLUGIN_KEY.__TEMPLATES__) {
           asyncComponentProps.value = { updateSchema: headerRef.value.updateSchema }
         }
 
+        asyncComponentProps.value.designerStore = store
         CurrentPluginComponent.value = markRaw(pluginRef.value.getPluginContent())
       }
     })
 
     // 初始化画布schema
     onMounted(async () => {
-      const res = await tgStore.getDetails({
-        apiName: 'getSchema',
-        params: search.value.pageType === 13
-          ? {
-            configPageId: search.value.pageId,
-            pageType: search.value.pageType
-          }
-          : {
-            configId: search.value.sceneConfigId,
-            pageType: search.value.pageType
-          }
-      })
+      let res
 
-      if (res.status) {
-        tgStore.search.schemaId = res.data.id
-        tgStore.search.templateId = res.data.pageTemplateId
-        sessionStorage.setItem('tg-designer-template-id', res.data.pageTemplateId)
+      if (typeof props.getSchema === 'function') {
+        res = await props.getSchema()
 
-        if (res.data?.schemaContent) {
-          designerStore.schema = JSON.parse(res.data.schemaContent)
-          SchemaService.save(search.value.schemaId, designerStore.schema)
-        } else {
-          // 当本页面不存在已保存的schema数据时，立即保存一次，以初始化数据
-          await tgStore.fetch({
-            loading: false,
-            apiName: 'updateSchema',
-            params: {
-              scenePageSchemaId: search.value.schemaId,
-              schemaContent: JSON.stringify(schema.value)
-            }
-          })
-          // 同时执行本地缓存
-          SchemaService.save(search.value.schemaId, schema.value)
+        if (!res) {
+          message.error('初始化失败！')
+          throw new Error('未从“getSchema”函数中获取到有效的schema数据！')
         }
-
-        tgStore.isSchemaLoaded = true
-        tgStore.saveStatus = SAVE_STATUS.SAVED
       } else {
-        // 如果服务暂时无法获取，则临时从本地缓存中恢复schema（如果本地存在缓存）
-        let localSchema = SchemaService.load(search.value.schemaId)
+        message.error('初始化失败！')
+        throw new Error('请传入“getSchema”函数')
+      }
 
-        if (localSchema) {
-          designerStore.schema = localSchema
-          tgStore.isSchemaLoaded = true
-        } else {
-          // 服务无法连接，本地也无已缓存的schema时，提示异常
-          message.error('无法获取服务，您所有的操作都不会被保存，请刷新页面重试。如果持续出现异常，请联系系统管理员处理。')
+      if (res?.id) {
+        if (res.schema) {
+          store.schema = JSON.parse(res.schema)
         }
+
+        SchemaService.save(res.id, store.schema)
+
+        store.isSchemaLoaded = true
+        store.saveStatus = SAVE_STATUS.SAVED
       }
     })
 
     return () => (
       <Layout class={'tg-designer-container'}>
-        <Spin spinning={loading.value}>
+        <Spin spinning={props.loading}>
           <Layout class={'tg-designer-header'}>
-            <Header ref={headerRef} />
+            <Header
+              ref={headerRef}
+              schemaId={props.schemaId}
+              plugins={tools}
+              updateSchema={props.updateSchema}
+            >
+              {{ logo: slots.logo }}
+            </Header>
           </Layout>
           <Layout>
             <Layout.Sider
               width={68}
               class={'tg-designer-plugins-wrapper'}
             >
-              <Plugins ref={pluginRef} />
+              <Plugins ref={pluginRef} plugins={plugins} />
             </Layout.Sider>
             <Layout>
               <Layout.Sider

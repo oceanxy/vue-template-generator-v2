@@ -1,28 +1,61 @@
-import { Badge, Button, Divider, message, Tag, Tooltip } from 'ant-design-vue'
+import { Badge, Button, Divider, message, Tooltip } from 'ant-design-vue'
 import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
-import { computed, inject, onMounted, onUnmounted, ref, toRaw, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, toRaw, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
-import { jumpToRoute } from '@/utils/designer'
 import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
+import { PLUGIN_KEY } from '@/components/TGDesigner/components/Plugins'
 import './index.scss'
 
 export default {
   name: 'TGDesignerHeader',
-  setup(props, { expose }) {
+  props: {
+    schemaId: {
+      /**
+       * schema id
+       * @type {import('vue').PropType<string>}
+       */
+      type: [String, null]
+    },
+    plugins: {
+      /**
+       * 插件配置（支持对象或工厂函数）
+       * @type {import('vue').PropType<DesignerPlugins>}
+       */
+      type: Object,
+      default: () => ({})
+    },
+    updateSchema: {
+      /**
+       * 更新schema
+       * @type {import('vue').PropType<(schema: any) => Promise<{status: boolean}>>}
+       */
+      type: Function,
+      required: true
+    }
+  },
+  setup(props, { expose, slots }) {
     let timerId = null
     let intervalId = null
-    const tgStore = inject('tgStore')
     const store = useEditorStore()
     const saveStatus = computed(() => store.saveStatus)
     const schema = computed(() => store.schema)
-    const search = computed(() => tgStore.search)
-    const isSchemaLoaded = computed(() => tgStore.isSchemaLoaded)
+    const isSchemaLoaded = computed(() => store.isSchemaLoaded)
+
+    const plugins = {
+      [PLUGIN_KEY.__PREVIEW__]: {
+        name: '预览',
+        icon: 'icon-designer-tool-preview',
+        onClick: () => {/** 暂未实现 */}
+      },
+      ...props.plugins
+    }
+
     const isSchemaChanged = ref(false)
     const localCacheStatus = ref(null) // 本地缓存状态
 
     const automaticCaching = debounce(async () => {
-      await SchemaService.save(search.value.schemaId, toRaw(schema.value))
+      await SchemaService.save(props.schemaId, toRaw(schema.value))
       localCacheStatus.value = true
     }, 15000) // 自动本地保存时间间隔
 
@@ -77,61 +110,30 @@ export default {
         automaticCaching.flush()
       }
 
-      if (search.value.schemaId && isSchemaChanged.value) {
+      if (props.schemaId && isSchemaChanged.value) {
         store.saveStatus = SAVE_STATUS.SAVING
 
         try {
           // 向服务端保存
-          const res = await tgStore.fetch({
-            loading: false,
-            apiName: 'updateSchema',
-            params: {
-              scenePageSchemaId: search.value.schemaId,
-              schemaContent: JSON.stringify(schema.value)
-            }
-          })
-
-          store.saveStatus = SAVE_STATUS.SAVED
+          const res = await props.updateSchema(schema.value)
 
           if (!isAutoSave && res.status) {
+            store.saveStatus = SAVE_STATUS.SAVED
             // 手动触发保存后，清空已存在的定时器，重新设置定时器
             clearInterval(intervalId)
             autoSave()
-
-            if (res.status) {
-              message.success('保存成功')
-            }
+            message.success('保存成功')
+          } else {
+            store.saveStatus = SAVE_STATUS.UNSAVED
           }
 
-          // 延迟3秒后改变schema变化的状态，主要用于提示保存按钮的dot状态
+          // 延迟3秒改变schema变化的状态，用于提示保存按钮的dot状态
           // 如果在timeout的回调执行期间发生schema更改，则以isSchemaChanged最新值为准
           timerId = setTimeout(() => isSchemaChanged.value = false, 3000)
         } catch (e) {
           store.saveStatus = SAVE_STATUS.UNSAVED
         }
       }
-    }
-
-    const handlePreview = async () => {
-      // 预览之前缓存schema到本地
-      automaticCaching.flush()
-
-      jumpToRoute({
-        name: 'Preview',
-        params: { sceneConfigId: search.value.sceneConfigId },
-        query: { schemaId: search.value.schemaId }
-      })
-    }
-
-    const handlePreviewH5 = async () => {
-      // 预览之前缓存schema到本地
-      automaticCaching.flush()
-
-      jumpToRoute({
-        name: 'PreviewH5',
-        params: { sceneConfigId: search.value.sceneConfigId },
-        query: { schemaId: search.value.schemaId }
-      })
     }
 
     const updateSchema = async () => {
@@ -149,18 +151,27 @@ export default {
       }
     }
 
+    const handlePluginClick = callback => {
+      // 预览之前缓存schema到本地
+      automaticCaching.flush()
+      callback()
+    }
+
     expose({ updateSchema })
 
     return () => (
       <div class={'tg-designer-tools'}>
         <div class={'tg-designer-functions'}>
-          <div class={'tg-designer-logo'}>
-            <div class={'tg-designer-logo-text'}>建家开店页面设计器</div>
-            <div class={'tg-designer-logo-version'}>CHS-DESIGNER <Tag color="volcano">v1.0</Tag></div>
-          </div>
-          {/*<div class={'tg-designer-page-name'}>*/}
-          {/*  <Input placeholder={'页面名称'} prefix={<FileOutlined />} />*/}
-          {/*</div>*/}
+          {
+            slots.logo
+              ? slots.logo()
+              : (
+                <div class={'tg-designer-logo'}>
+                  <div class={'tg-designer-logo-text'}>在线页面设计器</div>
+                  <div class={'tg-designer-logo-sub-text'}>Online Page Designer</div>
+                </div>
+              )
+          }
           <div class={'tg-designer-canvas-functions'}>
             <Button
               danger
@@ -198,18 +209,16 @@ export default {
                 onClick={() => handleSchemaSave()}
               />
             </Badge>
-            <Button
-              type="text"
-              icon={<IconFont type="icon-designer-tool-preview" />}
-              title={'PC预览'}
-              onClick={handlePreview}
-            />
-            <Button
-              type="text"
-              icon={<IconFont type="icon-designer-tool-preview-h5" />}
-              title={'H5预览'}
-              onClick={handlePreviewH5}
-            />
+            {
+              Reflect.ownKeys(plugins).map(pluginKey => (
+                <Button
+                  type="text"
+                  icon={<IconFont type={plugins[pluginKey].icon} />}
+                  title={plugins[pluginKey].name}
+                  onClick={() => handlePluginClick(plugins[pluginKey].onClick)}
+                />
+              ))
+            }
           </div>
           <div class="tg-designer-status-indicators">
             <Badge
