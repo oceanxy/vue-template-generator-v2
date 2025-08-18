@@ -472,7 +472,7 @@ export function createStore({
        * @param {(data: Object, store: import('pinia').StoreDefinition) => void} [setValue] - 处理接口返回值的函数，
        * 该值不为函数时，接口返回值将与`store.currentItem`合并。
        * @param {(isLoading: boolean) => void} [setLoading] - 辅助 setValue 设置 loading 状态的回调函数，依赖 setValue 参数。
-       * @returns {Promise<{}>}
+       * @returns {Promise<Object>}
        */
       async getDetails({
         location,
