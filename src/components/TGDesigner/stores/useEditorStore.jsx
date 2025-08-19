@@ -12,6 +12,12 @@ export const useEditorStore = defineStore('editor', {
   state: () => ({
     saveStatus: SAVE_STATUS.UNSAVED, // 服务端保存状态
     isSchemaLoaded: false,
+    isSchemaChanged: false,
+    /**
+     * 本地缓存状态
+     * @type {Boolean|Null}
+     */
+    localCacheStatus: null,
     selectedComponent: null,
     schema: cloneDeep(schema),
     selectedPlugin: {

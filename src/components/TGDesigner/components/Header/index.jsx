@@ -1,7 +1,7 @@
 import { Badge, Button, Divider, message, Tooltip } from 'ant-design-vue'
 import { debounce } from 'lodash'
 import { SchemaService } from '@/components/TGDesigner/schemas/persistence'
-import { computed, onMounted, onUnmounted, ref, toRaw, watch } from 'vue'
+import { computed, onMounted, onUnmounted, toRaw, watch } from 'vue'
 import { useEditorStore } from '@/components/TGDesigner/stores/useEditorStore'
 import { SAVE_STATUS } from '@/components/TGDesigner/configs/enums'
 import { PLUGIN_KEY } from '@/components/TGDesigner/components/Plugins'
@@ -25,7 +25,7 @@ export default {
       type: Object,
       default: () => ({})
     },
-    updateSchema: {
+    updateSchemaApi: {
       /**
        * 更新schema
        * @type {import('vue').PropType<(schema: any) => Promise<{status: boolean}>>}
@@ -38,9 +38,21 @@ export default {
     let timerId = null
     let intervalId = null
     const store = useEditorStore()
-    const saveStatus = computed(() => store.saveStatus)
     const schema = computed(() => store.schema)
     const isSchemaLoaded = computed(() => store.isSchemaLoaded)
+
+    const saveStatus = computed({
+      get: () => store.saveStatus,
+      set: val => store.saveStatus = val
+    })
+    const isSchemaChanged = computed({
+      get: () => store.isSchemaChanged,
+      set: val => store.isSchemaChanged = !!val
+    })
+    const localCacheStatus = computed({
+      get: () => store.localCacheStatus,
+      set: val => store.localCacheStatus = !!val
+    })
 
     const plugins = {
       [PLUGIN_KEY.__PREVIEW__]: {
@@ -50,9 +62,6 @@ export default {
       },
       ...props.plugins
     }
-
-    const isSchemaChanged = ref(false)
-    const localCacheStatus = ref(null) // 本地缓存状态
 
     const automaticCaching = debounce(async () => {
       await SchemaService.save(props.schemaId, toRaw(schema.value))
@@ -76,7 +85,7 @@ export default {
           clearTimeout(timerId)
           isSchemaChanged.value = true
           localCacheStatus.value = false
-          store.saveStatus = SAVE_STATUS.UNSAVED
+          saveStatus.value = SAVE_STATUS.UNSAVED
           automaticCaching()
         }, { deep: true })
 
@@ -86,7 +95,7 @@ export default {
 
     // 在页面卸载前强制保存
     window.addEventListener('beforeunload', e => {
-      if (store.saveStatus !== SAVE_STATUS.SAVED) {
+      if (saveStatus.value !== SAVE_STATUS.SAVED) {
         e.preventDefault()
       }
     })
@@ -111,14 +120,14 @@ export default {
       }
 
       if (props.schemaId && isSchemaChanged.value) {
-        store.saveStatus = SAVE_STATUS.SAVING
+        saveStatus.value = SAVE_STATUS.SAVING
 
         try {
           // 向服务端保存
-          const res = await props.updateSchema(schema.value)
+          const res = await props.updateSchemaApi(schema.value)
 
           if (res.status) {
-            store.saveStatus = SAVE_STATUS.SAVED
+            saveStatus.value = SAVE_STATUS.SAVED
 
             if (!isAutoSave) {
               // 手动触发保存后，清空已存在的定时器
@@ -129,30 +138,41 @@ export default {
               message.success('保存成功')
             }
           } else {
-            store.saveStatus = SAVE_STATUS.UNSAVED
+            saveStatus.value = SAVE_STATUS.UNSAVED
           }
 
           // 延迟3秒改变schema变化的状态，用于提示保存按钮的dot状态
           // 如果在timeout的回调执行期间发生schema更改，则以isSchemaChanged最新值为准
           timerId = setTimeout(() => isSchemaChanged.value = false, 3000)
         } catch (e) {
-          store.saveStatus = SAVE_STATUS.UNSAVED
+          saveStatus.value = SAVE_STATUS.UNSAVED
         }
       }
     }
 
-    const updateSchema = async () => {
+    /**
+     * 同步更新设计器和服务端 schema，并控制内部所有状态的正常流转。
+     * @note 建议所有场景调用此方法更新schema。
+     * @param [schema] {TGSchema} - 新 schema 数据。未传递该参数时，默认使用设计器当前保存的 schema 数据传给服务端。
+     * @param [shouldRefreshUpdateSchemaTimer] {Boolean} - 是否刷新自动保存定时器，默认false。
+     * @return {Promise<void>}
+     */
+    const updateSchema = async (schema, shouldRefreshUpdateSchemaTimer = false) => {
+      if (schema) {
+        store.schema = schema
+      }
+
       localCacheStatus.value = false
       isSchemaChanged.value = true
-      store.saveStatus = SAVE_STATUS.UNSAVED
+      saveStatus.value = SAVE_STATUS.UNSAVED
 
-      await handleSchemaSave(true)
+      await handleSchemaSave(!shouldRefreshUpdateSchemaTimer)
     }
 
     const handleClearCanvas = () => {
       if (schema.value.components?.length) {
         store.schema.components = []
-        store.saveStatus = SAVE_STATUS.UNSAVED
+        saveStatus.value = SAVE_STATUS.UNSAVED
       }
     }
 

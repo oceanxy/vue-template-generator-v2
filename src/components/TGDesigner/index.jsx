@@ -36,7 +36,7 @@ export default {
       type: Object,
       default: () => null
     },
-    getSchema: {
+    getSchemaApi: {
       /**
        * 获取schema
        * @type {import('vue').PropType<() => Promise<{id: string, schema: any}>>}
@@ -44,7 +44,7 @@ export default {
       type: Function,
       required: true
     },
-    updateSchema: {
+    updateSchemaApi: {
       /**
        * 更新schema
        * @type {import('vue').PropType<(schema: any) => Promise<{status: boolean}>>}
@@ -92,11 +92,11 @@ export default {
     watch(pluginId, val => {
       if (val) {
         // 为插件准备props
-        if (val === PLUGIN_KEY.__TEMPLATES__) {
-          asyncComponentProps.value = { updateSchema: headerRef.value.updateSchema }
+        asyncComponentProps.value = {
+          designerStore: store,
+          updateSchema: headerRef.value.updateSchema
         }
 
-        asyncComponentProps.value.designerStore = store
         CurrentPluginComponent.value = markRaw(pluginRef.value.getPluginContent())
       }
     })
@@ -105,16 +105,16 @@ export default {
     onMounted(async () => {
       let res
 
-      if (typeof props.getSchema === 'function') {
-        res = await props.getSchema()
+      if (typeof props.getSchemaApi === 'function') {
+        res = await props.getSchemaApi()
 
         if (!res) {
           message.error('初始化失败！')
-          throw new Error('未从“getSchema”函数中获取到有效的schema数据！')
+          throw new Error('未从“getSchemaApi”函数中获取到有效的schema数据！')
         }
       } else {
         message.error('初始化失败！')
-        throw new Error('请传入“getSchema”函数')
+        throw new Error('请传入“getSchemaApi”函数')
       }
 
       if (res?.id) {
@@ -137,7 +137,7 @@ export default {
               ref={headerRef}
               schemaId={props.schemaId}
               plugins={tools}
-              updateSchema={props.updateSchema}
+              updateSchemaApi={props.updateSchemaApi}
             >
               {{ logo: slots.logo }}
             </Header>
