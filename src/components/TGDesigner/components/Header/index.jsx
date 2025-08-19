@@ -117,12 +117,17 @@ export default {
           // 向服务端保存
           const res = await props.updateSchema(schema.value)
 
-          if (!isAutoSave && res.status) {
+          if (res.status) {
             store.saveStatus = SAVE_STATUS.SAVED
-            // 手动触发保存后，清空已存在的定时器，重新设置定时器
-            clearInterval(intervalId)
-            autoSave()
-            message.success('保存成功')
+
+            if (!isAutoSave) {
+              // 手动触发保存后，清空已存在的定时器
+              clearInterval(intervalId)
+              // 重新设置定时器
+              autoSave()
+
+              message.success('保存成功')
+            }
           } else {
             store.saveStatus = SAVE_STATUS.UNSAVED
           }
