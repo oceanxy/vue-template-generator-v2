@@ -28,7 +28,10 @@ export default {
     const showMenu = computed(() => commonStore.showMenu)
     const loading = computed(() => loginStore.loading)
     const userInfo = computed(() => loginStore.details.userInfo || {})
-    const fontSize = computed(() => commonStore.fontSize)
+    const fontSize = computed({
+      get: () => commonStore.fontSize,
+      set: val => commonStore.fontSize = val
+    })
     const avatarForLetter = computed(() => {
       const name = userInfo.value.nickName || userInfo.value.fullName
 
