@@ -156,20 +156,10 @@ export default {
         activeSuffix = configs.activeSuffixForMenuIcon || ''
       }
 
-      if (activeSuffix) {
-        return (
-          <IconFont
-            key={componentKey.value}
-            type={`${route.meta.icon}${activeSuffix}`}
-          />
-        )
-      }
-
       return (
         <IconFont
           key={componentKey.value}
-          type={`${route.meta.icon}`}
-          class={'no-active-status'}
+          type={`${route.meta.icon}${activeSuffix}`}
         />
       )
     }

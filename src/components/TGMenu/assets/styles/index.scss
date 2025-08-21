@@ -24,12 +24,6 @@
 
       &.ant-menu-item-selected,
       &.ant-menu-submenu-selected {
-        & > .ant-menu-submenu-title {
-          & > .ant-menu-item-icon:not(.no-active-status) {
-            color: var(--tg-theme-color-text);
-          }
-        }
-
         .ant-menu-submenu-title:hover {
           color: var(--tg-theme-color-primary);
         }
