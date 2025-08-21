@@ -2,10 +2,10 @@
  * 需要账号密码的登录组件
  */
 
-import './assets/styles/index.scss'
-import TGLoginForm from './components/TGLoginForm'
-import TGCard from '@/components/TGCard'
 import configs from '@/configs'
+import TGCard from '@/components/TGCard'
+import TGLoginForm from './components/TGLoginForm'
+import './assets/styles/index.scss'
 
 export default {
   name: 'Login',
@@ -25,7 +25,7 @@ export default {
           </div>
           <TGLoginForm />
         </TGCard>
-        {/* <div class={'corporate-services'}>重庆蓝桥科技有限公司技术支持</div> */}
+        <div class={'corporate-services'}>技术支持</div>
       </div>
     )
   }

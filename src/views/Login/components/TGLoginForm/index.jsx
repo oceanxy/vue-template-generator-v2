@@ -1,9 +1,9 @@
-import './index.scss'
 import { computed, onMounted, reactive, ref } from 'vue'
 import configs from '@/configs'
 import { getEnvVar } from '@/utils/env'
 import { Button, Form, Input } from 'ant-design-vue'
 import useStore from '@/composables/tgStore'
+import './index.scss'
 
 export default {
   name: 'TGLoginForm',
