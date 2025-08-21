@@ -11,6 +11,5 @@ module.exports = {
   // 以下配置为非必须的，具体见：src/config 注释
   enableTabPage: true,
   hideBreadCrumb: true,
-  enableLoginVerification: false,
-  activeSuffixForMenuIcon: ''
+  enableLoginVerification: false
 }

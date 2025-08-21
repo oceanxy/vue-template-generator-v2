@@ -7,7 +7,7 @@ export default [
       title: '控制台',
       requiresAuth: true,
       hideBreadCrumb: true,
-      icon: 'icon-global-home'
+      icon: 'icon-menu-console'
     }
   },
   {
@@ -18,6 +18,7 @@ export default [
       title: '账户管理',
       requiresAuth: true,
       icon: 'icon-menu-xtgl'
+      icon: 'icon-menu-accounts'
     }
   }
 ]

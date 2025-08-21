@@ -40,17 +40,6 @@ export default {
       }
     }, { immediate: true })
 
-    function getActiveSuffixForMenuIcon() {
-      if (configs.activeSuffixForMenuIcon) {
-        return configs.activeSuffixForMenuIcon.replace(
-          '{themeName}',
-          `-${localStorage.getItem(`${appName}-theme`) || configs.header.buttons.theme.default}`
-        )
-      } else {
-        return ''
-      }
-    }
-
     function getPopupSubMenuClassName() {
       return `tg-menu-popup ${configs.menuStyle}`
     }
@@ -164,7 +153,7 @@ export default {
       let activeSuffix = ''
 
       if (selectedKeys.value.includes(route.key)) {
-        activeSuffix = getActiveSuffixForMenuIcon()
+        activeSuffix = configs.activeSuffixForMenuIcon || ''
       }
 
       if (activeSuffix) {
