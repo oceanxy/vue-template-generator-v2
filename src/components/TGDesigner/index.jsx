@@ -41,16 +41,14 @@ export default {
        * 获取schema
        * @type {import('vue').PropType<() => Promise<{id: string, schema: any}>>}
        */
-      type: Function,
-      required: true
+      type: Function
     },
     updateSchemaApi: {
       /**
        * 更新schema
        * @type {import('vue').PropType<(schema: any) => Promise<{status: boolean}>>}
        */
-      type: Function,
-      required: true
+      type: Function
     },
     plugins: {
       /**
@@ -113,8 +111,8 @@ export default {
           throw new Error('未从“getSchemaApi”函数中获取到有效的schema数据！')
         }
       } else {
-        message.error('初始化失败！')
-        throw new Error('请传入“getSchemaApi”函数')
+        // 未传递API时使用本地默认数据
+        res = { id: '__BUILT_IN_ID__' }
       }
 
       if (res?.id) {

@@ -31,7 +31,7 @@ export default {
        * @type {import('vue').PropType<(schema: any) => Promise<{status: boolean}>>}
        */
       type: Function,
-      required: true
+      default: () => () => Promise.resolve({ status: true })
     }
   },
   setup(props, { expose, slots }) {
@@ -123,8 +123,15 @@ export default {
         saveStatus.value = SAVE_STATUS.SAVING
 
         try {
-          // 向服务端保存
-          const res = await props.updateSchemaApi(schema.value)
+          let res
+          if (typeof props.updateSchemaApi === 'function') {
+            // 向服务端保存
+            res = await props.updateSchemaApi(schema.value)
+          } else {
+            // 本地保存
+            SchemaService.save(props.schemaId, schema.value)
+            res = { status: true }
+          }
 
           if (res.status) {
             saveStatus.value = SAVE_STATUS.SAVED
