@@ -30,8 +30,7 @@ export default {
        * 更新schema
        * @type {import('vue').PropType<(schema: any) => Promise<{status: boolean}>>}
        */
-      type: Function,
-      default: () => () => Promise.resolve({ status: true })
+      type: Function
     }
   },
   setup(props, { expose, slots }) {
@@ -128,8 +127,6 @@ export default {
             // 向服务端保存
             res = await props.updateSchemaApi(schema.value)
           } else {
-            // 本地保存
-            SchemaService.save(props.schemaId, schema.value)
             res = { status: true }
           }
 

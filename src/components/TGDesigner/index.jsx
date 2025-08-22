@@ -112,7 +112,7 @@ export default {
         }
       } else {
         // 未传递API时使用本地默认数据
-        res = { id: '__BUILT_IN_ID__' }
+        res = { id: '__BUILT_IN_SCHEMA_ID__' }
       }
 
       if (res?.id) {
@@ -133,7 +133,7 @@ export default {
           <Layout class={'tg-designer-header'}>
             <Header
               ref={headerRef}
-              schemaId={props.schemaId}
+              schemaId={typeof props.getSchemaApi === 'function' ? props.schemaId : '__BUILT_IN_SCHEMA_ID__'}
               plugins={tools}
               updateSchemaApi={props.updateSchemaApi}
             >
