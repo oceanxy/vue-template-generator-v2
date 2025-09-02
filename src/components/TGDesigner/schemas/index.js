@@ -31,7 +31,7 @@ export const schema = {
     style: {
       width: '100%',
       height: '',
-      padding: 15,
+      padding: 0,
       margin: 0,
       gap: 8,
       alignItems: 'flex-start',
