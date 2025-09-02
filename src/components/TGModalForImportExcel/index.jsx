@@ -8,6 +8,8 @@ import useStore from '@/composables/tgStore'
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons-vue'
 import TGModalForNonCompliantData from './TGModalForNonCompliantData'
 
+import { downloadFile } from '@/utils/utilityFunction'
+
 export default {
   name: 'TGModalForImportExcel',
   props: {
@@ -137,11 +139,24 @@ export default {
     }
 
     async function handleTemplateDownload() {
-      await store.exportData({
-        fileName: props.templateFileName,
+      const res = await store.fetch({
         apiName: props.apiNameForDownloadTemplate,
-        location
+        params: {
+          fileName: props.templateFileName,
+        },
+        location,
+        loading: false
       })
+
+      if (res.status) {
+        downloadFile(res.data)
+      }
+
+      // await store.exportData({
+      //   fileName: props.templateFileName,
+      //   apiName: props.apiNameForDownloadTemplate,
+      //   location
+      // })
     }
 
     return () => (
@@ -168,7 +183,7 @@ export default {
             vModel:value={fileList.value}
             buttonType={'primary'}
             action={props.action}
-            accept={'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel'}
+            accept={'.xls,.xlsx'}
             placeholder={'选择文件'}
             limit={1}
           />
