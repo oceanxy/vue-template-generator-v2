@@ -56,7 +56,7 @@ export default {
           `${paddings.paddingTop} ${paddings.paddingRight} ${paddings.paddingBottom} ${paddings.paddingLeft}`
 
         canvasStyle.value.backgroundImage = formatBackgroundImage(canvasStyle.value.backgroundImage)
-      }, { deep: true }
+      }, { deep: true, immediate: true }
     )
 
     const handleCanvasClick = (e) => {
@@ -217,7 +217,6 @@ export default {
           ]}
           style={{
             ...canvasStyle.value,
-            '--canvas-padding': canvasStyle.value?.padding,
             overflowY: designerStore.indicator.type === 'container' ? 'hidden' : 'auto'
           }}
           onClick={handleCanvasClick}
