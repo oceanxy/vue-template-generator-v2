@@ -128,12 +128,25 @@
         width: 100%;
         height: 100%;
         cursor: pointer;
-        transition: outline 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        padding: var(--canvas-padding);
+        outline: 2px solid transparent;
+        outline-offset: 1px;
 
         &[data-selected='true'] {
-          outline: 2px dashed var(--tg-theme-color-primary);
-          outline-offset: 1px;
+          outline: 2px dashed var(--tg-theme-color-primary-active);
+          z-index: 9999;
+        }
+
+        &:hover {
+          outline-color: var(--tg-theme-color-primary-border-hover);
+          z-index: 9999;
+
+          &:not([data-selected='true']):has(.tg-designer-drag-component:hover) {
+            outline-color: transparent;
+          }
+
+          &[data-selected='true']:has(.tg-designer-drag-component:hover) {
+            outline-color: var(--tg-theme-color-primary-active);
+          }
         }
 
         &::before,
@@ -317,15 +330,6 @@
             z-index: 999;
           }
 
-          &:hover {
-            outline-color: var(--tg-theme-color-primary);
-            z-index: 9999;
-
-            &:not([data-selected='true']):has(.tg-designer-drag-component:hover) {
-              outline-color: transparent;
-            }
-          }
-
           &.dragging {
             opacity: 0.4;
             transform: scale(0.98);
@@ -341,7 +345,7 @@
           }
 
           &[data-selected='true'] {
-            outline: 2px dashed var(--tg-theme-color-primary);
+            outline: 2px dashed var(--tg-theme-color-primary-active);
             outline-offset: 1px;
             z-index: 999;
           }
@@ -354,6 +358,19 @@
           &.component-leave-active {
             animation: fadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             pointer-events: none; // 禁用交互
+          }
+
+          &:hover {
+            outline-color: var(--tg-theme-color-primary-border-hover);
+            z-index: 9999;
+
+            &:not([data-selected='true']):has(.tg-designer-drag-component:hover) {
+              outline-color: transparent;
+            }
+
+            &[data-selected='true']:has(.tg-designer-drag-component:hover) {
+              outline-color: var(--tg-theme-color-primary-active);
+            }
           }
 
           &.component-move {
