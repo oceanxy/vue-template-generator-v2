@@ -9,6 +9,8 @@ import { RouterView } from 'vue-router'
 import TGGlobalSpinner from '@/components/TGGlobalSpinner'
 import { app } from '@/main'
 import GlobalComponents from '@app/plugins/globalComponents'
+import configs from '@/configs'
+import { logger } from '@/utils/logger'
 
 /**
  * 仅供 App 组件使用的主题配置，其他地方请使用 useThemeVars
@@ -41,6 +43,10 @@ export default function useThemeApp() {
   )
 
   onBeforeMount(() => {
+    configs?.systemName && logger('欢迎使用', configs.systemName)
+    configs?.version && logger('当前版本', configs.version)
+
+    handleVersionChange()
     // 注册插件
     app.use(GlobalComponents)
   })
@@ -48,6 +54,14 @@ export default function useThemeApp() {
   onMounted(() => window.addEventListener('resize', handleResize))
   onUnmounted(() => window.removeEventListener('resize', handleResize))
 
+  const handleVersionChange = () => {
+    const localVersion = localStorage.getItem(`${appName}-version`)
+
+    if (configs?.version && localVersion !== configs.version) {
+      useStore('/login').clear()
+      localStorage.setItem(`${appName}-version`, configs.version)
+    }
+  }
   // 监听屏幕尺寸变化
   const handleResize = () => {
     commonStore.updateScreenInfo()

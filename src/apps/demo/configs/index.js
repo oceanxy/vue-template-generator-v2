@@ -1,6 +1,6 @@
 module.exports = {
-  // 所属项目组名称
-  appPrefix: 'demo',
+  // 版本号
+  version: '1.0.0',
   // 项目前期一般没有后台服务（接口）的支持，所以可以开启该模式，以模拟数据。
   mock: true,
   // 项目名称

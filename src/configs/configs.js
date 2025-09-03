@@ -36,6 +36,8 @@
  */
 
 module.exports = {
+  // 子项目版本号，这里是为了写注释。
+  version: '',
   // 打包后生成压缩包的名称（默认为子项目仓库名）
   zipName: '',
   // 要使用的布局组件名，位于 src/layouts。默认 TGBackendSystem 组件，后台管理系统。
