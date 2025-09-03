@@ -130,6 +130,9 @@
         cursor: pointer;
         outline: 2px solid transparent;
         outline-offset: 1px;
+        transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), // Material Design标准缓动
+        transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        outline 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
         &[data-selected='true'] {
           outline: 2px dashed var(--tg-theme-color-primary-active);
@@ -291,7 +294,7 @@
           position: relative;
           transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), // Material Design标准缓动
           transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-          outline 0.2s cubic-bezier(0.4, 0, 0.2, 1); // 增强的加速曲线
+          outline 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           opacity: 1;
           transform: translateZ(0); // 强制开启GPU加速
           backface-visibility: hidden;
