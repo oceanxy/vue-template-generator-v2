@@ -10,6 +10,10 @@ class GlobalVariableInjectionPlugin {
     console.info(chalk.hex('#1fb0ff')('编译信息：') + chalk.gray(`检测到${text}，已成功加载。`))
   }
 
+  tips(text) {
+    console.info(chalk.hex('#fcca6b')('编译提示：') + chalk.hex('#fcca6b')(text))
+  }
+
   /**
    * 预加载资源文件（基于 webpack.ProvidePlugin 插件）
    * @param {string} url - 资源地址
@@ -62,6 +66,9 @@ class GlobalVariableInjectionPlugin {
                 resource => {
                   this.log(`配置文件（src/apps/${appName}/configs/index.js）`)
                   plugin.definitions.__TG_APP_CONFIG__ = resource
+
+                  const version = require(resource).version
+                  version && this.tips(`当前编译的项目版本（v${version}）`)
                 }
               )
             }
