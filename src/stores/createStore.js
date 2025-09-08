@@ -643,7 +643,7 @@ export function createStore({
        * 处理需要从`search`传递到`form`的值。以`store.state[location].form`内定义的字段为准
        * @private
        */
-      _initLocationParameter(injectSearchParams) {
+      _initLocationParameter(injectSearchParams, location) {
         this.$patch({
           [location]: {
             ['form' in this.$state[location] ? 'form' : 'search']: injectSearchParams.reduce((acc, cur) => {
@@ -732,7 +732,7 @@ export function createStore({
           injectSearchParams.length &&
           location
         ) {
-          this._initLocationParameter(injectSearchParams)
+          this._initLocationParameter(injectSearchParams, location)
         }
 
         if (typeof beforeOpen === 'function') beforeOpen()
