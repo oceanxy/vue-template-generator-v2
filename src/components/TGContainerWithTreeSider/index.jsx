@@ -204,7 +204,7 @@ export default {
     function getAllParentIds(dataSource, onlyFirstParentNode) {
       let ids = []
       const keyField = props.fieldNames.key
-      const childrenField = props.fieldNames.children
+      const childrenField = props.fieldNames?.children ?? []
 
       for (const item of dataSource) {
         if (
@@ -237,7 +237,7 @@ export default {
       const copyOfDataSource = cloneDeep(dataSource)
       const temp = []
       const titleField = props.fieldNames.title
-      const childrenField = props.fieldNames.children
+      const childrenField = props.fieldNames?.children ?? []
 
       for (const item of copyOfDataSource) {
         if (item[titleField].includes(searchValue)) {
