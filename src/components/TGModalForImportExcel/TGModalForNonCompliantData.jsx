@@ -22,7 +22,8 @@ export default {
 
     const {
       handleExport,
-      TGTableModal
+      TGTableModal,
+      store
     } = useTGTableModal({
       isStaticTable: true,
       modalStatusFieldName,
@@ -36,7 +37,10 @@ export default {
           apiName: props.apiNameForDownloadIllegalData,
           fileName: props.illegalDataFileName,
           modalStatusFieldName
-        })
+        }),
+        onCancel() {
+          store.setList('dataSource', [], location)
+        }
       },
       tableProps: {
         columns: props.columns
