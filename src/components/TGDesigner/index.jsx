@@ -116,14 +116,23 @@ export default {
       }
 
       if (res?.id) {
-        if (res.schema) {
-          store.schema = JSON.parse(res.schema)
+        const patch = {
+          isSchemaLoaded: true,
+          saveStatus: SAVE_STATUS.SAVED
         }
 
-        SchemaService.save(res.id, store.schema)
+        if (res.schema) {
+          patch.schema = JSON.parse(res.schema)
+        } else {
+          const schema = SchemaService.load(res.id)
 
-        store.isSchemaLoaded = true
-        store.saveStatus = SAVE_STATUS.SAVED
+          if (schema) {
+            patch.schema = schema
+          }
+        }
+
+        SchemaService.save(res.id, patch.schema || store.schema)
+        store.$patch(patch)
       }
     })
 
