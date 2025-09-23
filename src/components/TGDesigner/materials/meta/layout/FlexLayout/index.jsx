@@ -29,7 +29,7 @@ export default {
     justifyContent: 'flex-start',
     overflow: 'visible',
     backgroundColor: '',
-    // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
+    // backgroundImage: 'https://www.antdv.com/vue.png',
     backgroundImage: '',
     backgroundSize: '',
     backgroundPosition: 'center',

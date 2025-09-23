@@ -32,7 +32,7 @@ export default {
     background: '',
     backgroundColor: '',
     backgroundImage: '',
-    // backgroundImage: 'https://aliyuncdn.antdv.com/vue.png',
+    // backgroundImage: 'https://www.antdv.com/vue.png',
     backgroundSize: '',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'

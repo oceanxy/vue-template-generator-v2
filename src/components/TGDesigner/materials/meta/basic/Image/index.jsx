@@ -23,7 +23,7 @@ export default {
     )
   },
   defaultProps: {
-    // src: 'https://aliyuncdn.antdv.com/vue.png',
+    // src: 'https://www.antdv.com/vue.png',
     src: ''
   },
   style: {
