@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { TG_MATERIAL_CATEGORY } from '../materials'
+import { TG_MATERIAL_CATEGORY, TG_MATERIAL_CATEGORY_LABEL } from '../materials'
 import { cloneDeep } from 'lodash'
 import { schema } from '../schemas'
 import { getUUID } from '@/utils/utilityFunction'
@@ -185,6 +185,7 @@ export const useEditorStore = defineStore('editor', {
       if (component) {
         return cloneDeep(component)
       } else {
+        console.warn(`[Designer] 未在${TG_MATERIAL_CATEGORY_LABEL[category]}中找到组件元数据：${type}。`)
         return null
       }
     }

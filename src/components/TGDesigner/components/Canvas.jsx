@@ -107,13 +107,14 @@ export default {
     }
 
     const renderCanvasFromSchemas = (componentSchema, parentId = null) => {
-      const componentDef = markRaw(designerStore.getComponentByType(
+      let componentDef = designerStore.getComponentByType(
         componentSchema.type,
         componentSchema.category
-      ))
+      )
 
       if (!componentDef) return null
 
+      componentDef = markRaw(componentDef)
       // 初始化组件props
       const component = omit({
         ...componentSchema.props,
