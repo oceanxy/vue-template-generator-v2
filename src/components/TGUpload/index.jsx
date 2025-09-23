@@ -74,6 +74,10 @@ export default {
     customRequest: {
       type: Function,
       default: null
+    },
+    headers: {
+      type: Object,
+      default: () => ({})
     }
   },
   setup(props, { emit, slots }) {
@@ -82,7 +86,10 @@ export default {
     const previewImage = ref('')
     const previewVisible = ref(false)
     const name = ref('file')
-    const headers = { token: localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`) }
+    const headers = {
+      token: localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`),
+      ...(props?.headers ?? {})
+    }
 
     const isError = computed(() => {
       return files.value.findIndex(item => item.status === 'error') > -1

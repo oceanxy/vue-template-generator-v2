@@ -7,7 +7,6 @@ import useThemeVars from '@/composables/themeVars'
 import useStore from '@/composables/tgStore'
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons-vue'
 import TGModalForNonCompliantData from './TGModalForNonCompliantData'
-
 import { downloadFile } from '@/utils/utilityFunction'
 
 export default {
@@ -48,6 +47,14 @@ export default {
     columns: {
       type: Array,
       required: true
+    },
+    data: {
+      type: Object,
+      default: () => ({})
+    },
+    headers: {
+      type: Object,
+      default: () => ({})
     }
   },
   setup(props) {
@@ -88,7 +95,7 @@ export default {
         const res = await store.fetch({
           apiName: props.apiNameForImportData.value,
           isRefreshTable: true,
-          modalStatusFieldName: result.value.failSize ? '' : modalStatusFieldName,
+          modalStatusFieldName,
           loading: false
         })
 
@@ -96,10 +103,10 @@ export default {
           uploadStatus.value = true
           message.success('导入数据成功')
 
-          if (!result.value.failSize) {
-            fileList.value = undefined
-            uploadStatus.value = false
-          }
+          // if (!result.value.failSize) {
+          fileList.value = undefined
+          uploadStatus.value = false
+          // }
         }
 
         uploadLoading.value = false
@@ -149,7 +156,7 @@ export default {
       })
 
       if (res.status) {
-        downloadFile(res.data)
+        downloadFile(res.data, props.templateFileName)
       }
 
       // await store.exportData({
@@ -181,8 +188,10 @@ export default {
         <div class={'tg-data-upload-trigger'}>
           <TGUpload
             vModel:value={fileList.value}
+            headers={props.headers}
             buttonType={'primary'}
             action={props.action}
+            data={props.data}
             accept={'.xls,.xlsx'}
             placeholder={'选择文件'}
             limit={1}
