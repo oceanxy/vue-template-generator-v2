@@ -49,6 +49,7 @@ export default function useTGTable({
   let observer = null
   let timer = null
 
+  const storeName = inject('storeName', null)
   const inModal = inject('inModal', null)
   const hasTree = inject('hasTree', null)
   const refreshTree = inject('refreshTree', null)
@@ -57,7 +58,7 @@ export default function useTGTable({
 
   const { token } = useThemeVars()
   const commonStore = useStore('/common')
-  let store = useStore()
+  let store = useStore(storeName)
 
   const tableRef = ref(null)
   const exportButtonDisabled = ref(false)

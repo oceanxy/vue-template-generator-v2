@@ -9,6 +9,13 @@ export default {
   name: 'TGContainer',
   inheritAttrs: false,
   props: {
+    /**
+     * store 名称（不使用路由对应的的store，使用指定store）
+     */
+    storeName: {
+      type: String,
+      default: null
+    },
     // 是否自动初始化页面数据（页面数据接口按照`get{router.currentRoute.value.name}`格式定义）
     // 注意：使用了`slots.table`才会生效。
     isInitTable: {
@@ -51,8 +58,7 @@ export default {
   },
   setup(props, { slots, attrs, expose }) {
     const treeRef = ref(null)
-    const store = useStore()
-
+    const store = useStore(props?.storeName ?? null)
     const taskQueues = computed(() => store.taskQueues)
 
     const {
@@ -65,6 +71,9 @@ export default {
       injectSearchParamsOfTable,
       ...treeProps
     } = props
+
+    // 当容器组件传递了指定store时，则将本组件的 storeName 提供给所有子级或插槽
+    provide('storeName', props.storeName)
 
     const _isInitTable = computed(() => {
       return isInitTable && !!slots.table && 'dataSource' in store.$state
@@ -80,7 +89,8 @@ export default {
         store.dataSource.loading = false
       }
 
-      // 任务队列的初始化在 TGInquiryForm 中进行，当未传递 inquiry 组件时，将在此初始化任务队列，以满足后续逻辑需要
+      // 当存在 slots.inquiry 时，任务队列的初始化在 TGInquiryForm 中进行；
+      // 当不存在 slots.inquiry 时，将在此初始化任务队列，以满足后续逻辑需要。
       if (!slots.inquiry) {
         store.taskQueues.required = []
         store.taskQueues.notRequired = []

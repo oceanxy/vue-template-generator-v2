@@ -1,12 +1,12 @@
 import './assets/styles/index.scss'
 import useTGModal from '@/composables/tgModal'
 import useTGForm from '@/composables/tgForm'
-import { provide, reactive, watch } from 'vue'
+import { inject, provide, reactive, watch } from 'vue'
 import { set } from 'lodash/object'
 
 /**
  * TGFormModal
- * @param [storeName] {string} - store名称，默认为当前页面的store模块。
+ * @param [storeName] {string|null} - store名称，默认为当前页面的store模块。
  * @param modalProps {import('ant-design-vue').ModalProps}
  * @param [modalStatusFieldName='showModalForEditing'] {string} - 弹窗状态字段名，
  * 用于操作完成后关闭指定弹窗，默认值为'showModalForEditing'。
@@ -35,8 +35,16 @@ export default function useTGFormModal({
   getParams,
   setDetails,
   searchParamOptions,
-  formModelFormatter,
+  formModelFormatter
 }) {
+  /**
+   * 如果组件传递了storeName，则以此为准，
+   * 否则从inject中查找storeName
+   */
+  if (!storeName) {
+    storeName = inject('storeName', null)
+  }
+
   provide('inModal', true)
 
   const _modalProps = reactive(modalProps)
