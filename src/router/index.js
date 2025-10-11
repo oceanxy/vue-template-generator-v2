@@ -221,38 +221,6 @@ router.beforeEach(async (to, from) => {
       process.env.TG_APP_DEVELOPMENT_ENVIRONMENT_SKIPPING_PERMISSIONS === 'on'
     )
   ) {
-    if (!loginStore.isTokenValid) {
-      try {
-        const res = await Promise.race([
-          loginStore.verifyToken({ token: token || localToken || cookieToken }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('身份验证超时')), configs.tokenConfig.timeout)
-          )
-        ])
-
-        if (!res?.status && !res?.data) {
-          throw new Error(res.message)
-        }
-      } catch (e) {
-        console.error(`身份验证失败：${e.message}`)
-        message.error(e.message.includes('超时')
-          ? '网络连接超时，请检查网络设置'
-          : '身份验证失败，请重新登录'
-        )
-
-        await loginStore.clear()
-
-        return {
-          name: 'Login',
-          query: {
-            redirect: to.path,
-            ...to.query,
-            token: undefined // 清除地址栏上的token，避免跳转到登录页后继续去验证token，而是直接处理无效token的情况。
-          }
-        }
-      }
-    }
-
     if (
       !localToken ||
       // 如果地址栏带了 token，且与本地存储的 token 不一致，强制重定向到登录页鉴权
@@ -277,13 +245,45 @@ router.beforeEach(async (to, from) => {
       if (searchToken) {
         window.history.replaceState(null, null, window.location.pathname)
       }
+    }
 
-      // 如果 hash 中存在 token，则删除之
-      return {
-        ...to,
-        query: {
-          ...to.query,
-          [configs.tokenConfig.fieldName]: undefined
+    if (!loginStore.isTokenValid) {
+      try {
+        const res = await Promise.race([
+          loginStore.verifyToken({ token: token || localToken || cookieToken }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('身份验证超时')), configs.tokenConfig.timeout)
+          )
+        ])
+
+        if (!res?.status && !res?.data) {
+          throw new Error(res.message)
+        }
+
+        return {
+          name: 'Login',
+          query: {
+            redirect: to.path,
+            ...to.query,
+            [configs.tokenConfig.fieldName]: undefined // 清除地址栏上的token，避免跳转到登录页后继续去验证token，而是直接处理无效token的情况。
+          }
+        }
+      } catch (e) {
+        console.error(`身份验证失败：${e.message}`)
+        message.error(e.message.includes('超时')
+          ? '网络连接超时，请检查网络设置'
+          : '身份验证失败，请重新登录'
+        )
+
+        await loginStore.clear()
+
+        return {
+          name: 'Login',
+          query: {
+            redirect: to.path,
+            ...to.query,
+            [configs.tokenConfig.fieldName]: undefined // 清除地址栏上的token，避免跳转到登录页后继续去验证token，而是直接处理无效token的情况。
+          }
         }
       }
     }

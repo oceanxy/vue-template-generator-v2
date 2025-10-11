@@ -21,9 +21,9 @@ export default createStore({
     state: {
       // 如果要在APP入口中验证TOKEN有效性，请配合`src/composables/tgAuthentication`使用
       isTokenValid: false,
-      // 'pending'/'success'/'failed'
+      // 'pending' 'success' 'failed'。注意，默认值idle代表从未修改过的空闲状态，请勿将该变量重置为“idle”，以免引起程序出现预料之外的状态错误。
       verifyStatus: 'idle',
-      // 最有一次验证时间
+      // 上一次Token有效性验证时间
       lastVerifyTime: null,
       // 登录页面加载数据的状态
       loading: false,
@@ -94,6 +94,7 @@ export default createStore({
         if (status) {
           this.$patch({
             isTokenValid: true,
+            verifyStatus: 'success',
             details: response.data
           })
 
@@ -152,6 +153,7 @@ export default createStore({
 
         this.details = {}
         this.isTokenValid = false
+        this.verifyStatus = 'failed'
 
         localStorage.removeItem(`${appName}-${configs.tokenConfig.fieldName}`)
         localStorage.removeItem(`${appName}-defaultRoute`)
