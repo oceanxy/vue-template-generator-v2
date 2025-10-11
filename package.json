@@ -68,6 +68,7 @@
     "@vueuse/core": "^13.3.0",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.11.0",
+    "ccwork-jsbridge": "^1.5.8",
     "crypto-es": "^2.1.0",
     "dayjs": "^1.11.13",
     "echarts": "^5.6.0",
