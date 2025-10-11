@@ -4,9 +4,10 @@ import useTGForm from '@/composables/tgForm'
 import { Button, Form } from 'ant-design-vue'
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue'
 import useTGTable from '@/composables/tgTable'
-import { computed, watch } from 'vue'
+import { computed, inject, watch } from 'vue'
 
 export default function useTGTableModal({
+  storeName,
   isStaticTable,
   modalStatusFieldName = 'showModalForEditing',
   modalProps,
@@ -18,11 +19,20 @@ export default function useTGTableModal({
   optionsOfGetList,
   rules
 } = {}) {
+  /**
+   * 如果组件传递了storeName，则以此为准，
+   * 否则从inject中查找storeName
+   */
+  if (!storeName) {
+    storeName = inject('storeName', null)
+  }
+
   let confirmLoading
   let tgForm = {}
   let TGForm
 
   const { TGTable, ...tgTable } = useTGTable({
+    storeName,
     isStaticTable,
     props: tableProps || {},
     location,
@@ -32,6 +42,7 @@ export default function useTGTableModal({
 
   if (!isStaticTable) {
     const { TGForm: _TGForm, ..._tgForm } = useTGForm({
+      storeName,
       location,
       rules,
       searchParamOptions,
