@@ -17,6 +17,7 @@ export function getScreenInfo() {
 export default createStore({
   moduleName: 'common',
   module: {
+    persist: true,
     state: {
       // 菜单栏折叠与展开状态切换
       collapsed: false,
