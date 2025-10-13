@@ -295,6 +295,10 @@ router.beforeEach(async (to, from) => {
       }
 
       if (!token && !cookieToken) {
+        if (to.query?.redirect) {
+          return { path: to.query.redirect }
+        }
+
         return { name: 'Home' }
       }
 
