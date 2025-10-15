@@ -766,7 +766,6 @@ export default function useTGTable({
     // return debounce(resize, 200)
     return throttle(resize, 200)
   }
-
   onMounted(async () => {
     // 为上级组件注入获取 table ref 的逻辑
     if (getRefOfChild instanceof Function) {
@@ -825,6 +824,7 @@ export default function useTGTable({
         ref={tableRef}
         class={'tg-table'}
         {...defaultTableProps}
+        v-slots={defaultTableProps.slots}
       />
     )
   }
