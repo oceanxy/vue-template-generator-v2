@@ -122,6 +122,11 @@ export default {
       commonStore.fontSize = val
     }
 
+    async function updateComponentSize(val) {
+      await updateThemeConfig({ componentSize: val.target.value })
+      commonStore.componentSize = val.target.value
+    }
+
     async function switchThemes(themeFileName) {
       await updateThemeConfig({ themeFileName })
 
@@ -311,6 +316,7 @@ export default {
                             vModel:value={commonStore.componentSize}
                             class={'tg-header-component-size'}
                             size={'default'}
+                            onChange={updateComponentSize}
                           >
                             <Radio value={'small'}>小</Radio>
                             <Radio value={'middle'}>中</Radio>
