@@ -26,7 +26,6 @@ export default function useTGTableModal({
   if (!storeName) {
     storeName = inject('storeName', null)
   }
-
   let confirmLoading
   let tgForm = {}
   let TGForm
