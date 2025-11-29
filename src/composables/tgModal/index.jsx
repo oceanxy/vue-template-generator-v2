@@ -22,7 +22,6 @@ export default function useTGModal({
   if (!store) {
     store = useStore()
   }
-
   const modalTitleRef = ref(null)
   const { x, y, isDragging } = useDraggable(modalTitleRef)
 

@@ -33,7 +33,7 @@ export default {
       required: true
     },
     apiNameForImportData: {
-      type: [String, Object],
+      type: [String, Object, Function],
       required: true
     },
     apiNameForDownloadIllegalData: {
@@ -55,12 +55,24 @@ export default {
     headers: {
       type: Object,
       default: () => ({})
+    },
+    storeName: {
+      type: String,
+      default: ''
+    },
+    modalStatusFieldName:{
+       type:String,
+       default:"showModalForImportExcel"
+    },
+    location:{
+       type:String,
+       default:"modalForImportExcel"
     }
   },
   setup(props) {
-    const store = useStore()
-    const modalStatusFieldName = 'showModalForImportExcel'
-    const location = 'modalForImportExcel'
+    const store = useStore(props.storeName)
+    const modalStatusFieldName = props.modalStatusFieldName
+    const location = props.location
 
     const { token } = useThemeVars()
     const fileList = ref(undefined)
@@ -90,6 +102,16 @@ export default {
         loading: uploadLoading.value
       },
       onOk: async () => {
+
+        //判断最后成功是否为函数
+        if (typeof props.apiNameForImportData == "function") {
+          props.apiNameForImportData(fileList.value);
+          fileList.value = undefined
+          uploadStatus.value = false
+          return;
+        }
+
+
         uploadLoading.value = true
 
         const res = await store.fetch({
@@ -116,11 +138,11 @@ export default {
         uploadStatus.value = false
       }
     })
-
     const { TGModal } = useTGModal({
       location,
       modalStatusFieldName,
-      modalProps
+      modalProps,
+      store
     })
 
     watch(
