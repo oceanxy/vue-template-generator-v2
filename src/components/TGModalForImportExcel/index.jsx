@@ -1,6 +1,6 @@
 import './index.scss'
 import { Button, message, Result } from 'ant-design-vue'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch ,toValue} from 'vue'
 import useTGModal from '@/composables/tgModal'
 import TGUpload from '@/components/TGUpload'
 import useThemeVars from '@/composables/themeVars'
@@ -115,7 +115,7 @@ export default {
         uploadLoading.value = true
 
         const res = await store.fetch({
-          apiName: props.apiNameForImportData.value,
+          apiName: toValue(props.apiNameForImportData),
           isRefreshTable: true,
           modalStatusFieldName,
           loading: false
