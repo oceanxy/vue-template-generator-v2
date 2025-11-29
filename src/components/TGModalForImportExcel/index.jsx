@@ -235,7 +235,7 @@ export default {
             <Result
               class={'shm-data-upload-result'}
               status={verifyStatus.value}
-              title={'校验完成！'}
+              title={'校验完成'}
               subTitle={[
                 '校验通过数据：',
                 <span>{result.value.successSize} 条</span>,
