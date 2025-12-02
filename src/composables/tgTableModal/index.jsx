@@ -110,11 +110,11 @@ export default function useTGTableModal({
 
     return (
       <TGModal {...props} class={'tg-table-modal'}>
-        {slots.header()}
+        {slots.header?.()}
         {
           !isStaticTable && !!slots.default && (
             <TGForm class={'tg-table-modal-inquiry-form'}>
-              {slots.default()}
+              {slots.default?.()}
               <Form.Item class={'tg-form-item-btn'}>
                 <Button
                   type="primary"
