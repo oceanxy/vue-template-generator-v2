@@ -447,15 +447,11 @@ export default function useTGTable({
   /**
    * 行内新增
    * @param initialValue {Object} 初始化默认值
-   * @param parentId {string} 父级ID
    * @returns {Promise<void>}
    */
-  function handleAdd(initialValue, parentId) {
+  function handleAdd(initialValue) {
     store.setVisibilityOfModal({
-      currentItem: {
-        _parentId: parentId,
-        ...omit(initialValue, 'id')
-      }
+      currentItem: omit(initialValue, 'id')
     })
   }
 
@@ -676,10 +672,10 @@ export default function useTGTable({
 
     if (expanded) {
       // 展开行：添加到展开键数组中（避免重复）
-      newExpandedRowKeys = [...new Set([...expandedRowKeys.value, record[rowKey.value]])]
+      newExpandedRowKeys = [...new Set([...(expandedRowKeys.value || []), record[rowKey.value]])]
     } else {
       // 折叠行：从展开键数组中移除
-      newExpandedRowKeys = expandedRowKeys.value.filter(key => key !== record[rowKey.value])
+      newExpandedRowKeys = expandedRowKeys.value?.filter(key => key !== record[rowKey.value])
     }
 
     // 更新 store 中的 expandedRowKeys
@@ -766,6 +762,7 @@ export default function useTGTable({
     // return debounce(resize, 200)
     return throttle(resize, 200)
   }
+
   onMounted(async () => {
     // 为上级组件注入获取 table ref 的逻辑
     if (getRefOfChild instanceof Function) {
