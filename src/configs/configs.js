@@ -170,8 +170,12 @@ module.exports = {
    */
   loadFiles: [],
   /**
-   * 禁用媒体查询
-   * @type boolean
+   * 排除指定媒体查询
+   * false 则不处理媒体查询
+   * Object具体规则请参考scripts\plugins\postcss\RemoveScreenMedia.js
+   *
+   * @tip 修改该变量的值需要重启项目！！
+   * @type {false | Object}
    */
   extractMediaQueries: false
 }

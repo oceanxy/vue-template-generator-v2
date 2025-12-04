@@ -1,5 +1,8 @@
-const postcss = require('postcss')
-
+/**
+ * 移除媒体查询
+ * @param options
+ * @return {{postcssPlugin: string, Once(*, {result: *}): void}}
+ */
 module.exports = (options = {}) => {
   const {
     removeAllScreen = true,
@@ -48,7 +51,7 @@ module.exports = (options = {}) => {
       })
 
       if (logRemoved && removedCount > 0) {
-        console.log(`📊  总计移除 ${removedCount} 个媒体查询${filePath}`)
+        console.log(`📊  该文件已移除 ${removedCount} 个媒体查询${filePath}`)
       }
     }
   }
