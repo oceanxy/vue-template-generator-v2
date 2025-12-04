@@ -169,7 +169,7 @@ function getConfig(appName) {
       const server = new WebpackDevServer(devServerOptions, compiler)
 
       console.log(
-        chalk.hex('#1fb0ff')(`<i> ${appName} `) +
+        chalk.hex('#1fb0ff')(`<i> [${appName}] `) +
         chalk.gray(`检测到 Dev Server 配置文件（src/apps/${appName}/configs/devServer.js），已成功加载。`)
       )
 
