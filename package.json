@@ -9,7 +9,8 @@
     "analy": "cross-env NODE_ENV=production BASE_ENV=analysis node ./scripts",
     "lint": "eslint . --ext .vue,.js,.jsx --fix",
     "clean:cache": "rimraf node_modules/.cache/webpack",
-    "clean:app-cache": "node ./scripts --cleanAppCache"
+    "clean:app-cache": "node ./scripts --cleanAppCache",
+    "update:browserlist": "cross-env BROWSERSLIST_PACKAGE_MANAGER=yarn npx update-browserslist-db@latest"
   },
   "license": "ISC",
   "devDependencies": {
