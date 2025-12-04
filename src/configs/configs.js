@@ -168,5 +168,10 @@ module.exports = {
    * 加载第三方文件集合
    * @type LoadFiles[]
    */
-  loadFiles: []
+  loadFiles: [],
+  /**
+   * 禁用媒体查询
+   * @type boolean
+   */
+  extractMediaQueries: false
 }

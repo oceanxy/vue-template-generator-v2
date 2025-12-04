@@ -5,12 +5,16 @@ import configs from '@/configs'
 export function getScreenInfo() {
   const width = window.innerWidth
 
-  if (width <= 1366) {
-    return { fontSize: 12, componentSize: 'small' }
-  } else if (width <= 1920) {
+  if (configs.extractMediaQueries) {
     return { fontSize: 14, componentSize: 'middle' }
   } else {
-    return { fontSize: 16, componentSize: 'large' }
+    if (width <= 1366) {
+      return { fontSize: 12, componentSize: 'small' }
+    } else if (width <= 1920) {
+      return { fontSize: 14, componentSize: 'middle' }
+    } else {
+      return { fontSize: 16, componentSize: 'large' }
+    }
   }
 }
 

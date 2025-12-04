@@ -5,6 +5,7 @@ const { readdirSync, statSync, existsSync } = require('node:fs')
 const args = require('minimist')(process.argv.slice(2))
 const { resolve, join } = require('node:path')
 const AppNameInjectionPlugin = require('./plugins/AppNameInjectionPlugin')
+const MediaQueryConfigPlugin = require('./plugins/MediaQueryConfigPlugin')
 const { merge } = require('lodash')
 const chalk = require('chalk')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
@@ -145,6 +146,8 @@ function getConfig(appName) {
 
   // 调用注入 appName 的插件
   config.plugins.unshift(new AppNameInjectionPlugin({ appName }))
+  // 调用媒体查询处理插件
+  config.plugins.unshift(new MediaQueryConfigPlugin({ appName }))
 
   // 复制 public 内静态文件
   config.plugins.push(new CopyWebpackPlugin({
@@ -166,7 +169,7 @@ function getConfig(appName) {
       const server = new WebpackDevServer(devServerOptions, compiler)
 
       console.log(
-        chalk.hex('#1fb0ff')('编译信息：') +
+        chalk.hex('#1fb0ff')(`<i> ${appName} `) +
         chalk.gray(`检测到 Dev Server 配置文件（src/apps/${appName}/configs/devServer.js），已成功加载。`)
       )
 

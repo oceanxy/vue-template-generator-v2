@@ -1,38 +1,10 @@
 const { ProvidePlugin, DefinePlugin } = require('webpack')
-const chalk = require('chalk')
 const { resolve, join } = require('path')
-const { accessSync, constants } = require('node:fs')
+const BasePlugin = require('./BasePlugin')
 
-class GlobalVariableInjectionPlugin {
-  constructor() { }
-
-  log(text) {
-    console.info(chalk.hex('#1fb0ff')('编译信息：') + chalk.gray(`检测到${text}，已成功加载。`))
-  }
-
-  tips(text) {
-    console.info(chalk.hex('#fcca6b')('编译提示：') + chalk.hex('#fcca6b')(text))
-  }
-
-  /**
-   * 预加载资源文件（基于 webpack.ProvidePlugin 插件）
-   * @param {string} url - 资源地址
-   * @param {(string) => void} onSuccess - 资源读取成功的回调函数
-   * @param {(Error) => void} [onError] - 资源读取失败的回调函数
-   */
-  preloadResources(url, onSuccess, onError) {
-    const resource = resolve(join(__dirname, '../..', url))
-
-    try {
-      accessSync(resource, constants.F_OK)
-      onSuccess?.(resource)
-    } catch (e) {
-      if (typeof onError === 'function') {
-        onError?.(e)
-      } else {
-        throw new Error(e)
-      }
-    }
+class GlobalVariableInjectionPlugin extends BasePlugin {
+  constructor() {
+    super({ appName: '' })
   }
 
   // 查找所有DefinePlugin插件中，是否存在指定变量
@@ -51,7 +23,7 @@ class GlobalVariableInjectionPlugin {
   apply(compiler) {
     compiler.hooks.compilation.tap('GlobalVariableInjectionPlugin', compilation => {
       if (compilation.options.plugins) {
-        const appName = compiler.options.appName
+        this.appName = compiler.options.appName
 
         // 修改现有插件的配置
         const existingPlugins = compilation.options.plugins
@@ -62,9 +34,9 @@ class GlobalVariableInjectionPlugin {
             // 预加载配置文件
             if (!plugin.definitions.__TG_APP_CONFIG__) {
               this.preloadResources(
-                `src/apps/${appName}/configs/index.js`,
+                `src/apps/${this.appName}/configs/index.js`,
                 resource => {
-                  this.log(`配置文件（src/apps/${appName}/configs/index.js）`)
+                  this.log(`配置文件（src/apps/${this.appName}/configs/index.js）`)
                   plugin.definitions.__TG_APP_CONFIG__ = resource
 
                   const version = require(resource).version
@@ -76,9 +48,9 @@ class GlobalVariableInjectionPlugin {
             // 预加载接口映射器
             if (!plugin.definitions.__TG_APP_INTERFACE_MAPPINGS__) {
               this.preloadResources(
-                `src/apps/${appName}/configs/interfaceMappings.js`,
+                `src/apps/${this.appName}/configs/interfaceMappings.js`,
                 resource => {
-                  this.log(`接口映射文件（src/apps/${appName}/configs/interfaceMappings.js）`)
+                  this.log(`接口映射文件（src/apps/${this.appName}/configs/interfaceMappings.js）`)
                   plugin.definitions.__TG_APP_INTERFACE_MAPPINGS__ = resource
                 }, () => {
                   if (!this.checkDefinePlugin(compilation, '__TG_APP_INTERFACE_MAPPINGS__')) {
@@ -95,9 +67,9 @@ class GlobalVariableInjectionPlugin {
             // 预加载用户信息和菜单信息映射器
             if (!plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__) {
               this.preloadResources(
-                `src/apps/${appName}/configs/userInfoMappings.js`,
+                `src/apps/${this.appName}/configs/userInfoMappings.js`,
                 resource => {
-                  this.log(`动态菜单映射文件（src/apps/${appName}/configs/userInfoMappings.js）`)
+                  this.log(`动态菜单映射文件（src/apps/${this.appName}/configs/userInfoMappings.js）`)
                   plugin.definitions.__TG_APP_USER_INFO_MAPPINGS__ = resource
                 }, () => {
                   if (!this.checkDefinePlugin(compilation, '__TG_APP_USER_INFO_MAPPINGS__')) {
@@ -114,9 +86,9 @@ class GlobalVariableInjectionPlugin {
             // 预加载事件映射器
             if (!plugin.definitions.__TG_APP_EVENT_MAPPINGS__) {
               this.preloadResources(
-                `src/apps/${appName}/configs/eventMappings.js`,
+                `src/apps/${this.appName}/configs/eventMappings.js`,
                 resource => {
-                  this.log(`动态菜单映射文件（src/apps/${appName}/configs/eventMappings.js）`)
+                  this.log(`动态菜单映射文件（src/apps/${this.appName}/configs/eventMappings.js）`)
                   plugin.definitions.__TG_APP_EVENT_MAPPINGS__ = resource
                 }, () => {
                   if (!this.checkDefinePlugin(compilation, '__TG_APP_EVENT_MAPPINGS__')) {
@@ -133,9 +105,9 @@ class GlobalVariableInjectionPlugin {
             // 预加载路由文件
             if (!plugin.definitions.__TG_APP_ROUTES__) {
               this.preloadResources(
-                `src/apps/${appName}/router/index.js`,
+                `src/apps/${this.appName}/router/index.js`,
                 resource => {
-                  this.log(`路由文件（src/apps/${appName}/router/index.js）`)
+                  this.log(`路由文件（src/apps/${this.appName}/router/index.js）`)
                   plugin.definitions.__TG_APP_ROUTES__ = resource
                 }
               )
@@ -144,16 +116,16 @@ class GlobalVariableInjectionPlugin {
             // 预加载登录组件
             if (!plugin.definitions.__TG_APP_LOGIN_COMPONENT__) {
               this.preloadResources(
-                `src/apps/${appName}/views/Login/index.jsx`,
+                `src/apps/${this.appName}/views/Login/index.jsx`,
                 resource => {
-                  this.log(`登录组件（src/apps/${appName}/views/index.jsx）`)
+                  this.log(`登录组件（src/apps/${this.appName}/views/index.jsx）`)
                   plugin.definitions.__TG_APP_LOGIN_COMPONENT__ = resource
                 },
                 () => {
                   this.preloadResources(
-                    `src/apps/${appName}/views/Login/index.vue`,
+                    `src/apps/${this.appName}/views/Login/index.vue`,
                     resource => {
-                      this.log(`登录组件（src/apps/${appName}/views/Login/index.vue）`)
+                      this.log(`登录组件（src/apps/${this.appName}/views/Login/index.vue）`)
                       plugin.definitions.__TG_APP_LOGIN_COMPONENT__ = resource
                     },
                     () => {
@@ -180,16 +152,16 @@ class GlobalVariableInjectionPlugin {
             // 预加载 App 入口文件
             if (!plugin.definitions.__TG_APP_COMPONENT__) {
               this.preloadResources(
-                `src/apps/${appName}/App.jsx`,
+                `src/apps/${this.appName}/App.jsx`,
                 resource => {
-                  this.log(`入口组件（src/apps/${appName}/App.jsx）`)
+                  this.log(`入口组件（src/apps/${this.appName}/App.jsx）`)
                   plugin.definitions.__TG_APP_COMPONENT__ = resource
                 },
                 (e) => {
                   this.preloadResources(
-                    `src/apps/${appName}/App.vue`,
+                    `src/apps/${this.appName}/App.vue`,
                     resource => {
-                      this.log(`入口组件（src/apps/${appName}/App.vue）`)
+                      this.log(`入口组件（src/apps/${this.appName}/App.vue）`)
                       plugin.definitions.__TG_APP_COMPONENT__ = resource
                     },
                     () => {
@@ -216,9 +188,9 @@ class GlobalVariableInjectionPlugin {
             // 预加载 IconFont 文件
             if (!plugin.definitions.__TG_APP_ICON_FONT__) {
               this.preloadResources(
-                `src/apps/${appName}/assets/iconfont.js`,
+                `src/apps/${this.appName}/assets/iconfont.js`,
                 resource => {
-                  this.log(`图标文件（src/apps/${appName}/assets/iconfont.js）`)
+                  this.log(`图标文件（src/apps/${this.appName}/assets/iconfont.js）`)
                   plugin.definitions.__TG_APP_ICON_FONT__ = resource
                 },
                 () => {
@@ -239,9 +211,9 @@ class GlobalVariableInjectionPlugin {
               // let isExistCustomizeProdTinyEcharts = false
 
               this.preloadResources(
-                `src/apps/${appName}/assets/echarts.min.js`,
+                `src/apps/${this.appName}/assets/echarts.min.js`,
                 resource => {
-                  this.log(`定制 eCharts（src/apps/${appName}/assets/echarts.min.js）`)
+                  this.log(`定制 eCharts（src/apps/${this.appName}/assets/echarts.min.js）`)
                   // isExistCustomizeProdTinyEcharts = true
                   plugin.definitions.__TG_APP_CUSTOMIZE_PROD_TINY_ECHARTS__ = resource
                 },
