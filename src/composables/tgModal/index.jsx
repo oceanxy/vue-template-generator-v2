@@ -24,12 +24,8 @@ export default function useTGModal({
   }
   const modalTitleRef = ref(null)
   const { x, y, isDragging } = useDraggable(modalTitleRef)
-
-  const {
-    onCancel,
-    onOk,
-    ...restModalProps
-  } = modalProps
+  const onCancel = modalProps.onCancel
+  const onOk = modalProps.onOk
 
   const _okButtonProps = computed(() => modalProps.okButtonProps || {})
   const _okButtonLoading = ref(false)
@@ -163,12 +159,12 @@ export default function useTGModal({
           class={'tg-modal'}
           getContainer={() => document.querySelector('#tg-global-modals')}
           open={store[modalStatusFieldName]}
-          onCancel={handleCancel}
-          onOk={handleOk}
           maskClosable={false}
           wrapStyle={{ overflow: 'hidden' }}
           {...(props.readonly ? { footer: <Button onClick={handleCancel}>关闭</Button> } : {})}
-          {...restModalProps}
+          {...modalProps}
+          onCancel={handleCancel}
+          onOk={handleOk}
           okButtonProps={{
             ..._okButtonProps.value,
             disabled: modalContentLoading.value || _okButtonProps.value.disabled || _okButtonDisabled.value,
@@ -176,7 +172,7 @@ export default function useTGModal({
           }}
           title={
             <div ref={modalTitleRef} style={{ cursor: 'move', userSelect: 'none' }}>
-              {restModalProps?.title?.replace('{ACTION}', currentItem.value?.id ? '编辑' : '新增')}
+              {modalProps?.title?.replace('{ACTION}', currentItem.value?.id ? '编辑' : '新增')}
             </div>
           }
         >
