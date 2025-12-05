@@ -512,7 +512,7 @@ export function createStore({
                 currentItem: res.data
               })
             } else {
-              throw new Error(`store.getDetails：当接口（${api}）返回值是一个数组时，必须传递setValue回调函数以自定义处理数据！`)
+              throw new Error(`store.getDetails：当接口（${api}）返回值为非对象时，请传递setValue回调函数来自行处理数据！`)
             }
           }
         }
