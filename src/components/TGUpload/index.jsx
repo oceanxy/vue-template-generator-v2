@@ -1,3 +1,4 @@
+import './index.scss'
 import { Button, message, Modal, Upload } from 'ant-design-vue'
 import { getBase64, getFirstLetterOfEachWordOfAppName, getUUID } from '@/utils/utilityFunction'
 import { computed, ref, watch } from 'vue'
@@ -271,13 +272,7 @@ export default {
     }
 
     return () => (
-      <div
-        style={{
-          margin: '4px 0',
-          lineHeight: 0,
-          flex: 'auto'
-        }}
-      >
+      <div class={'tg-upload-wrapper'}>
         <Upload
           accept={props.accept}
           action={props.action || configs.uploadPath.common}

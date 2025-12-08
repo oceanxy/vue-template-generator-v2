@@ -1,0 +1,24 @@
+.tg-upload-wrapper {
+  margin: 4px 0;
+  line-height: 0;
+  flex: auto;
+
+  .ant-upload-wrapper.ant-upload-picture-card-wrapper {
+    .ant-upload-list.ant-upload-list-picture-card {
+      .ant-upload {
+        margin: 0;
+
+        p {
+          margin: 0;
+        }
+      }
+
+      .ant-upload-list-item-container,
+      .ant-upload.ant-upload-select.ant-upload-select-picture-card {
+        margin: 0;
+        width: 64px;
+        height: 64px;
+      }
+    }
+  }
+}
