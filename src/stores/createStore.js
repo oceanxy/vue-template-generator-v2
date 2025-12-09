@@ -508,8 +508,13 @@ export function createStore({
             setValue(res.data, this)
           } else {
             if (Object.prototype.toString.call(res.data) === '[object Object]') {
+              const { data, code, msg, message, status, ...rest } = res
+
               this.$patch({
-                currentItem: res.data
+                currentItem: {
+                  ...res.data,
+                  ...rest // 将 Response 中除常规字段以外的其他字段都加入到 currentItem 中
+                }
               })
             } else {
               throw new Error(`store.getDetails：当接口（${api}）返回值为非对象时，请传递setValue回调函数来自行处理数据！`)
