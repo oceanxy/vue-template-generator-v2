@@ -23,7 +23,7 @@ import { DownOutlined, ReloadOutlined, SearchOutlined, UpOutlined } from '@ant-d
  * @todo 完成`location`在同时引入多个store时的适配。
  * @solution 目前的解决方案是禁止`location`和`storeName`同时存在。
  * @property stateName {string} - 在 store.state 中字段的名称。
- * @property [location] {string} - 在 store.state 中次级模块的字段名称，此字段会影响`apiName`、·stateName·、`paramNameInSearchRO`
+ * @property [location] {string} - 在 store.state 中次级模块的字段名称，此字段会影响`apiName`、`stateName`、`paramNameInSearchRO`
  * 以及`dependentField`等字段。
  * @property [storeName] {string} - stateName 参数值所在 store 的名称，默认为当前上下文所在 store。
  * @property [apiName] {string} - 接口名称。
