@@ -1,7 +1,7 @@
 import './assets/styles/index.scss'
 import useTGModal from '@/composables/tgModal'
 import useTGForm from '@/composables/tgForm'
-import { inject, provide, reactive, watch } from 'vue'
+import { provide, reactive, watch } from 'vue'
 import { set } from 'lodash/object'
 
 /**
@@ -37,14 +37,6 @@ export default function useTGFormModal({
   searchParamOptions,
   formModelFormatter
 }) {
-  /**
-   * 如果组件传递了storeName，则以此为准，
-   * 否则从inject中查找storeName
-   */
-  if (!storeName) {
-    storeName = inject('storeName', null)
-  }
-
   provide('inModal', true)
 
   const _modalProps = reactive(modalProps)

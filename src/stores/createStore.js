@@ -711,17 +711,16 @@ export function createStore({
             )
           } else {
             // 关闭弹窗时，如果存在缓存的`currentItem`，则恢复之
-            if (this.currentItem._prevCurrentItem && Object.keys(this.currentItem._prevCurrentItem).length) {
+            if (this.currentItem?._prevCurrentItem && Object.keys(this.currentItem._prevCurrentItem).length) {
               this.currentItem._prevCurrentItem._type = 'restore'
+              this.setState('currentItem', this.currentItem._prevCurrentItem, { merge })
             }
-
-            this.setState('currentItem', this.currentItem._prevCurrentItem, { merge })
           }
 
           const rowKey = this[location]?.rowKey || this.rowKey
 
           // 无感化处理`form`的唯一标识符（由`store.state.rowKey`指定），用于弹窗的编辑等功能
-          if (rowKey in this.currentItem && 'form' in (this.$state[location] || {})) {
+          if (rowKey in (this.currentItem || {}) && 'form' in (this.$state[location] || {})) {
             this.$state[location].form[rowKey] = this.currentItem[rowKey]
           } else {
             if ('form' in (this.$state[location] || {})) {

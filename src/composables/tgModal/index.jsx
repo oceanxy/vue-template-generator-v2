@@ -22,14 +22,38 @@ export default function useTGModal({
   if (!store) {
     store = useStore()
   }
-  const modalTitleRef = ref(null)
-  const { x, y, isDragging } = useDraggable(modalTitleRef)
-  const onCancel = modalProps.onCancel
-  const onOk = modalProps.onOk
 
-  const _okButtonProps = computed(() => modalProps.okButtonProps || {})
-  const _okButtonLoading = ref(false)
-  const _okButtonDisabled = ref(false)
+  const _modalProps = computed(() => {
+    // 保存原始函数
+    const originalOnCancel = modalProps?.onCancel
+    const originalOnOk = modalProps?.onOk
+
+    // 创建新对象，避免修改原始对象
+    return {
+      ...modalProps,
+      onCancel: async () => {
+        store.setVisibilityOfModal({
+          modalStatusFieldName,
+          location,
+          value: false
+        })
+
+        if (typeof originalOnCancel === 'function') {
+          originalOnCancel()
+        }
+      },
+      onOk: async () => {
+        if (typeof originalOnOk === 'function') {
+          handleModalContentStatusChange(true)
+          await originalOnOk()
+          handleModalContentStatusChange(false)
+        } else {
+          throw new Error('tgModal：未找到 okButton 点击事件绑定的函数，请确认！')
+        }
+      }
+    }
+  })
+  const _okButtonProps = computed(() => _modalProps.value.okButtonProps || {})
   const open = computed(() => store[modalStatusFieldName])
   const currentItem = computed(() => store.currentItem)
   const modalContentLoading = computed({
@@ -43,6 +67,11 @@ export default function useTGModal({
     set: val => store[location].loading = val
   })
 
+  const { x, y, isDragging } = useDraggable(modalTitleRef)
+
+  const modalTitleRef = ref(null)
+  const _okButtonLoading = ref(false)
+  const _okButtonDisabled = ref(false)
   const startX = ref(0)
   const startY = ref(0)
   const startedDrag = ref(false)
@@ -101,32 +130,6 @@ export default function useTGModal({
     }
   })
 
-  /**
-   * 关闭弹窗
-   * @returns {Promise<void>}
-   */
-  async function handleCancel() {
-    store.setVisibilityOfModal({
-      modalStatusFieldName,
-      location,
-      value: false
-    })
-
-    if (typeof onCancel === 'function') {
-      onCancel()
-    }
-  }
-
-  async function handleOk() {
-    if (typeof onOk === 'function') {
-      handleModalContentStatusChange(true)
-      await onOk()
-      handleModalContentStatusChange(false)
-    } else {
-      console.warn('tgModal：未找到 okButton 点击事件绑定的函数，请确认！')
-    }
-  }
-
   function handleModalContentStatusChange(status) {
     _okButtonLoading.value = status
     _okButtonDisabled.value = status
@@ -161,10 +164,8 @@ export default function useTGModal({
           open={store[modalStatusFieldName]}
           maskClosable={false}
           wrapStyle={{ overflow: 'hidden' }}
-          {...(props.readonly ? { footer: <Button onClick={handleCancel}>关闭</Button> } : {})}
-          {...modalProps}
-          onCancel={handleCancel}
-          onOk={handleOk}
+          {...(props.readonly ? { footer: <Button onClick={_modalProps.value.handleCancel}>关闭</Button> } : {})}
+          {..._modalProps.value}
           okButtonProps={{
             ..._okButtonProps.value,
             disabled: modalContentLoading.value || _okButtonProps.value.disabled || _okButtonDisabled.value,
@@ -172,7 +173,10 @@ export default function useTGModal({
           }}
           title={
             <div ref={modalTitleRef} style={{ cursor: 'move', userSelect: 'none' }}>
-              {modalProps?.title?.replace('{ACTION}', currentItem.value?.id ? '编辑' : '新增')}
+              {_modalProps.value?.title?.replace(
+                '{ACTION}',
+                currentItem.value?.id ? '编辑' : '新增'
+              )}
             </div>
           }
         >
@@ -197,6 +201,6 @@ export default function useTGModal({
     TGModal,
     open,
     currentItem,
-    handleCancel
+    handleCancel: _modalProps.value.onCancel
   }
 }

@@ -49,7 +49,6 @@ export default function useTGTable({
   let observer = null
   let timer = null
 
-  const storeName = inject('storeName', null)
   const inModal = inject('inModal', null)
   const hasTree = inject('hasTree', null)
   const refreshTree = inject('refreshTree', null)
@@ -58,7 +57,7 @@ export default function useTGTable({
 
   const { token } = useThemeVars()
   const commonStore = useStore('/common')
-  let store = useStore(storeName)
+  let store = useStore()
 
   const tableRef = ref(null)
   const exportButtonDisabled = ref(false)
@@ -103,7 +102,7 @@ export default function useTGTable({
     expandedRowKeys = computed(() => store.expandedRowKeys)
   } else {
     /** 弹窗内表格等副表格逻辑 **/
-    rowKey = computed(() => store[location].rowKey)
+    rowKey = computed(() => store[location]?.rowKey)
     pagination = computed(() => store[location]?.pagination)
     currentPageStartNumber = computed(() => {
       return (pagination.value?.pageIndex ?? 0) * (pagination.value?.pageSize ?? 10)

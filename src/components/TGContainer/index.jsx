@@ -57,10 +57,6 @@ export default {
     ...TGContainerWithTreeSider.props
   },
   setup(props, { slots, attrs, expose }) {
-    const treeRef = ref(null)
-    const store = useStore(props?.storeName ?? null)
-    const taskQueues = computed(() => store.taskQueues)
-
     const {
       isInitTable,
       showTree,
@@ -74,7 +70,10 @@ export default {
 
     // 当容器组件传递了指定store时，则将本组件的 storeName 提供给所有子级或插槽
     provide('storeName', props.storeName)
+    const store = useStore(props.storeName)
+    provide('pageStore', store)
 
+    const treeRef = ref(null)
     const _isInitTable = computed(() => {
       return isInitTable && !!slots.table && 'dataSource' in store.$state
     })
@@ -83,6 +82,8 @@ export default {
     // 提供给所有子级或插槽，以判断本页面是否存在列表组件
     provide('isInitTable', _isInitTable.value)
     provide('optionsOfGetList', props.optionsOfGetList)
+
+    const taskQueues = computed(() => store.taskQueues)
 
     onMounted(async () => {
       if (!_isInitTable.value) {
@@ -137,7 +138,7 @@ export default {
         if (isFirstTime) {
           if (slots.inquiry) {
             // 任务队列因为任何故障导致未完成初始化，则不进行下一步操作
-            // 这个故障可能包括组件报错、路有变化（快速切换路由，组件已经被卸载）等原因
+            // 这个故障可能包括组件报错、路由变化（快速切换路由，组件已经被卸载）等原因
             if (!Array.isArray(taskQueues.value.required)) return
 
             // 首次初始化时延迟执行非必需的枚举，以节省请求表格的资源

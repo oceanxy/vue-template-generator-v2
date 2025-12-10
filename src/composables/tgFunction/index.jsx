@@ -42,7 +42,6 @@ export default function useFunction({
   setAddParams,
   setExportParams
 } = {}) {
-  const storeName = inject('storeName', null)
   /**
    * 判断本页面是否存在侧边树组件
    * 来自于 @/src/components/TGContainerWithTreeSider 组件
@@ -53,7 +52,9 @@ export default function useFunction({
    * 来自于 @/src/components/TGContainerWithTreeSider 组件
    */
   const refreshTree = inject('refreshTree', undefined)
-  const store = useStore(storeName)
+
+  const store = useStore()
+
   const editButtonDisabled = ref(true)
   const deleteButtonDisabled = ref(true)
   const auditButtonDisabled = ref(true)

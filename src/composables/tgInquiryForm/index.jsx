@@ -60,12 +60,12 @@ export default function useInquiryForm({
   showResetButton = true,
   buttonText = { query: '查询', reset: '重置' }
 } = {}) {
-  const storeName = inject('storeName', null)
   const isInitTable = inject('isInitTable', true)
   const optionsOfGetList = inject('optionsOfGetList', {})
-  const store = useStore(storeName)
-  const commonStore = useStore('/common')
   const searchParamNameRequired = inject('searchParamNameRequired', [])
+
+  const store = useStore()
+  const commonStore = useStore('/common')
 
   const treeCollapsed = computed(() => commonStore.treeCollapsed)
   const inquiryFormCollapsed = computed(() => commonStore.inquiryFormCollapsed)

@@ -5,7 +5,7 @@ import { Button, Form } from 'ant-design-vue'
 
 /**
  * TGForm 组件
- * @param [storeName] {string} - store名称，store名称，默认为当前页面的store模块。
+ * @param [storeName] {string|null} - store名称，store名称，默认为当前页面的store模块。
  * @param [isSearchForm] {boolean} - 是否是作为搜索表单使用，默认false：作为数据表单使用。
  * @param [showSubmitButton] {boolean} - 是否显示表单的提交按钮。
  * @param [submitButtonProps={}] {import('ant-design-vue').ButtonProps} - `submitButton`按钮的属性，依赖`showSubmitButton`参数。
