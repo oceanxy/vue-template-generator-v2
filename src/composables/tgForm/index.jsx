@@ -74,7 +74,7 @@ export default function useTGForm({
   const form = computed(() => store[location]?.form)
   const currentItem = computed(() => store.currentItem)
   const open = computed(() => store[modalStatusFieldName] || false)
-  const formModel = reactive(location ? form.value : isSearchForm ? search.value : currentItem.value)
+  const formModel = reactive(location ? form.value : search.value)
   const formRules = reactive(rules)
   const initSearchParamResult = ref(searchParamOptions?.length <= 0)
   const hasRequiredEnum = searchParamOptions?.some(_enum => _enum.isRequired === true)
