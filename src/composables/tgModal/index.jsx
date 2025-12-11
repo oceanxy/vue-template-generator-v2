@@ -164,7 +164,17 @@ export default function useTGModal({
           open={store[modalStatusFieldName]}
           maskClosable={false}
           wrapStyle={{ overflow: 'hidden' }}
-          {...(props.readonly ? { footer: <Button onClick={_modalProps.value.handleCancel}>关闭</Button> } : {})}
+          {
+            ...(props.readonly
+              ? {
+                footer: (
+                  <Button onClick={_modalProps.value.onCancel}>
+                    {_modalProps.value.cancelText || '取消'}
+                  </Button>
+                )
+              }
+              : {})
+          }
           {..._modalProps.value}
           okButtonProps={{
             ..._okButtonProps.value,
