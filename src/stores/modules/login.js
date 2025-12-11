@@ -72,17 +72,29 @@ export default createStore({
         // 重置路由
         await router.resetRouter()
 
-        // 检测query参数是否存在重定向
-        const { redirect, ...query } = router.currentRoute.value.query
-        // 检测本地存储是否存在保存的路由（意外退出的路由），如果有，则在登录成功后直接跳转到该路由
-        const selectedRoute = localStorage.getItem(`${appName}-selectedKey`)
+        // 登录操作全部完成后，跳转进入系统前，清空状态信息
+        this.$patch({
+          verifyStatus: 'idle',
+          loadingMessage: {
+            title: '',
+            content: ''
+          }
+        })
 
-        if (redirect) {
-          await router.replace({ path: `${redirect}`, query })
-        } else if (selectedRoute) {
-          await router.replace(selectedRoute)
-        } else {
-          await router.replace({ name: 'Home' })
+        // 只有处于登录页面时，才执行路由重定向
+        if (router.currentRoute.value.name === 'Login') {
+          // 检测query参数是否存在重定向
+          const { redirect, ...query } = router.currentRoute.value.query
+          // 检测本地存储是否存在保存的路由（意外退出的路由），如果有，则在登录成功后直接跳转到该路由
+          const selectedRoute = localStorage.getItem(`${appName}-selectedKey`)
+
+          if (redirect) {
+            await router.replace({ path: `${redirect}`, query })
+          } else if (selectedRoute) {
+            await router.replace(selectedRoute)
+          } else {
+            await router.replace({ name: 'Home' })
+          }
         }
       },
       async login(payload, api) {
@@ -114,7 +126,7 @@ export default createStore({
           commonStore.setTheme(appName, response.data.userInfo)
         }
 
-        this.loading = false
+        this.$patch({ loading: false })
 
         return Promise.resolve(response)
       },
