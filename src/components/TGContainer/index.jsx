@@ -175,11 +175,15 @@ export default {
             }
           } else {
             if (_isInitTable.value) {
-              // 直接执行搜索
-              await store.execSearch({
-                isPagination,
-                ...(optionsOfGetList ?? {})
-              })
+              if (Object.keys(payload).length) {
+                await saveParamsAndExecSearch({ ...payload })
+              } else {
+                // 直接执行搜索
+                await store.execSearch({
+                  isPagination,
+                  ...(optionsOfGetList ?? {})
+                })
+              }
             }
           }
         } else {
