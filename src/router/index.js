@@ -13,14 +13,20 @@ import getBaseRoutes from '@/router/routes'
 import { message } from 'ant-design-vue'
 import { getEnvVar } from '@/utils/env'
 import useStore from '@/composables/tgStore'
+import { cloneDeep } from 'lodash'
 
 const appName = getFirstLetterOfEachWordOfAppName()
 let abortController = createAbortController()
-
-__TG_APP_ROUTES__.default?.forEach(route => {
+const APP_ROUTES_OPEN = __TG_APP_ROUTES__.open
+const APP_ROUTES = __TG_APP_ROUTES__.default?.map(route => {
   if (route.path.startsWith('{appName}')) {
-    route.path = route.path.replace('{appName}', appName)
+    return {
+      ...route,
+      path: route.path.replace('{appName}', appName)
+    }
   }
+
+  return route
 })
 
 function createAbortController() {
@@ -80,8 +86,8 @@ function initializeDynamicRoutes(menus, appRoutes, redirectCallback) {
 
 /**
  * 从用户信息映射文件选取菜单数据
- * @param menus ｛VueRoute[]｝ - 从用户信息映射来的菜单数据，数据类型为vue-router的路由格式
- * @param routes ｛VueRoute[]｝ - 本项目的路由文件
+ * @param menus {import('vue-route').RouteRecordRaw[]} - 从用户信息映射来的菜单数据，数据类型为vue-router的路由格式
+ * @param routes {import('vue-route').RouteRecordRaw[]} - 本项目的路由文件
  * @return {*[]}
  */
 function selectDynamicRoutes(menus, routes) {
@@ -143,7 +149,7 @@ function getRoutes() {
     // 或启用本地路由
     !configs.dynamicRouting
   ) {
-    return getBaseRoutes(__TG_APP_ROUTES__.default)
+    return getBaseRoutes(cloneDeep(APP_ROUTES))
   }
 
   const token = localStorage.getItem(`${appName}-${configs.tokenConfig.fieldName}`)
@@ -151,10 +157,10 @@ function getRoutes() {
 
   if (menu && token) {
     if (__TG_APP_USER_INFO_MAPPINGS__) {
-      return getBaseRoutes(selectDynamicRoutes(menu, __TG_APP_ROUTES__?.default || []))
+      return getBaseRoutes(selectDynamicRoutes(menu, cloneDeep(APP_ROUTES) || []))
     }
 
-    return getBaseRoutes(initializeDynamicRoutes(menu[0].children, __TG_APP_ROUTES__.default, __TG_APP_ROUTES__.open))
+    return getBaseRoutes(initializeDynamicRoutes(menu[0].children, cloneDeep(APP_ROUTES), APP_ROUTES_OPEN))
   }
 
   return getBaseRoutes()

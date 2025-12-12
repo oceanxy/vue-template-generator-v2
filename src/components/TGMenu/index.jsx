@@ -14,7 +14,6 @@ export default {
     const appName = getFirstLetterOfEachWordOfAppName()
     const openKeys = ref([])
     const selectedKeys = ref([])
-    const menuRoutes = ref([])
     const menuScrollTop = ref(0)
     const menuDomRef = ref()
     // 用于跟随主题色变化更新图标
@@ -44,12 +43,12 @@ export default {
       return `tg-menu-popup ${configs.menuStyle}`
     }
 
-    function addKey(menuRoutes, parent = '/') {
+    function generateMenuKeys(menuRoutes, parent = '/') {
       return menuRoutes.map(route => {
         route.key = `${parent}/${route.path}`.replace('//', '/')
 
         if (Array.isArray(route.children) && route.children.length) {
-          route.children = addKey(route.children, route.key)
+          route.children = generateMenuKeys(route.children, route.key)
         }
 
         return route
@@ -165,9 +164,7 @@ export default {
     }
 
     function getMenuItem(routes) {
-      const _menuRoutes = routes || menuRoutes.value
-
-      return _menuRoutes.map(route => {
+      return routes.map(route => {
         if (!route.meta.hideChildren && route.children?.length) {
           return (
             <Menu.SubMenu
@@ -222,23 +219,29 @@ export default {
       if (_openKeys) {
         openKeys.value = JSON.parse(_openKeys)
       }
-
-      menuRoutes.value = addKey(router.getRoutes().find(route => route.path === '/').children)
     })
 
-    return () => (
-      <Menu
-        id={'menu'}
-        ref={menuDomRef}
-        mode="inline"
-        inlineIndent={18}
-        class={['tg-menu-container', configs.menuStyle]}
-        openKeys={openKeys.value}
-        selectedKeys={selectedKeys.value}
-        onClick={onMenuClick}
-      >
-        {getMenuItem()}
-      </Menu>
-    )
+    return () => {
+      // 每次渲染时重新计算菜单项，确保响应最新路由
+      const rootRoute = router.getRoutes().find(route => route.path === '/')
+      const currentMenuRoutes = rootRoute && rootRoute.children
+        ? generateMenuKeys([...rootRoute.children])
+        : []
+
+      return (
+        <Menu
+          id={'menu'}
+          ref={menuDomRef}
+          mode="inline"
+          inlineIndent={18}
+          class={['tg-menu-container', configs.menuStyle]}
+          openKeys={openKeys.value}
+          selectedKeys={selectedKeys.value}
+          onClick={onMenuClick}
+        >
+          {getMenuItem(currentMenuRoutes)}
+        </Menu>
+      )
+    }
   }
 }
