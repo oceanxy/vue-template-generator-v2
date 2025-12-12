@@ -173,13 +173,24 @@ export default {
 
     async function handlePreview(file) {
       const imgType = /(bmp|gif|jpe?g|png|svg|webp)$/i
+      const videoType = /(mp4|flv)$/i
       const imgSuffix = /(\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.svg|\.webp)$/i
 
+
+
       if ('type' in file) {
+        if(videoType.test(file.type)){
+          emit("previewVideo",file)
+          return;
+        }
         if (!imgType.test(file.type)) {
           return message.warning('只支持图片预览')
         }
       } else {
+         if(videoType.test(file.name)){
+          emit("previewVideo",file)
+          return;
+        }
         if (!imgSuffix.test(file.name)) {
           return message.warning('只支持图片预览')
         }

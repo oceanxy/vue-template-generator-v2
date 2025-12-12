@@ -66,6 +66,7 @@
   },
   "dependencies": {
     "@ckpack/vue-color": "^1.6.0",
+    "@volcengine/veplayer": "^1.15.1",
     "@vueuse/core": "^13.3.0",
     "aieditor": "^1.4.2",
     "ant-design-vue": "^4.2.6",
