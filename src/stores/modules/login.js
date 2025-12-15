@@ -66,7 +66,12 @@ export default createStore({
           throw e
         }
       },
-      async jumpAfterLogin() {
+      /**
+       * 自定义跳转逻辑
+       * @param [customRouteJumps] {Function}
+       * @return {Promise<void>}
+       */
+      async jumpAfterLogin(customRouteJumps) {
         const appName = getFirstLetterOfEachWordOfAppName()
 
         // 重置路由
@@ -80,6 +85,11 @@ export default createStore({
             content: ''
           }
         })
+
+        if (typeof customRouteJumps === 'function') {
+          customRouteJumps()
+          return
+        }
 
         // 只有处于登录页面时，才执行路由重定向
         if (router.currentRoute.value.name === 'Login') {
