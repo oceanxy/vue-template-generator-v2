@@ -67,8 +67,6 @@ export default function useTGModal({
     set: val => store[location].loading = val
   })
 
-  const { x, y, isDragging } = useDraggable(modalTitleRef)
-
   const modalTitleRef = ref(null)
   const _okButtonLoading = ref(false)
   const _okButtonDisabled = ref(false)
@@ -80,6 +78,8 @@ export default function useTGModal({
   const preTransformX = ref(0)
   const preTransformY = ref(0)
   const dragRect = ref({ left: 0, right: 0, top: 0, bottom: 0 })
+
+  const { x, y, isDragging } = useDraggable(modalTitleRef)
 
   watch([x, y], () => {
     if (!startedDrag.value) {

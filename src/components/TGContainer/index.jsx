@@ -284,24 +284,33 @@ export default {
         }}
       >
         {
-          (showPageTitle || slots.function) && (
-            <div class={'tg-container-title'}>
+          (showPageTitle || slots.function || slots.subtitle) && (
+            <div class={'tg-container-title-wrapper'}>
+              <div class={'tg-container-title'}>
+                {
+                  showPageTitle && (
+                    <Space class={'tg-container-title-content'}>
+                      {
+                        router.currentRoute.value.meta.icon && (
+                          <IconFont type={router.currentRoute.value.meta.icon} />
+                        )
+                      }
+                      {router.currentRoute.value.meta.title}
+                    </Space>
+                  )
+                }
+                {
+                  slots.function && (
+                    <div class={'tg-container-function'}>
+                      {slots.function()}
+                    </div>
+                  )
+                }
+              </div>
               {
-                showPageTitle && (
-                  <Space class={'tg-container-title-content'}>
-                    {
-                      router.currentRoute.value.meta.icon && (
-                        <IconFont type={router.currentRoute.value.meta.icon} />
-                      )
-                    }
-                    {router.currentRoute.value.meta.title}
-                  </Space>
-                )
-              }
-              {
-                slots.function && (
-                  <div class={'tg-container-function'}>
-                    {slots.function()}
+                slots.subtitle && (
+                  <div class={'tg-container-subtitle'}>
+                    {slots.subtitle()}
                   </div>
                 )
               }
