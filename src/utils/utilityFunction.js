@@ -86,6 +86,41 @@ export function downloadFile(blobOrUrl, fileName) {
   }
 }
 
+/**
+ * 下载远程文件并自定义文件名
+ * @param {string} url - 远程文件URL
+ * @param {string} fileName - 自定义文件名
+ */
+export async function downloadRemoteFile(url, fileName) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const urlObj = URL.createObjectURL(blob);
+    const tmp = document.createElement('a');
+    const body = document.querySelector('body');
+
+    tmp.style.display = 'none';
+    tmp.download = fileName;
+    tmp.href = urlObj;
+    tmp.target = '_blank';
+    body.appendChild(tmp);
+
+    tmp.click();
+    body.removeChild(tmp);
+
+    setTimeout(() => {
+      URL.revokeObjectURL(urlObj);
+    }, 1000);
+  } catch (error) {
+    console.error('下载远程文件失败:', error);
+    message.error('文件下载失败');
+  }
+}
+
 export async function batchDownloadFile(files) {
   const batchSize = 10
   const delay = 1000
