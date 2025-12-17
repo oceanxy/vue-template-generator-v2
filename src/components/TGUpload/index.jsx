@@ -176,21 +176,21 @@ export default {
       const videoType = /(mp4|flv)$/i
       const imgSuffix = /(\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.svg|\.webp)$/i
 
-
-
       if ('type' in file) {
-        if(videoType.test(file.type)){
-          emit("previewVideo",file)
-          return;
+        if (videoType.test(file.type)) {
+          emit('previewVideo', file)
+          return
         }
+
         if (!imgType.test(file.type)) {
           return message.warning('只支持图片预览')
         }
       } else {
-         if(videoType.test(file.name)){
-          emit("previewVideo",file)
-          return;
+        if (videoType.test(file.name)) {
+          emit('previewVideo', file)
+          return
         }
+
         if (!imgSuffix.test(file.name)) {
           return message.warning('只支持图片预览')
         }
@@ -247,7 +247,9 @@ export default {
       // }
 
       // todo 为了解决部分项目bug，暂时回传已经上传成功的文件，后续有需求再来优化
-      emit('update:value', files.value.filter(item => item.status === 'done'))
+      const _files = files.value.filter(item => item.status === 'done')
+      emit('update:value', _files)
+      emit('fileChange', _files)
     }
 
     const renderSlots = () => {
