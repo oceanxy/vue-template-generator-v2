@@ -56,6 +56,8 @@ export default function useTGForm({
   const hasTree = inject('hasTree', false)
   const refreshTree = inject('refreshTree', undefined)
   const optionsOfGetList = inject('optionsOfGetList', null)
+  const inModal = inject('inModal', false)
+
   let commonStore
 
   const store = useStore(storeName)
@@ -112,9 +114,9 @@ export default function useTGForm({
   })
 
   if (location) {
-    if (location !== 'modalForEditing' && !modalStatusFieldName) {
-      throw new Error('TGForm：使用 useTGForm 时缺少参数（modalStatusFieldName）。')
-    }
+    // if (location !== 'modalForEditing' && !modalStatusFieldName) {
+    //   throw new Error('TGForm：使用 useTGForm 时缺少参数（modalStatusFieldName）。')
+    // }
 
     if (modalStatusFieldName) {
       watch(open, val => {
@@ -126,83 +128,89 @@ export default function useTGForm({
           resetFields()
           clearValidate()
         } else {
-          const formModelLength = Object.keys(formModel).length
-          // 检测对应store[location].form是否预定义了与页面弹窗内表单对应的字段，将影响表单字段的收集
-          // formModel 字段数量，排除编辑模式下自动注入的 [rowKey]
-          if ((!isNewModal.value && formModelLength <= 1) || (isNewModal.value && !formModelLength)) {
-            console.warn(`TGForm：${store.$id}.store.${location}.form 未预定义与页面弹窗内表单对应的字段，这会导致编辑表单时无法回填数据！`)
-          }
+          detectPredefinedFields()
         }
       })
+    } else {
+      detectPredefinedFields()
     }
 
     if (!isSearchForm) {
       // 作为数据表单使用时，将`store.currentItem`和`store[location].form`中的同名字段保持同步
       watch(currentItem, async ci => {
-        if (
-          // 判断弹窗状态
-          open.value &&
-          // 判断弹窗主体与当前currentItem数据是否匹配
-          location === ci._location &&
-          // 判断当前操作是新增还是编辑
-          (
+        if ((inModal && open.value) || !inModal) {
+          if (
+            // 判断弹窗主体与当前currentItem数据是否匹配
+            location === ci._location &&
+            // 判断当前操作是新增还是编辑
             (
-              // 判断当前是否是编辑弹窗
-              !isNewModal.value &&
-              // 判断currentItem更新次数，防止过度监听
-              ((isGetDetails && count.value < 2) || (!isGetDetails && count.value < 1))
-            ) ||
-            (isNewModal.value && count.value < 1)
-          )
-        ) {
-          // 暂时取消依赖字段的监听
-          isFormInitCompleted.value = false
+              (
+                // 判断当前是否是编辑弹窗
+                !isNewModal.value &&
+                // 判断currentItem更新次数，防止过度监听
+                ((isGetDetails && count.value < 2) || (!isGetDetails && count.value < 1))
+              ) ||
+              (isNewModal.value && count.value < 1)
+            )
+          ) {
+            // 暂时取消依赖字段的监听
+            isFormInitCompleted.value = false
 
-          const _formModel = {}
+            const _formModel = {}
 
-          // 预处理从`currentItem`中同步到`formModel`的数据
-          if (Object.keys(ci).length - 3 > 0) {
-            // TODO [性能优化]
-            //  当 isGetDetails 为 true 时，此处会执行两次。
-            //  原因是首次打开弹窗时会为 currentItem 赋值，获取到详情数据后会再次覆盖 currentItem，
-            //  导致watch.currentItem执行了两次。
-            //  优化方案：1、考虑在第二次执行时跳过已经赋值的字段，仅为新字段赋值。
-            //  2、考虑在 isGetDetails 为 true 时，首次监听不执行以下逻辑，在获取到详情数据时一并执行。
+            // 预处理从`currentItem`中同步到`formModel`的数据
+            if (Object.keys(ci).length - 3 > 0) {
+              // TODO [性能优化]
+              //  当 isGetDetails 为 true 时，此处会执行两次。
+              //  原因是首次打开弹窗时会为 currentItem 赋值，获取到详情数据后会再次覆盖 currentItem，
+              //  导致watch.currentItem执行了两次。
+              //  优化方案：1、考虑在第二次执行时跳过已经赋值的字段，仅为新字段赋值。
+              //  2、考虑在 isGetDetails 为 true 时，首次监听不执行以下逻辑，在获取到详情数据时一并执行。
 
-            for (const key in formModel) {
-              if (key in ci) {
-                const formModelKey = formModel[key]
-                const currentItemKey = toRaw(ci[key])
+              for (const key in formModel) {
+                if (key in ci) {
+                  const formModelKey = formModel[key]
+                  const currentItemKey = toRaw(ci[key])
 
-                // 引用类型为假值时跳过
-                if (!currentItemKey && typeof formModelKey === 'object') {
-                  continue
+                  // 引用类型为假值时跳过
+                  if (!currentItemKey && typeof formModelKey === 'object') {
+                    continue
+                  }
+
+                  _formModel[key] = ci[key]
                 }
-
-                _formModel[key] = ci[key]
               }
             }
+
+            // 初始化表单默认值，回填表单数据
+            store.$patch({
+              [location]: {
+                form: {
+                  ..._formModel,
+                  ...formModelFormatter?.(ci)
+                }
+              }
+            })
+
+            await nextTick()
+
+            // 恢复依赖字段的监听
+            isFormInitCompleted.value = true
+            // 清空验证信息
+            clearValidate()
+            count.value++
           }
-
-          // 初始化表单默认值，回填表单数据
-          store.$patch({
-            [location]: {
-              form: {
-                ..._formModel,
-                ...formModelFormatter?.(ci)
-              }
-            }
-          })
-
-          await nextTick()
-
-          // 恢复依赖字段的监听
-          isFormInitCompleted.value = true
-          // 清空验证信息
-          clearValidate()
-          count.value++
         }
       }, { deep: true })
+    }
+  }
+
+  function detectPredefinedFields() {
+    const formModelLength = Object.keys(formModel).length
+    // 检测对应store[location].form是否预定义了与页面弹窗内表单对应的字段，将影响表单字段的收集
+    // formModel 字段数量，排除编辑模式下自动注入的 [rowKey]
+    if ((!isNewModal.value && formModelLength <= 1) || (isNewModal.value && !formModelLength)) {
+      console.warn(`TGForm：${store.$id}.store.${location}.form 未预定义与页面弹窗内表单对应的字段，这会导致编辑表单时无法回填数据！`)
     }
   }
 
@@ -397,31 +405,16 @@ export default function useTGForm({
 
   const TGForm = {
     name: 'TGForm',
-    setup(props, { slots, emit }) {
+    async setup(props, { slots, emit }) {
       const inModal = inject('inModal', false)
-      const isInitTable = inject('isInitTable', false)
+      const isInitData = inject('isInitData', false)
 
       if (inModal) {
         const open = computed(() => store[modalStatusFieldName])
 
         watch(open, async val => {
           if (val) {
-            if (hasRequiredEnum) {
-              await initSearchParams()
-              await getDetails()
-            } else {
-              if (!initSearchParamResult.value) {
-                await Promise.all([
-                  getDetails(),
-                  initSearchParams()
-                ])
-              } else {
-                await getDetails()
-              }
-            }
-
-            // 接口加载完毕后对表单的处理逻辑
-            typeof loaded === 'function' && loaded(form)
+            await fetchData()
           } else {
             // 关闭弹窗时，取消依赖字段的监听
             unWatch.value.forEach(unWatchCb => {
@@ -433,7 +426,39 @@ export default function useTGForm({
           }
         }, { immediate: true })
       } else {
-        getDetails().then(() => {/***/})
+        if ('currentItem' in store.$state) {
+          // 往currentItem中添加标识字段，用于标识当前currentItem数据来源
+          store.setState(
+            'currentItem',
+            {
+              _prevCurrentItem: undefined,
+              _location: location, // 用于标识当前currentItem数据属于哪一层弹窗
+              _type: 'isNotModal', // 用于标识当前currentItem数据属于来源，非弹窗的表单。
+              ...currentItem.value
+            }
+          )
+        }
+
+        await fetchData()
+      }
+
+      async function fetchData() {
+        if (hasRequiredEnum) {
+          await initSearchParams()
+          await getDetails()
+        } else {
+          if (!initSearchParamResult.value) {
+            await Promise.all([
+              initSearchParams(),
+              getDetails()
+            ])
+          } else {
+            await getDetails()
+          }
+        }
+
+        // 接口加载完毕后对表单的处理逻辑
+        typeof loaded === 'function' && loaded(form)
       }
 
       async function initSearchParams() {
@@ -476,7 +501,7 @@ export default function useTGForm({
           handleSubmitButtonClick()
         } else {
           await handleFinish({
-            isRefreshTable: isInitTable,
+            isRefreshTable: isInitData,
             ...submitButtonProps.submitOptions
           })
         }
@@ -509,6 +534,7 @@ export default function useTGForm({
     clearValidate,
     handleFinish,
     formModel,
+    currentItem,
     store,
     commonStore,
     buttonDisabled,

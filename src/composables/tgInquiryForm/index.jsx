@@ -60,7 +60,7 @@ export default function useInquiryForm({
   showResetButton = true,
   buttonText = { query: '查询', reset: '重置' }
 } = {}) {
-  const isInitTable = inject('isInitTable', true)
+  const isInitData = inject('isInitData', true)
   const optionsOfGetList = inject('optionsOfGetList', {})
   const searchParamNameRequired = inject('searchParamNameRequired', [])
 
@@ -140,7 +140,7 @@ export default function useInquiryForm({
             (enumOptions.isRequired && newVal && newVal !== oldValue) ||
             (!enumOptions.isRequired && newVal !== oldValue)
           ) {
-            if (isInitTable) {
+            if (isInitData) {
               await store.execSearch()
             }
           }

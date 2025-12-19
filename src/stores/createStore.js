@@ -156,6 +156,7 @@ export function createStore({
        * @param searchParams {Object} - 执行搜索前，需要合并到 store.state.search 的值。搜索接口会调用合并后的 store.state.search。
        * @param [isFetchList] {boolean=true} - 是否执行列表查询，默认 true。
        * @param [isPagination] {boolean=true} - 是否分页，默认 true。
+       * @param [isTable] {boolean=true} - 是否为表格服务，默认 true。
        * @param [isResetSelectedRows] {boolean=true} - 是否重置 store.state.selectedRows，默认 true。
        * @param [location] {string} - 搜索参数所在的 store 的次级模块名称。
        * @param [...optionsOfGetList] {Object} - 其他`getList`函数的参数。
@@ -166,6 +167,7 @@ export function createStore({
         isFetchList = true,
         isResetSelectedRows = true,
         isPagination = true,
+        isTable = true,
         location,
         ...optionsOfGetList
       } = {}) {
@@ -175,6 +177,7 @@ export function createStore({
           return await this.execSearch({
             isResetSelectedRows,
             isPagination,
+            isTable,
             location,
             ...optionsOfGetList
           })
@@ -186,6 +189,7 @@ export function createStore({
        *
        * @param [isResetSelectedRows] {boolean=true} - 是否重置 store.state.selectedRows，默认 true。
        * @param [isPagination] {boolean=true} - 是否分页，默认 true。
+       * @param [isTable] {boolean=true} - 是否为表格服务，默认 true。
        * @param [location] {string}- 搜索参数所在的 store 的次级模块名称。
        * @param [...optionsOfGetList] {Object} - 其他`getList`函数的参数。
        * @returns {Promise<Object>}
@@ -193,6 +197,7 @@ export function createStore({
       async execSearch({
         isResetSelectedRows = true,
         isPagination = true,
+        isTable = true,
         location,
         ...optionsOfGetList
       } = {}) {
@@ -215,7 +220,8 @@ export function createStore({
         return await this.getList({
           ...optionsOfGetList,
           location,
-          isPagination
+          isPagination,
+          isTable
         })
       },
       /**
@@ -233,6 +239,7 @@ export function createStore({
       },
       /**
        * 获取列表、枚举等数据集
+       * @param {boolean} [isTable=true] - 是否是为列表请求数据。
        * @param {boolean} [isPagination] - 是否分页。默认 false。
        * @param {string} [location] - 次级表格的 state。
        * @param {string} [apiName] - 请求接口的名称，默认为 `get${router.currentRoute.value.name}`。
@@ -255,6 +262,7 @@ export function createStore({
        * @returns {Promise<*>}
        */
       async getList({
+        isTable,
         isPagination,
         location,
         apiName,
@@ -343,23 +351,29 @@ export function createStore({
             const sortFieldList = response.data?.sortFieldList ?? response.data.tag ?? []
             let rows = data?.rows ?? data
 
-            // 若指定字段不是可用的数据数组，则在 rows 对象内寻找数组作为结果返回，
-            // 其他字段注入到该模块的 store.state.[stateName].data 中
-            if (Object.prototype.toString.call(rows) === '[object Object]') {
-              const others = {}
-              const isArray = Array.isArray
+            if (isTable) {
+              // 若指定字段不是可用的数据数组，则在 rows 对象内寻找数组作为结果返回，
+              // 其他字段注入到该模块的 store.state.[stateName].data 中
+              if (Object.prototype.toString.call(rows) === '[object Object]') {
+                const others = {}
+                const isArray = Array.isArray
 
-              Object.entries(rows).forEach(([key, value]) => {
-                if (isArray(value)) {
-                  rows = value
-                } else {
-                  others[key] = value
-                }
-              })
+                Object.entries(rows).forEach(([key, value]) => {
+                  if (isArray(value)) {
+                    rows = value
+                  } else {
+                    others[key] = value
+                  }
+                })
 
+                location
+                  ? this.$patch({ [location]: { [stateName]: { data: others } } })
+                  : this.$patch({ [stateName]: { data: others } })
+              }
+            } else {
               location
-                ? this.$patch({ [location]: { [stateName]: { data: others } } })
-                : this.$patch({ [stateName]: { data: others } })
+                ? this.$patch({ [location]: { [stateName]: { data: rows } } })
+                : this.$patch({ [stateName]: { data: rows } })
             }
 
             if (!rows) {
@@ -932,6 +946,7 @@ export function createStore({
           if (isRefreshTable) {
             await this.getList({
               isPagination: true,
+              isTable: true,
               ...optionsOfGetList
             })
           }

@@ -16,11 +16,17 @@ export default {
       type: String,
       default: null
     },
-    // 是否自动初始化页面数据（页面数据接口按照`get{router.currentRoute.value.name}`格式定义）
-    // 注意：使用了`slots.table`才会生效。
-    isInitTable: {
+    /**
+     * 是否自动初始化查询参数（查询参数接口按照`get{router.currentRoute.value.name}`格式定义）
+     * 默认值根据插槽使用情况确定。
+     * @tips 默认值：
+     * - 使用 slots.table 时，值为 true；
+     * - 使用 slots.default 时，值为 false。
+     * - 以上两者都不存在时，值为 false，但用户自行传递了 true, 则以用户传递为准。
+     */
+    isInitData: {
       type: Boolean,
-      default: true
+      default: undefined
     },
     // 是否显示侧边树
     showTree: {
@@ -37,10 +43,17 @@ export default {
       type: String,
       default: ''
     },
-    // 获取页面主数据时是否需要分页，主数据是指 router.currentRoute.value.name 指向的接口数据
+    /**
+     * 获取页面主数据时是否需要分页，主数据是指 router.currentRoute.value.name 指向的接口数据
+     * 默认值根据插槽使用情况确定。
+     * @tips 默认值：
+     * - 使用 slots.table 时，值为 true；
+     * - 使用 slots.default 时，值为 false。
+     * - 以上两者都不存在时，值为 false，但用户自行传递了 true, 则以用户传递为准。
+     */
     isPagination: {
       type: Boolean,
-      default: true
+      default: undefined
     },
     /**
      * 获取表格数据配置
@@ -56,9 +69,41 @@ export default {
     },
     ...TGContainerWithTreeSider.props
   },
+  slots: {
+    /**
+     * 插槽：查询表单
+     */
+    inquiry: {},
+    /**
+     * 插槽：表格
+     * @tips 注意事项:
+     * - 本插槽与 slots.default 互斥，本插槽优先级更高；
+     * - 使用本插槽时，props.isInitData 的值默认为 true。
+     */
+    table: {},
+    /**
+     * 插槽：自定义内容
+     * @tips 注意事项:
+     * - 本插槽与 slots.table 互斥，后者优先级更高；
+     * - 使用此插槽时，props.isInitData 的值默认为 false。
+     */
+    default: {},
+    /**
+     * 插槽：内容
+     */
+    content: {},
+    /**
+     * 插槽：表格操作栏
+     */
+    tableOperation: {},
+    /**
+     * 插槽：表格列
+     */
+    tableColumn: {}
+  },
   setup(props, { slots, attrs, expose }) {
     const {
-      isInitTable,
+      isInitData,
       showTree,
       contentWrapperClassName,
       showPageTitle,
@@ -74,19 +119,38 @@ export default {
     provide('pageStore', store)
 
     const treeRef = ref(null)
-    const _isInitTable = computed(() => {
-      return isInitTable && !!slots.table && 'dataSource' in store.$state
+    const _isInitData = computed(() => {
+      if ('dataSource' in store.$state) {
+        if (typeof isInitData === 'boolean') {
+          return isInitData
+        } else {
+          return !!slots.table
+        }
+      } else {
+        throw new Error(`${store.$id}.dataSource is not defined`)
+      }
+    })
+    const _isPagination = computed(() => {
+      if ('pagination' in store.$state) {
+        if (typeof isPagination === 'boolean') {
+          return isPagination
+        } else {
+          return !!slots.table
+        }
+      } else {
+        throw new Error(`${store.$id}.pagination is not defined`)
+      }
     })
 
     provide('initSearchParameters', initSearchParameters)
-    // 提供给所有子级或插槽，以判断本页面是否存在列表组件
-    provide('isInitTable', _isInitTable.value)
+    // 提供给所有子级或插槽
+    provide('isInitData', _isInitData)
     provide('optionsOfGetList', props.optionsOfGetList)
 
     const taskQueues = computed(() => store.taskQueues)
 
     onMounted(async () => {
-      if (!_isInitTable.value) {
+      if (!_isInitData.value) {
         store.dataSource.loading = false
       }
 
@@ -174,13 +238,14 @@ export default {
               }
             }
           } else {
-            if (_isInitTable.value) {
+            if (_isInitData.value) {
               if (Object.keys(payload).length) {
                 await saveParamsAndExecSearch({ ...payload })
               } else {
                 // 直接执行搜索
                 await store.execSearch({
-                  isPagination,
+                  isPagination: _isPagination.value,
+                  isTable: !!slots.table,
                   ...(optionsOfGetList ?? {})
                 })
               }
@@ -190,13 +255,14 @@ export default {
           // 参数更新，触发有依赖的字段的 watch
           store.setSearchParams(searchParams)
 
-          if (_isInitTable.value) {
+          if (_isInitData.value) {
             // 等待搜索枚举中有依赖字段的参数重置完成
             await nextTick()
 
             // 执行搜索
             await store.execSearch({
-              isPagination,
+              isPagination: _isPagination.value,
+              isTable: !!slots.table,
               ...(optionsOfGetList ?? {})
             })
           }
@@ -212,11 +278,12 @@ export default {
     }
 
     async function saveParamsAndExecSearch(searchParams) {
-      if (_isInitTable.value) {
+      if (_isInitData.value) {
         return await store.saveParamsAndExecSearch({
           searchParams,
-          isResetSelectedRows: true,
-          isPagination,
+          isResetSelectedRows: !!slots.table,
+          isPagination: _isPagination.value,
+          isTable: !!slots.table,
           ...(optionsOfGetList ?? {})
         })
       } else {
