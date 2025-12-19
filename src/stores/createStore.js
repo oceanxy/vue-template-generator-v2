@@ -944,11 +944,15 @@ export function createStore({
           }
 
           if (isRefreshTable) {
-            await this.getList({
-              isPagination: true,
-              isTable: true,
-              ...optionsOfGetList
-            })
+            try {
+              await this.getList({
+                isPagination: true,
+                isTable: true,
+                ...optionsOfGetList
+              })
+            } catch (e) {
+              console.log(e)
+            }
           }
 
           if (isClearSelectedRows) {

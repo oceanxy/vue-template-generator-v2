@@ -55,7 +55,7 @@ export default function useTGForm({
 
   const hasTree = inject('hasTree', false)
   const refreshTree = inject('refreshTree', undefined)
-  const optionsOfGetList = inject('optionsOfGetList', null)
+  const _optionsOfGetList = inject('optionsOfGetList', null)
   const inModal = inject('inModal', false)
 
   let commonStore
@@ -235,6 +235,7 @@ export default function useTGForm({
    * @param [isMergeParam] {boolean} - 是否将 params 参数与默认值合并，默认为 false。
    * 注意合并后不会改变 store 内对应的字段，仅传递给接口使用；不合并时会使用 params 参数覆盖默认值。
    * @param [isRefreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
+   * @param [optionsOfGetList] {Object} - 刷新表格数据时给 getList 函数的参数（非请求接口的参数），依赖isRefreshTable。
    * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
    * @param [success] {(res: Object, currentItemCache: Object) => void} - 操作执行成功后的回调函数，
@@ -247,6 +248,7 @@ export default function useTGForm({
     params,
     isMergeParam,
     isRefreshTable = true,
+    optionsOfGetList,
     isRefreshTree,
     success
   } = {}) {
@@ -257,26 +259,35 @@ export default function useTGForm({
         } else {
           params = typeof params === 'function' ? params() : params
           const currentItemCache = toRaw(currentItem.value)
-          const res = await store.fetch({
-            action,
-            apiName,
-            location,
-            params,
-            isMergeParam,
-            isRefreshTable,
-            modalStatusFieldName,
-            optionsOfGetList
-          })
 
-          resolve(res)
+          try {
+            const res = await store.fetch({
+              action,
+              apiName,
+              location,
+              params,
+              isMergeParam,
+              isRefreshTable,
+              modalStatusFieldName,
+              // 这里从provide取值不合理，需要优化
+              optionsOfGetList: {
+                ..._optionsOfGetList,
+                ...optionsOfGetList
+              }
+            })
 
-          if (res.status) {
-            // 执行侧边树刷新操作
-            if (isRefreshTree && hasTree) {
-              await refreshTree?.()
+            resolve(res)
+
+            if (res.status) {
+              // 执行侧边树刷新操作
+              if (isRefreshTree && hasTree) {
+                await refreshTree?.()
+              }
+
+              success?.(res, currentItemCache)
             }
-
-            success?.(res, currentItemCache)
+          } catch (e) {
+            throw new Error(e)
           }
         }
       }).catch(e => {

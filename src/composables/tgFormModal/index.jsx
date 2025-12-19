@@ -93,6 +93,7 @@ export default function useTGFormModal({
    * 合并操作不会改变`store.state[location].form`的值，合并后的值仅传递给接口使用，合并时此参数的优先级更高。
    * 不合并时仅将 params 传递给接口。
    * @param [isRefreshTable=true] {boolean} - 是否刷新表格数据，默认 true。
+   * @param [optionsOfGetList] {Object} - 刷新表格数据时给 getList 函数的参数（非请求接口的参数），依赖isRefreshTable。
    * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
    * @param [success] {()=>void} - 操作执行成功后的回调函数。
@@ -104,6 +105,7 @@ export default function useTGFormModal({
     params,
     isMergeParam = true,
     isRefreshTable = true,
+    optionsOfGetList,
     isRefreshTree,
     success
   } = {}) {
@@ -130,6 +132,7 @@ export default function useTGFormModal({
       action,
       isMergeParam,
       isRefreshTable,
+      optionsOfGetList,
       isRefreshTree,
       modalStatusFieldName,
       success
