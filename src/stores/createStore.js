@@ -886,6 +886,12 @@ export function createStore({
        * @param [optionsOfGetList] {Object} - 自定义调用 store.getList 的参数。isRefreshTable 为 true 时生效。
        * @param [isClearSelectedRows] {boolean} - 成功后，是否清除表格已选行，默认 false。
        * @param [modalStatusFieldName] {string} - 弹窗状态字段名，用于操作成功后关闭指定弹窗。
+       * @param [setDataFromResponseData] {boolean | ((Object) => void)} - 接口返回数据处理函数，用于将接口返回的数据保存到 store 中。
+       * - 默认为 false，表示不保存接口返回的数据；
+       * - 当设置为 true 时，表示将接口返回的数据合并到 store.dataSource[`response_${apiName}`] 中；
+       * - 当设置为函数时，表示自行处理接口返回数据，参数为接口返回的Response对象；
+       * - 当设置为其他值时无效；
+       * - **该字段不受 location 参数的影响。**
        * @returns {Promise<Object>}
        */
       async fetch({
@@ -898,7 +904,8 @@ export function createStore({
         isRefreshTable,
         isClearSelectedRows,
         modalStatusFieldName,
-        optionsOfGetList
+        optionsOfGetList,
+        setDataFromResponseData
       }) {
         let res = { status: false }
 
@@ -957,6 +964,14 @@ export function createStore({
 
           if (isClearSelectedRows) {
             this.selectedRows = []
+          }
+
+          if (setDataFromResponseData) {
+            if (typeof setDataFromResponseData === 'boolean') {
+              this.$patch({ dataSource: { [`response_${apiName}`]: res.data } })
+            } else if (typeof setDataFromResponseData === 'function') {
+              setDataFromResponseData(res)
+            }
           }
         }
 
