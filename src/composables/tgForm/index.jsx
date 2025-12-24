@@ -511,7 +511,8 @@ export default function useTGForm({
               setValue: setDetails
             })
           } else {
-            console.error(`tgForm：请传入调用${apiName}接口所需的参数！或者确保调用该接口前，currentItem.${store.rowKey} 为合法值。`)
+            console.error(`tgForm：请传入调用${apiName ||
+            ''}接口所需的参数！或者确保调用该接口前，currentItem.${store.rowKey} 为合法值。`)
           }
         }
 
