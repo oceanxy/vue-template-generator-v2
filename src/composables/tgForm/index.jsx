@@ -27,7 +27,8 @@ import { Button, Form } from 'ant-design-vue'
  * - 参数`isNewModal`，值为 true 表示当前弹窗是新增弹窗，值为 false 表示当前弹窗是编辑弹窗。
  * @param [buttonDisabledFn] {() => boolean} - 禁用查询和重置按钮的方法。
  * @param [rules={}] {Object} - 验证规则，参考 ant-design-vue 的 Form.Item。
- * @param [loaded] {(Object) => void} - 所有 searchParamOptions 指定的接口和获取详情接口（如果有）全部加载完成后的回调。
+ * @param [loaded] {(Object: import('vue').ComputedRef<Array>) => void} - 所有 searchParamOptions 指定的
+ * 接口和获取详情接口（如果有）全部加载完成后的回调。函数参数为`store[location].form`，是一个计算属性。
  * @returns {Object}
  */
 export default function useTGForm({
@@ -138,7 +139,7 @@ export default function useTGForm({
     if (!isSearchForm) {
       // 作为数据表单使用时，将`store.currentItem`和`store[location].form`中的同名字段保持同步
       watch(currentItem, async ci => {
-        if ((inModal && open.value) || !inModal) {
+        if (!inModal || open.value) {
           if (
             // 判断弹窗主体与当前currentItem数据是否匹配
             location === ci._location &&
@@ -156,7 +157,7 @@ export default function useTGForm({
             // 暂时取消依赖字段的监听
             isFormInitCompleted.value = false
 
-            const _formModel = {}
+            const formModelFromCurrentItem = {}
 
             // 预处理从`currentItem`中同步到`formModel`的数据
             if (Object.keys(ci).length - 3 > 0) {
@@ -177,7 +178,7 @@ export default function useTGForm({
                     continue
                   }
 
-                  _formModel[key] = ci[key]
+                  formModelFromCurrentItem[key] = ci[key]
                 }
               }
             }
@@ -186,7 +187,7 @@ export default function useTGForm({
             store.$patch({
               [location]: {
                 form: {
-                  ..._formModel,
+                  ...formModelFromCurrentItem,
                   ...formModelFormatter?.(ci)
                 }
               }
@@ -238,6 +239,12 @@ export default function useTGForm({
    * @param [optionsOfGetList] {Object} - 刷新表格数据时给 getList 函数的参数（非请求接口的参数），依赖isRefreshTable。
    * @param [isRefreshTree] {boolean} - 是否在成功提交表单后刷新对应的侧边树，默认 false。
    * 依赖`inject(hasTree)`和`inject(refreshTree)`。
+   * @param [setDataFromResponseData] {boolean | ((Object) => void)} - 接口返回数据处理函数，用于将接口返回的数据保存到 store 中。
+   * - 默认为 false，表示不保存接口返回的数据；
+   * - 当设置为 true 时，表示将接口返回的数据合并到 store.dataSource[`response_${apiName}`] 中；
+   * - 当设置为函数时，表示自行处理接口返回数据，参数为接口返回的Response对象；
+   * - 当设置为其他值时无效；
+   * - **该字段不受 location 参数的影响。**
    * @param [success] {(res: Object, currentItemCache: Object) => void} - 操作执行成功后的回调函数，
    * 参数为接口的`Response`和`currentItemCache`。
    */
@@ -250,6 +257,7 @@ export default function useTGForm({
     isRefreshTable = true,
     optionsOfGetList,
     isRefreshTree,
+    setDataFromResponseData,
     success
   } = {}) {
     return new Promise(resolve => {
@@ -269,6 +277,7 @@ export default function useTGForm({
               isMergeParam,
               isRefreshTable,
               modalStatusFieldName,
+              setDataFromResponseData,
               // 这里从provide取值不合理，需要优化
               optionsOfGetList: {
                 ..._optionsOfGetList,
@@ -501,6 +510,8 @@ export default function useTGForm({
               apiName,
               setValue: setDetails
             })
+          } else {
+            console.error(`tgForm：请传入调用${apiName}接口所需的参数！或者确保调用该接口前，currentItem.${store.rowKey} 为合法值。`)
           }
         }
 

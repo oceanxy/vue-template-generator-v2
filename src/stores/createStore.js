@@ -512,7 +512,7 @@ export function createStore({
         if (apis[api]) {
           res = await apis[api](params || { [this.rowKey]: this.currentItem[this.rowKey] })
         } else {
-          console.error(`接口未定义：${moduleName} 页面的 ${api} 接口未定义！`)
+          console.error(`接口未定义：${moduleName} 页面的 ${api} 接口未定义！或者传入 apiName 参数来自定义需要调用的接口名称。`)
         }
 
         if (res.status) {
@@ -872,6 +872,7 @@ export function createStore({
       },
       /**
        * 接口请求（一般用于调用除表格查询外的大多数接口）
+       * 如果接口有返回值，则将返回值保存在 store.state.currentItem 中。
        * @param [loading=true] {boolean} - 是否启用加载状态，默认`true`。
        * @param [location]
        * @param [apiName] {string} - 接口名称，默认值为 `${ACTION}${MODULE_NAME}`。
