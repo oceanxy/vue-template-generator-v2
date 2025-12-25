@@ -510,7 +510,7 @@ export default function useTGForm({
               apiName,
               setValue: setDetails
             })
-          } else {
+          } else if (!isNewModal.value) {
             console.error(`tgForm：请传入调用${apiName ||
             ''}接口所需的参数！或者确保调用该接口前，currentItem.${store.rowKey} 为合法值。`)
           }
