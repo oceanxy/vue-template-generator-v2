@@ -172,28 +172,28 @@ export default {
     }
 
     async function handlePreview(file) {
-      const imgType = /(bmp|gif|jpe?g|png|svg|webp)$/i
-      const videoType = /(mp4|flv)$/i
       const imgSuffix = /(\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.svg|\.webp)$/i
+      const videoSuffix = /(\.mp4|\.flv)$/i
+
+      let detectFields
 
       if ('type' in file) {
-        if (videoType.test(file.type)) {
-          emit('previewVideo', file)
-          return
-        }
-
-        if (!imgType.test(file.type)) {
-          return message.warning('只支持图片预览')
-        }
+        detectFields = file.type
+      } else if (file.name) {
+        detectFields = file.name
       } else {
-        if (videoType.test(file.name)) {
-          emit('previewVideo', file)
-          return
-        }
+        detectFields = file.url
+      }
 
-        if (!imgSuffix.test(file.name)) {
-          return message.warning('只支持图片预览')
-        }
+      // if (!imgSuffix.test(file.type)) {
+      //   return message.warning('只支持图片预览')
+      // }
+
+      if (videoSuffix.test(detectFields)) {
+        emit('previewVideo', file)
+        return
+      } else if (!imgSuffix.test(detectFields)) {
+        return message.warning('该图片格式不支持预览')
       }
 
       if (!file.url && !file.preview) {
