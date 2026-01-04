@@ -140,14 +140,17 @@ export default {
         file.status = 'error'
         file.error = new Error('文件格式错误，上传失败。')
         file.response = '文件格式错误，上传失败。'
+        message.error('文件格式错误，上传失败。')
 
         return false
       }
+
       // 文件大小限制
       if (file.size / 1024 / 1024 > props.fileSize) {
         file.status = 'error'
         file.error = new Error(`文件大小超过${props.fileSize}M限制，上传失败。`)
         file.response = `文件大小超过${props.fileSize}M限制，上传失败。`
+        message.error(`文件大小超过${props.fileSize}M限制，上传失败。`)
 
         return false
       }
@@ -166,6 +169,7 @@ export default {
         file.status = 'error'
         file.error = new Error('文件上传数量超过限制，上传失败')
         file.response = '文件上传数量超过限制，上传失败'
+        message.error('文件上传数量超过限制，上传失败')
 
         return false
       }
@@ -192,8 +196,11 @@ export default {
       if (videoSuffix.test(detectFields)) {
         emit('previewVideo', file)
         return
-      } else if (!imgSuffix.test(detectFields)) {
-        return message.warning('该图片格式不支持预览')
+      } else if (imgSuffix.test(detectFields)) {
+        emit('previewImage', file)
+        return
+      } else {
+        message.warning('该格式文件不支持预览')
       }
 
       if (!file.url && !file.preview) {
