@@ -15,6 +15,12 @@ export default {
       type: Array,
       default: () => []
     },
+    // 是否在返回值中包含错误文件，默认false，只包含状态值为 'done' 的文件。
+    // 为true时，返回值中包含错误文件（即状态值为 'done' 和 'error' 的文件）。
+    containsWrongFile: {
+      type: Boolean,
+      default: false
+    },
     // 最大数量
     limit: {
       type: Number,
@@ -195,20 +201,16 @@ export default {
 
       if (videoSuffix.test(detectFields)) {
         emit('previewVideo', file)
-        return
       } else if (imgSuffix.test(detectFields)) {
-        emit('previewImage', file)
-        return
+        if (!file.url && !file.preview) {
+          file.preview = await getBase64(file.originFileObj)
+        }
+
+        previewImage.value = file.url || file.preview
+        previewVisible.value = true
       } else {
         message.warning('该格式文件不支持预览')
       }
-
-      if (!file.url && !file.preview) {
-        file.preview = await getBase64(file.originFileObj)
-      }
-
-      previewImage.value = file.url || file.preview
-      previewVisible.value = true
     }
 
     function handleCancel() {
@@ -253,10 +255,15 @@ export default {
       //   emit('update:value', fileList.value.filter(item => item.status === 'done'))
       // }
 
-      // todo 为了解决部分项目bug，暂时回传已经上传成功的文件，后续有需求再来优化
-      const _files = files.value.filter(item => item.status === 'done')
-      emit('update:value', _files)
-      emit('fileChange', _files)
+      let _files = []
+      if (!props.containsWrongFile) {
+        _files = files.value.filter(item => item.status === 'done')
+      } else {
+        _files = files.value.filter(item => item.status === 'done' || item.status === 'error')
+      }
+
+      emit('update:value', cloneDeep(_files))
+      emit('fileChange', cloneDeep(_files))
     }
 
     const renderSlots = () => {

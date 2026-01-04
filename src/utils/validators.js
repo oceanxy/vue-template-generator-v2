@@ -98,6 +98,24 @@ export async function verifyPhoneNumber(rule, value) {
   })
 }
 
+export async function verifyUploadFile(rule, value) {
+  return new Promise((resolve, reject) => {
+    if (rule.required || value) {
+      if (Array.isArray(value)) {
+        const hasError = value.some((item) => item.status === 'error')
+
+        if (hasError) {
+          reject(new Error('上传文件存在错误，请修改后再提交！'))
+        }
+      } else {
+        throw new Error('上传文件格式有误')
+      }
+    }
+
+    resolve()
+  })
+}
+
 /**
  * 验证给定日期范围是否与目标日期范围存在交叉
  * @param {() => [dayjs, dayjs][]} getDateRange - 目标日期范围
