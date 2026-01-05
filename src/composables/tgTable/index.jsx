@@ -2,7 +2,7 @@ import './index.scss'
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import useStore from '@/composables/tgStore'
 import router from '@/router'
-import { getValueFromStringKey } from '@/utils/utilityFunction'
+import { getValueFromStringKey, removeEmptyChildren } from '@/utils/utilityFunction'
 import { message, Table } from 'ant-design-vue'
 import useThemeVars from '@/composables/themeVars'
 import { omit, throttle } from 'lodash'
@@ -259,7 +259,7 @@ export default function useTGTable({
           : ''}.rowKey\`的值。`)
     }
 
-    defaultTableProps.dataSource = value
+    defaultTableProps.dataSource = removeEmptyChildren(value)
 
     await resize()
   })

@@ -93,31 +93,31 @@ export function downloadFile(blobOrUrl, fileName) {
  */
 export async function downloadRemoteFile(url, fileName) {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url)
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const blob = await response.blob();
-    const urlObj = URL.createObjectURL(blob);
-    const tmp = document.createElement('a');
-    const body = document.querySelector('body');
+    const blob = await response.blob()
+    const urlObj = URL.createObjectURL(blob)
+    const tmp = document.createElement('a')
+    const body = document.querySelector('body')
 
-    tmp.style.display = 'none';
-    tmp.download = fileName;
-    tmp.href = urlObj;
-    tmp.target = '_blank';
-    body.appendChild(tmp);
+    tmp.style.display = 'none'
+    tmp.download = fileName
+    tmp.href = urlObj
+    tmp.target = '_blank'
+    body.appendChild(tmp)
 
-    tmp.click();
-    body.removeChild(tmp);
+    tmp.click()
+    body.removeChild(tmp)
 
     setTimeout(() => {
-      URL.revokeObjectURL(urlObj);
-    }, 1000);
+      URL.revokeObjectURL(urlObj)
+    }, 1000)
   } catch (error) {
-    console.error('下载远程文件失败:', error);
-    message.error('文件下载失败');
+    console.error('下载远程文件失败:', error)
+    message.error('文件下载失败')
   }
 }
 
@@ -338,3 +338,32 @@ export const copyText = async (text) => {
   }
 }
 
+/**
+ * 递归处理数据，移除空的children字段
+ * @param {Array|Object} data - 需要处理的数据
+ * @returns {Array|Object} - 处理后的数据
+ */
+export function removeEmptyChildren(data) {
+  if (Array.isArray(data)) {
+    return data.map(item => removeEmptyChildren(item))
+  } else if (data && typeof data === 'object') {
+    const result = {}
+    for (const key in data) {
+      if (key === 'children') {
+        if (Array.isArray(data[key]) && data[key].length > 0) {
+          result[key] = removeEmptyChildren(data[key])
+        }
+        // 如果children为非数组或空数组，则不添加该字段
+      } else {
+        // 对于其他字段，递归处理其值
+        if (data[key] && typeof data[key] === 'object') {
+          result[key] = removeEmptyChildren(data[key])
+        } else {
+          result[key] = data[key]
+        }
+      }
+    }
+    return result
+  }
+  return data
+}
