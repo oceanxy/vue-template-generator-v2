@@ -14,7 +14,7 @@ const mockAppModule = getApisFromFiles(appModuleFiles)
 // 注册需要被 mock js 拦截的接口
 export default Object.entries({ ...mockModule, ...mockAppModule }).map(([modelKey, mockModel]) => {
   // 把接口地址中的"/"替换为转义字符“\/”
-  const url = `${getEnvVar('TG_APP_BASE_API')}${modelKey}`.replaceAll('/', '\\/')
+  const url = `${getEnvVar('TG_APP_BASE_API')}${modelKey}`.replaceAll(/\/+/g, '\\/')
 
   mock(new RegExp(`${url}(|\\?\\S*)$`), options => {
     const printOptions = { ...options }

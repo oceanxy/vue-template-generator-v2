@@ -9,7 +9,7 @@ export default {
   login(data) {
     return {
       url: '/example/login',
-      mockUrl: '/example/login',
+      mockUrl: '/example/login', // 若开启mock，则使用mockUrl。当mockUrl与url相同时，可以省略mockUrl。
       method: 'post',
       data: qs.stringify(data)
     }
