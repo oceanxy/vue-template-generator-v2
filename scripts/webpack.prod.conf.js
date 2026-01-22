@@ -31,9 +31,9 @@ module.exports = merge(baseConfig, {
         parallel: true, // 开启多线程压缩
         terserOptions: {
           compress: {
-            pure_funcs: [
-              'console.log' // 删除console.log
-            ]
+            // pure_funcs: ['console.log']
+            drop_console: true,
+            drop_debugger: true
           },
           // 保留注入的全局资源变量
           mangle: {
