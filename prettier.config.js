@@ -42,6 +42,6 @@ export default {
   eslintIntegration: false,
   // 不让prettier使用stylelint的代码格式进行校验
   stylelintIntegration: false,
-  // 代码的解析引擎，默认为babylon，与babel相同
-  parser: 'babylon'
+  // 代码的解析引擎
+  parser: 'babel'
 }
