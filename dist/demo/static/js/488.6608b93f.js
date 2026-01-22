@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkvue_template_generator_v2=self.webpackChunkvue_template_generator_v2||[]).push([[488],{15488:function(e,t,n){n.r(t),t.default={name:"DataPanel",setup:function(){return function(){return"正在建设"}}}}}]);

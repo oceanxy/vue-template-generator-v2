@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkvue_template_generator_v2=self.webpackChunkvue_template_generator_v2||[]).push([[10],{23010:function(e,t,n){n.r(t);var r=n(20641);t.default={name:"DesignerTemplatePanel",props:{updateSchema:{type:Function,required:!0}},setup:function(){return function(){return(0,r.bF)("div",{class:"tg-designer-template"},[(0,r.eW)("正在建设")])}}}}}]);
